@@ -35,8 +35,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         	token = token.startsWith("Bearer") ? token.substring(7) : token;
             try {
                 tokenProvider.validateToken(token);
-                String email = tokenProvider.getEmailFromJWT(token);
-                ProseUser user = userRepository.findByCredentials_Email(email).orElseThrow(UserNotFoundException::new);
+                String username = tokenProvider.getEmailFromJWT(token);
+                ProseUser user = userRepository.findByCredentials_Username(username).orElseThrow(UserNotFoundException::new);
                 UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                         user.getEmail(), null, user.getAuthorities()
                 );

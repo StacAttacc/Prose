@@ -21,7 +21,7 @@ public abstract class ProseUser {
     private Credentials credentials;
 
     public String getEmail() {
-        return credentials.getEmail();
+        return credentials.getUsername();
     }
 
     public String getPassword() {

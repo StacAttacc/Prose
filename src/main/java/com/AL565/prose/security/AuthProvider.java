@@ -37,7 +37,7 @@ public class AuthProvider implements AuthenticationProvider{
 
 
 	private ProseUser loadUserByEmail(String email) throws UsernameNotFoundException {
-		return proseUserRepository.findByCredentials_Email(email)
+		return proseUserRepository.findByCredentials_Username(email)
 			.orElseThrow(UserNotFoundException::new);
 	}
 

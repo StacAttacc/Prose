@@ -19,7 +19,7 @@ import java.util.Collections;
 @ToString
 public final class Credentials implements UserDetails {
     @Column(unique = true, nullable = false)
-    private String email;
+    private String username;
 
     @Column(nullable = false)
     private String password;
@@ -35,13 +35,8 @@ public final class Credentials implements UserDetails {
     }
 
     @Override
-    public String getPassword() {
-        return password;
-    }
-
-    @Override
     public String getUsername() {
-        return email;
+        return username;
     }
 
     @Override
