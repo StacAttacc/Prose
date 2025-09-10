@@ -11,8 +11,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.Collections;
+
 @Embeddable
-@Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -32,6 +32,11 @@ public final class Credentials implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return Collections.singleton(new SimpleGrantedAuthority(role.name()));
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
     }
 
     @Override
