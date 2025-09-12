@@ -1,12 +1,13 @@
 // src/components/PageLogin.jsx
-import {useState} from "react";
+import {useEffect, useState} from "react";
+import {createEmployee} from "../services/employeurService.js";
 
 export default function PageLogin() {
     const [email, setEmail] = useState("");
     const [username, setUsername] = useState("");
     const [pwd, setPwd] = useState("");
     const [showPwd, setShowPwd] = useState(false);
-
+    const[employeur,setEmployeur] = useState("")
     const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     const pwdHint = pwd.length < 10 ? "Min 10 characters" : "Looks good";
 
@@ -16,11 +17,22 @@ export default function PageLogin() {
         console.log({email, username, pwd});
     };
 
+
+    useEffect(()=>{
+        createEmployee(employeur).then((response)=>{
+            console.log(response.data);
+            setEmployeur(response.data)
+        }).catch(error=>{
+            console.error(error);
+        })
+    },[])
+
     return (
         <div className="min-h-screen grid lg:grid-cols-2">
             {/* LEFT HERO */}
             <div className="relative overflow-hidden bg-teal-700/95 text-white">
-                <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_30%_20%,#fff,transparent_35%)]" />
+                <div
+                    className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_30%_20%,#fff,transparent_35%)]"/>
 
                 <div className="relative h-full flex flex-col items-center justify-center p-8 lg:p-12 text-center">
                     {/* Top brand */}
@@ -40,20 +52,24 @@ export default function PageLogin() {
                             alt="Glaucon"
                         />
                         <header>
-                            <h2 className="text-xl font-bold">« La justice d’un homme se mesure moins à ses actes publics
+                            <h2 className="text-xl font-bold">« La justice d’un homme se mesure moins à ses actes
+                                publics
                                 qu’à ce qu’il ferait s’il était certain de n’être jamais vu. » Glaucon</h2>
                         </header>
                     </div>
                 </div>
             </div>
 
-    {/* RIGHT PANEL */
+
+            {/* RIGHT PANEL */
             }
+
             <div className="bg-[#1f1f23] text-slate-200 grid place-items-center p-6 md:p-10">
+
                 <div className="w-full max-w-md">
-
-
-
+                    <h2 className="text-3xl font-bold text-center mb-8">
+                        Créez votre compte
+                    </h2>
                     {/* FORM */}
                     <form onSubmit={onSubmit} className="space-y-4">
                         {/* Email */}
