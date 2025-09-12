@@ -1,6 +1,5 @@
 import PageLogin from "./components/PageLogin.jsx";
-import "./style/tailwind.css";
-
+import "./style/index.css";
 function App() {
     return (
         <div>
