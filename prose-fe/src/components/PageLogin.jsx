@@ -7,7 +7,7 @@ export default function PageLogin() {
     const [username, setUsername] = useState("");
     const [pwd, setPwd] = useState("");
     const [showPwd, setShowPwd] = useState(false);
-    const[employeur,setEmployeur] = useState("")
+    const [employeur, setEmployeur] = useState("")
     const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     const pwdHint = pwd.length < 10 ? "Min 10 characters" : "Looks good";
 
@@ -17,15 +17,15 @@ export default function PageLogin() {
         console.log({email, username, pwd});
     };
 
-
-    useEffect(()=>{
-        createEmployee(employeur).then((response)=>{
-            console.log(response.data);
-            setEmployeur(response.data)
-        }).catch(error=>{
-            console.error(error);
-        })
-    },[])
+    //
+    // useEffect(() => {
+    //     createEmployee(employeur).then((response) => {
+    //         console.log(response.data);
+    //         setEmployeur(response.data)
+    //     }).catch(error => {
+    //         console.error(error);
+    //     })
+    // }, [])
 
     return (
         <div className="min-h-screen grid lg:grid-cols-2">
