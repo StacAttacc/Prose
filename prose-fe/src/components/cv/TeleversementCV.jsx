@@ -1,21 +1,21 @@
-import React, { useState } from 'react';
+import React, {useRef, useState} from 'react';
+import axios from "axios";
 
 const TeleversementCV = () => {
     const [selectedFile, setSelectedFile] = useState(null);
     const [error, setError] = useState('');
     const [uploading, setUploading] = useState(false);
-
-    const allowedExtension = '.pdf';
+    const fileInputRef = useRef(null);
 
     const validerFichier = (file) => {
         if (!file) return false;
-
-        const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
-        return fileExtension === allowedExtension;
-    };
+        const isPdfByExt = file.name.toLowerCase().endsWith(".pdf");
+        const isPdfByType = file.type === "application/pdf";
+        return isPdfByExt && isPdfByType;
+    }
 
     const selectionerFichier = (event) => {
-        const file = event.target.files[0];
+        const file = event.target.files?.[0];
         setError('');
 
         if (!file) {
@@ -26,14 +26,21 @@ const TeleversementCV = () => {
         if (!validerFichier(file)) {
             setError('Veuillez sélectionner un fichier PDF valide');
             setSelectedFile(null);
-            event.target.value = '';
+
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
             return;
         }
 
         if (file.size > 5 * 1024 * 1024) {
             setError('Le fichier ne doit pas dépasser 5 MB');
             setSelectedFile(null);
-            event.target.value = '';
+
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
+
             return;
         }
 
@@ -48,16 +55,14 @@ const TeleversementCV = () => {
             const formData = new FormData();
             formData.append('cv', selectedFile);
 
-            /*const response = await axios.post('/api/upload-cv', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            });*/
+            const { data } = await axios.post('/api/televerser-cv', formData);
 
-            console.log('Fichier téléversé:', selectedFile);
+            console.log('Fichier téléversé:', data);
 
             setSelectedFile(null);
-            document.getElementById('file-input').value = '';
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
         } catch (err) {
             setError(err.response?.data?.message || 'Erreur lors du téléversement');
         } finally {
@@ -68,7 +73,9 @@ const TeleversementCV = () => {
     const enleverFichier = () => {
         setSelectedFile(null);
         setError('');
-        document.getElementById('file-input').value = '';
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
     };
 
     return (
@@ -79,9 +86,10 @@ const TeleversementCV = () => {
                 <div className="relative">
                     <input
                         id="file-input"
+                        ref={fileInputRef}
                         type="file"
                         onChange={selectionerFichier}
-                        accept=".pdf"
+                        accept="application/pdf"
                         className="hidden"
                     />
                     <label
@@ -96,7 +104,7 @@ const TeleversementCV = () => {
                 </div>
 
                 <p className="text-xs text-gray-500 mt-2 text-center">
-                    Formats acceptés : PDF, Word (.doc/.docx), Texte (.txt)
+                    Veuillez choisir un fichier au format PDF.
                     <br />
                     Taille maximum : 5 MB
                 </p>
