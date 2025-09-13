@@ -1,4 +1,5 @@
 import React, {useRef, useState} from 'react';
+import {televerserCv} from "../../services/etudiantService.js";
 import axios from "axios";
 
 const TeleversementCV = () => {
@@ -49,20 +50,12 @@ const TeleversementCV = () => {
 
     const televerserFichier = async () => {
         if (!selectedFile) return;
-
         setUploading(true);
         try {
-            const formData = new FormData();
-            formData.append('cv', selectedFile);
-
-            const { data } = await axios.post('/api/televerser-cv', formData);
-
+            const data = await uploadCV(selectedFile);
             console.log('Fichier téléversé:', data);
-
             setSelectedFile(null);
-            if (fileInputRef.current) {
-                fileInputRef.current.value = '';
-            }
+            if (fileInputRef.current) fileInputRef.current.value = '';
         } catch (err) {
             setError(err.response?.data?.message || 'Erreur lors du téléversement');
         } finally {
