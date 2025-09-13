@@ -56,6 +56,7 @@ const TeleversementCV = () => {
             console.log('Fichier téléversé:', data);
             setSelectedFile(null);
             if (fileInputRef.current) fileInputRef.current.value = '';
+            setError('');
         } catch (err) {
             setError(err.response?.data?.message || 'Erreur lors du téléversement');
         } finally {
