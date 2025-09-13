@@ -16,15 +16,15 @@ public class ProseCvController {
 
     private final ProseCvService cvService;
 
-    @PostMapping("/upload-cv")
-    public ResponseEntity<Long> upload(@RequestParam("cv") MultipartFile cv,
+    @PostMapping("/televerser-cv")
+    public ResponseEntity<Long> televerser(@RequestParam("cv") MultipartFile cv,
                                        @RequestParam(value = "lastModified", required = false) String lastModified) {
         Long id = cvService.saveCv(cv, lastModified);
         return ResponseEntity.ok(id);
     }
 
     @GetMapping("/cv/{id}")
-    public ResponseEntity<byte[]> download(@PathVariable Long id) {
+    public ResponseEntity<byte[]> telecharger(@PathVariable Long id) {
         ProseCV cv = cvService.getCvOrThrow(id);
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(cv.getType()))
