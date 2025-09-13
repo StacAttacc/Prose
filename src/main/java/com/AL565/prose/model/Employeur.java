@@ -1,0 +1,23 @@
+package com.AL565.prose.model;
+
+
+import com.AL565.prose.model.auth.Credentials;
+import com.AL565.prose.model.auth.Role;
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
+import lombok.*;
+
+@Getter @Setter
+@Entity
+@Builder
+@AllArgsConstructor
+@DiscriminatorValue(value = "Employeur")
+@NoArgsConstructor
+public class Employeur extends ProseUser {
+    private String company;
+
+    public Employeur(String firstName, String lastName, String company, String username, String password) {
+        super(firstName, lastName, new Credentials(username, password, Role.EMPLOYEUR));
+        this.company = company;
+    }
+}
