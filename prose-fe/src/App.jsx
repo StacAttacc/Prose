@@ -4,7 +4,6 @@ import TeleversementCV from "./components/cv/TeleversementCV.jsx";
 import { BrowserRouter, Route } from "react-router-dom";
 
 function App() {
-  const [count, setCount] = useState(0)
 
   return (
     <BrowserRouter>

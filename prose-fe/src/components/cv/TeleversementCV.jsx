@@ -5,13 +5,13 @@ const TeleversementCV = () => {
     const [error, setError] = useState('');
     const [uploading, setUploading] = useState(false);
 
-    const allowedExtensions = ['.pdf', '.doc', '.docx', '.txt'];
+    const allowedExtension = '.pdf';
 
     const validerFichier = (file) => {
         if (!file) return false;
 
         const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
-        return allowedExtensions.includes(fileExtension);
+        return fileExtension === allowedExtension;
     };
 
     const selectionerFichier = (event) => {
@@ -24,7 +24,7 @@ const TeleversementCV = () => {
         }
 
         if (!validerFichier(file)) {
-            setError('Veuillez sélectionner un fichier PDF, Word (.doc/.docx) ou texte (.txt)');
+            setError('Veuillez sélectionner un fichier PDF valide');
             setSelectedFile(null);
             event.target.value = '';
             return;
@@ -48,13 +48,14 @@ const TeleversementCV = () => {
             const formData = new FormData();
             formData.append('cv', selectedFile);
 
-            const response = await axios.post('/api/upload-cv', formData, {
+            /*const response = await axios.post('/api/upload-cv', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 }
-            });
+            });*/
 
-            alert('CV téléversé avec succès!');
+            console.log('Fichier téléversé:', selectedFile);
+
             setSelectedFile(null);
             document.getElementById('file-input').value = '';
         } catch (err) {
@@ -80,7 +81,7 @@ const TeleversementCV = () => {
                         id="file-input"
                         type="file"
                         onChange={selectionerFichier}
-                        accept=".pdf,.doc,.docx,.txt"
+                        accept=".pdf"
                         className="hidden"
                     />
                     <label
@@ -97,7 +98,7 @@ const TeleversementCV = () => {
                 <p className="text-xs text-gray-500 mt-2 text-center">
                     Formats acceptés : PDF, Word (.doc/.docx), Texte (.txt)
                     <br />
-                    Taille maximum : 10 MB
+                    Taille maximum : 5 MB
                 </p>
             </div>
 
