@@ -28,7 +28,7 @@ import org.springframework.web.filter.CorsFilter;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.springframework.boot.autoconfigure.security.servlet.PathRequest.toH2Console;
+//import static org.springframework.boot.autoconfigure.security.servlet.PathRequest.toH2Console;
 import static org.springframework.http.HttpMethod.*;
 
 @Configuration
@@ -50,6 +50,7 @@ public class SecurityConfiguration {
     private static final String EMPLOYEUR_PATH = "/employeur/**";
     private static final String GESTIONNAIRE_PATH = "/gestionnaire/**";
     private static final String PROFESSEUR_PATH = "/professeur/**";
+    private static final String CV_UPLOAD_PATH = "/api/televerser-cv";
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -57,11 +58,18 @@ public class SecurityConfiguration {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
+
+                        //remove this after the authentication is set up
+                        .requestMatchers(OPTIONS, "/**").permitAll()
+
                         .requestMatchers(POST, USER_LOGIN_PATH).permitAll()
                         .requestMatchers(POST, ETUDIANT_REGISTER_PATH).permitAll()
                         .requestMatchers(POST, EMPLOYEUR_REGISTER_PATH).permitAll()
                         .requestMatchers(POST, PROFESSEUR_REGISTER_PATH).permitAll()
-                        .requestMatchers(toH2Console()).permitAll() // Allow H2 console access
+                        //.requestMatchers(toH2Console()).permitAll() // Allow H2 console access
+
+                        //change this once authentication is set up
+                        .requestMatchers(POST, CV_UPLOAD_PATH).permitAll()
 
                         // Use Role enum names for authorities
                         .requestMatchers(GET, USER_PATH).hasAnyAuthority(Role.ETUDIANT.name(), Role.EMPLOYEUR.name(), Role.GESTIONNAIRE.name())
@@ -69,9 +77,9 @@ public class SecurityConfiguration {
                         .requestMatchers(EMPLOYEUR_PATH).hasAuthority(Role.EMPLOYEUR.name())
                         .requestMatchers(PROFESSEUR_PATH).hasAuthority(Role.PROFESSEUR.name())
                         .requestMatchers(GESTIONNAIRE_PATH).hasAuthority(Role.GESTIONNAIRE.name())
-                        .anyRequest().authenticated() // Changed from denyAll() to authenticated() - more common, adjust if denyAll is strictly needed
+                        //.anyRequest().authenticated() // Changed from denyAll() to authenticated() - more common, adjust if denyAll is strictly needed
                 )
-                .headers(headers -> headers.frameOptions(Customizer.withDefaults()).disable()) // for h2-console
+                //.headers(headers -> headers.frameOptions(Customizer.withDefaults()).disable()) // for h2-console
                 .sessionManagement((secuManagement) -> {
                     secuManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
                 })
@@ -88,7 +96,7 @@ public class SecurityConfiguration {
         // 1. Specify allowed origins (VERY IMPORTANT!)
         //    Must match your React app's URL exactly (e.g., http://localhost:3000)
         //    Do NOT use "*" if you need credentials (like sending Authorization headers)
-        configuration.setAllowedOrigins(List.of("http://localhost:3000")); // Adjust if your frontend runs elsewhere
+        configuration.setAllowedOrigins(List.of("http://localhost:5130", "http://localhost:5173"));
 
         // 2. Specify allowed HTTP methods
         configuration.setAllowedMethods(Arrays.asList(

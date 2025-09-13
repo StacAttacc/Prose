@@ -31,7 +31,6 @@ public class ProseCV {
     private String lastModified;
     private Instant lastModifiedDate;
 
-    @Lob
     @Basic(fetch = FetchType.LAZY)
     @Column(columnDefinition="bytea")
     private byte[] data;
