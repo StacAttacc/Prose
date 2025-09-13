@@ -1,8 +1,14 @@
 import axios from "axios";
 
-export const televerserCv = async (file) => {
-    const formData = new FormData();
-    formData.append('cv', file);
-    const { data } = await axios.post('/etudiant/televerser-cv', formData);
-    return data;
+const CV_UPLOAD_URL = "http://localhost:8080/etudiant/televerser-cv";
+
+export const televerserCv = async (cv) => {
+    try{
+        const cvPDF = new FormData();
+        cvPDF.append('cv', cv);
+        const { data } = await axios.post(CV_UPLOAD_URL, cvPDF);
+        return data;
+    } catch (e) {
+        throw e;
+    }
 };
