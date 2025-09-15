@@ -6,7 +6,8 @@ public enum Discipline {
     GENIE_CIVIL("Génie Civil"),
     COMPTABILITE("Comptabilité"),
     MARKETING("Marketing"),
-    MECANIQUE("Mécanique");
+    MECANIQUE("Mécanique"),
+    AUTRE("Autre");
 
     private final String displayName;
 
