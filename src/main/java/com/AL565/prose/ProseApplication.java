@@ -2,6 +2,7 @@ package com.AL565.prose;
 
 import com.AL565.prose.service.DTO.EmployeurEnregistrerDTO;
 import com.AL565.prose.service.EmployeurService;
+import com.AL565.prose.service.exceptions.EmailEnUtilisationException;
 import lombok.AllArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -29,7 +30,12 @@ public class ProseApplication {
                     "123456"
             );
 
-            employeurService.enregistrer(employeurMark);
+            try {
+                employeurService.enregistrer(employeurMark);
+            } catch (EmailEnUtilisationException e) {
+                System.err.println(e.getMessage());
+            }
+
 
             System.out.println(employeurService.getEmployeur("mcarney@gov.ca"));
         };
