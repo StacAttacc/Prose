@@ -1,4 +1,3 @@
-// src/main.jsx (exemple)
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
