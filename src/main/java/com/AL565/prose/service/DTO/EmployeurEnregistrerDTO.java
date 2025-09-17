@@ -16,4 +16,5 @@ public class EmployeurEnregistrerDTO {
     public static Employeur toModel(EmployeurEnregistrerDTO employeurEnregistrerDTO) {
         return new Employeur(employeurEnregistrerDTO.firstName, employeurEnregistrerDTO.lastName, employeurEnregistrerDTO.company, employeurEnregistrerDTO.email, employeurEnregistrerDTO.password);
     }
+
 }
