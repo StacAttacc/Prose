@@ -1,5 +1,5 @@
 import React, {useRef, useState} from 'react';
-import {televerserCv} from "../../services/etudiantService.js";
+import {televerserCv} from "../../services/EtudiantService.js";
 import axios from "axios";
 
 const TeleversementCV = () => {
