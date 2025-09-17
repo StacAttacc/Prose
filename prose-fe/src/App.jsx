@@ -1,10 +1,8 @@
-import { useState } from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
 //import InscriptionEtudiant from './components/inscriptionEtudiant'
+import {BrowserRouter, Route, Routes} from "react-router-dom";
 import PageLogin from './components/PageLogin'
 import "./styles/tailwind.css"
 import TeleversementCV from "./components/cv/TeleversementCV.jsx";
-import { BrowserRouter, Route } from "react-router-dom";
 
 function App() {
 
