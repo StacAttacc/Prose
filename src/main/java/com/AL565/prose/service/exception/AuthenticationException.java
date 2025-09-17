@@ -1,4 +1,4 @@
-package com.AL565.prose.security.exception;
+package com.AL565.prose.service.exception;
 
 import org.springframework.http.HttpStatus;
 

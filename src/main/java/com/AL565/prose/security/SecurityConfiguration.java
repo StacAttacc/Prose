@@ -90,7 +90,6 @@ public class SecurityConfiguration {
         //    Must match your React app's URL exactly (e.g., http://localhost:3000)
         //    Do NOT use "*" if you need credentials (like sending Authorization headers)
         configuration.setAllowedOrigins(List.of(
-            "http://localhost:3000",
             "http://localhost:5173"
         )); // Adjust if your frontend runs elsewhere
 

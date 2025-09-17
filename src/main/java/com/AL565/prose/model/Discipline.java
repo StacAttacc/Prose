@@ -1,4 +1,4 @@
-package com.AL565.prose.model.auth;
+package com.AL565.prose.model;
 
 public enum Discipline {
     INFORMATIQUE("Informatique"),
