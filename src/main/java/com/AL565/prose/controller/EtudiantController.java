@@ -1,7 +1,7 @@
 package com.AL565.prose.controller;
 
 import com.AL565.prose.model.Discipline;
-import com.AL565.prose.model.ProseCV;
+import com.AL565.prose.model.CV;
 import com.AL565.prose.service.EtudiantInscriptionService;
 import com.AL565.prose.service.ProseCvService;
 import org.springframework.http.HttpHeaders;
@@ -44,7 +44,7 @@ public class EtudiantController {
 
     @GetMapping("/cv/{id}")
     public ResponseEntity<byte[]> telecharger(@PathVariable Long id) {
-        ProseCV cv = cvService.getCvOrThrow(id);
+        CV cv = cvService.getCvOrThrow(id);
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(cv.getType()))
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + cv.getName() + "\"")

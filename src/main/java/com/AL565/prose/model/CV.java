@@ -10,7 +10,6 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.time.Instant;
-import java.util.Date;
 
 @Entity
 @Getter
@@ -20,7 +19,7 @@ import java.util.Date;
 @Builder
 @ToString
 @EqualsAndHashCode(of = "id")
-public class ProseCV {
+public class CV {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

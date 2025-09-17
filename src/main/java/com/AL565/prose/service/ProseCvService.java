@@ -1,6 +1,6 @@
 package com.AL565.prose.service;
 
-import com.AL565.prose.model.ProseCV;
+import com.AL565.prose.model.CV;
 import com.AL565.prose.repository.ProseCvRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -37,7 +37,7 @@ public class ProseCvService {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Lecture du fichier échoué", e);
         }
 
-        ProseCV entity = ProseCV.builder()
+        CV entity = CV.builder()
                 .name(cv.getOriginalFilename())
                 .type(contentType)
                 .size(cv.getSize())
@@ -50,7 +50,7 @@ public class ProseCvService {
     }
 
     @Transactional(readOnly = true)
-    public ProseCV getCvOrThrow(Long id) {
+    public CV getCvOrThrow(Long id) {
         return repository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "CV not found"));
     }
