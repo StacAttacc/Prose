@@ -33,4 +33,8 @@ public class CV {
     @Basic(fetch = FetchType.LAZY)
     @Column(columnDefinition="bytea")
     private byte[] data;
+
+    @OneToOne
+    @JoinColumn(name = "etudiant_id")
+    private Etudiant etudiant;
 }

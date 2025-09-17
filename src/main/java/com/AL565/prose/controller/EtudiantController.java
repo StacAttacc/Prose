@@ -36,10 +36,11 @@ public class EtudiantController {
     }
 
     @PostMapping("/televerser-cv")
-    public ResponseEntity<Long> televerser(@RequestParam("cv") MultipartFile cv,
+    public ResponseEntity<Void> televerser(@RequestParam("cv") MultipartFile cv,
+                                           @RequestParam("studentEmail") String studentEmail,
                                            @RequestParam(value = "lastModified", required = false) String lastModified) {
-        Long id = cvService.saveCv(cv, lastModified);
-        return ResponseEntity.ok(id);
+        cvService.saveCv(cv, studentEmail, lastModified);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @GetMapping("/cv/{id}")

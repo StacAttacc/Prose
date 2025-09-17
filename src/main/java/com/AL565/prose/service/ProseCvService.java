@@ -20,15 +20,20 @@ public class ProseCvService {
     private final ProseCvRepository repository;
 
     @Transactional
-    public Long saveCv(MultipartFile cv, String lastModified) {
+    public Long saveCv(MultipartFile cv, String email, String lastModified) {
         if (cv == null || cv.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Fichier manquant");
         }
 
-        String contentType = cv.getContentType();
-        if (contentType == null || !MediaType.APPLICATION_PDF_VALUE.equalsIgnoreCase(contentType)) {
+        if (cv.getContentType() == null || !MediaType.APPLICATION_PDF_VALUE.equalsIgnoreCase(cv.getContentType())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Il faut un fichier PDF");
         }
+
+        if(email.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Étudiant manquant manquant");
+        }
+
+        //TODO: get user and confirm it's the one you want to save the CV for
 
         byte[] data;
         try {
@@ -39,11 +44,12 @@ public class ProseCvService {
 
         CV entity = CV.builder()
                 .name(cv.getOriginalFilename())
-                .type(contentType)
+                .type(cv.getContentType())
                 .size(cv.getSize())
                 .lastModified(lastModified)
                 .lastModifiedDate(Instant.now())
                 .data(data)
+        //TODO: add etudiant to this cv
                 .build();
 
         return repository.save(entity).getId();
