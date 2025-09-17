@@ -1,10 +1,15 @@
 package com.AL565.prose.controller;
 
 import com.AL565.prose.model.Discipline;
+import com.AL565.prose.model.ProseCV;
 import com.AL565.prose.service.EtudiantInscriptionService;
+import com.AL565.prose.service.ProseCvService;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/etudiant")
@@ -12,8 +17,11 @@ public class EtudiantController {
 
     private final EtudiantInscriptionService etudiantInscriptionService;
 
-    public EtudiantController(EtudiantInscriptionService etudiantInscriptionService) {
+    private final ProseCvService cvService;
+
+    public EtudiantController(EtudiantInscriptionService etudiantInscriptionService, ProseCvService cvService) {
         this.etudiantInscriptionService = etudiantInscriptionService;
+        this.cvService = cvService;
     }
 
     @PostMapping("/register")
@@ -27,5 +35,20 @@ public class EtudiantController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
+    @PostMapping("/televerser-cv")
+    public ResponseEntity<Long> televerser(@RequestParam("cv") MultipartFile cv,
+                                           @RequestParam(value = "lastModified", required = false) String lastModified) {
+        Long id = cvService.saveCv(cv, lastModified);
+        return ResponseEntity.ok(id);
+    }
+
+    @GetMapping("/cv/{id}")
+    public ResponseEntity<byte[]> telecharger(@PathVariable Long id) {
+        ProseCV cv = cvService.getCvOrThrow(id);
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(cv.getType()))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + cv.getName() + "\"")
+                .body(cv.getData());
+    }
 
 }
