@@ -11,7 +11,6 @@ import java.util.Collection;
 @Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@DiscriminatorColumn(discriminatorType = DiscriminatorType.STRING)
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public abstract class ProseUser {
     @Id

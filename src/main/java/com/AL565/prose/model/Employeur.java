@@ -11,7 +11,6 @@ import lombok.*;
 @Entity
 @Builder
 @AllArgsConstructor
-@DiscriminatorValue(value = "Employeur")
 @NoArgsConstructor
 public class Employeur extends ProseUser {
     private String company;
