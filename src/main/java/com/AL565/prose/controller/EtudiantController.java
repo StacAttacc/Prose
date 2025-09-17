@@ -1,8 +1,7 @@
 package com.AL565.prose.controller;
 
-import com.AL565.prose.service.dto.EtudiantInscriptionDto;
+import com.AL565.prose.model.Discipline;
 import com.AL565.prose.service.EtudiantInscriptionService;
-import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,8 +17,15 @@ public class EtudiantController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<EtudiantInscriptionDto> inscrireEtudiant(@Valid @RequestBody EtudiantInscriptionDto dto) {
-        EtudiantInscriptionDto responseDto = etudiantInscriptionService.inscrireEtudiant(dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
+    public ResponseEntity<Void> inscrireEtudiant(
+            @RequestParam String firstName,
+            @RequestParam String lastName,
+            @RequestParam String email,
+            @RequestParam String password,
+            @RequestParam Discipline discipline) {
+        etudiantInscriptionService.inscrireEtudiant(firstName, lastName, email, password, discipline);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
+
+
 }
