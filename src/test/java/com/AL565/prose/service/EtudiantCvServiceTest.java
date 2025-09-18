@@ -74,14 +74,14 @@ class EtudiantCvServiceTest {
     @Test
     void getCvOrThrow_shouldReturnCv() {
         CV cv = CV.builder().name("cv.pdf").build();
-        when(repository.findById(1L)).thenReturn(Optional.of(cv));
+        when(repository.findByEtudiant_Id(1L)).thenReturn(Optional.of(cv));
         CV result = service.getCvOrThrow(1L);
         assertEquals("cv.pdf", result.getName());
     }
 
     @Test
     void getCvOrThrow_shouldThrowIfNotFound() {
-        when(repository.findById(1L)).thenReturn(Optional.empty());
+        when(repository.findByEtudiant_Id(1L)).thenReturn(Optional.empty());
         ResponseStatusException ex = assertThrows(ResponseStatusException.class,
                 () -> service.getCvOrThrow(1L));
         assertEquals("CV not found", ex.getReason());
