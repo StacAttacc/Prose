@@ -20,7 +20,7 @@ public class ProseCvService {
     private final ProseCvRepository repository;
 
     @Transactional
-    public void saveCv(MultipartFile cv, Long idEtudiant, String lastModified) {
+    public CV saveCv(MultipartFile cv, Long idEtudiant, String lastModified) {
         if (cv == null || cv.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Fichier manquant");
         }
@@ -48,12 +48,12 @@ public class ProseCvService {
         //TODO: add etudiant to this cv
                 .build();
 
-        repository.save(entity);
+        return repository.save(entity);
     }
 
     @Transactional(readOnly = true)
     public CV getCvOrThrow(Long id) {
-        return repository.findById(id)
+        return repository.findByEtudiant_Id(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "CV not found"));
     }
 }

@@ -43,9 +43,9 @@ public class EtudiantController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    @GetMapping("/cv/{id}")
-    public ResponseEntity<byte[]> telecharger(@PathVariable Long id) {
-        CV cv = cvService.getCvOrThrow(id);
+    @GetMapping("/telecharger-cv/{id}")
+    public ResponseEntity<byte[]> telecharger(@PathVariable Long etudiantId) {
+        CV cv = cvService.getCvOrThrow(etudiantId);
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(cv.getType()))
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + cv.getName() + "\"")
