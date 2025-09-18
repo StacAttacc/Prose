@@ -1,15 +1,30 @@
 package com.AL565.prose.dto;
 
-import com.AL565.prose.model.Etudiant;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.Instant;
 
+@Getter
+@Setter
 public class EtudiantCvDto {
+    // Getters and setters
     private String name;
     private String type;
     private long size;
     private String lastModified;
     private Instant lastModifiedDate;
     private byte[] data;
-    private String studentEmail;
+
+    public void setName(String name) { this.name = name; }
+
+    public void setType(String type) { this.type = type; }
+
+    public void setSize(long size) { this.size = size; }
+
+    public void setLastModified(String lastModified) { this.lastModified = lastModified; }
+
+    public void setLastModifiedDate(Instant lastModifiedDate) { this.lastModifiedDate = lastModifiedDate; }
+
+    public void setData(byte[] data) { this.data = data; }
 }

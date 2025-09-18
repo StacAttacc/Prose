@@ -1,5 +1,6 @@
 package com.AL565.prose.controller;
 
+import com.AL565.prose.dto.EtudiantCvDto;
 import com.AL565.prose.model.CV;
 import com.AL565.prose.repository.ProseCvRepository;
 import com.AL565.prose.service.EtudiantInscriptionService;
@@ -71,7 +72,15 @@ class CvControllerTest {
                 .type("application/pdf")
                 .data("%PDF-1.4\n%Mock PDF content\n".getBytes())
                 .build();
-        when(cvService.getCvOrThrow(1L)).thenReturn(cv);
+
+        when(cvService.getCvOrThrow(1L)).thenReturn(
+                new EtudiantCvDto() {{
+                    setName(cv.getName());
+                    setType(cv.getType());
+                    setSize(cv.getSize());
+                    setData(cv.getData());
+                }}
+        );
 
         mockMvc.perform(get("/etudiant/telecharger-cv/1")
                         .with(csrf()))

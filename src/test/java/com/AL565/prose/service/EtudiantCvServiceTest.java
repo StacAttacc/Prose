@@ -1,5 +1,6 @@
 package com.AL565.prose.service;
 
+import com.AL565.prose.dto.EtudiantCvDto;
 import com.AL565.prose.model.CV;
 import com.AL565.prose.repository.ProseCvRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -75,7 +76,7 @@ class EtudiantCvServiceTest {
     void getCvOrThrow_shouldReturnCv() {
         CV cv = CV.builder().name("cv.pdf").build();
         when(repository.findByEtudiant_Id(1L)).thenReturn(Optional.of(cv));
-        CV result = service.getCvOrThrow(1L);
+        EtudiantCvDto result = service.getCvOrThrow(1L);
         assertEquals("cv.pdf", result.getName());
     }
 

@@ -1,6 +1,6 @@
 package com.AL565.prose.controller;
 
-import com.AL565.prose.model.CV;
+import com.AL565.prose.dto.EtudiantCvDto;
 import com.AL565.prose.service.EtudiantInscriptionService;
 import com.AL565.prose.service.dto.EtudiantDto;
 import com.AL565.prose.service.exception.EmailAlreadyExistsException;
@@ -51,7 +51,7 @@ public class EtudiantController {
 
     @GetMapping("/telecharger-cv/{etudiantId}")
     public ResponseEntity<byte[]> telecharger(@PathVariable Long etudiantId) {
-        CV cv = cvService.getCvOrThrow(etudiantId);
+        EtudiantCvDto cv = cvService.getCvOrThrow(etudiantId);
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(cv.getType()))
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + cv.getName() + "\"")

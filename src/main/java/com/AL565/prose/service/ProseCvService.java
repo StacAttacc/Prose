@@ -1,5 +1,6 @@
 package com.AL565.prose.service;
 
+import com.AL565.prose.dto.EtudiantCvDto;
 import com.AL565.prose.model.CV;
 import com.AL565.prose.repository.ProseCvRepository;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +13,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -20,7 +22,7 @@ public class ProseCvService {
     private final ProseCvRepository repository;
 
     @Transactional
-    public CV saveCv(MultipartFile cv, Long idEtudiant, String lastModified) {
+    public EtudiantCvDto saveCv(MultipartFile cv, Long idEtudiant, String lastModified) {
         if (cv == null || cv.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Fichier manquant");
         }
@@ -48,12 +50,30 @@ public class ProseCvService {
         //TODO: add etudiant to this cv
                 .build();
 
-        return repository.save(entity);
+        repository.save(entity);
+
+        return new EtudiantCvDto() {{
+            setName(entity.getName());
+            setType(entity.getType());
+            setSize(entity.getSize());
+            setLastModified(entity.getLastModified());
+            setLastModifiedDate(entity.getLastModifiedDate());
+            setData(entity.getData());
+        }};
     }
 
     @Transactional(readOnly = true)
-    public CV getCvOrThrow(Long id) {
-        return repository.findByEtudiant_Id(id)
+    public EtudiantCvDto getCvOrThrow(Long id) {
+        CV entity = repository.findByEtudiant_Id(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "CV not found"));
+
+        return new EtudiantCvDto() {{
+            setName(entity.getName());
+            setType(entity.getType());
+            setSize(entity.getSize());
+            setLastModified(entity.getLastModified());
+            setLastModifiedDate(entity.getLastModifiedDate());
+            setData(entity.getData());
+        }};
     }
 }
