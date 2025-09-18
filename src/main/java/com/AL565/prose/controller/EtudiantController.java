@@ -1,8 +1,9 @@
 package com.AL565.prose.controller;
 
-import com.AL565.prose.model.Discipline;
 import com.AL565.prose.model.CV;
 import com.AL565.prose.service.EtudiantInscriptionService;
+import com.AL565.prose.service.dto.EtudiantDto;
+import com.AL565.prose.service.exception.EmailAlreadyExistsException;
 import com.AL565.prose.service.ProseCvService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -25,15 +26,20 @@ public class EtudiantController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<Void> inscrireEtudiant(
-            @RequestParam String firstName,
-            @RequestParam String lastName,
-            @RequestParam String email,
-            @RequestParam String password,
-            @RequestParam Discipline discipline) {
-        etudiantInscriptionService.inscrireEtudiant(firstName, lastName, email, password, discipline);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+    public ResponseEntity<String> inscrireEtudiant(@RequestBody EtudiantDto dto) {
+        try {
+            etudiantInscriptionService.inscrireEtudiant(dto);
+            return ResponseEntity.status(HttpStatus.CREATED).build();
+        } catch (EmailAlreadyExistsException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erreur lors de l'inscription");
+        }
     }
+
+
 
     @PostMapping("/televerser-cv")
     public ResponseEntity<Void> televerser(@RequestParam("cv") MultipartFile cv,

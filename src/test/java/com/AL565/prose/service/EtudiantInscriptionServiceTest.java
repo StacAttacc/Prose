@@ -2,6 +2,7 @@ package com.AL565.prose.service;
 
 import com.AL565.prose.model.Discipline;
 import com.AL565.prose.repository.ProseUserRepository;
+import com.AL565.prose.service.dto.EtudiantDto;
 import com.AL565.prose.service.exception.EmailAlreadyExistsException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,39 +23,38 @@ class EtudiantInscriptionServiceTest {
 
     @Test
     void testInscrireEtudiant_Success() {
-        // Exécuter
-        etudiantInscriptionService.inscrireEtudiant(
-                "Jean",
-                "Dupont",
-                "jean.dupont@test.com",
-                "motdepasse123",
-                Discipline.INFORMATIQUE
-        );
+        EtudiantDto dto = new EtudiantDto();
+        dto.setFirstName("Jean");
+        dto.setLastName("Dupont");
+        dto.setEmail("jean.dupont@test.com");
+        dto.setPassword("motdepasse123");
+        dto.setDiscipline(Discipline.INFORMATIQUE);
 
-        // Vérifier en base de données
+        etudiantInscriptionService.inscrireEtudiant(dto);
+
         assertTrue(proseUserRepository.findByCredentials_Username("jean.dupont@test.com").isPresent());
     }
 
     @Test
     void testInscrireEtudiant_EmailDejaExistant() {
-        // Préparer - créer un premier étudiant
-        etudiantInscriptionService.inscrireEtudiant(
-                "Jean",
-                "Dupont",
-                "test@example.com",
-                "motdepasse123",
-                Discipline.INFORMATIQUE
-        );
+        EtudiantDto dto1 = new EtudiantDto();
+        dto1.setFirstName("Jean");
+        dto1.setLastName("Dupont");
+        dto1.setEmail("test@example.com");
+        dto1.setPassword("motdepasse123");
+        dto1.setDiscipline(Discipline.INFORMATIQUE);
 
-        // Vérifier que l'exception est lancée pour le même email
+        etudiantInscriptionService.inscrireEtudiant(dto1);
+
+        EtudiantDto dto2 = new EtudiantDto();
+        dto2.setFirstName("Marie");
+        dto2.setLastName("Martin");
+        dto2.setEmail("test@example.com");
+        dto2.setPassword("autremotdepasse");
+        dto2.setDiscipline(Discipline.MARKETING);
+
         assertThrows(EmailAlreadyExistsException.class, () ->
-                etudiantInscriptionService.inscrireEtudiant(
-                        "Marie",
-                        "Martin",
-                        "test@example.com",
-                        "autremotdepasse",
-                        Discipline.MARKETING
-                )
+            etudiantInscriptionService.inscrireEtudiant(dto2)
         );
     }
 }

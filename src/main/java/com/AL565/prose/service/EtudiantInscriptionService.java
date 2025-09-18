@@ -1,9 +1,7 @@
 package com.AL565.prose.service;
 
-import com.AL565.prose.model.Discipline;
-import com.AL565.prose.model.auth.Credentials;
+import com.AL565.prose.service.dto.*;
 import com.AL565.prose.model.Etudiant;
-import com.AL565.prose.model.auth.Role;
 import com.AL565.prose.repository.EtudiantRepository;
 import com.AL565.prose.repository.ProseUserRepository;
 import com.AL565.prose.service.exception.EmailAlreadyExistsException;
@@ -27,18 +25,12 @@ public class EtudiantInscriptionService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public void inscrireEtudiant(String firstName, String lastName, String email, String password, Discipline discipline) {
-        if (proseUserRepository.findByCredentials_Username(email).isPresent()) {
+    public void inscrireEtudiant(EtudiantDto dto) {
+        if (proseUserRepository.findByCredentials_Username(dto.getEmail()).isPresent()) {
             throw new EmailAlreadyExistsException("Un compte avec cet email existe déjà");
         }
 
-        Credentials credentials = Credentials.builder()
-                .username(email)
-                .password(passwordEncoder.encode(password))
-                .role(Role.ETUDIANT)
-                .build();
-
-        Etudiant etudiant = new Etudiant(firstName, lastName, credentials, discipline);
+        Etudiant etudiant = dto.toModel(passwordEncoder);
 
         etudiantRepository.save(etudiant);
     }
