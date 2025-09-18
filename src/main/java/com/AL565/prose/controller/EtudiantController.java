@@ -43,7 +43,7 @@ public class EtudiantController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    @GetMapping("/telecharger-cv/{id}")
+    @GetMapping("/telecharger-cv/{etudiantId}")
     public ResponseEntity<byte[]> telecharger(@PathVariable Long etudiantId) {
         CV cv = cvService.getCvOrThrow(etudiantId);
         return ResponseEntity.ok()
