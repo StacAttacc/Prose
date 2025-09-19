@@ -1,4 +1,4 @@
-// src/context/AuthContext.jsx
+
 import { createContext, useContext, useState } from "react";
 import { login as apiLogin, register as apiRegister, logout as apiLogout } from "../services/AuthService";
 
