@@ -2,6 +2,8 @@ package com.AL565.prose.service;
 
 import com.AL565.prose.dto.EtudiantCvDto;
 import com.AL565.prose.model.CV;
+import com.AL565.prose.model.Etudiant;
+import com.AL565.prose.repository.EtudiantRepository;
 import com.AL565.prose.repository.ProseCvRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -13,13 +15,14 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class ProseCvService {
 
-    private final ProseCvRepository repository;
+    private final ProseCvRepository cvRepository;
+
+    private final EtudiantRepository etudiantRepository;
 
     @Transactional
     public EtudiantCvDto saveCv(MultipartFile cv, Long idEtudiant, String lastModified) {
@@ -38,7 +41,8 @@ public class ProseCvService {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Lecture du fichier échoué", e);
         }
 
-        //TODO: get user and confirm it's the one you want to save the CV for
+        Etudiant etudiant = etudiantRepository.findById(idEtudiant)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Étudiant non trouvé"));
 
         CV entity = CV.builder()
                 .name(cv.getOriginalFilename())
@@ -47,10 +51,10 @@ public class ProseCvService {
                 .lastModified(lastModified)
                 .lastModifiedDate(Instant.now())
                 .data(data)
-        //TODO: add etudiant to this cv
+                .etudiant(etudiant)
                 .build();
 
-        repository.save(entity);
+        cvRepository.save(entity);
 
         return new EtudiantCvDto() {{
             setName(entity.getName());
@@ -64,7 +68,7 @@ public class ProseCvService {
 
     @Transactional(readOnly = true)
     public EtudiantCvDto getCvOrThrow(Long id) {
-        CV entity = repository.findByEtudiant_Id(id)
+        CV entity = cvRepository.findByEtudiant_Id(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "CV not found"));
 
         return new EtudiantCvDto() {{
