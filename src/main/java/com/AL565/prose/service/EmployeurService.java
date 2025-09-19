@@ -1,6 +1,7 @@
 package com.AL565.prose.service;
 
 import com.AL565.prose.model.Employeur;
+import com.AL565.prose.repository.EmployeurRepository;
 import com.AL565.prose.repository.ProseUserRepository;
 import com.AL565.prose.service.DTO.EmployeurDTO;
 import com.AL565.prose.service.DTO.EmployeurEnregistrerDTO;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 public class EmployeurService {
     private ProseUserRepository proseUserRepository;
+    private EmployeurRepository employeurRepository;
     private PasswordEncoder passwordEncoder;
 
     public void enregistrer(EmployeurEnregistrerDTO employeurDTO) throws EmailEnUtilisationException {
@@ -21,7 +23,7 @@ public class EmployeurService {
         }
 
         employeurDTO.setPassword(passwordEncoder.encode(employeurDTO.getPassword()));
-        proseUserRepository.save(EmployeurEnregistrerDTO.toModel(employeurDTO));
+        employeurRepository.save(EmployeurEnregistrerDTO.toModel(employeurDTO));
     }
 
     public EmployeurDTO getEmployeur(String email) {
