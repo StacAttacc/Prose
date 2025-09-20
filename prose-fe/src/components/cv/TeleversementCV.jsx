@@ -1,6 +1,5 @@
 import React, {useRef, useState} from 'react';
 import {televerserCv} from "../../services/EtudiantService.js";
-import axios from "axios";
 
 const TeleversementCV = () => {
     const [selectedFile, setSelectedFile] = useState(null);
