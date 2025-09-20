@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+
 @RestController
 @RequestMapping("/etudiant")
 public class EtudiantController {
@@ -42,11 +44,12 @@ public class EtudiantController {
 
 
     @PostMapping("/televerser-cv")
-    public ResponseEntity<Void> televerser(@RequestParam("cv") MultipartFile cv,
-                                           @RequestParam("studentId") Long idEtudiant,
-                                           @RequestParam(value = "lastModified", required = false) String lastModified) {
+    public ResponseEntity<String> televerser(@RequestParam("cv") MultipartFile cv,
+                                             @RequestParam("studentId") Long idEtudiant,
+                                             @RequestParam(value = "lastModified", required = false) String lastModified)
+            throws IOException {
         cvService.saveCv(cv, idEtudiant, lastModified);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        return ResponseEntity.status(HttpStatus.CREATED).body("CV téléversé avec succès");
     }
 
     @GetMapping("/telecharger-cv/{etudiantId}")

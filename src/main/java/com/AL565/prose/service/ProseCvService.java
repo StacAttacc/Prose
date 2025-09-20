@@ -5,13 +5,12 @@ import com.AL565.prose.model.CV;
 import com.AL565.prose.model.Etudiant;
 import com.AL565.prose.repository.EtudiantRepository;
 import com.AL565.prose.repository.ProseCvRepository;
+import com.AL565.prose.service.exception.CvExceptions.*;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -25,24 +24,24 @@ public class ProseCvService {
     private final EtudiantRepository etudiantRepository;
 
     @Transactional
-    public EtudiantCvDto saveCv(MultipartFile cv, Long idEtudiant, String lastModified) {
+    public EtudiantCvDto saveCv(MultipartFile cv, Long idEtudiant, String lastModified) throws IOException {
         if (cv == null || cv.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Fichier manquant");
+            throw new NoFileException();
         }
 
         if (cv.getContentType() == null || !MediaType.APPLICATION_PDF_VALUE.equalsIgnoreCase(cv.getContentType())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Il faut un fichier PDF");
+            throw new IncorrectFileException();
         }
 
         byte[] data;
         try {
             data = cv.getBytes();
         } catch (IOException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Lecture du fichier échoué", e);
+            throw new FileReadingException();
         }
 
         Etudiant etudiant = etudiantRepository.findById(idEtudiant)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Étudiant non trouvé"));
+                .orElseThrow(StudentNotFoundException::new);
 
         CV entity = CV.builder()
                 .name(cv.getOriginalFilename())
@@ -69,7 +68,7 @@ public class ProseCvService {
     @Transactional(readOnly = true)
     public EtudiantCvDto getCvOrThrow(Long id) {
         CV entity = cvRepository.findByEtudiant_Id(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "CV not found"));
+                .orElseThrow(StudentNotFoundException::new);
 
         return new EtudiantCvDto() {{
             setName(entity.getName());
