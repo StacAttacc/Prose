@@ -3,7 +3,7 @@ package com.AL565.prose.controller;
 import com.AL565.prose.dto.EtudiantCvDto;
 import com.AL565.prose.service.EtudiantInscriptionService;
 import com.AL565.prose.service.dto.EtudiantDto;
-import com.AL565.prose.security.exception.CvExceptions;
+import com.AL565.prose.service.exception.CvExceptions;
 import com.AL565.prose.service.exception.EmailAlreadyExistsException;
 import com.AL565.prose.service.ProseCvService;
 import org.springframework.http.HttpHeaders;

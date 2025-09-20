@@ -5,7 +5,7 @@ import com.AL565.prose.model.CV;
 import com.AL565.prose.model.Etudiant;
 import com.AL565.prose.repository.EtudiantRepository;
 import com.AL565.prose.repository.ProseCvRepository;
-import com.AL565.prose.security.exception.CvExceptions.*;
+import com.AL565.prose.service.exception.CvExceptions.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;

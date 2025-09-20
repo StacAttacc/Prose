@@ -5,7 +5,7 @@ import com.AL565.prose.model.CV;
 import com.AL565.prose.model.Etudiant;
 import com.AL565.prose.repository.EtudiantRepository;
 import com.AL565.prose.repository.ProseCvRepository;
-import com.AL565.prose.security.exception.CvExceptions;
+import com.AL565.prose.service.exception.CvExceptions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
