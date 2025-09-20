@@ -1,26 +1,26 @@
-package com.AL565.prose;
+package com.AL565.prose.controller;
 
-import com.AL565.prose.service.exception.CvExceptions.*;
+import com.AL565.prose.security.exception.CvExceptions.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 @ControllerAdvice
-public class ProseExceptionHandler {
+public class ControllerAdvisor {
 
     @ExceptionHandler(NoFileException.class)
-    public ResponseEntity<String> handleNoFileException(NoFileException e) {
+    public ResponseEntity<String> handleNoFileException() {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Aucun fichier fourni");
     }
 
     @ExceptionHandler(IncorrectFileException.class)
-    public ResponseEntity<String> handleIncorrectFileException(IncorrectFileException e) {
+    public ResponseEntity<String> handleIncorrectFileException() {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Type de fichier incorrect. Seuls les PDF sont acceptés");
     }
 
     @ExceptionHandler(FileReadingException.class)
-    public ResponseEntity<String> handleFileReadingException(FileReadingException e) {
+    public ResponseEntity<String> handleFileReadingException() {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erreur lors de la lecture du fichier");
     }
 
@@ -31,7 +31,7 @@ public class ProseExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> handleGeneralException(Exception e) {
+    public ResponseEntity<String> handleGeneralException() {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erreur interne du serveur");
     }
 }

@@ -2,7 +2,7 @@ package com.AL565.prose.security;
 
 import com.AL565.prose.model.ProseUser;
 import com.AL565.prose.repository.ProseUserRepository;
-import com.AL565.prose.service.exception.UserNotFoundException;
+import com.AL565.prose.security.exception.UserNotFoundException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

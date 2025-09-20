@@ -1,4 +1,4 @@
-package com.AL565.prose.service.exception;
+package com.AL565.prose.security.exception;
 
 public class CvExceptions {
     public static class NoFileException extends Exception {
