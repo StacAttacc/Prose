@@ -3,6 +3,7 @@ package com.AL565.prose.controller;
 import com.AL565.prose.dto.EtudiantCvDto;
 import com.AL565.prose.service.EtudiantInscriptionService;
 import com.AL565.prose.service.dto.EtudiantDto;
+import com.AL565.prose.service.exception.CvExceptions;
 import com.AL565.prose.service.exception.EmailAlreadyExistsException;
 import com.AL565.prose.service.ProseCvService;
 import org.springframework.http.HttpHeaders;
@@ -47,13 +48,14 @@ public class EtudiantController {
     public ResponseEntity<String> televerser(@RequestParam("cv") MultipartFile cv,
                                              @RequestParam("studentId") Long idEtudiant,
                                              @RequestParam(value = "lastModified", required = false) String lastModified)
-            throws IOException {
+            throws Exception {
         cvService.saveCv(cv, idEtudiant, lastModified);
         return ResponseEntity.status(HttpStatus.CREATED).body("CV téléversé avec succès");
     }
 
     @GetMapping("/telecharger-cv/{etudiantId}")
-    public ResponseEntity<byte[]> telecharger(@PathVariable Long etudiantId) {
+    public ResponseEntity<byte[]> telecharger(@PathVariable Long etudiantId)
+            throws CvExceptions.StudentNotFoundException{
         EtudiantCvDto cv = cvService.getCvOrThrow(etudiantId);
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(cv.getType()))

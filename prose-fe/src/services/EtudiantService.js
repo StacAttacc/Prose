@@ -1,20 +1,25 @@
 import axios from "axios";
-import {login} from "./AuthService.js";
 
 const CV_UPLOAD_URL = "http://localhost:8080/etudiant/televerser-cv";
 
 export const televerserCv = async (cv) => {
     try{
-        //const user = JSON.parse(localStorage.getItem("user"));
         const dataToSend = new FormData();
         dataToSend.append('cv', cv);
-        dataToSend.append("studentId", "999");
-        console.log("here");
+        dataToSend.append("studentId", "999"); //placeholder until we get login
         const { data } = await axios.post(CV_UPLOAD_URL, dataToSend);
         return data;
     } catch (e) {
-        if (error.response) {
-            console.error('Error:', error.response.data); // This should show your custom message
+        if (e.response) {
+            console.error('Erreur:', e.response.data);
+            throw new Error(e.response.data);
+        } else if (e.request) {
+            console.error('Requête erronée:', e.request);
+            throw new Error('Aucune réponse du serveur. Veuillez réessayer plus tard.');
+        } else {
+            console.error('Erreur inconnue:', e.message);
+            throw new Error(e.message || 'Une erreur inconue est survenue');
         }
     }
 };
+

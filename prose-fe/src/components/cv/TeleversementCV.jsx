@@ -51,6 +51,7 @@ const TeleversementCV = () => {
     const televerserFichier = async () => {
         if (!selectedFile) return;
         setUploading(true);
+        setError('');
         try {
             const data = await televerserCv(selectedFile);
             console.log('Fichier téléversé:', data);
@@ -58,7 +59,7 @@ const TeleversementCV = () => {
             if (fileInputRef.current) fileInputRef.current.value = '';
             setError('');
         } catch (err) {
-            setError(err.response?.data?.message || 'Erreur lors du téléversement');
+            setError(err.message || 'Erreur lors du téléversement');
         } finally {
             setUploading(false);
         }

@@ -1,7 +1,7 @@
 package com.AL565.prose.service.exception;
 
 public class CvExceptions {
-    public static class NoFileException extends RuntimeException {
+    public static class NoFileException extends Exception {
         public NoFileException() {
             super("Aucun fichier fourni");
         }
@@ -11,7 +11,7 @@ public class CvExceptions {
         }
     }
 
-    public static class IncorrectFileException extends RuntimeException {
+    public static class IncorrectFileException extends Exception {
         public IncorrectFileException() {
             super("Type de fichier incorrect");
         }
@@ -21,7 +21,7 @@ public class CvExceptions {
         }
     }
 
-    public static class FileReadingException extends RuntimeException {
+    public static class FileReadingException extends Exception {
         public FileReadingException() {
             super("Erreur lors de la lecture du fichier");
         }
@@ -31,7 +31,7 @@ public class CvExceptions {
         }
     }
 
-    public static class StudentNotFoundException extends RuntimeException {
+    public static class StudentNotFoundException extends Exception {
         public StudentNotFoundException() {
             super("Étudiant non trouvé");
         }
