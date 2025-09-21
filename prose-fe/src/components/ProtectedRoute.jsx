@@ -1,16 +1,15 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider, useAuth } from "./context/AuthContext";
-import ProtectedRoute from "./routes/ProtectedRoute";
-import PageLogin from "./components/PageLogin";
-import Dashboard from "./components/Dashboard";
+import { AuthProvider, useAuth } from "../context/AuthContext";
+import ProtectedRoute from "./ProtectedRoute";
+import PageSignUp from "./PageSignUp.jsx";
 
 function AppRoutes() {
     const { isAuthed } = useAuth();
     return (
         <Routes>
-            <Route path="/login" element={<PageLogin />} />
+            <Route path="/login" element={<PageSignUp />} />
             <Route element={<ProtectedRoute isAuthed={isAuthed} />}>
                 <Route path="/" element={<Dashboard />} />
             </Route>

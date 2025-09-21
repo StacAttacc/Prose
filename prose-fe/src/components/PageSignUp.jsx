@@ -1,9 +1,16 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import {useState} from "react";
+import {useNavigate} from "react-router-dom";
+import {useAuth} from "../context/AuthContext";
+import {Eye, EyeOff} from "lucide-react";
 
-export default function PageLogin() {
-    const { register } = useAuth();
+const MIN_PASSWORD_LENGTH = 10;
+
+function isPasswordValid(pwd) {
+    return pwd.length >= MIN_PASSWORD_LENGTH;
+}
+
+export default function PageSignUp() {
+    const {register} = useAuth();
     const navigate = useNavigate();
 
     const [email, setEmail] = useState("");
@@ -17,11 +24,13 @@ export default function PageLogin() {
     const [errorMsg, setErrorMsg] = useState("");
 
     const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-    const pwdHint = pwd.length < 10 ? "Min 10 characters" : "mot de pass respecté!";
+    const pwdHint = isPasswordValid(pwd)
+        ? "mot de passe respecté!"
+        : `Min ${MIN_PASSWORD_LENGTH} characters`;
 
     const canSubmit =
         emailOk &&
-        pwd.length >= 10 &&
+        isPasswordValid(pwd) &&
         firstName.trim() &&
         lastName.trim() &&
         company.trim();
@@ -42,24 +51,32 @@ export default function PageLogin() {
                 password: pwd,
             };
             await register(payload);
-            //await login(email,pwd); au cas si le backend renvoie pas de token
+            // await login(email, pwd); // au cas où le backend ne renvoie pas de token
             setSuccess("Compte créé avec succès !");
             navigate("/");
         } catch (err) {
             console.error(err);
             setErrorMsg(
-                err?.response?.data?.message || "Échec de l’inscription. Veuillez réessayer."
+                err?.response?.data?.message ||
+                "Échec de l’inscription. Veuillez réessayer."
             );
         } finally {
             setLoading(false);
         }
     };
 
+    function getInputBorderClass(value, isValid) {
+        if (!value) return "border-rose-600"; // vide → rouge
+        if (isValid) return "border-emerald-500"; // ok → vert
+        return "border-slate-700 focus:border-teal-500"; // sinon → gris/teal
+    }
+
     return (
         <div className="min-h-screen grid lg:grid-cols-2">
             {/* LEFT HERO */}
             <div className="relative overflow-hidden bg-teal-700/95 text-white">
-                <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_30%_20%,#fff,transparent_35%)]" />
+                <div
+                    className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_30%_20%,#fff,transparent_35%)]"/>
                 <div className="relative h-full flex flex-col items-center justify-center p-8 lg:p-12 text-center">
                     <div className="text-6xl sm:text-8xl font-bold mb-6">Prose</div>
                     <div className="max-w-xl">
@@ -84,11 +101,14 @@ export default function PageLogin() {
             {/* RIGHT PANEL */}
             <div className="bg-[#1f1f23] text-slate-200 grid place-items-center p-6 md:p-10">
                 <div className="w-full max-w-md">
-                    <h2 className="text-3xl font-bold text-center mb-8">Créez votre compte</h2>
+                    <h2 className="text-3xl font-bold text-center mb-8">
+                        Créez votre compte
+                    </h2>
 
                     {/* Alertes */}
                     {success && (
-                        <div className="mb-4 rounded-lg border border-emerald-600 bg-emerald-900/30 p-3 text-emerald-300">
+                        <div
+                            className="mb-4 rounded-lg border border-emerald-600 bg-emerald-900/30 p-3 text-emerald-300">
                             {success}
                         </div>
                     )}
@@ -144,17 +164,16 @@ export default function PageLogin() {
 
                         {/* Email */}
                         <label className="block">
-                            <span className="block text-sm mb-1 text-slate-400">Adresse courriel</span>
+              <span className="block text-sm mb-1 text-slate-400">
+                Adresse courriel
+              </span>
                             <div className="relative">
                                 <input
                                     type="email"
-                                    className={`w-full rounded-xl bg-transparent border px-4 py-3 outline-none transition ${
-                                        !email
-                                            ? "border-rose-600"
-                                            : emailOk
-                                                ? "border-emerald-500"
-                                                : "border-slate-700 focus:border-teal-500"
-                                    }`}
+                                    className={`w-full rounded-xl bg-transparent border px-4 py-3 outline-none focus:border-teal-500 ${getInputBorderClass(
+                                        email,
+                                        emailOk
+                                    )}`}
                                     placeholder="Nom@exemple.com"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
@@ -164,14 +183,17 @@ export default function PageLogin() {
 
                         {/* Mot de passe */}
                         <label className="block">
-                            <span className="block text-sm mb-1 text-slate-400">Mot de passe</span>
+              <span className="block text-sm mb-1 text-slate-400">
+                Mot de passe
+              </span>
                             <div className="relative">
                                 <input
                                     type={showPwd ? "text" : "password"}
-                                    className={`w-full rounded-xl bg-transparent border px-4 py-3 pr-11 outline-none focus:border-teal-500 ${
-                                        !pwd ? "border-rose-600" : "border-slate-700"
-                                    }`}
-                                    placeholder="Min 10 caractères"
+                                    className={`w-full rounded-xl bg-transparent border px-4 py-3 pr-11 outline-none focus:border-teal-500 appearance-none ${getInputBorderClass(
+                                        pwd,
+                                        isPasswordValid(pwd)
+                                    )}`}
+                                    placeholder={`Min ${MIN_PASSWORD_LENGTH} caractères`}
                                     value={pwd}
                                     onChange={(e) => setPwd(e.target.value)}
                                 />
@@ -181,7 +203,7 @@ export default function PageLogin() {
                                     className="absolute right-3 inset-y-0 my-auto grid place-items-center text-slate-400 hover:text-slate-200"
                                     aria-label="Toggle password visibility"
                                 >
-                                    {showPwd ? "🙈" : "👁️"}
+                                    {showPwd ? <EyeOff className="h-5 w-5"/> : <Eye className="h-5 w-5"/>}
                                 </button>
                             </div>
                             <div className="mt-1 text-xs text-slate-500">{pwdHint}</div>
