@@ -1,9 +1,9 @@
-package com.AL565.prose.controleur;
+package com.AL565.prose.controller;
 
 
 import com.AL565.prose.service.DTO.EmployeurEnregistrerDTO;
 import com.AL565.prose.service.EmployeurService;
-import com.AL565.prose.service.exceptions.EmailEnUtilisationException;
+import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +24,7 @@ public class EmployeurControler {
         try {
             employeurService.enregistrer(employeurEnregistrerDTO);
             return new ResponseEntity<>("Created", HttpStatus.CREATED);
-        } catch (EmailEnUtilisationException e) {
+        } catch (EmailAlreadyExistsException e) {
             return new ResponseEntity<>("Le email est déja en cours d'utilisation.", HttpStatus.BAD_REQUEST);
         }
     }

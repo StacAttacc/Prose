@@ -2,7 +2,7 @@ package com.AL565.prose;
 
 import com.AL565.prose.service.DTO.EmployeurEnregistrerDTO;
 import com.AL565.prose.service.EmployeurService;
-import com.AL565.prose.service.exceptions.EmailEnUtilisationException;
+import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import lombok.AllArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -32,7 +32,7 @@ public class ProseApplication {
 
             try {
                 employeurService.enregistrer(employeurMark);
-            } catch (EmailEnUtilisationException e) {
+            } catch (EmailAlreadyExistsException e) {
                 System.err.println(e.getMessage());
             }
 

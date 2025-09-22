@@ -1,5 +1,6 @@
 package com.AL565.prose.controleur;
 
+import com.AL565.prose.controller.EmployeurControler;
 import com.AL565.prose.repository.EmployeurRepository;
 import com.AL565.prose.repository.ProseUserRepository;
 import com.AL565.prose.service.DTO.EmployeurDTO;
@@ -17,7 +18,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
@@ -41,8 +41,6 @@ class EmployeurControlerTest {
 
     @Test
     void enregistrer() throws Exception {
-        EmployeurDTO expected = new EmployeurDTO(1L, "Mark", "Carney", "Gouvernement du Canada", "mc@gov.ca");
-
         EmployeurEnregistrerDTO mark = new EmployeurEnregistrerDTO("Mark", "Carney", "Gouvernement du Canada", "mc@gov.ca", "gouvernement");
 
         String content = new ObjectMapper().writeValueAsString(mark);

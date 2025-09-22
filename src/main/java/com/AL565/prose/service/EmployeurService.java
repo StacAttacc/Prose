@@ -5,7 +5,7 @@ import com.AL565.prose.repository.EmployeurRepository;
 import com.AL565.prose.repository.ProseUserRepository;
 import com.AL565.prose.service.DTO.EmployeurDTO;
 import com.AL565.prose.service.DTO.EmployeurEnregistrerDTO;
-import com.AL565.prose.service.exceptions.EmailEnUtilisationException;
+import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -17,9 +17,9 @@ public class EmployeurService {
     private EmployeurRepository employeurRepository;
     private PasswordEncoder passwordEncoder;
 
-    public void enregistrer(EmployeurEnregistrerDTO employeurDTO) throws EmailEnUtilisationException {
+    public void enregistrer(EmployeurEnregistrerDTO employeurDTO) throws EmailAlreadyExistsException {
         if (proseUserRepository.findByCredentials_Username(employeurDTO.getEmail()).isPresent()) {
-            throw new EmailEnUtilisationException("Le email de l'employeur est déja en utilisation.");
+            throw new EmailAlreadyExistsException("Le email de l'employeur est déja en utilisation.");
         }
 
         employeurDTO.setPassword(passwordEncoder.encode(employeurDTO.getPassword()));

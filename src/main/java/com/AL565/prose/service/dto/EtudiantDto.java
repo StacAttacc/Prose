@@ -1,4 +1,4 @@
-package com.AL565.prose.service.dto;
+package com.AL565.prose.service.DTO;
 
 import com.AL565.prose.model.Discipline;
 import com.AL565.prose.model.Etudiant;

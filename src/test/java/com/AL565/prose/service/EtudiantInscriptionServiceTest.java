@@ -2,8 +2,8 @@ package com.AL565.prose.service;
 
 import com.AL565.prose.model.Discipline;
 import com.AL565.prose.repository.ProseUserRepository;
-import com.AL565.prose.service.dto.EtudiantDto;
-import com.AL565.prose.service.exception.EmailAlreadyExistsException;
+import com.AL565.prose.service.DTO.EtudiantDto;
+import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

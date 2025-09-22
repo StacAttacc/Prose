@@ -1,8 +1,8 @@
 package com.AL565.prose.controller;
 
 import com.AL565.prose.service.EtudiantInscriptionService;
-import com.AL565.prose.service.dto.EtudiantDto;
-import com.AL565.prose.service.exception.EmailAlreadyExistsException;
+import com.AL565.prose.service.DTO.EtudiantDto;
+import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

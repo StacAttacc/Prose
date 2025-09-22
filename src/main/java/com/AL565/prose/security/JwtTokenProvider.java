@@ -1,6 +1,6 @@
 package com.AL565.prose.security;
 
-import com.AL565.prose.service.exception.InvalidJwtTokenException;
+import com.AL565.prose.security.exceptions.InvalidJwtTokenException;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;

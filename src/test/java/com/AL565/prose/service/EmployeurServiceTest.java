@@ -5,7 +5,7 @@ import com.AL565.prose.repository.EmployeurRepository;
 import com.AL565.prose.repository.ProseUserRepository;
 import com.AL565.prose.service.DTO.EmployeurDTO;
 import com.AL565.prose.service.DTO.EmployeurEnregistrerDTO;
-import com.AL565.prose.service.exceptions.EmailEnUtilisationException;
+import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -35,7 +35,7 @@ class EmployeurServiceTest {
     private EmployeurService employeurService;
 
     @Test
-    void enregistrer() throws EmailEnUtilisationException {
+    void enregistrer() throws EmailAlreadyExistsException {
         EmployeurEnregistrerDTO justin = new EmployeurEnregistrerDTO("Justin", "Trudeau", "Gouvernement du Canada", "jt@gov.ca", "gouvernement");
 
         employeurService.enregistrer(justin);

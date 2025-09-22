@@ -1,10 +1,10 @@
 package com.AL565.prose.service;
 
-import com.AL565.prose.service.dto.*;
 import com.AL565.prose.model.Etudiant;
 import com.AL565.prose.repository.EtudiantRepository;
 import com.AL565.prose.repository.ProseUserRepository;
-import com.AL565.prose.service.exception.EmailAlreadyExistsException;
+import com.AL565.prose.service.DTO.EtudiantDto;
+import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
