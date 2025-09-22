@@ -2,7 +2,7 @@ package com.AL565.prose.service;
 
 import com.AL565.prose.model.Discipline;
 import com.AL565.prose.repository.ProseUserRepository;
-import com.AL565.prose.service.DTO.EtudiantDto;
+import com.AL565.prose.service.dto.EtudiantDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +23,7 @@ class EtudiantInscriptionServiceTest {
 
     @Test
     void testInscrireEtudiant_Success() {
-        EtudiantDto dto = new EtudiantDto();
+        EtudiantDTO dto = new EtudiantDTO();
         dto.setFirstName("Jean");
         dto.setLastName("Dupont");
         dto.setEmail("jean.dupont@test.com");
@@ -37,7 +37,7 @@ class EtudiantInscriptionServiceTest {
 
     @Test
     void testInscrireEtudiant_EmailDejaExistant() {
-        EtudiantDto dto1 = new EtudiantDto();
+        EtudiantDTO dto1 = new EtudiantDTO();
         dto1.setFirstName("Jean");
         dto1.setLastName("Dupont");
         dto1.setEmail("test@example.com");
@@ -46,7 +46,7 @@ class EtudiantInscriptionServiceTest {
 
         etudiantInscriptionService.inscrireEtudiant(dto1);
 
-        EtudiantDto dto2 = new EtudiantDto();
+        EtudiantDTO dto2 = new EtudiantDTO();
         dto2.setFirstName("Marie");
         dto2.setLastName("Martin");
         dto2.setEmail("test@example.com");

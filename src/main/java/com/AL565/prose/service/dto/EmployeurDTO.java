@@ -1,4 +1,4 @@
-package com.AL565.prose.service.DTO;
+package com.AL565.prose.service.dto;
 
 import com.AL565.prose.model.Employeur;
 import lombok.AllArgsConstructor;

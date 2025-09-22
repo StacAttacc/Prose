@@ -3,7 +3,7 @@ package com.AL565.prose.service;
 import com.AL565.prose.model.Etudiant;
 import com.AL565.prose.repository.EtudiantRepository;
 import com.AL565.prose.repository.ProseUserRepository;
-import com.AL565.prose.service.DTO.EtudiantDto;
+import com.AL565.prose.service.dto.EtudiantDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -25,7 +25,7 @@ public class EtudiantInscriptionService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public void inscrireEtudiant(EtudiantDto dto) {
+    public void inscrireEtudiant(EtudiantDTO dto) {
         if (proseUserRepository.findByCredentials_Username(dto.getEmail()).isPresent()) {
             throw new EmailAlreadyExistsException("Un compte avec cet email existe déjà");
         }

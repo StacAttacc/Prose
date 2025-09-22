@@ -1,4 +1,4 @@
-package com.AL565.prose.service.DTO;
+package com.AL565.prose.service.dto;
 
 import com.AL565.prose.model.Discipline;
 import com.AL565.prose.model.Etudiant;
@@ -8,7 +8,7 @@ import lombok.Data;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Data
-public class EtudiantDto {
+public class EtudiantDTO {
     private String firstName;
     private String lastName;
     private String email;

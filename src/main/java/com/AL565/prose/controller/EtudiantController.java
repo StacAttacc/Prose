@@ -1,7 +1,7 @@
 package com.AL565.prose.controller;
 
 import com.AL565.prose.service.EtudiantInscriptionService;
-import com.AL565.prose.service.DTO.EtudiantDto;
+import com.AL565.prose.service.dto.EtudiantDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +18,7 @@ public class EtudiantController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<String> inscrireEtudiant(@RequestBody EtudiantDto dto) {
+    public ResponseEntity<String> inscrireEtudiant(@RequestBody EtudiantDTO dto) {
         try {
             etudiantInscriptionService.inscrireEtudiant(dto);
             return ResponseEntity.status(HttpStatus.CREATED).build();

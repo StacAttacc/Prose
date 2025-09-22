@@ -1,7 +1,7 @@
 package com.AL565.prose.controller;
 
 
-import com.AL565.prose.service.DTO.EmployeurEnregistrerDTO;
+import com.AL565.prose.service.dto.EmployeurEnregistrerDTO;
 import com.AL565.prose.service.EmployeurService;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import lombok.AllArgsConstructor;
