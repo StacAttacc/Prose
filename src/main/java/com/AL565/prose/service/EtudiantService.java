@@ -11,15 +11,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
-public class EtudiantInscriptionService {
+public class EtudiantService {
 
     private final EtudiantRepository etudiantRepository;
     private final ProseUserRepository proseUserRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public EtudiantInscriptionService(EtudiantRepository etudiantRepository,
-                                      ProseUserRepository proseUserRepository,
-                                      PasswordEncoder passwordEncoder) {
+    public EtudiantService(EtudiantRepository etudiantRepository,
+                           ProseUserRepository proseUserRepository,
+                           PasswordEncoder passwordEncoder) {
         this.etudiantRepository = etudiantRepository;
         this.proseUserRepository = proseUserRepository;
         this.passwordEncoder = passwordEncoder;
