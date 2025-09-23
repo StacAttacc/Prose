@@ -1,12 +1,15 @@
-package com.AL565.prose.controller;
+package com.AL565.prose.controleur;
 
-import com.AL565.prose.dto.EtudiantCvDto;
+import com.AL565.prose.controller.EtudiantController;
+import com.AL565.prose.service.EmployeurService;
+import com.AL565.prose.service.EtudiantService;
+import com.AL565.prose.service.dto.EtudiantCvDto;
 import com.AL565.prose.model.CV;
 import com.AL565.prose.repository.ProseCvRepository;
-import com.AL565.prose.service.EtudiantInscriptionService;
 import com.AL565.prose.service.ProseCvService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -21,7 +24,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@ActiveProfiles("dev")
+@ActiveProfiles("test")
+@AutoConfigureMockMvc
 @WebMvcTest(controllers = EtudiantController.class)
 class CvControllerTest {
 
@@ -35,7 +39,10 @@ class CvControllerTest {
     private ProseCvService cvService;
 
     @MockitoBean
-    private EtudiantInscriptionService etudiantInscriptionService;
+    private EtudiantService etudiantInscriptionService;
+
+    @MockitoBean
+    private EmployeurService employeurService;
 
     @Test
     @WithMockUser(username = "testuser", roles = {"ETUDIANT"})

@@ -1,11 +1,11 @@
 package com.AL565.prose.service;
 
-import com.AL565.prose.dto.EtudiantCvDto;
+import com.AL565.prose.service.dto.EtudiantCvDto;
 import com.AL565.prose.model.CV;
 import com.AL565.prose.model.Etudiant;
 import com.AL565.prose.repository.EtudiantRepository;
 import com.AL565.prose.repository.ProseCvRepository;
-import com.AL565.prose.service.exception.CvExceptions;
+import com.AL565.prose.security.exceptions.CvExceptions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;

@@ -29,13 +29,13 @@ import org.springframework.web.filter.CorsFilter;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.springframework.boot.autoconfigure.security.servlet.PathRequest.toH2Console;
 import static org.springframework.http.HttpMethod.*;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity // Enables @PreAuthorize, @PostAuthorize, etc.
 @RequiredArgsConstructor
+//@Profile("!test")
 public class SecurityConfiguration {
 
     private final JwtTokenProvider jwtTokenProvider;
@@ -58,7 +58,7 @@ public class SecurityConfiguration {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(OPTIONS, "/**").permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(POST, USER_LOGIN_PATH).permitAll()
                         .requestMatchers(POST, ETUDIANT_REGISTER_PATH).permitAll()
                         .requestMatchers(POST, EMPLOYEUR_REGISTER_PATH).permitAll()

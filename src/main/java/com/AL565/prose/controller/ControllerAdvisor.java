@@ -1,6 +1,6 @@
 package com.AL565.prose.controller;
 
-import com.AL565.prose.service.exception.CvExceptions.*;
+import com.AL565.prose.security.exceptions.CvExceptions.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;

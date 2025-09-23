@@ -8,7 +8,7 @@ import lombok.Data;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Data
-public class EtudiantDto {
+public class EtudiantDTO {
     private String firstName;
     private String lastName;
     private String email;

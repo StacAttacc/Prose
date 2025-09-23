@@ -10,7 +10,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         {/* <Route path="/" element={<InscriptionEtudiant />} /> */}
-        <Route path="/" element={<PageLogin />} />
+        <Route path="/" element={<PageSignUp />} />
         {/* ajouter d'autres routes ici */}
         <Route path="/etudiant" element={<TeleversementCV />} />
       </Routes>

@@ -4,7 +4,7 @@ const API_BASE = "http://localhost:8080";
 
 export const http = axios.create({
     baseURL: API_BASE,
-    withCredentials: true, // pour envoyer le cookie httpOnly (refresh)
+    withCredentials: true,
 });
 
 let accessToken = null;
@@ -27,7 +27,6 @@ http.interceptors.response.use(
     async (error) => {
         const original = error.config;
 
-        // Pas de response (réseau down / CORS), on jette directement
         if (!error.response) return Promise.reject(error);
 
         if (error.response.status === 401 && !original._retry) {
@@ -46,11 +45,11 @@ http.interceptors.response.use(
 
             isRefreshing = true;
             try {
-                // le cookie refresh httpOnly circule via withCredentials
+
                 const { data } = await http.post("/auth/refresh");
                 setAccessToken(data.accessToken);
 
-                // Réveille la file
+
                 pending.forEach((p) => p.resolve(data.accessToken));
                 pending = [];
 
