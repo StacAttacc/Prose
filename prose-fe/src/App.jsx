@@ -1,19 +1,13 @@
-import { useState } from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-//import InscriptionEtudiant from './components/inscriptionEtudiant'
-import PageLogin from './components/PageLogin'
+import PageSignUp from "./components/PageSignUp.jsx";
+import "./style/index.css";
+import {Route, Routes} from "react-router-dom";
 
 function App() {
-
-  return (
-    <BrowserRouter>
-      <Routes>
-        {/* <Route path="/" element={<InscriptionEtudiant />} /> */}
-        <Route path="/" element={<PageLogin />} />
-        {/* ajouter d'autres routes ici */}
-      </Routes>
-    </BrowserRouter>
-  )
+    return (
+        <Routes>
+            <Route path="/" element={<PageSignUp/>}/>
+        </Routes>
+    );
 }
 
-export default App
+export default App;

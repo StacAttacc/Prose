@@ -1,4 +1,4 @@
-import { http, setAccessToken } from "./http.js";
+import { http, setAccessToken } from "./http";
 
 export async function login(email, password) {
     const { data } = await http.post("/employeur/login", { email, password });
@@ -6,14 +6,8 @@ export async function login(email, password) {
     return data.user;
 }
 
-export async function registerEmployeur(payload) {
+export async function register(payload) {
     const { data } = await http.post("/employeur/register", payload);
-    setAccessToken(data.accessToken);
-    return data.user;
-}
-
-export async function registerEtudiant(payload) {
-    const { data } = await http.post("/etudiant/register", payload);
     setAccessToken(data.accessToken);
     return data.user;
 }

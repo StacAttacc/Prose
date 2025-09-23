@@ -5,6 +5,7 @@ import com.AL565.prose.repository.ProseUserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
@@ -35,6 +36,7 @@ import static org.springframework.http.HttpMethod.*;
 @EnableWebSecurity
 @EnableMethodSecurity // Enables @PreAuthorize, @PostAuthorize, etc.
 @RequiredArgsConstructor
+@Profile("!test")
 public class SecurityConfiguration {
 
     private final JwtTokenProvider jwtTokenProvider;
@@ -57,7 +59,7 @@ public class SecurityConfiguration {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(OPTIONS, "/**").permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(POST, USER_LOGIN_PATH).permitAll()
                         .requestMatchers(POST, ETUDIANT_REGISTER_PATH).permitAll()
                         .requestMatchers(POST, EMPLOYEUR_REGISTER_PATH).permitAll()
@@ -89,10 +91,7 @@ public class SecurityConfiguration {
         // 1. Specify allowed origins (VERY IMPORTANT!)
         //    Must match your React app's URL exactly (e.g., http://localhost:3000)
         //    Do NOT use "*" if you need credentials (like sending Authorization headers)
-        configuration.setAllowedOrigins(List.of(
-            "http://localhost:3000",
-            "http://localhost:5173"
-        )); // Adjust if your frontend runs elsewhere
+        configuration.setAllowedOrigins(List.of("http://localhost:5173")); // Adjust if your frontend runs elsewhere
 
         // 2. Specify allowed HTTP methods
         configuration.setAllowedMethods(Arrays.asList(

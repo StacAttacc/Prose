@@ -2,8 +2,8 @@ package com.AL565.prose.security;
 
 import com.AL565.prose.model.ProseUser;
 import com.AL565.prose.repository.ProseUserRepository;
-import com.AL565.prose.security.exception.AuthenticationException;
-import com.AL565.prose.security.exception.UserNotFoundException;
+import com.AL565.prose.security.exceptions.AuthenticationException;
+import com.AL565.prose.security.exceptions.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationProvider;
