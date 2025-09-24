@@ -39,7 +39,7 @@ export default function PageLogin() {
                 setErrorMsg("Connexion Internet instable. Veuillez vérifier votre connexion.");
             } else {
                 setErrorMsg(
-                    err?.response?.data?.message ||
+                    err?.response?.data?.error ||
                     "Échec de la connexion. Veuillez réessayer."
                 );
             }
