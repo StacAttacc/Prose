@@ -23,7 +23,7 @@ public class ProseUserDTO {
         dto.setEmail(u.getEmail());
         dto.setFirstName(u.getFirstName());
         dto.setLastName(u.getLastName());
-        dto.setRole(u.getAuthorities().iterator().next().getAuthority());
+        dto.setRole(u.getCredentials().getRole().name());
         return dto;
     }
 
