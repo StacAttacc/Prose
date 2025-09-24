@@ -8,7 +8,6 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Profile;
 
 @AllArgsConstructor
 @SpringBootApplication
@@ -16,12 +15,11 @@ public class ProseApplication {
 
     private final EmployeurService employeurService;
 
-	public static void main(String[] args) {
-		SpringApplication.run(ProseApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(ProseApplication.class, args);
+    }
 
     @Bean
-    @Profile("!test")
     public CommandLineRunner run() {
         return args -> {
             EmployeurEnregistrerDTO employeurMark = new EmployeurEnregistrerDTO(
