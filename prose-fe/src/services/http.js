@@ -29,7 +29,7 @@ http.interceptors.response.use(
 
         if (!error.response) return Promise.reject(error);
 
-        if (error.response.status === 401 && !original._retry) {
+        if (error.response.status === 401 && !original._retry && !original.url.includes('/login')) {
             original._retry = true;
 
             if (isRefreshing) {
