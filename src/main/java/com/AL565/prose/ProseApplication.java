@@ -15,9 +15,9 @@ public class ProseApplication {
 
     private final EmployeurService employeurService;
 
-	public static void main(String[] args) {
-		SpringApplication.run(ProseApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(ProseApplication.class, args);
+    }
 
     @Bean
     public CommandLineRunner run() {

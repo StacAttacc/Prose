@@ -1,7 +1,7 @@
 import { http, setAccessToken } from "./http";
 
 export async function login(email, password) {
-    const { data } = await http.post("/employeur/login", { email, password });
+    const { data } = await http.post("/user/login", { email, password });
     setAccessToken(data.accessToken);
     return data.user;
 }
