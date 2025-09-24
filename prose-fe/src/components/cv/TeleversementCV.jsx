@@ -5,6 +5,7 @@ import {useAuth} from "../../context/AuthContext.jsx";
 const TeleversementCV = () => {
     const [selectedFile, setSelectedFile] = useState(null);
     const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
     const [uploading, setUploading] = useState(false);
     const fileInputRef = useRef(null);
     const { user } = useAuth();
@@ -19,6 +20,7 @@ const TeleversementCV = () => {
     const selectionerFichier = (event) => {
         const file = event.target.files?.[0];
         setError('');
+        setSuccess('');
 
         if (!file) {
             setSelectedFile(null);
@@ -53,12 +55,14 @@ const TeleversementCV = () => {
         if (!selectedFile) return;
         setUploading(true);
         setError('');
+        setSuccess('')
         try {
             const data = await televerserCv(selectedFile, user);
             console.log('Fichier téléversé:', data);
             setSelectedFile(null);
             if (fileInputRef.current) fileInputRef.current.value = '';
             setError('');
+            setSuccess('Cv téléversé avec succès !');
         } catch (err) {
             setError(err.message || 'Erreur lors du téléversement');
         } finally {
@@ -69,6 +73,7 @@ const TeleversementCV = () => {
     const enleverFichier = () => {
         setSelectedFile(null);
         setError('');
+        setSuccess('');
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
         }
@@ -109,6 +114,11 @@ const TeleversementCV = () => {
             {error && (
                 <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
                     {error}
+                </div>
+            )}
+            {success && (
+                <div className="mb-4 p-3 bg-emerald-100 border border-emerald-400 text-emerald-700 rounded">
+                    {success}
                 </div>
             )}
 
