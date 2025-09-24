@@ -11,11 +11,10 @@ function AppRoutes() {
     const { isAuthed } = useAuth();
     return (
         <Routes>
-            <Route path="/" element={<PageLogin/>}/>
-            <Route path="/signup" element={<PageSignUp/>}/>
+            <Route path="/login" element={<PageLogin />} />
             <Route element={<ProtectedRoute isAuthed={isAuthed} />}>
                 <Route path="/" element={<Dashboard />} />
-                <Route path={"/etudiant/televerser-cv"} element={<TeleversementCV />} />
+                <Route path="/etudiant/televerser-cv" element={<TeleversementCV />} />
             </Route>
         </Routes>
     );
