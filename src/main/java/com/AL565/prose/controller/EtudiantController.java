@@ -44,17 +44,17 @@ public class EtudiantController {
 
     @PostMapping("/televerser-cv")
     public ResponseEntity<String> televerser(@RequestParam("cv") MultipartFile cv,
-                                             @RequestParam("studentId") Long idEtudiant,
+                                             @RequestParam("email") String email,
                                              @RequestParam(value = "lastModified", required = false) String lastModified)
             throws Exception {
-        cvService.saveCv(cv, idEtudiant, lastModified);
+        cvService.saveCv(cv, email, lastModified);
         return ResponseEntity.status(HttpStatus.CREATED).body("CV téléversé avec succès");
     }
 
     @GetMapping("/telecharger-cv/{etudiantId}")
     public ResponseEntity<byte[]> telecharger(@PathVariable Long etudiantId)
             throws CvExceptions.StudentNotFoundException{
-        EtudiantCvDto cv = cvService.getCvOrThrow(etudiantId);
+        EtudiantCvDto cv = cvService.getCvOrThrow("username");
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(cv.getType()))
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + cv.getName() + "\"")

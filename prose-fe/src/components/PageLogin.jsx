@@ -29,6 +29,7 @@ export default function PageLogin() {
             await login(email.trim(), pwd);
             // Afficher un message de succès
             setSuccess("Connexion réussie !");
+            navigate("/etudiant/televerser-cv")
         } catch (err) {
             console.error(err);
             if (err?.response?.status === 401) {
@@ -165,7 +166,7 @@ export default function PageLogin() {
                         {/* Lien d'inscription */}
                         <div className="text-center mt-4">
                             <span className="text-slate-400">Pas encore de compte ? </span>
-                            <a href="/signup" className="text-teal-500 hover:underline">S'inscrire</a>
+                            <a href="/" className="text-teal-500 hover:underline">S'inscrire</a>
                         </div>
                     </form>
                 </div>

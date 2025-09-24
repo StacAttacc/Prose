@@ -8,5 +8,5 @@ import java.util.Optional;
 
 @Repository
 public interface ProseCvRepository extends JpaRepository<CV, Long> {
-    Optional<CV> findByEtudiant_Id(Long etudiantId);
+    Optional<CV> findByEtudiant_Credentials_Username(String username);
 }

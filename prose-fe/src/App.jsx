@@ -7,7 +7,6 @@ import TeleversementCV from "./components/cv/TeleversementCV.jsx";
 function App() {
     return (
         <Routes>
-            <Route path="/signup" element={<PageSignUp />} />
             <Route path="/login" element={<PageLogin />} />
             <Route path="/" element={<PageSignUp />} />
             <Route path="/etudiant/televerser-cv" element={<TeleversementCV />} />

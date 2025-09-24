@@ -1,11 +1,13 @@
 import React, {useRef, useState} from 'react';
 import {televerserCv} from "../../services/EtudiantService.js";
+import {useAuth} from "../../context/AuthContext.jsx";
 
 const TeleversementCV = () => {
     const [selectedFile, setSelectedFile] = useState(null);
     const [error, setError] = useState('');
     const [uploading, setUploading] = useState(false);
     const fileInputRef = useRef(null);
+    const { user } = useAuth();
 
     const validerFichier = (file) => {
         if (!file) return false;
@@ -52,7 +54,7 @@ const TeleversementCV = () => {
         setUploading(true);
         setError('');
         try {
-            const data = await televerserCv(selectedFile);
+            const data = await televerserCv(selectedFile, user);
             console.log('Fichier téléversé:', data);
             setSelectedFile(null);
             if (fileInputRef.current) fileInputRef.current.value = '';

@@ -49,7 +49,7 @@ class CvControllerTest {
     void televerserCv_shouldReturnCreatedForAuthenticatedUser() throws Exception {
         mockMvc.perform(multipart("/etudiant/televerser-cv")
                         .file("cv", "PDF content".getBytes())
-                        .param("studentId", "1")
+                        .param("email", "email@email.email")
                         .param("lastModified", "2024-10-01T12:00:00Z")
                         .contentType(MediaType.MULTIPART_FORM_DATA)
                         .with(csrf()))
@@ -68,7 +68,7 @@ class CvControllerTest {
 
         mockMvc.perform(multipart("/etudiant/televerser-cv")
                         .file(pdfFile)
-                        .param("studentId", "1")
+                        .param("email", "email@email.email")
                         .param("lastModified", "2024-10-01T12:00:00Z")
                         .contentType(MediaType.MULTIPART_FORM_DATA)
                         .with(csrf()))
@@ -80,7 +80,7 @@ class CvControllerTest {
                 .data("%PDF-1.4\n%Mock PDF content\n".getBytes())
                 .build();
 
-        when(cvService.getCvOrThrow(1L)).thenReturn(
+        when(cvService.getCvOrThrow("email@email.email")).thenReturn(
                 new EtudiantCvDto() {{
                     setName(cv.getName());
                     setType(cv.getType());

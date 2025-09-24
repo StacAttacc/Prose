@@ -24,7 +24,7 @@ public class ProseCvService {
     private final EtudiantRepository etudiantRepository;
 
     @Transactional
-    public EtudiantCvDto saveCv(MultipartFile cv, Long idEtudiant, String lastModified) throws Exception {
+    public EtudiantCvDto saveCv(MultipartFile cv, String email, String lastModified) throws Exception {
         if (cv == null || cv.isEmpty()) {
             throw new NoFileException();
         }
@@ -40,7 +40,7 @@ public class ProseCvService {
             throw new FileReadingException();
         }
 
-        Etudiant etudiant = etudiantRepository.findById(idEtudiant)
+        Etudiant etudiant = etudiantRepository.findEtudiantByCredentials_Username(email)
                 .orElseThrow(StudentNotFoundException::new);
 
         CV entity = CV.builder()
@@ -66,8 +66,8 @@ public class ProseCvService {
     }
 
     @Transactional(readOnly = true)
-    public EtudiantCvDto getCvOrThrow(Long id) throws StudentNotFoundException {
-        CV entity = cvRepository.findByEtudiant_Id(id)
+    public EtudiantCvDto getCvOrThrow(String username) throws StudentNotFoundException {
+        CV entity = cvRepository.findByEtudiant_Credentials_Username(username)
                 .orElseThrow(StudentNotFoundException::new);
 
         return new EtudiantCvDto() {{

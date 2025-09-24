@@ -2,11 +2,14 @@ import axios from "axios";
 
 const CV_UPLOAD_URL = "http://localhost:8080/etudiant/televerser-cv";
 
-export const televerserCv = async (cv) => {
+export const televerserCv = async (cv, user) => {
     try{
+        console.log(user);
+
         const dataToSend = new FormData();
         dataToSend.append('cv', cv);
-        dataToSend.append("studentId", "999"); //placeholder until we get login
+        dataToSend.append("email", user.email);
+
         const { data } = await axios.post(CV_UPLOAD_URL, dataToSend);
         return data;
     } catch (e) {
