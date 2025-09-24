@@ -2,6 +2,7 @@ package com.AL565.prose.controleur;
 
 import com.AL565.prose.controller.AuthController;
 import com.AL565.prose.service.AuthService;
+import com.AL565.prose.service.EmployeurService;
 import com.AL565.prose.service.dto.LoginRequestDTO;
 import com.AL565.prose.service.dto.ProseUserDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -33,6 +34,9 @@ class AuthControllerTest {
 
     @MockitoBean
     private AuthService authService;
+
+    @MockitoBean
+    private EmployeurService employeurService;
 
     @Test
     void login_success() throws Exception {
