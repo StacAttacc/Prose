@@ -28,18 +28,12 @@ export default function Login({ onSwitchToSignup }) {
             setSuccess("Connexion réussie !");
         } catch (err) {
             console.error(err);
-            if (err?.response?.status === 401) {
-                setErrorMsg("Identifiants invalides");
-            } else if (err?.response?.status >= 500) {
-                setErrorMsg("Service indisponible. Veuillez réessayer plus tard.");
-            } else if (!navigator.onLine) {
+            if (!navigator.onLine) {
                 setErrorMsg("Connexion Internet instable. Veuillez vérifier votre connexion.");
             } else {
-                setErrorMsg(
-                    err?.response?.data?.error ||
-                    "Échec de la connexion. Veuillez réessayer."
-                );
+                setErrorMsg(err?.response?.data?.message || "Service indisponible. Veuillez réessayer plus tard.");
             }
+
         } finally {
             setLoading(false);
         }
