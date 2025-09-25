@@ -1,0 +1,141 @@
+import { useState } from "react";
+import { useAuth } from "../context/AuthContext";
+import { Eye, EyeOff } from "lucide-react";
+
+export default function Login({ onSwitchToSignup }) {
+    const { login } = useAuth();
+
+    const [email, setEmail] = useState("");
+    const [pwd, setPwd] = useState("");
+    const [showPwd, setShowPwd] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [errorMsg, setErrorMsg] = useState("");
+    const [success, setSuccess] = useState("");
+
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    const pwdOk = pwd.trim().length >= 8;
+    const canSubmit = emailOk && pwdOk;
+
+    const onSubmit = async (e) => {
+        e.preventDefault();
+        setErrorMsg("");
+        setSuccess("");
+        if (!canSubmit) return;
+
+        try {
+            setLoading(true);
+            await login(email.trim(), pwd);
+            setSuccess("Connexion réussie !");
+        } catch (err) {
+            console.error(err);
+            if (err?.response?.status === 401) {
+                setErrorMsg("Identifiants invalides");
+            } else if (err?.response?.status >= 500) {
+                setErrorMsg("Service indisponible. Veuillez réessayer plus tard.");
+            } else if (!navigator.onLine) {
+                setErrorMsg("Connexion Internet instable. Veuillez vérifier votre connexion.");
+            } else {
+                setErrorMsg(
+                    err?.response?.data?.error ||
+                    "Échec de la connexion. Veuillez réessayer."
+                );
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    function getInputBorderClass(value, isValid) {
+        if (!value) return "border-rose-600";
+        if (isValid) return "border-emerald-500";
+        return "border-slate-700 focus:border-teal-500";
+    }
+
+    return (
+        <>
+            <h2 className="text-3xl font-bold text-center mb-8">Connexion</h2>
+
+            {/* Messages */}
+            {success && (
+                <div className="mb-4 rounded-lg border border-emerald-600 bg-emerald-900/30 p-3 text-emerald-300">
+                    {success}
+                </div>
+            )}
+            {errorMsg && (
+                <div className="mb-4 rounded-lg border border-rose-600 bg-rose-900/30 p-3 text-rose-300">
+                    {errorMsg}
+                </div>
+            )}
+
+            <form onSubmit={onSubmit} className="space-y-4">
+                {/* Email */}
+                <label className="block">
+                    <span className="block text-sm mb-1 text-slate-400">Adresse courriel</span>
+                    <div className="relative">
+                        <input
+                            type="email"
+                            className={`w-full rounded-xl bg-transparent border px-4 py-3 outline-none focus:border-teal-500 ${getInputBorderClass(
+                                email,
+                                emailOk
+                            )}`}
+                            placeholder="Nom@exemple.com"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            autoComplete="email"
+                        />
+                    </div>
+                </label>
+
+                {/* Mot de passe */}
+                <label className="block">
+                    <span className="block text-sm mb-1 text-slate-400">Mot de passe</span>
+                    <div className="relative">
+                        <input
+                            type={showPwd ? "text" : "password"}
+                            className={`w-full rounded-xl bg-transparent border px-4 py-3 pr-11 outline-none focus:border-teal-500 appearance-none ${getInputBorderClass(
+                                pwd,
+                                pwdOk
+                            )}`}
+                            placeholder="Minimum 8 caractères"
+                            value={pwd}
+                            onChange={(e) => setPwd(e.target.value)}
+                            autoComplete="current-password"
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setShowPwd((s) => !s)}
+                            className="absolute right-3 inset-y-0 my-auto grid place-items-center text-slate-400 hover:text-slate-200"
+                            aria-label="Toggle password visibility"
+                        >
+                            {showPwd ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                        </button>
+                    </div>
+                </label>
+
+                {/* Submit */}
+                <button
+                    type="submit"
+                    disabled={!canSubmit || loading}
+                    className={`w-full py-3 rounded-xl font-bold transition disabled:opacity-60 ${canSubmit
+                            ? "bg-white text-black shadow-lg hover:bg-slate-200"
+                            : "bg-gradient-to-r from-teal-500 to-slate-500 text-white hover:from-teal-400 hover:to-slate-400"
+                        }`}
+                >
+                    {loading ? "Connexion..." : "Se connecter"}
+                </button>
+
+                {/* Basculer vers SignUp */}
+                <div className="text-center mt-4">
+                    <span className="text-slate-400">Pas encore de compte ? </span>
+                    <button
+                        type="button"
+                        onClick={onSwitchToSignup}
+                        className="text-teal-500 hover:underline"
+                    >
+                        S'inscrire
+                    </button>
+                </div>
+            </form>
+        </>
+    );
+}
