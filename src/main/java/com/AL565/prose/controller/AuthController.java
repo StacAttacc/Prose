@@ -1,6 +1,7 @@
 package com.AL565.prose.controller;
 
 import com.AL565.prose.security.exceptions.UserNotFoundException;
+import com.AL565.prose.security.exceptions.AuthenticationException;
 import com.AL565.prose.service.AuthService;
 import com.AL565.prose.service.dto.LoginRequestDTO;
 import com.AL565.prose.service.dto.ProseUserDTO;
@@ -11,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/user")
@@ -28,8 +28,10 @@ public class AuthController {
             
         } catch (UserNotFoundException e) {
             return ResponseEntity.status(401).body(new ReturnEntityDTO<ProseUserDTO>("User not found", null));
+        } catch (AuthenticationException e){
+            return ResponseEntity.status(401).body(new ReturnEntityDTO<ProseUserDTO>("Le mot de passe ou l'email est incorrect", null));
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(new ReturnEntityDTO<ProseUserDTO>("Le mot de passe ou l'email est incorrect", null));
+            return ResponseEntity.status(500).body(new ReturnEntityDTO<ProseUserDTO>("Service indisponible. Veuillez réessayer plus tard.", null));
         }
     }
 
