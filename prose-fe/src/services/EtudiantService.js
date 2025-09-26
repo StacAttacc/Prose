@@ -4,14 +4,15 @@ const CV_UPLOAD_URL = "http://localhost:8080/etudiant/televerser-cv";
 
 export const televerserCv = async (cv, user) => {
     try{
-        console.log(user);
-        console.log(user.data.email);
-
         const dataToSend = new FormData();
         dataToSend.append('cv', cv);
         dataToSend.append("email", user.data.email);
 
-        const { data } = await axios.post(CV_UPLOAD_URL, dataToSend);
+        const { data } = await axios.post(CV_UPLOAD_URL, dataToSend, {
+            headers: {
+                'Content-Type': 'multipart/form-data', 'Authorization': `Bearer ${user.data.token}`
+            },
+        });
         return data;
     } catch (e) {
         if (e.response) {

@@ -78,6 +78,9 @@ class CvControllerTest {
                 .name("sample.pdf")
                 .type("application/pdf")
                 .data("%PDF-1.4\n%Mock PDF content\n".getBytes())
+                .size((long) "%PDF-1.4\n%Mock PDF content\n".getBytes().length)
+                .lastModified("2024-10-01T12:00:00Z")
+                .lastModifiedDate(java.time.Instant.now())
                 .build();
 
         when(cvService.getCvOrThrow("email@email.email")).thenReturn(
@@ -86,10 +89,12 @@ class CvControllerTest {
                     setType(cv.getType());
                     setSize(cv.getSize());
                     setData(cv.getData());
+                    setLastModified(cv.getLastModified());
+                    setLastModifiedDate(cv.getLastModifiedDate());
                 }}
         );
 
-        mockMvc.perform(get("/etudiant/telecharger-cv/1")
+        mockMvc.perform(get("/etudiant/telecharger-cv/email@email.email")
                         .with(csrf()))
                 .andExpect(status().isOk());
     }

@@ -51,10 +51,10 @@ public class EtudiantController {
         return ResponseEntity.status(HttpStatus.CREATED).body("CV téléversé avec succès");
     }
 
-    @GetMapping("/telecharger-cv/{etudiantId}")
-    public ResponseEntity<byte[]> telecharger(@PathVariable Long etudiantId)
+    @GetMapping("/telecharger-cv/{email}")
+    public ResponseEntity<byte[]> telecharger(@PathVariable String email)
             throws CvExceptions.StudentNotFoundException{
-        EtudiantCvDto cv = cvService.getCvOrThrow("username");
+        EtudiantCvDto cv = cvService.getCvOrThrow(email);
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(cv.getType()))
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + cv.getName() + "\"")

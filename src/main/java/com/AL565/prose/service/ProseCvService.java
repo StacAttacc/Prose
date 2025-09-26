@@ -43,7 +43,7 @@ public class ProseCvService {
         Etudiant etudiant = etudiantRepository.findEtudiantByCredentials_Username(email)
                 .orElseThrow(StudentNotFoundException::new);
 
-        CV entity = CV.builder()
+        CV newCv = CV.builder()
                 .name(cv.getOriginalFilename())
                 .type(cv.getContentType())
                 .size(cv.getSize())
@@ -53,15 +53,25 @@ public class ProseCvService {
                 .etudiant(etudiant)
                 .build();
 
-        cvRepository.save(entity);
+        CV savedCv = cvRepository.findByEtudiant_Credentials_Username(email)
+                .map(existingCv -> {
+                    existingCv.setName(newCv.getName());
+                    existingCv.setType(newCv.getType());
+                    existingCv.setSize(newCv.getSize());
+                    existingCv.setLastModified(newCv.getLastModified());
+                    existingCv.setLastModifiedDate(newCv.getLastModifiedDate());
+                    existingCv.setData(newCv.getData());
+                    return cvRepository.save(existingCv);
+                })
+                .orElseGet(() -> cvRepository.save(newCv));
 
         return new EtudiantCvDto() {{
-            setName(entity.getName());
-            setType(entity.getType());
-            setSize(entity.getSize());
-            setLastModified(entity.getLastModified());
-            setLastModifiedDate(entity.getLastModifiedDate());
-            setData(entity.getData());
+            setName(savedCv.getName());
+            setType(savedCv.getType());
+            setSize(savedCv.getSize());
+            setLastModified(savedCv.getLastModified());
+            setLastModifiedDate(savedCv.getLastModifiedDate());
+            setData(savedCv.getData());
         }};
     }
 

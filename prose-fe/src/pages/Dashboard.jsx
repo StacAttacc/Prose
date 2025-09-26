@@ -1,5 +1,5 @@
 import React from "react";
-import TeleversementCV from "./cv/TeleversementCV.jsx";
+import TeleversementCV from "../components/cv/TeleversementCV.jsx";
 
 const Dashboard = () => {
     return <TeleversementCV />;

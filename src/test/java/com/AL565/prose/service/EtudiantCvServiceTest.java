@@ -58,12 +58,17 @@ class EtudiantCvServiceTest {
 
     @Test
     void saveCv_shouldSaveValidPdf() throws Exception {
+        when(file.getOriginalFilename()).thenReturn("cv.pdf");
         when(file.isEmpty()).thenReturn(false);
         when(file.getContentType()).thenReturn(MediaType.APPLICATION_PDF_VALUE);
         when(file.getBytes()).thenReturn(new byte[]{1, 2, 3});
         when(file.getOriginalFilename()).thenReturn("cv.pdf");
         when(file.getSize()).thenReturn(123L);
-        when(etudiantRepository.findEtudiantByCredentials_Username("email@email.email")).thenReturn(Optional.of(mock(Etudiant.class)));
+
+        when(etudiantRepository.findEtudiantByCredentials_Username("email@email.email"))
+                .thenReturn(Optional.of(mock(Etudiant.class)));
+
+        when(cvRepository.save(any(CV.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         service.saveCv(file, "email@email.email", "2024-06-01");
 

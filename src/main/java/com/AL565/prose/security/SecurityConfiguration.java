@@ -64,7 +64,6 @@ public class SecurityConfiguration {
                         .requestMatchers(POST, ETUDIANT_REGISTER_PATH).permitAll()
                         .requestMatchers(POST, EMPLOYEUR_REGISTER_PATH).permitAll()
                         .requestMatchers(POST, PROFESSEUR_REGISTER_PATH).permitAll()
-                        .requestMatchers(POST, "/etudiant/televerser-cv").permitAll()
 
                         // Use Role enum names for authorities
                         .requestMatchers(GET, USER_PATH).hasAnyAuthority(Role.ETUDIANT.name(), Role.EMPLOYEUR.name(), Role.GESTIONNAIRE.name())
