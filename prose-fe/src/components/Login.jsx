@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Eye, EyeOff } from "lucide-react";
+import {useNavigate} from "react-router-dom";
 
 export default function Login({ onSwitchToSignup }) {
     const { login } = useAuth();
@@ -11,9 +12,10 @@ export default function Login({ onSwitchToSignup }) {
     const [loading, setLoading] = useState(false);
     const [errorMsg, setErrorMsg] = useState("");
     const [success, setSuccess] = useState("");
+    const nav = useNavigate();
 
     const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-    const pwdOk = pwd.trim().length >= 8;
+    const pwdOk = pwd.trim().length >= 10;
     const canSubmit = emailOk && pwdOk;
 
     const onSubmit = async (e) => {
@@ -24,8 +26,10 @@ export default function Login({ onSwitchToSignup }) {
 
         try {
             setLoading(true);
-            await login(email.trim(), pwd);
-            setSuccess("Connexion réussie !");
+            const user = await login(email.trim(), pwd);
+            sessionStorage.setItem("user", JSON.stringify(user.data))
+            nav('/');
+
         } catch (err) {
             console.error(err);
             if (!navigator.onLine) {
@@ -90,7 +94,7 @@ export default function Login({ onSwitchToSignup }) {
                                 pwd,
                                 pwdOk
                             )}`}
-                            placeholder="Minimum 8 caractères"
+                            placeholder="Minimum 10 caractères"
                             value={pwd}
                             onChange={(e) => setPwd(e.target.value)}
                             autoComplete="current-password"

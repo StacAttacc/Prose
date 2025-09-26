@@ -19,6 +19,6 @@ export async function registerEtudiant(payload) {
 }
 
 export async function logout() {
-    try { await http.post("/auth/logout"); } catch {}
     setAccessToken(null);
+    sessionStorage.removeItem("user");
 }
