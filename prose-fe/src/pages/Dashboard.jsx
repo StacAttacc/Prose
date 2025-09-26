@@ -2,10 +2,19 @@ import {logout} from "../services/AuthService.js";
 import {useNavigate} from "react-router-dom";
 import {Outlet} from "react-router";
 import TeleversementCV from "../components/TeleversementCV.jsx";
+import {useEffect, useState} from "react";
 
 export default function Dashboard() {
-    const user = JSON.parse(sessionStorage.getItem("user"));
+    const [user, setUser] = useState(() => JSON.parse(sessionStorage.getItem("user")));
     const nav = useNavigate();
+
+    useEffect(() => {
+        const handleStorage = () => {
+            setUser(JSON.parse(sessionStorage.getItem("user")));
+        };
+        window.addEventListener("storage", handleStorage);
+        return () => window.removeEventListener("storage", handleStorage);
+    }, []);
 
     async function userLogout() {
         await logout();
@@ -55,7 +64,9 @@ export default function Dashboard() {
                         {user.role === "ETUDIANT" ? (
                             <>
                                 {/*Mettre mes options ici*/}
-                                <TeleversementCV />
+                                <button onClick={() => {nav('televersement-cv')}}>
+                                    Téléverser mon CV
+                                </button>
                             </>
                         ) : <></>}
                         {user.role === "GESTIONNAIRE" ? (
