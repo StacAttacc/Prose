@@ -1,7 +1,7 @@
-
 import {logout} from "../services/AuthService.js";
 import {useNavigate} from "react-router-dom";
 import {Outlet} from "react-router";
+import TeleversementCV from "../components/TeleversementCV.jsx";
 
 export default function Dashboard() {
     const user = JSON.parse(sessionStorage.getItem("user"));
@@ -55,6 +55,7 @@ export default function Dashboard() {
                         {user.role === "ETUDIANT" ? (
                             <>
                                 {/*Mettre mes options ici*/}
+                                <TeleversementCV />
                             </>
                         ) : <></>}
                         {user.role === "GESTIONNAIRE" ? (

@@ -1,6 +1,6 @@
 import React, {useRef, useState} from 'react';
-import {televerserCv} from "../../services/EtudiantService.js";
-import {useAuth} from "../../context/AuthContext.jsx";
+import {televerserCv} from "../services/EtudiantService.js";
+import {useAuth} from "../context/AuthContext.jsx";
 
 const TeleversementCV = () => {
     const [selectedFile, setSelectedFile] = useState(null);
