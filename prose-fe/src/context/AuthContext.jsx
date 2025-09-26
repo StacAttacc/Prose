@@ -1,6 +1,5 @@
-
 import { createContext, useContext, useState } from "react";
-import { login as apiLogin, register as apiRegister, logout as apiLogout } from "../services/AuthService";
+import { login as apiLogin, registerEmployeur as apiRegisterEmployeur, registerEtudiant as apiRegisterEtudiant, logout as apiLogout } from "../services/AuthService";
 
 const AuthCtx = createContext(null);
 
@@ -13,8 +12,14 @@ export function AuthProvider({ children }) {
         return u;
     }
 
-    async function register(payload) {
-        const u = await apiRegister(payload);
+    async function registerEmployeur(payload) {
+        const u = await apiRegisterEmployeur(payload);
+        setUser(u);
+        return u;
+    }
+
+    async function registerEtudiant(payload) {
+        const u = await apiRegisterEtudiant(payload);
         setUser(u);
         return u;
     }
@@ -25,7 +30,7 @@ export function AuthProvider({ children }) {
     }
 
     return (
-        <AuthCtx.Provider value={{ user, isAuthed: !!user, login, register, logout }}>
+        <AuthCtx.Provider value={{ user, isAuthed: !!user, login, registerEmployeur, registerEtudiant, logout }}>
             {children}
         </AuthCtx.Provider>
     );
