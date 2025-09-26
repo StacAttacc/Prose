@@ -44,6 +44,10 @@ public final class Credentials implements UserDetails {
         return username;
     }
 
+    public Role getRole() {
+        return role;
+    }
+
     @Override
     public boolean isAccountNonExpired() {
         return true;
