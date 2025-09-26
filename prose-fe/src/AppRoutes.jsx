@@ -1,20 +1,28 @@
-import {useAuth} from "./context/AuthContext.jsx";
-import {Route, Routes} from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
+import { useAuth } from "./context/AuthContext.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import PageAuthentification from "./pages/PageAuthentification.jsx";
 import TeleversementCV from "./components/TeleversementCV.jsx";
 
 export default function AppRoutes() {
-    const {isAuthed} = useAuth();
+    const { user, loading } = useAuth();
+
+    const defaultElement =
+        user?.data.role === "ETUDIANT" ? <TeleversementCV /> :
+            user?.data.role === "EMPLOYEUR" ? <div>Bienvenue Employeur</div> :
+                user?.data.role === "PROFESSEUR" ? <div>Bienvenue Professeur</div> :
+                    <div>Rôle inconnu</div>;
+
     return (
         <Routes>
-            <Route path="/login" element={<PageAuthentification/>}/>
-            <Route element={<ProtectedRoute isAuthed={isAuthed}/>}>
-                <Route path="/" element={<Dashboard/>}>
+            <Route path="/login" element={<PageAuthentification />} />
+            <Route element={<ProtectedRoute />}>
+                <Route path="/" element={<Dashboard />}>
+                    <Route index element={loading ? <div>Loading...</div> : defaultElement} />
                     <Route path="televersement-cv" element={<TeleversementCV />} />
                 </Route>
             </Route>
         </Routes>
-    )
+    );
 }

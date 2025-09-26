@@ -81,7 +81,7 @@ const TeleversementCV = () => {
 
     return (
         <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Téléverser votre CV</h2>
+            <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Téléverser mon CV</h2>
 
             <div className="mb-6">
                 <div className="relative">
