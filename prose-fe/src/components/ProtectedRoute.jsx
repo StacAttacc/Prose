@@ -1,28 +1,6 @@
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider, useAuth } from "../context/AuthContext";
-import TeleversementCV from "./cv/TeleversementCV.jsx";
+import {Navigate} from "react-router-dom";
+import {Outlet} from "react-router";
 
-function AppRoutes() {
-    const { isAuthed } = useAuth();
-    return (
-        <Routes>
-            <Route path="/login" element={<PageLogin />} />
-            <Route element={<ProtectedRoute isAuthed={isAuthed} />}>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/etudiant/televerser-cv" element={<TeleversementCV />} />
-            </Route>
-        </Routes>
-    );
+export default function ProtectedRoute({ isAuthed }) {
+    return isAuthed ? <Outlet/> : <Navigate to="/login" replace/>
 }
-
-createRoot(document.getElementById("root")).render(
-    <StrictMode>
-        <BrowserRouter>
-            <AuthProvider>
-                <AppRoutes />
-            </AuthProvider>
-        </BrowserRouter>
-    </StrictMode>
-);

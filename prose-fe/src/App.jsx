@@ -1,14 +1,17 @@
-import PageAuthentification from "./pages/PageAuthentification";
-import Dashboard from "./pages/Dashboard.jsx";
-import "./style/index.css";
-import {Route, Routes} from "react-router-dom";
+import {StrictMode} from "react";
+import {BrowserRouter} from "react-router-dom";
+import {AuthProvider} from "./context/AuthContext.jsx";
+import AppRoutes from "./AppRoutes.jsx";
 
 function App() {
     return (
-        <Routes>
-            <Route path="/" element={<PageAuthentification />}/>
-            <Route path="/dashboard" element={<Dashboard />}/>
-        </Routes>
+        <StrictMode>
+            <BrowserRouter>
+                <AuthProvider>
+                    <AppRoutes />
+                </AuthProvider>
+            </BrowserRouter>
+        </StrictMode>
     );
 }
 
