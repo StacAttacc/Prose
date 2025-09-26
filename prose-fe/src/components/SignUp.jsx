@@ -28,7 +28,7 @@ export default function SignUp({ onSwitchToLogin }) {
     const [errorMsg, setErrorMsg] = useState("");
 
     const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-    const pwdHint = pwd.length < 10 ? "Min 10 characters" : "mot de pass respecté!";
+    const pwdHint = pwd.length < 10 ? "Min 10 characters" : "Mot de passe respecté!";
 
     const canSubmit =
         emailOk &&
