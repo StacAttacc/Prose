@@ -1,6 +1,6 @@
 import {useAuth} from "./context/AuthContext.jsx";
 import {Route, Routes} from "react-router-dom";
-import Dashboard from "./components/Dashboard.jsx";
+import Dashboard from "./pages/Dashboard.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import PageAuthentification from "./pages/PageAuthentification.jsx";
 
