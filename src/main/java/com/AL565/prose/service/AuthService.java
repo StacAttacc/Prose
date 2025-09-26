@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import com.AL565.prose.security.JwtTokenProvider;
 import com.AL565.prose.model.ProseUser;
 import com.AL565.prose.repository.ProseUserRepository;
+import com.AL565.prose.security.exceptions.UserNotFoundException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -33,7 +34,7 @@ public class AuthService {
         String token = jwtTokenProvider.generateToken(authentication);
         
         ProseUser user = userRepository.findByCredentials_Username(request.getEmail())
-            .orElseThrow(() -> new RuntimeException("User not found"));
+            .orElseThrow(UserNotFoundException::new);
 
         return ProseUserDTO.toDtoWithToken(user, token);
 

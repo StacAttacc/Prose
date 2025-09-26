@@ -26,4 +26,3 @@ export const televerserCv = async (cv, user) => {
         }
     }
 };
-
