@@ -1,6 +1,6 @@
 package com.AL565.prose.service;
 
-import com.AL565.prose.service.dto.EtudiantCvDto;
+import com.AL565.prose.service.dto.EtudiantCvDTO;
 import com.AL565.prose.model.CV;
 import com.AL565.prose.model.Etudiant;
 import com.AL565.prose.repository.EtudiantRepository;
@@ -87,7 +87,7 @@ class EtudiantCvServiceTest {
     void getCvOrThrow_shouldReturnCv() throws CvExceptions.StudentNotFoundException {
         CV cv = CV.builder().name("cv.pdf").build();
         when(cvRepository.findByEtudiant_Credentials_Username("email@email.email")).thenReturn(Optional.of(cv));
-        EtudiantCvDto result = service.getCvOrThrow("email@email.email");
+        EtudiantCvDTO result = service.getCvOrThrow("email@email.email");
         assertEquals("cv.pdf", result.getName());
     }
 

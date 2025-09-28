@@ -3,7 +3,7 @@ package com.AL565.prose.controleur;
 import com.AL565.prose.controller.EtudiantController;
 import com.AL565.prose.service.EmployeurService;
 import com.AL565.prose.service.EtudiantService;
-import com.AL565.prose.service.dto.EtudiantCvDto;
+import com.AL565.prose.service.dto.EtudiantCvDTO;
 import com.AL565.prose.model.CV;
 import com.AL565.prose.repository.ProseCvRepository;
 import com.AL565.prose.service.ProseCvService;
@@ -84,7 +84,7 @@ class CvControllerTest {
                 .build();
 
         when(cvService.getCvOrThrow("email@email.email")).thenReturn(
-                new EtudiantCvDto() {{
+                new EtudiantCvDTO() {{
                     setName(cv.getName());
                     setType(cv.getType());
                     setSize(cv.getSize());
