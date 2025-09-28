@@ -1,6 +1,6 @@
 package com.AL565.prose.controller;
 
-import com.AL565.prose.service.dto.EtudiantCvDto;
+import com.AL565.prose.service.dto.EtudiantCvDTO;
 import com.AL565.prose.service.EtudiantService;
 import com.AL565.prose.security.exceptions.CvExceptions;
 import com.AL565.prose.service.dto.EtudiantDTO;
@@ -54,7 +54,7 @@ public class EtudiantController {
     @GetMapping("/telecharger-cv/{email}")
     public ResponseEntity<byte[]> telecharger(@PathVariable String email)
             throws CvExceptions.StudentNotFoundException{
-        EtudiantCvDto cv = cvService.getCvOrThrow(email);
+        EtudiantCvDTO cv = cvService.getCvOrThrow(email);
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(cv.getType()))
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + cv.getName() + "\"")
