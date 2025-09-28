@@ -1,6 +1,6 @@
 package com.AL565.prose.service;
 
-import com.AL565.prose.service.dto.EtudiantCvDto;
+import com.AL565.prose.service.dto.EtudiantCvDTO;
 import com.AL565.prose.model.CV;
 import com.AL565.prose.model.Etudiant;
 import com.AL565.prose.repository.EtudiantRepository;
@@ -14,17 +14,18 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class ProseCvService {
 
     private final ProseCvRepository cvRepository;
 
     private final EtudiantRepository etudiantRepository;
 
-    @Transactional
-    public EtudiantCvDto saveCv(MultipartFile cv, String email, String lastModified) throws Exception {
+    public void saveCv(MultipartFile cv, String email, String lastModified) throws Exception {
         if (cv == null || cv.isEmpty()) {
             throw new NoFileException();
         }
@@ -51,9 +52,10 @@ public class ProseCvService {
                 .lastModifiedDate(Instant.now())
                 .data(data)
                 .etudiant(etudiant)
+                .approvedAt(null)
                 .build();
 
-        CV savedCv = cvRepository.findByEtudiant_Credentials_Username(email)
+        cvRepository.findByEtudiant_Credentials_Username(email)
                 .map(existingCv -> {
                     existingCv.setName(newCv.getName());
                     existingCv.setType(newCv.getType());
@@ -61,26 +63,17 @@ public class ProseCvService {
                     existingCv.setLastModified(newCv.getLastModified());
                     existingCv.setLastModifiedDate(newCv.getLastModifiedDate());
                     existingCv.setData(newCv.getData());
+                    existingCv.setApprovedAt(newCv.getApprovedAt());
                     return cvRepository.save(existingCv);
                 })
                 .orElseGet(() -> cvRepository.save(newCv));
-
-        return new EtudiantCvDto() {{
-            setName(savedCv.getName());
-            setType(savedCv.getType());
-            setSize(savedCv.getSize());
-            setLastModified(savedCv.getLastModified());
-            setLastModifiedDate(savedCv.getLastModifiedDate());
-            setData(savedCv.getData());
-        }};
     }
 
-    @Transactional(readOnly = true)
-    public EtudiantCvDto getCvOrThrow(String username) throws StudentNotFoundException {
+    public EtudiantCvDTO getCvOrThrow(String username) throws StudentNotFoundException {
         CV entity = cvRepository.findByEtudiant_Credentials_Username(username)
                 .orElseThrow(StudentNotFoundException::new);
 
-        return new EtudiantCvDto() {{
+        return new EtudiantCvDTO() {{
             setName(entity.getName());
             setType(entity.getType());
             setSize(entity.getSize());
