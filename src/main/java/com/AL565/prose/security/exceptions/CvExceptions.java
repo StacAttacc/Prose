@@ -24,4 +24,10 @@ public class CvExceptions {
             super("Étudiant non trouvé");
         }
     }
+
+    public static class FailedToFetchUnapprovedCvsException extends Exception {
+        public FailedToFetchUnapprovedCvsException() {
+            super("Échec de la récupération des CVs non approuvés");
+        }
+    }
 }
