@@ -26,9 +26,6 @@ public class GestionnaireCvServiceTest {
     @Mock
     private CvRepository cvRepository;
 
-    @Mock
-    private CvService cvService;
-
     @InjectMocks
     private GestionnaireService gestionnaireService;
 
@@ -100,17 +97,35 @@ public class GestionnaireCvServiceTest {
 
 
     @Test
-    void rejectCv_ShouldRejectCv() {
-        // Test implementation goes here
+    void rejectCv_ShouldRejectCv() throws Exception {
+        Long cvId = 2L;
+        CV cv = CV.builder()
+                .id(cvId)
+                .etudiant(new Etudiant())
+                .approvedAt(null)
+                .rejectedAt(null)
+                .build();
+
+        when(cvRepository.findById(cvId)).thenReturn(Optional.of(cv));
+        when(cvRepository.save(any(CV.class))).thenReturn(cv);
+
+        gestionnaireService.rejectCv(cvId);
+
+        verify(cvRepository).findById(cvId);
+        verify(cvRepository).save(cv);
+        assertThat(cv.getRejectedAt()).isNotNull();
+        assertThat(cv.getApprovedAt()).isNull();
     }
 
     @Test
     void rejectCv_ShouldThrowException_WhenCvNotFound() {
+        Long cvId = 99L;
+        when(cvRepository.findById(cvId)).thenReturn(Optional.empty());
 
-    }
+        assertThatThrownBy(() -> gestionnaireService.rejectCv(cvId))
+                .isInstanceOf(CvExceptions.FailedToFetchCV.class);
 
-    @Test
-    void rejectCv_ShouldThrowException_WhenCvAlreadyRejected() {
-
+        verify(cvRepository).findById(cvId);
+        verify(cvRepository, never()).save(any());
     }
 }

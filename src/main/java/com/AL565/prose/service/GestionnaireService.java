@@ -35,4 +35,12 @@ public class GestionnaireService {
             return cvRepository.save(cv);
         }).orElseThrow(FailedToFetchCV::new);
     }
+
+    public void rejectCv(Long cvId) throws Exception {
+        cvRepository.findById(cvId).map(cv -> {
+            cv.setRejectedAt(new Date());
+            cv.setApprovedAt(null);
+            return cvRepository.save(cv);
+        }).orElseThrow(FailedToFetchCV::new);
+    }
 }
