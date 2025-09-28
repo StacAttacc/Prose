@@ -10,6 +10,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.time.Instant;
+import java.util.Date;
 
 @Entity
 @Getter
@@ -37,4 +38,7 @@ public class CV {
     @OneToOne
     @JoinColumn(name = "etudiant_id")
     private Etudiant etudiant;
+
+    private Date approvedAt;
+    private Date rejectedAt;
 }
