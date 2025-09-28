@@ -30,4 +30,10 @@ public class CvExceptions {
             super("Échec de la récupération des CVs non approuvés");
         }
     }
+
+    public static class FailedToFetchCV extends Exception {
+        public FailedToFetchCV() {
+            super("Échec de la récupération du CV");
+        }
+    }
 }
