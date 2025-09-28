@@ -2,9 +2,11 @@ package com.AL565.prose;
 
 import com.AL565.prose.model.Discipline;
 import com.AL565.prose.service.EtudiantService;
+import com.AL565.prose.service.GestionnaireService;
 import com.AL565.prose.service.dto.EmployeurEnregistrerDTO;
 import com.AL565.prose.service.EmployeurService;
 import com.AL565.prose.service.dto.EtudiantDTO;
+import com.AL565.prose.service.dto.GestionnaireDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import lombok.AllArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
@@ -19,6 +21,7 @@ public class ProseApplication {
 
     private final EmployeurService employeurService;
     private final EtudiantService etudiantService;
+    private final GestionnaireService gestionnaireService;
 
     public static void main(String[] args) {
         SpringApplication.run(ProseApplication.class, args);
@@ -53,6 +56,19 @@ public class ProseApplication {
             } catch (EmailAlreadyExistsException e) {
                 System.err.println(e.getMessage());
                 System.err.println("etudiant pas créé");
+            }
+
+            GestionnaireDTO gestionnaireJane = new GestionnaireDTO();
+            gestionnaireJane.setFirstName("Jane");
+            gestionnaireJane.setLastName("Doe");
+            gestionnaireJane.setEmail("gestionnaire@gestionnaire.com");
+            gestionnaireJane.setPassword("password123");
+
+            try {
+                gestionnaireService.saveGestionnaire(gestionnaireJane);
+            } catch (EmailAlreadyExistsException e) {
+                System.err.println(e.getMessage());
+                System.err.println("gestionnaire pas créé");
             }
 
 
