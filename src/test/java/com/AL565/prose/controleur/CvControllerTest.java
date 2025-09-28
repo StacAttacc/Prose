@@ -5,8 +5,8 @@ import com.AL565.prose.service.EmployeurService;
 import com.AL565.prose.service.EtudiantService;
 import com.AL565.prose.service.dto.EtudiantCvDTO;
 import com.AL565.prose.model.CV;
-import com.AL565.prose.repository.ProseCvRepository;
-import com.AL565.prose.service.ProseCvService;
+import com.AL565.prose.repository.CvRepository;
+import com.AL565.prose.service.CvService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -33,10 +33,10 @@ class CvControllerTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private ProseCvRepository cvRepository;
+    private CvRepository cvRepository;
 
     @MockitoBean
-    private ProseCvService cvService;
+    private CvService cvService;
 
     @MockitoBean
     private EtudiantService etudiantInscriptionService;

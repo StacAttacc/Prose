@@ -4,7 +4,7 @@ import com.AL565.prose.service.dto.EtudiantCvDTO;
 import com.AL565.prose.model.CV;
 import com.AL565.prose.model.Etudiant;
 import com.AL565.prose.repository.EtudiantRepository;
-import com.AL565.prose.repository.ProseCvRepository;
+import com.AL565.prose.repository.CvRepository;
 import com.AL565.prose.security.exceptions.CvExceptions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,16 +19,16 @@ import static org.mockito.Mockito.*;
 
 class EtudiantCvServiceTest {
 
-    private ProseCvRepository cvRepository;
+    private CvRepository cvRepository;
     private EtudiantRepository etudiantRepository;
-    private ProseCvService service;
+    private CvService service;
     private MultipartFile file;
 
     @BeforeEach
     void setUp() {
-        cvRepository = mock(ProseCvRepository.class);
+        cvRepository = mock(CvRepository.class);
         etudiantRepository = mock(EtudiantRepository.class);
-        service = new ProseCvService(cvRepository, etudiantRepository);
+        service = new CvService(cvRepository, etudiantRepository);
         file = mock(MultipartFile.class);
     }
 

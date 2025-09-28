@@ -1,6 +1,6 @@
 package com.AL565.prose.service;
 
-import com.AL565.prose.repository.ProseCvRepository;
+import com.AL565.prose.repository.CvRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -10,10 +10,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 public class GestionnaireApprouveCvTest {
 
     @Mock
-    private ProseCvRepository proseCvRepository;
+    private CvRepository cvRepository;
 
     @Mock
-    private ProseCvService proseCvService;
+    private CvService cvService;
 
 
 

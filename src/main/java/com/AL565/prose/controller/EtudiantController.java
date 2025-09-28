@@ -5,7 +5,7 @@ import com.AL565.prose.service.EtudiantService;
 import com.AL565.prose.security.exceptions.CvExceptions;
 import com.AL565.prose.service.dto.EtudiantDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
-import com.AL565.prose.service.ProseCvService;
+import com.AL565.prose.service.CvService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -19,9 +19,9 @@ public class EtudiantController {
 
     private final EtudiantService etudiantService;
 
-    private final ProseCvService cvService;
+    private final CvService cvService;
 
-    public EtudiantController(EtudiantService etudiantService, ProseCvService cvService) {
+    public EtudiantController(EtudiantService etudiantService, CvService cvService) {
         this.etudiantService = etudiantService;
         this.cvService = cvService;
     }

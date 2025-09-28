@@ -1,6 +1,6 @@
 package com.AL565.prose.service;
 
-import com.AL565.prose.repository.ProseCvRepository;
+import com.AL565.prose.repository.CvRepository;
 import com.AL565.prose.security.exceptions.CvExceptions.*;
 import com.AL565.prose.service.dto.GestionnaireCvDTO;
 import lombok.RequiredArgsConstructor;
@@ -14,11 +14,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class GestionnaireService {
 
-    private final ProseCvRepository proseCvRepository;
+    private final CvRepository cvRepository;
 
     public List<GestionnaireCvDTO> getNonApprovedCvs() throws Exception {
         try {
-            return proseCvRepository.findCVSByApprovedAtIsNull()
+            return cvRepository.findCVSByApprovedAtIsNull()
                     .stream()
                     .map(GestionnaireCvDTO::toDto)
                     .toList();

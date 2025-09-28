@@ -4,7 +4,7 @@ import com.AL565.prose.service.dto.EtudiantCvDTO;
 import com.AL565.prose.model.CV;
 import com.AL565.prose.model.Etudiant;
 import com.AL565.prose.repository.EtudiantRepository;
-import com.AL565.prose.repository.ProseCvRepository;
+import com.AL565.prose.repository.CvRepository;
 import com.AL565.prose.security.exceptions.CvExceptions.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -14,14 +14,13 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class ProseCvService {
+public class CvService {
 
-    private final ProseCvRepository cvRepository;
+    private final CvRepository cvRepository;
 
     private final EtudiantRepository etudiantRepository;
 

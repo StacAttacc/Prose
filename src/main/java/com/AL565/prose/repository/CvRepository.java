@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface ProseCvRepository extends JpaRepository<CV, Long> {
+public interface CvRepository extends JpaRepository<CV, Long> {
     Optional<CV> findByEtudiant_Credentials_Username(String username);
     List<CV> findCVSByApprovedAtIsNull();
 }
