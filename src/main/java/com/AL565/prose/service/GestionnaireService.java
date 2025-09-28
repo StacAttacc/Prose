@@ -16,7 +16,7 @@ public class GestionnaireService {
 
     private final CvRepository cvRepository;
 
-    public List<GestionnaireCvDTO> getNonApprovedNonRejectedCvs() throws Exception {
+    public List<GestionnaireCvDTO> getPendingCvs() throws Exception {
         try {
             return cvRepository.findCVSByApprovedAtIsNullAndRejectedAtIsNull()
                     .stream()
