@@ -33,7 +33,7 @@ public class GestionnaireService {
             cv.setApprovedAt(new Date());
             cv.setRejectedAt(null);
             return cvRepository.save(cv);
-        }).orElseThrow(FailedToFetchCV::new);
+        }).orElseThrow(CvNotFoundException::new);
     }
 
     public void rejectCv(Long cvId) throws Exception {
@@ -41,6 +41,6 @@ public class GestionnaireService {
             cv.setRejectedAt(new Date());
             cv.setApprovedAt(null);
             return cvRepository.save(cv);
-        }).orElseThrow(FailedToFetchCV::new);
+        }).orElseThrow(CvNotFoundException::new);
     }
 }

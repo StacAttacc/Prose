@@ -31,8 +31,8 @@ public class CvExceptions {
         }
     }
 
-    public static class FailedToFetchCV extends Exception {
-        public FailedToFetchCV() {
+    public static class CvNotFoundException extends Exception {
+        public CvNotFoundException() {
             super("Échec de la récupération du CV");
         }
     }

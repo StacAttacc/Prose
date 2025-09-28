@@ -34,4 +34,14 @@ public class ControllerAdvisor {
     public ResponseEntity<String> handleGeneralException() {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erreur interne du serveur");
     }
+
+    @ExceptionHandler(FailedToFetchUnapprovedCvsException.class)
+    public ResponseEntity<String> FailedToFetchUnapprovedCvsException() {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Échec de la récupération du CV");
+    }
+
+    @ExceptionHandler(CvNotFoundException.class)
+    public ResponseEntity<String> CvNotFoundException() {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Échec de la récupération du CV");
+    }
 }

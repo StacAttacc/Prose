@@ -88,7 +88,7 @@ public class GestionnaireCvServiceTest {
         when(cvRepository.findById(cvId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> gestionnaireService.approveCv(cvId))
-                .isInstanceOf(CvExceptions.FailedToFetchCV.class);
+                .isInstanceOf(CvExceptions.CvNotFoundException.class);
 
         verify(cvRepository).findById(cvId);
         verify(cvRepository, never()).save(any());
@@ -123,7 +123,7 @@ public class GestionnaireCvServiceTest {
         when(cvRepository.findById(cvId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> gestionnaireService.rejectCv(cvId))
-                .isInstanceOf(CvExceptions.FailedToFetchCV.class);
+                .isInstanceOf(CvExceptions.CvNotFoundException.class);
 
         verify(cvRepository).findById(cvId);
         verify(cvRepository, never()).save(any());
