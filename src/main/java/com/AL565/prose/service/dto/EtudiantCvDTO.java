@@ -9,7 +9,7 @@ import java.time.Instant;
 @Getter
 @Setter
 @Data
-public class EtudiantCvDto {
+public class EtudiantCvDTO {
     private String name;
     private String type;
     private long size;
