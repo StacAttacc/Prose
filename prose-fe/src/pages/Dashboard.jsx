@@ -1,9 +1,10 @@
 import {logout} from "../services/AuthService.js";
 import {useNavigate} from "react-router-dom";
 import {Outlet} from "react-router";
+import {useAuth} from "../context/AuthContext.jsx";
 
 export default function Dashboard() {
-    const user = JSON.parse(sessionStorage.getItem("user"));
+    const {user} = useAuth();
     const nav = useNavigate();
 
     async function userLogout() {
@@ -29,7 +30,7 @@ export default function Dashboard() {
                             </div>
                         </div>
                         <div className="ml-auto">
-                            <p className="text-white text-lg">Bienvenue {user.firstName + " " + user.lastName}
+                            <p className="text-white text-lg">Bienvenue {user.data.firstName + " " + user.data.lastName}
                                 <button type="button"
                                         className="text-white bg-gradient-to-r
                                     from-red-400 via-red-500 to-red-600
@@ -45,23 +46,26 @@ export default function Dashboard() {
             <nav className="relative bg-teal-700/95 rounded-xl mt-2 shadow-black shadow-sm">
                 <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
                     <div className="relative flex h-12 items-center justify-around">
-                        {user.role === "EMPLOYEUR" ? (
+                        {user.data.role === "EMPLOYEUR" ? (
                             <>
                                 {/*Ex: <button onClick(() => {navigate('/create-stage')})>*/}
                                 {/*Mettre mes options ici*/}
                             </>
                         ) : <></>}
-                        {user.role === "ETUDIANT" ? (
+                        {user.data.role === "ETUDIANT" ? (
+                            <>
+                                {/*Mettre mes options ici*/}
+                                <button onClick={() => {nav('televersement-cv')}}>
+                                    Téléverser mon CV
+                                </button>
+                            </>
+                        ) : <></>}
+                        {user.data.role === "GESTIONNAIRE" ? (
                             <>
                                 {/*Mettre mes options ici*/}
                             </>
                         ) : <></>}
-                        {user.role === "GESTIONNAIRE" ? (
-                            <>
-                                {/*Mettre mes options ici*/}
-                            </>
-                        ) : <></>}
-                        {user.role === "PROFESSEUR" ? (
+                        {user.data.role === "PROFESSEUR" ? (
                             <>
                                 {/*Mettre mes options ici*/}
                             </>
