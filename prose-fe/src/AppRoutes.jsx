@@ -4,6 +4,7 @@ import Dashboard from "./pages/Dashboard.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import PageAuthentification from "./pages/PageAuthentification.jsx";
 import TeleversementCV from "./components/TeleversementCV.jsx";
+import PendingCVs from "./components/PendingCVs.jsx";
 
 export default function AppRoutes() {
     const { user, loading } = useAuth();
@@ -12,7 +13,8 @@ export default function AppRoutes() {
         user?.data.role === "ETUDIANT" ? <TeleversementCV /> :
             user?.data.role === "EMPLOYEUR" ? <div>Bienvenue Employeur</div> :
                 user?.data.role === "PROFESSEUR" ? <div>Bienvenue Professeur</div> :
-                    <div>Rôle inconnu</div>;
+                    user?.data.role === "GESTIONNAIRE" ? <PendingCVs /> :
+                        <div>Rôle inconnu</div>;
 
     return (
         <Routes>
@@ -21,6 +23,7 @@ export default function AppRoutes() {
                 <Route path="/" element={<Dashboard />}>
                     <Route index element={loading ? <div>Loading...</div> : defaultElement} />
                     <Route path="televersement-cv" element={<TeleversementCV />} />
+                    <Route path="attente-acceptation-cv" element={<PendingCVs />}/>
                 </Route>
             </Route>
         </Routes>

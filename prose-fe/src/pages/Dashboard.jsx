@@ -63,6 +63,9 @@ export default function Dashboard() {
                         {user.data.role === "GESTIONNAIRE" ? (
                             <>
                                 {/*Mettre mes options ici*/}
+                                <button onClick={() => {nav('attente-acceptation-cv')}}>
+                                    CV en attente d'acceptation
+                                </button>
                             </>
                         ) : <></>}
                         {user.data.role === "PROFESSEUR" ? (
