@@ -1,10 +1,10 @@
+// src/main/java/com/AL565/prose/controller/OfferController.java
 package com.AL565.prose.controller;
 
 import com.AL565.prose.model.Employeur;
-import com.AL565.prose.model.ProseUser;
 import com.AL565.prose.service.StageService;
-import com.AL565.prose.service.dto.StageEnregistrerDTO;
 import com.AL565.prose.service.dto.StageDTO;
+import com.AL565.prose.service.dto.StageEnregistrerDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -24,14 +24,15 @@ public class OfferController {
 
     @PostMapping
     @PreAuthorize("hasRole('EMPLOYEUR')")
-    public ResponseEntity<StageDTO> createOffer(@AuthenticationPrincipal ProseUser principal,
-                                                @Valid @RequestBody StageEnregistrerDTO request) {
-        if (!(principal instanceof Employeur employeur)) {
+    public ResponseEntity<StageDTO> createOffer(
+            @AuthenticationPrincipal Employeur employeur,
+            @Valid @RequestBody StageEnregistrerDTO request
+    ) {
+        if (employeur == null) {
             throw new AccessDeniedException("Non autorisé");
         }
 
         StageDTO response = offerService.createStage(employeur, request);
-
         URI location = URI.create("/api/offers/" + response.getId());
         return ResponseEntity.created(location).body(response);
     }

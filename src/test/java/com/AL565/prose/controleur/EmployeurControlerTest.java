@@ -37,7 +37,6 @@ class EmployeurControlerTest {
     @MockitoBean
     private ProseUserRepository proseUserRepository;
 
-
     @Test
     void enregistrer() throws Exception {
         EmployeurEnregistrerDTO mark = new EmployeurEnregistrerDTO("Mark", "Carney", "Gouvernement du Canada", "mc@gov.ca", "gouvernement");
