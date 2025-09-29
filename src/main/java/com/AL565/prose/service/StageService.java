@@ -31,12 +31,11 @@ public class StageService {
         Stage saved = repo.save(toSave);
 
         if (saved == null) {
-            // Défensif: un JpaRepository ne devrait pas renvoyer null, mais au cas où un mock mal configuré…
+
             throw new IllegalStateException("Le repository a renvoyé null après save()");
         }
 
-        // Logging SAFE (voir point 2 pour le détail)
-        log.info("✅ Offre créée: id={}, titre='{}', employeurId={}",
+        log.info(" Offre créée: id={}, titre='{}', employeurId={}",
                 saved.getId(), saved.getTitle(), employeur.getId());
 
         return StageDTO.toDTO(saved);
