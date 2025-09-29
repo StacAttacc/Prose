@@ -1,4 +1,4 @@
-// src/test/java/com/AL565/prose/controleur/OfferControllerTest.java
+
 package com.AL565.prose.controleur;
 
 import com.AL565.prose.controller.OfferController;
@@ -46,9 +46,12 @@ class OfferControllerTest {
         }
     }
 
-    @Autowired MockMvc mockMvc;
-    @MockitoBean StageService stageService;
-    @Autowired ObjectMapper objectMapper;
+    @Autowired
+    MockMvc mockMvc;
+    @MockitoBean
+    StageService stageService;
+    @Autowired
+    ObjectMapper objectMapper;
 
     @Test
     void createOffer_retourne_201_avec_location_et_corps() throws Exception {
