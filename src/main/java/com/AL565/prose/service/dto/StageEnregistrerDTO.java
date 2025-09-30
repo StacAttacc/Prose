@@ -35,18 +35,18 @@ public class StageEnregistrerDTO {
     private List<String> skills;
 
     public static Stage toModel(StageEnregistrerDTO dto, Employeur employeur) {
-        return Stage.builder()
-                .title(dto.getTitle())
-                .description(dto.getDescription())
-                .requirements(dto.getRequirements())
-                .skills(dto.skills)
-                .startDate(dto.getStartDate())
-                .location(dto.getLocation())
-                .workMode(dto.getWorkMode())
-                .endDate(dto.getEndDate())
-                .compensation(dto.getCompensation())
-                .employeur(employeur)
-                .status(OfferStatus.SOUMISE)  // Critère d’acceptation
-                .build();
+        Stage stage = new Stage();
+        stage.setTitle(dto.getTitle());
+        stage.setDescription(dto.getDescription());
+        stage.setRequirements(dto.getRequirements());
+        stage.setSkills(dto.getSkills());
+        stage.setStartDate(dto.getStartDate());
+        stage.setEndDate(dto.getEndDate());
+        stage.setLocation(dto.getLocation());
+        stage.setWorkMode(dto.getWorkMode());
+        stage.setCompensation(dto.getCompensation());
+        stage.setEmployeur(employeur);
+        stage.setStatus(OfferStatus.SOUMISE);
+        return stage;
     }
 }
