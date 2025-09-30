@@ -35,3 +35,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### h2 ###
+src/main/resources/application-h2.properties
+src/main/java/com/AL565/prose/TcpServer.java

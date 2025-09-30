@@ -12,6 +12,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
+import java.sql.SQLException;
+
 @AllArgsConstructor
 @SpringBootApplication
 
@@ -20,8 +22,10 @@ public class ProseApplication {
     private final EmployeurService employeurService;
     private final EtudiantService etudiantService;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws SQLException {
+        TcpServer.createTcpServer("proseDB");
         SpringApplication.run(ProseApplication.class, args);
+
     }
 
     @Bean
