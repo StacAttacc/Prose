@@ -14,13 +14,15 @@ public class StageDTO {
     private String title;
     private OfferStatus status;
     private OffsetDateTime createdAt;
+    private String description;
 
-    public static StageDTO toDTO(Stage offer){
+    public static StageDTO toDTO(Stage offer) {
         return new StageDTO(
                 offer.getId(),
                 offer.getTitle(),
                 offer.getStatus(),
-                offer.getCreatedAt()
+                offer.getCreatedAt(),
+                offer.getDescription()
         );
     }
 }

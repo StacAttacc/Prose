@@ -28,7 +28,7 @@ class StageServiceTest {
     void createStage_retourneDTO_avecIdEtStatusSoumise_et_persiste() {
 
         var dto = new StageEnregistrerDTO();
-        dto.setTitle("Stagiaire Java");
+        dto.setTitle("Stagiare Java");
         var employeur = new Employeur();
         employeur.setId(7L);
 
