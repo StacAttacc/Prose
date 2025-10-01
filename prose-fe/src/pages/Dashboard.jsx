@@ -54,9 +54,8 @@ export default function Dashboard() {
                         ) : <></>}
                         {user.data.role === "ETUDIANT" ? (
                             <>
-                                {/*Mettre mes options ici*/}
-                                <button onClick={() => {nav('televersement-cv')}}>
-                                    Téléverser mon CV
+                                <button onClick={() => {nav('etudiant/offres-emplois')}}>
+                                    Offres d'emplois
                                 </button>
                                 <button onClick={() => {nav('etudiant/mes-statuts')}}>
                                     Mes statuts
