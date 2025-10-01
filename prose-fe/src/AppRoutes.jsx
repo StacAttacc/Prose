@@ -23,8 +23,8 @@ export default function AppRoutes() {
 
     const defaultPathStudent = () => {
         return hasCv === null ? <div>Loading...</div> :
-            hasCv ? <StudentStatus /> :
-                <div>Offres d'emplois</div>;
+            hasCv ? <div>Offres d'emplois</div> :
+                <StudentStatus />;
     }
 
     const defaultElement =
