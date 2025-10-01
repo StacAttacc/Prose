@@ -52,13 +52,9 @@ public class EtudiantController {
     }
 
     @GetMapping("/telecharger-cv/{email}")
-    public ResponseEntity<byte[]> telecharger(@PathVariable String email)
+    public ResponseEntity<EtudiantCvDTO> telecharger(@PathVariable String email)
             throws CvExceptions.StudentNotFoundException{
         EtudiantCvDTO cv = cvService.getCvOrThrow(email);
-        return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(cv.getType()))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + cv.getName() + "\"")
-                .body(cv.getData());
+        return ResponseEntity.ok(cv);
     }
-
 }

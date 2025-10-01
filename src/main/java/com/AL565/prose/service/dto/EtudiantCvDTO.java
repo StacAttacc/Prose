@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.Instant;
+import java.util.Base64;
 import java.util.Date;
 
 @Getter
@@ -19,7 +20,7 @@ public class EtudiantCvDTO {
     private Instant lastModifiedDate;
     private Date approvedAt;
     private Date rejectedAt;
-    private byte[] data;
+    private String data;
 
     public static EtudiantCvDTO toDto(CV cv) {
         EtudiantCvDTO dto = new EtudiantCvDTO();
@@ -30,7 +31,7 @@ public class EtudiantCvDTO {
         dto.setLastModifiedDate(cv.getLastModifiedDate());
         dto.setApprovedAt(cv.getApprovedAt());
         dto.setRejectedAt(cv.getRejectedAt());
-        dto.setData(cv.getData());
+        dto.setData(Base64.getEncoder().encodeToString(cv.getData()));
         return dto;
     }
 }

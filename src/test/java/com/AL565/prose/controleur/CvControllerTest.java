@@ -19,6 +19,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.http.MediaType;
 
+import java.util.Base64;
+
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
@@ -92,7 +94,7 @@ class CvControllerTest {
                     setName(cv.getName());
                     setType(cv.getType());
                     setSize(cv.getSize());
-                    setData(cv.getData());
+                    setData(Base64.getEncoder().encodeToString(cv.getData()));
                     setLastModified(cv.getLastModified());
                     setLastModifiedDate(cv.getLastModifiedDate());
                 }}

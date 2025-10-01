@@ -32,11 +32,12 @@ export const televerserCv = async (cv, user) => {
 export const telechargerCv = async (email, user) => {
     try {
         const response = await axios.get(`${CV_DOWNLOAD_URL}/${email}`, {
-            responseType: "blob",
             headers: {
                 'Authorization': `Bearer ${user.data.token}`
             }
         });
+
+        console.log(response);
 
         return response.data;
     } catch (e) {
