@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class StageService {
 
-    private static final Logger log = LoggerFactory.getLogger(StageService.class);
     private final StageRepository repo;
 
     @Transactional
@@ -35,8 +34,6 @@ public class StageService {
             throw new IllegalStateException("Le repository a renvoyé null après save()");
         }
 
-        log.info(" Offre créée: id={}, titre='{}', employeurId={}",
-                saved.getId(), saved.getTitle(), employeur.getId());
 
         return StageDTO.toDTO(saved);
     }
