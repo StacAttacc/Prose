@@ -58,6 +58,9 @@ export default function Dashboard() {
                                 <button onClick={() => {nav('televersement-cv')}}>
                                     Téléverser mon CV
                                 </button>
+                                <button onClick={() => {nav('etudiant/mes-statuts')}}>
+                                    Mes statuts
+                                </button>
                             </>
                         ) : <></>}
                         {user.data.role === "GESTIONNAIRE" ? (
