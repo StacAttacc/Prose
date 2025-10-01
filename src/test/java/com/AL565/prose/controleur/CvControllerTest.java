@@ -3,6 +3,7 @@ package com.AL565.prose.controleur;
 import com.AL565.prose.controller.EtudiantController;
 import com.AL565.prose.service.EmployeurService;
 import com.AL565.prose.service.EtudiantService;
+import com.AL565.prose.service.GestionnaireService;
 import com.AL565.prose.service.dto.EtudiantCvDTO;
 import com.AL565.prose.model.CV;
 import com.AL565.prose.repository.CvRepository;
@@ -43,6 +44,9 @@ class CvControllerTest {
 
     @MockitoBean
     private EmployeurService employeurService;
+
+    @MockitoBean
+    private GestionnaireService gestionnaireService;
 
     @Test
     @WithMockUser(username = "testuser", roles = {"ETUDIANT"})

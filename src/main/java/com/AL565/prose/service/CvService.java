@@ -69,16 +69,8 @@ public class CvService {
     }
 
     public EtudiantCvDTO getCvOrThrow(String username) throws StudentNotFoundException {
-        CV entity = cvRepository.findByEtudiant_Credentials_Username(username)
+        return cvRepository.findByEtudiant_Credentials_Username(username)
+                .map(EtudiantCvDTO::toDto)
                 .orElseThrow(StudentNotFoundException::new);
-
-        return new EtudiantCvDTO() {{
-            setName(entity.getName());
-            setType(entity.getType());
-            setSize(entity.getSize());
-            setLastModified(entity.getLastModified());
-            setLastModifiedDate(entity.getLastModifiedDate());
-            setData(entity.getData());
-        }};
     }
 }
