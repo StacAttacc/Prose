@@ -24,7 +24,7 @@ export default function StudentStatus() {
     const [error, setError] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [pdfUrl, setPdfUrl] = useState(null | String);
-
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
 
     useEffect(() => {
         async function fetchCvStatus() {
@@ -40,7 +40,11 @@ export default function StudentStatus() {
             }
         }
         fetchCvStatus();
-    }, [user]);
+    }, [user, refreshTrigger]);
+
+    const handleCvUpload = () => {
+        setRefreshTrigger(prev => prev + 1);
+    };
 
     if (status === "loading") return <div>Loading...</div>;
     if (error) return <div>{error}</div>;
@@ -73,7 +77,7 @@ export default function StudentStatus() {
             <div className="flex flex-col md:flex-row gap-0 rounded-xl border shadow bg-white overflow-hidden">
 
                 <div>
-                    <TeleversementCV />
+                    <TeleversementCV onUploadSuccess={handleCvUpload} />
                 </div>
 
                 <div className="hidden md:block w-px bg-gray-200"></div>

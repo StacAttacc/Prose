@@ -2,7 +2,7 @@ import React, {useRef, useState} from 'react';
 import {televerserCv} from "../services/EtudiantService.js";
 import {useAuth} from "../context/AuthContext.jsx";
 
-const TeleversementCV = () => {
+const TeleversementCV = ({ onUploadSuccess }) => {
     const [selectedFile, setSelectedFile] = useState(null);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
@@ -63,6 +63,9 @@ const TeleversementCV = () => {
             if (fileInputRef.current) fileInputRef.current.value = '';
             setError('');
             setSuccess('Cv téléversé avec succès !');
+            if (onUploadSuccess) {
+                onUploadSuccess();
+            }
         } catch (err) {
             setError(err.message || 'Erreur lors du téléversement');
         } finally {
