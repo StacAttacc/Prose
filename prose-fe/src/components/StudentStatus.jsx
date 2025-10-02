@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { telechargerCv } from "../services/EtudiantService.js";
 import { useAuth } from "../context/AuthContext";
 import TeleversementCV from "./TeleversementCV.jsx";
+import { Worker, Viewer } from '@react-pdf-viewer/core';
 
 const statusColors = {
     accepted: "bg-green-100 border-green-300",
@@ -43,16 +44,24 @@ export default function StudentStatus() {
     if (error) return <div>{error}</div>;
 
     function openPdfModal(cv) {
-        // Convert base64 to Blob URL
-        const byteCharacters = atob(cv.data);
-        const byteNumbers = new Array(byteCharacters.length);
-        for (let i = 0; i < byteCharacters.length; i++) {
-            byteNumbers[i] = byteCharacters.charCodeAt(i);
+        if (!cv?.data) {
+            setPdfUrl(null);
+            setShowModal(true);
+            return;
         }
-        const byteArray = new Uint8Array(byteNumbers);
-        const blob = new Blob([byteArray], { type: cv.type || "application/pdf" });
-        const url = URL.createObjectURL(blob);
-        setPdfUrl(url);
+        try {
+            const byteCharacters = atob(cv.data);
+            const byteNumbers = new Array(byteCharacters.length);
+            for (let i = 0; i < byteCharacters.length; i++) {
+                byteNumbers[i] = byteCharacters.charCodeAt(i);
+            }
+            const byteArray = new Uint8Array(byteNumbers);
+            const blob = new Blob([byteArray], { type: cv.type || "application/pdf" });
+            const url = URL.createObjectURL(blob);
+            setPdfUrl(url);
+        } catch (e) {
+            setPdfUrl(null);
+        }
         setShowModal(true);
     }
 
@@ -112,19 +121,28 @@ export default function StudentStatus() {
                     )}
                 </div>
                 {showModal && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                        <div className="bg-white rounded-lg p-4 max-w-2xl w-full relative">
+                    <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+                        <div className="bg-white rounded-lg p-6 md:p-8 w-full max-w-3xl shadow-2xl relative max-h-[80vh]">
                             <button
                                 className="absolute top-2 right-2 text-gray-700 text-xl"
                                 onClick={closeModal}
                             >
                                 &times;
                             </button>
-                            <iframe
-                                src={pdfUrl}
-                                title="CV PDF"
-                                className="w-full h-[70vh] border rounded"
-                            />
+                            <div className="mb-4">
+                                {pdfUrl ? (
+                                    <div className="h-[500px] overflow-auto border rounded">
+                                        <Worker workerUrl={`https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js`}>
+                                            <Viewer fileUrl={pdfUrl} />
+                                        </Worker>
+                                    </div>
+                                ) : (
+                                    <div className="text-sm text-gray-500">
+                                        No preview available. (Check if the CV is uploaded and valid.)
+                                    </div>
+                                )}
+                            </div>
+
                         </div>
                     </div>
                 )}
