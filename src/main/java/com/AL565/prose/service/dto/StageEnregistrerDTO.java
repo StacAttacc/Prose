@@ -21,7 +21,6 @@ public class StageEnregistrerDTO {
     @NotBlank
     private String requirements;
 
-    private String skillsCsv;
     private LocalDate startDate;
     private LocalDate endDate;
 
