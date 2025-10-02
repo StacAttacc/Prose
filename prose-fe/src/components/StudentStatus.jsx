@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { telechargerCv } from "../services/EtudiantService";
+import { telechargerCv } from "../services/CvService.js";
 import { useAuth } from "../context/AuthContext";
 import TeleversementCV from "./TeleversementCV.jsx";
 
@@ -8,13 +8,6 @@ const statusColors = {
     pending: "bg-yellow-100 border-yellow-300",
     rejected: "bg-red-100 border-red-300",
     none: "bg-gray-100 border-gray-300"
-};
-
-const statusLabels = {
-    accepted: { text: "Accepted", color: "bg-green-400" },
-    pending: { text: "Pending", color: "bg-yellow-400" },
-    rejected: { text: "Rejected", color: "bg-red-400" },
-    none: { text: "No CV", color: "bg-gray-400" }
 };
 
 export default function StudentStatus() {

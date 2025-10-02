@@ -3,10 +3,9 @@ import { useAuth } from "./context/AuthContext.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import PageAuthentification from "./pages/PageAuthentification.jsx";
-import TeleversementCV from "./components/TeleversementCV.jsx";
 import PendingCVs from "./components/PendingCVs.jsx";
 import {useEffect, useState} from "react";
-import { telechargerCv } from "./services/EtudiantService.js";
+import { telechargerCv } from "./services/CvService.js";
 import StudentStatus from "./components/StudentStatus.jsx";
 
 export default function AppRoutes() {
