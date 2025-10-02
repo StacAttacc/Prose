@@ -39,6 +39,7 @@ public class GestionnaireService {
                     .map(GestionnaireCvDTO::toDto)
                     .toList();
         } catch (Exception e) {
+            System.out.println(e.getMessage());
             throw new FailedToFetchUnapprovedCvsException();
         }
     }

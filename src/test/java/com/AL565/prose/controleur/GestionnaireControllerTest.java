@@ -1,6 +1,9 @@
 package com.AL565.prose.controleur;
 
 import com.AL565.prose.controller.GestionnaireController;
+import com.AL565.prose.model.CV;
+import com.AL565.prose.model.Etudiant;
+import com.AL565.prose.model.auth.Credentials;
 import com.AL565.prose.security.exceptions.CvExceptions;
 import com.AL565.prose.service.EmployeurService;
 import com.AL565.prose.service.EtudiantService;
@@ -44,7 +47,16 @@ class GestionnaireControllerTest {
     @Test
     @WithMockUser(roles = {"GESTIONNAIRE"})
     void getPendingCvs_shouldReturnOk() throws Exception {
-        GestionnaireCvDTO dto = new GestionnaireCvDTO(1L, "cv.pdf", 2L, null, null);
+        GestionnaireCvDTO dto = new GestionnaireCvDTO();
+        dto.setId(1L);
+        dto.setName("CV1");
+        dto.setApprovedAt(null);
+        dto.setRejectedAt(null);
+        dto.setEtudiantPrenom("John");
+        dto.setEtudiantNom("Doe");
+        dto.setEtudiantEmail("john@doe.com");
+        dto.setData("data");
+
         when(gestionnaireService.getPendingCvs()).thenReturn(List.of(dto));
 
         mockMvc.perform(get("/gestionnaire/cv/pending")

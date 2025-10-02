@@ -1,7 +1,9 @@
 package com.AL565.prose.service;
 
 import com.AL565.prose.model.CV;
+import com.AL565.prose.model.auth.Credentials;
 import com.AL565.prose.repository.CvRepository;
+import com.AL565.prose.repository.GestionnaireRepository;
 import com.AL565.prose.service.dto.GestionnaireCvDTO;
 import com.AL565.prose.model.Etudiant;
 import com.AL565.prose.security.exceptions.CvExceptions;
@@ -26,15 +28,28 @@ public class GestionnaireServiceCvTest {
     @Mock
     private CvRepository cvRepository;
 
+    @Mock
+    private GestionnaireRepository gestionnaireRepository;
+
     @InjectMocks
     private GestionnaireService gestionnaireService;
 
     @Test
     void getPendingCvs_ShouldReturnMappedDTOs() throws Exception {
+        Etudiant etudiant1 = new Etudiant();
+        etudiant1.setFirstName("John");
+        etudiant1.setLastName("Doe");
+        etudiant1.setCredentials(new Credentials());
+
+        Etudiant etudiant2 = new Etudiant();
+        etudiant2.setFirstName("Jane");
+        etudiant2.setLastName("Smith");
+        etudiant2.setCredentials(new Credentials());
+
         CV cv1 = CV.builder()
                 .id(1L)
                 .name("CV1")
-                .etudiant(new com.AL565.prose.model.Etudiant())
+                .etudiant(etudiant1)
                 .approvedAt(null)
                 .rejectedAt(null)
                 .build();
@@ -42,10 +57,11 @@ public class GestionnaireServiceCvTest {
         CV cv2 = CV.builder()
                 .id(2L)
                 .name("CV2")
-                .etudiant(new com.AL565.prose.model.Etudiant())
+                .etudiant(etudiant2)
                 .approvedAt(null)
                 .rejectedAt(null)
                 .build();
+
 
         when(cvRepository.findCVSByApprovedAtIsNullAndRejectedAtIsNull()).thenReturn(Arrays.asList(cv1, cv2));
 
