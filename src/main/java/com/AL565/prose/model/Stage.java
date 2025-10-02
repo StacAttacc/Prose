@@ -7,6 +7,7 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -29,7 +30,10 @@ public class Stage {
 
     private String requirements;
 
-    private List<String> skills;
+    @ElementCollection
+    @CollectionTable(name = "stage_skill", joinColumns = @JoinColumn(name = "stage_id"))
+    private List<String> skills = new ArrayList<>();
+
 
     private LocalDate startDate;
 

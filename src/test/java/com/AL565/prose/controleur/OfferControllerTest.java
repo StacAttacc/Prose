@@ -1,4 +1,4 @@
-// src/test/java/com/AL565/prose/controleur/OfferControllerTest.java
+
 package com.AL565.prose.controleur;
 
 import com.AL565.prose.controller.OfferController;
@@ -46,9 +46,12 @@ class OfferControllerTest {
         }
     }
 
-    @Autowired MockMvc mockMvc;
-    @MockitoBean StageService stageService;
-    @Autowired ObjectMapper objectMapper;
+    @Autowired
+    MockMvc mockMvc;
+    @MockitoBean
+    StageService stageService;
+    @Autowired
+    ObjectMapper objectMapper;
 
     @Test
     void createOffer_retourne_201_avec_location_et_corps() throws Exception {
@@ -61,7 +64,7 @@ class OfferControllerTest {
         dto.setWorkMode("HYBRIDE");
         dto.setCompensation("22$/h");
 
-        var returned = new StageDTO(42L, dto.getTitle(), com.AL565.prose.model.OfferStatus.SOUMISE, OffsetDateTime.now());
+        var returned = new StageDTO(42L, dto.getTitle(), com.AL565.prose.model.OfferStatus.SOUMISE, OffsetDateTime.now(), dto.getDescription());
         when(stageService.createStage(any(Employeur.class), any(StageEnregistrerDTO.class))).thenReturn(returned);
 
         var employeur = new Employeur();
@@ -80,9 +83,12 @@ class OfferControllerTest {
                         .content(objectMapper.writeValueAsString(dto))
         ).andReturn();
 
+        String body = result.getResponse().getContentAsString();
         Assertions.assertThat(result.getResponse().getStatus()).isEqualTo(201);
         Assertions.assertThat(result.getResponse().getHeader("Location")).isEqualTo("/api/offers/42");
         Assertions.assertThat(result.getResponse().getContentAsString()).contains("\"id\":42");
         Assertions.assertThat(result.getResponse().getContentAsString()).contains("\"status\":\"SOUMISE\"");
+        Assertions.assertThat(body).contains("\"description\":\"Développer des APIs Spring\"");
+
     }
 }

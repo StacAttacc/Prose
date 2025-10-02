@@ -8,7 +8,8 @@ import org.springframework.security.core.GrantedAuthority;
 import java.util.Collection;
 
 @Entity
-@Getter @Setter
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
@@ -18,7 +19,7 @@ public abstract class ProseUser {
     private Long id;
     private String firstName;
     private String lastName;
-
+    
     @Embedded
     @Column()
     private Credentials credentials;
@@ -38,7 +39,7 @@ public abstract class ProseUser {
         return credentials.getPassword();
     }
 
-    public Collection<? extends GrantedAuthority> getAuthorities(){
+    public Collection<? extends GrantedAuthority> getAuthorities() {
         return credentials.getAuthorities();
     }
 }

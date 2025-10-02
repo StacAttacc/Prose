@@ -8,7 +8,7 @@ const TeleversementCV = () => {
     const [success, setSuccess] = useState('');
     const [uploading, setUploading] = useState(false);
     const fileInputRef = useRef(null);
-    const { user } = useAuth();
+    const {user} = useAuth();
 
     const validerFichier = (file) => {
         if (!file) return false;
@@ -106,7 +106,7 @@ const TeleversementCV = () => {
 
                 <p className="text-xs text-gray-500 mt-2 text-center">
                     Veuillez choisir un fichier au format PDF.
-                    <br />
+                    <br/>
                     Taille maximum : 5 MB
                 </p>
             </div>
