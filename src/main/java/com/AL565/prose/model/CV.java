@@ -41,4 +41,6 @@ public class CV {
 
     private Date approvedAt;
     private Date rejectedAt;
+
+    private String comment;
 }

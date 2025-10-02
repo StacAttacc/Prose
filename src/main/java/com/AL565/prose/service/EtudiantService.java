@@ -75,6 +75,7 @@ public class EtudiantService {
                 .data(data)
                 .etudiant(etudiant)
                 .approvedAt(null)
+                .comment(null)
                 .build();
 
         cvRepository.findByEtudiant_Credentials_Username(email)
@@ -86,6 +87,7 @@ public class EtudiantService {
                     existingCv.setLastModifiedDate(newCv.getLastModifiedDate());
                     existingCv.setData(newCv.getData());
                     existingCv.setApprovedAt(newCv.getApprovedAt());
+                    existingCv.setComment(newCv.getComment());
                     return cvRepository.save(existingCv);
                 })
                 .orElseGet(() -> cvRepository.save(newCv));

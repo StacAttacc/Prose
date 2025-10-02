@@ -52,6 +52,8 @@ public class GestionnaireServiceCvTest {
                 .etudiant(etudiant1)
                 .approvedAt(null)
                 .rejectedAt(null)
+                .comment(null)
+                .data(new byte[]{1, 2, 3})
                 .build();
 
         CV cv2 = CV.builder()
@@ -60,6 +62,8 @@ public class GestionnaireServiceCvTest {
                 .etudiant(etudiant2)
                 .approvedAt(null)
                 .rejectedAt(null)
+                .comment(null)
+                .data(new byte[]{1, 2, 3})
                 .build();
 
 
@@ -90,7 +94,7 @@ public class GestionnaireServiceCvTest {
         when(cvRepository.findById(cvId)).thenReturn(Optional.of(cv));
         when(cvRepository.save(any(CV.class))).thenReturn(cv);
 
-        gestionnaireService.approveCv(cvId);
+        gestionnaireService.approveCv(cvId, "Looks good");
 
         verify(cvRepository).findById(cvId);
         verify(cvRepository).save(cv);
@@ -103,7 +107,7 @@ public class GestionnaireServiceCvTest {
         Long cvId = 99L;
         when(cvRepository.findById(cvId)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> gestionnaireService.approveCv(cvId))
+        assertThatThrownBy(() -> gestionnaireService.approveCv(cvId, "Looks good"))
                 .isInstanceOf(CvExceptions.CvNotFoundException.class);
 
         verify(cvRepository).findById(cvId);
@@ -125,7 +129,7 @@ public class GestionnaireServiceCvTest {
         when(cvRepository.findById(cvId)).thenReturn(Optional.of(cv));
         when(cvRepository.save(any(CV.class))).thenReturn(cv);
 
-        gestionnaireService.rejectCv(cvId);
+        gestionnaireService.rejectCv(cvId, "Not suitable");
 
         verify(cvRepository).findById(cvId);
         verify(cvRepository).save(cv);
@@ -138,7 +142,7 @@ public class GestionnaireServiceCvTest {
         Long cvId = 99L;
         when(cvRepository.findById(cvId)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> gestionnaireService.rejectCv(cvId))
+        assertThatThrownBy(() -> gestionnaireService.rejectCv(cvId, "Not suitable"))
                 .isInstanceOf(CvExceptions.CvNotFoundException.class);
 
         verify(cvRepository).findById(cvId);

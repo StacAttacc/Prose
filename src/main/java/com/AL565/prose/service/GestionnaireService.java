@@ -44,18 +44,20 @@ public class GestionnaireService {
         }
     }
 
-    public void approveCv(Long cvId) throws Exception {
+    public void approveCv(Long cvId, String comment) throws Exception {
         cvRepository.findById(cvId).map(cv -> {
             cv.setApprovedAt(new Date());
             cv.setRejectedAt(null);
+            cv.setComment(comment);
             return cvRepository.save(cv);
         }).orElseThrow(CvNotFoundException::new);
     }
 
-    public void rejectCv(Long cvId) throws Exception {
+    public void rejectCv(Long cvId, String comment) throws Exception {
         cvRepository.findById(cvId).map(cv -> {
             cv.setRejectedAt(new Date());
             cv.setApprovedAt(null);
+            cv.setComment(comment);
             return cvRepository.save(cv);
         }).orElseThrow(CvNotFoundException::new);
     }

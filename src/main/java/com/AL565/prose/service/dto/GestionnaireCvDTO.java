@@ -22,6 +22,7 @@ public class GestionnaireCvDTO {
     private Date approvedAt;
     private Date rejectedAt;
     private String data;
+    private String comment;
 
     public static GestionnaireCvDTO toDto(CV cv) {
         return new GestionnaireCvDTO(
@@ -32,6 +33,7 @@ public class GestionnaireCvDTO {
                 cv.getEtudiant().getEmail(),
                 cv.getApprovedAt(),
                 cv.getRejectedAt(),
-                Base64.getEncoder().encodeToString(cv.getData()));
+                Base64.getEncoder().encodeToString(cv.getData()),
+                cv.getComment());
     }
 }

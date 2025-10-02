@@ -1,6 +1,7 @@
 package com.AL565.prose.controller;
 
 import com.AL565.prose.service.GestionnaireService;
+import com.AL565.prose.service.dto.CvDecisionDTO;
 import com.AL565.prose.service.dto.GestionnaireCvDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,15 +22,15 @@ public class GestionnaireController {
         return ResponseEntity.ok(cvs);
     }
 
-    @PostMapping("/cv/{cvId}/approve")
-    public ResponseEntity<Void> approveCv(@PathVariable Long cvId) throws Exception {
-        gestionnaireService.approveCv(cvId);
+    @PostMapping("/cv/approve")
+    public ResponseEntity<Void> approveCv(@RequestBody CvDecisionDTO decisionDTO) throws Exception {
+        gestionnaireService.approveCv(decisionDTO.id, decisionDTO.comment);
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/cv/{cvId}/reject")
-    public ResponseEntity<Void> rejectCv(@PathVariable Long cvId) throws Exception {
-        gestionnaireService.rejectCv(cvId);
+    @PostMapping("/cv/reject")
+    public ResponseEntity<Void> rejectCv(@RequestBody CvDecisionDTO decisionDTO) throws Exception {
+        gestionnaireService.rejectCv(decisionDTO.id, decisionDTO.comment);
         return ResponseEntity.ok().build();
     }
 }

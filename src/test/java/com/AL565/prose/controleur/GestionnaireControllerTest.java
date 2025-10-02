@@ -1,9 +1,6 @@
 package com.AL565.prose.controleur;
 
 import com.AL565.prose.controller.GestionnaireController;
-import com.AL565.prose.model.CV;
-import com.AL565.prose.model.Etudiant;
-import com.AL565.prose.model.auth.Credentials;
 import com.AL565.prose.security.exceptions.CvExceptions;
 import com.AL565.prose.service.EmployeurService;
 import com.AL565.prose.service.EtudiantService;
@@ -67,26 +64,32 @@ class GestionnaireControllerTest {
     @Test
     @WithMockUser(roles = {"GESTIONNAIRE"})
     void approveCv_shouldReturnOk() throws Exception {
-        mockMvc.perform(post("/gestionnaire/cv/1/approve")
-                        .contentType(MediaType.APPLICATION_JSON))
+        String body = "{\"id\":1,\"comment\":\"ok\"}";
+        mockMvc.perform(post("/gestionnaire/cv/approve")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
                 .andExpect(status().isOk());
     }
 
     @Test
     @WithMockUser(roles = {"GESTIONNAIRE"})
     void rejectCv_shouldReturnOk() throws Exception {
-        mockMvc.perform(post("/gestionnaire/cv/1/reject")
-                        .contentType(MediaType.APPLICATION_JSON))
+        String body = "{\"id\":2,\"comment\":\"not ok\"}";
+        mockMvc.perform(post("/gestionnaire/cv/reject")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
                 .andExpect(status().isOk());
     }
 
     @Test
     @WithMockUser(roles = {"GESTIONNAIRE"})
     void approveCv_shouldReturnError_whenException() throws Exception {
-        doThrow(new CvExceptions.CvNotFoundException()).when(gestionnaireService).approveCv(99L);
+        doThrow(new CvExceptions.CvNotFoundException()).when(gestionnaireService).approveCv(99L, "non");
 
-        mockMvc.perform(post("/gestionnaire/cv/99/approve")
-                        .contentType(MediaType.APPLICATION_JSON))
+        String body = "{\"id\":99,\"comment\":\"non\"}";
+        mockMvc.perform(post("/gestionnaire/cv/approve")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
                 .andExpect(status().isNotFound());
     }
 }

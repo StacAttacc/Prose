@@ -21,6 +21,7 @@ public class EtudiantCvDTO {
     private Date approvedAt;
     private Date rejectedAt;
     private String data;
+    private  String comment;
 
     public static EtudiantCvDTO toDto(CV cv) {
         EtudiantCvDTO dto = new EtudiantCvDTO();
@@ -32,6 +33,7 @@ public class EtudiantCvDTO {
         dto.setApprovedAt(cv.getApprovedAt());
         dto.setRejectedAt(cv.getRejectedAt());
         dto.setData(Base64.getEncoder().encodeToString(cv.getData()));
+        dto.setComment(cv.getComment());
         return dto;
     }
 }
