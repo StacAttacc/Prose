@@ -6,6 +6,7 @@ import com.AL565.prose.model.Etudiant;
 import com.AL565.prose.repository.EtudiantRepository;
 import com.AL565.prose.repository.CvRepository;
 import com.AL565.prose.security.exceptions.CvExceptions.*;
+import com.AL565.prose.service.dto.GestionnaireCvDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.Date;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -72,5 +75,32 @@ public class CvService {
         return cvRepository.findByEtudiant_Credentials_Username(username)
                 .map(EtudiantCvDTO::toDto)
                 .orElseThrow(StudentNotFoundException::new);
+    }
+
+    public List<GestionnaireCvDTO> getPendingCvs() throws Exception {
+        try {
+            return cvRepository.findCVSByApprovedAtIsNullAndRejectedAtIsNull()
+                    .stream()
+                    .map(GestionnaireCvDTO::toDto)
+                    .toList();
+        } catch (Exception e) {
+            throw new FailedToFetchUnapprovedCvsException();
+        }
+    }
+
+    public void approveCv(Long cvId) throws Exception {
+        cvRepository.findById(cvId).map(cv -> {
+            cv.setApprovedAt(new Date());
+            cv.setRejectedAt(null);
+            return cvRepository.save(cv);
+        }).orElseThrow(CvNotFoundException::new);
+    }
+
+    public void rejectCv(Long cvId) throws Exception {
+        cvRepository.findById(cvId).map(cv -> {
+            cv.setRejectedAt(new Date());
+            cv.setApprovedAt(null);
+            return cvRepository.save(cv);
+        }).orElseThrow(CvNotFoundException::new);
     }
 }
