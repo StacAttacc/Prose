@@ -35,7 +35,7 @@ public class EmployeurService {
         return EmployeurDTO.toDTO((Employeur) proseUserRepository.findByCredentials_Username(email).orElseThrow());
     }
 
-    // EmployeurService.java
+
     @Transactional
     public StageDTO createStage(Employeur employeur, StageDTO dto) {
         if (employeur == null) {

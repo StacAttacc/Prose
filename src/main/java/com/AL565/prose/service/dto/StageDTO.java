@@ -15,7 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@JsonInclude(JsonInclude.Include.NON_NULL) // On n’envoie que ce qu’on a
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class StageDTO {
 
     private Long id;
