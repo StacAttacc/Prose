@@ -48,6 +48,9 @@ export default function Dashboard() {
                     <div className="relative flex h-12 items-center justify-around">
                         {user.data.role === "EMPLOYEUR" ? (
                             <>
+                                <button onClick={() => {nav('creation-stage')}} className="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2">
+                                    Créer un stage
+                                </button>
                                 {/*Ex: <button onClick(() => {navigate('/create-stage')})>*/}
                                 {/*Mettre mes options ici*/}
                             </>
@@ -55,7 +58,7 @@ export default function Dashboard() {
                         {user.data.role === "ETUDIANT" ? (
                             <>
                                 {/*Mettre mes options ici*/}
-                                <button onClick={() => {nav('televersement-cv')}}>
+                                <button onClick={() => {nav('televersement-cv')}} className="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2">
                                     Téléverser mon CV
                                 </button>
                             </>
