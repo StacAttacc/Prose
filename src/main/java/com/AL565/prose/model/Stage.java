@@ -25,6 +25,8 @@ public class Stage {
 
     private String title;
 
+    private Integer durationWeeks;
+
     @Lob
     private String description;
 

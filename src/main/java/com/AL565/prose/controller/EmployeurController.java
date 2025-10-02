@@ -1,21 +1,29 @@
 package com.AL565.prose.controller;
 
 
+import com.AL565.prose.model.Employeur;
 import com.AL565.prose.service.dto.EmployeurEnregistrerDTO;
 import com.AL565.prose.service.EmployeurService;
+import com.AL565.prose.service.dto.StageDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.net.URI;
+
 @AllArgsConstructor
 @RestController
 @RequestMapping("/employeur")
-public class EmployeurControler {
+public class EmployeurController {
 
     private EmployeurService employeurService;
 
@@ -28,4 +36,20 @@ public class EmployeurControler {
             return new ResponseEntity<>("Le email est déja en cours d'utilisation.", HttpStatus.BAD_REQUEST);
         }
     }
+
+    @PostMapping("/offers")
+    @PreAuthorize("hasRole('EMPLOYEUR')")
+    public ResponseEntity<StageDTO> createOffer(
+            @AuthenticationPrincipal Employeur employeur,
+            @Valid @RequestBody StageDTO request
+    ) {
+        if (employeur == null) {
+            throw new AccessDeniedException("Non autorisé");
+        }
+
+        StageDTO response = employeurService.createStage(employeur, request);
+        URI location = URI.create("/employeur/offers/" + response.getId());
+        return ResponseEntity.created(location).body(response);
+    }
 }
+

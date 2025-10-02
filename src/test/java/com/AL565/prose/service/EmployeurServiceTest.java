@@ -1,10 +1,13 @@
 package com.AL565.prose.service;
 
 import com.AL565.prose.model.Employeur;
+import com.AL565.prose.model.Stage;
 import com.AL565.prose.repository.EmployeurRepository;
 import com.AL565.prose.repository.ProseUserRepository;
+import com.AL565.prose.repository.StageRepository;
 import com.AL565.prose.service.dto.EmployeurDTO;
 import com.AL565.prose.service.dto.EmployeurEnregistrerDTO;
+import com.AL565.prose.service.dto.StageDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,8 +16,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -30,6 +37,9 @@ class EmployeurServiceTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private StageRepository stageRepository;
 
     @InjectMocks
     private EmployeurService employeurService;
@@ -55,4 +65,61 @@ class EmployeurServiceTest {
 
         assertEquals(1L, markDTO.getId());
     }
+
+
+    @Test
+    void createStage_retourneDTO_avecId_et_statusSoumise_et_persiste() {
+        var dto = StageDTO.builder()
+                .title("Stagiaire Java")
+                .description("Développer des APIs Spring")
+                .requirements("Java, Spring, SQL")
+                .skills(List.of("Java", "Spring"))
+                .startDate(LocalDate.now().plusDays(7))
+                .endDate(LocalDate.now().plusWeeks(12))
+                .durationWeeks(12)
+                .location("Montréal")
+                .workMode("HYBRIDE")
+                .compensation("22$/h")
+                .build();
+
+        var employeur = new Employeur();
+        employeur.setId(7L);
+
+        when(stageRepository.save(any(Stage.class))).thenAnswer(inv -> {
+            Stage s = inv.getArgument(0);
+            s.setId(42L);
+            return s;
+        });
+
+        StageDTO out = employeurService.createStage(employeur, dto);
+
+        assertThat(out.getId()).isEqualTo(42L);
+        assertThat(out.getStatus().name()).isEqualTo("SOUMISE");
+        verify(stageRepository, times(1)).save(any(Stage.class));
+    }
+
+    @Test
+    void createStage_throw_illegalArgument_siEmployeurNull() {
+        var dto = StageDTO.builder().title("Offre").build();
+
+        assertThatThrownBy(() -> employeurService.createStage(null, dto))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("employeur");
+
+        verifyNoInteractions(stageRepository);
+    }
+
+    @Test
+    void createStage_throw_illegalArgument_siDtoNull() {
+        var employeur = new Employeur();
+        employeur.setId(7L);
+
+        assertThatThrownBy(() -> employeurService.createStage(employeur, null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("dto");
+
+        verifyNoInteractions(stageRepository);
+    }
+
+
 }
