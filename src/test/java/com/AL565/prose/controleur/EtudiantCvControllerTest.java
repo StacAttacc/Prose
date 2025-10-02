@@ -7,7 +7,6 @@ import com.AL565.prose.service.GestionnaireService;
 import com.AL565.prose.service.dto.EtudiantCvDTO;
 import com.AL565.prose.model.CV;
 import com.AL565.prose.repository.CvRepository;
-import com.AL565.prose.service.CvService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -30,16 +29,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
 @WebMvcTest(controllers = EtudiantController.class)
-class CvControllerTest {
+class EtudiantCvControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @MockitoBean
     private CvRepository cvRepository;
-
-    @MockitoBean
-    private CvService cvService;
 
     @MockitoBean
     private EtudiantService etudiantInscriptionService;
@@ -49,6 +45,9 @@ class CvControllerTest {
 
     @MockitoBean
     private GestionnaireService gestionnaireService;
+
+    @Autowired
+    private EtudiantService etudiantService;
 
     @Test
     @WithMockUser(username = "testuser", roles = {"ETUDIANT"})
@@ -89,7 +88,7 @@ class CvControllerTest {
                 .lastModifiedDate(java.time.Instant.now())
                 .build();
 
-        when(cvService.getCvOrThrow("email@email.email")).thenReturn(
+        when(etudiantService.getCvOrThrow("email@email.email")).thenReturn(
                 new EtudiantCvDTO() {{
                     setName(cv.getName());
                     setType(cv.getType());

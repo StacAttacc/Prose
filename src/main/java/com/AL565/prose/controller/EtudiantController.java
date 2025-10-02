@@ -1,14 +1,11 @@
 package com.AL565.prose.controller;
 
-import com.AL565.prose.service.dto.EtudiantCvDTO;
 import com.AL565.prose.service.EtudiantService;
+import com.AL565.prose.service.dto.EtudiantCvDTO;
 import com.AL565.prose.security.exceptions.CvExceptions;
 import com.AL565.prose.service.dto.EtudiantDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
-import com.AL565.prose.service.CvService;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,11 +16,8 @@ public class EtudiantController {
 
     private final EtudiantService etudiantService;
 
-    private final CvService cvService;
-
-    public EtudiantController(EtudiantService etudiantService, CvService cvService) {
+    public EtudiantController(EtudiantService etudiantService) {
         this.etudiantService = etudiantService;
-        this.cvService = cvService;
     }
 
     @PostMapping("/register")
@@ -47,14 +41,14 @@ public class EtudiantController {
                                              @RequestParam("email") String email,
                                              @RequestParam(value = "lastModified", required = false) String lastModified)
             throws Exception {
-        cvService.saveCv(cv, email, lastModified);
+        etudiantService.saveCv(cv, email, lastModified);
         return ResponseEntity.status(HttpStatus.CREATED).body("CV téléversé avec succès");
     }
 
     @GetMapping("/telecharger-cv/{email}")
     public ResponseEntity<EtudiantCvDTO> telecharger(@PathVariable String email)
             throws CvExceptions.StudentNotFoundException{
-        EtudiantCvDTO cv = cvService.getCvOrThrow(email);
+        EtudiantCvDTO cv = etudiantService.getCvOrThrow(email);
         return ResponseEntity.ok(cv);
     }
 }

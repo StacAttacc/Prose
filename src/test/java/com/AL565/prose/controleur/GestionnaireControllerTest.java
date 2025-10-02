@@ -2,7 +2,6 @@ package com.AL565.prose.controleur;
 
 import com.AL565.prose.controller.GestionnaireController;
 import com.AL565.prose.security.exceptions.CvExceptions;
-import com.AL565.prose.service.CvService;
 import com.AL565.prose.service.EmployeurService;
 import com.AL565.prose.service.EtudiantService;
 import com.AL565.prose.service.GestionnaireService;
@@ -42,14 +41,11 @@ class GestionnaireControllerTest {
     @MockitoBean
     private EtudiantService etudiantService;
 
-    @MockitoBean
-    private CvService cvService;
-
     @Test
     @WithMockUser(roles = {"GESTIONNAIRE"})
     void getPendingCvs_shouldReturnOk() throws Exception {
         GestionnaireCvDTO dto = new GestionnaireCvDTO(1L, "cv.pdf", 2L, null, null);
-        when(cvService.getPendingCvs()).thenReturn(List.of(dto));
+        when(gestionnaireService.getPendingCvs()).thenReturn(List.of(dto));
 
         mockMvc.perform(get("/gestionnaire/cv/pending")
                         .contentType(MediaType.APPLICATION_JSON))
@@ -75,7 +71,7 @@ class GestionnaireControllerTest {
     @Test
     @WithMockUser(roles = {"GESTIONNAIRE"})
     void approveCv_shouldReturnError_whenException() throws Exception {
-        doThrow(new CvExceptions.CvNotFoundException()).when(cvService).approveCv(99L);
+        doThrow(new CvExceptions.CvNotFoundException()).when(gestionnaireService).approveCv(99L);
 
         mockMvc.perform(post("/gestionnaire/cv/99/approve")
                         .contentType(MediaType.APPLICATION_JSON))

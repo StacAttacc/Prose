@@ -31,4 +31,31 @@ public class GestionnaireService {
             throw new EmailAlreadyExistsException("Un compte avec cet email existe déjà");
         }
     }
+
+    public List<GestionnaireCvDTO> getPendingCvs() throws Exception {
+        try {
+            return cvRepository.findCVSByApprovedAtIsNullAndRejectedAtIsNull()
+                    .stream()
+                    .map(GestionnaireCvDTO::toDto)
+                    .toList();
+        } catch (Exception e) {
+            throw new FailedToFetchUnapprovedCvsException();
+        }
+    }
+
+    public void approveCv(Long cvId) throws Exception {
+        cvRepository.findById(cvId).map(cv -> {
+            cv.setApprovedAt(new Date());
+            cv.setRejectedAt(null);
+            return cvRepository.save(cv);
+        }).orElseThrow(CvNotFoundException::new);
+    }
+
+    public void rejectCv(Long cvId) throws Exception {
+        cvRepository.findById(cvId).map(cv -> {
+            cv.setRejectedAt(new Date());
+            cv.setApprovedAt(null);
+            return cvRepository.save(cv);
+        }).orElseThrow(CvNotFoundException::new);
+    }
 }
