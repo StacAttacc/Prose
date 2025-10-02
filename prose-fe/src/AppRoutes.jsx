@@ -5,7 +5,7 @@ import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import PageAuthentification from "./pages/PageAuthentification.jsx";
 import PendingCVs from "./components/PendingCVs.jsx";
 import {useEffect, useState} from "react";
-import { telechargerCv } from "./services/CvService.js";
+import { telechargerCv } from "./services/EtudiantService.js";
 import StudentStatus from "./components/StudentStatus.jsx";
 
 export default function AppRoutes() {

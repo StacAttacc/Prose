@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {useAuth} from "../context/AuthContext.jsx";
-import {approveCv, fetchAllPendingCvs, rejectCv} from "../services/CvService.js";
+import {approveCv, fetchAllPendingCvs, rejectCv} from "../services/GestionnaireService.js";
 
 const PendingCVs = () => {
     const {user} = useAuth();

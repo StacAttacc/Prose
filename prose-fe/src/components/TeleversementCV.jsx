@@ -1,5 +1,5 @@
 import React, {useRef, useState} from 'react';
-import {televerserCv} from "../services/CvService.js";
+import {televerserCv} from "../services/EtudiantService.js";
 import {useAuth} from "../context/AuthContext.jsx";
 
 const TeleversementCV = ({ onUploadSuccess }) => {

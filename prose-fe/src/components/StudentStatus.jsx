@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { telechargerCv } from "../services/CvService.js";
+import { telechargerCv } from "../services/EtudiantService.js";
 import { useAuth } from "../context/AuthContext";
 import TeleversementCV from "./TeleversementCV.jsx";
 
