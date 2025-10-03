@@ -54,8 +54,10 @@ public class Stage {
     private OfferStatus status = OfferStatus.SOUMISE;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "employeur_id")
+    @JoinColumn(name = "employeur_id", nullable = false,
+            foreignKey = @ForeignKey(name = "fk_stage_employeur"))
     private Employeur employeur;
+
 
     @Column(nullable = false, updatable = false)
     private OffsetDateTime createdAt = OffsetDateTime.now();

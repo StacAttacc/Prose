@@ -62,11 +62,10 @@ public class EmployeurController {
     }
 
 
-    @GetMapping("/{employeurId}/stages/published")
-    public ResponseEntity<List<StageDTO>> listPublishedByEmployer(@PathVariable Long employeurId) {
-        return ResponseEntity.ok(employeurService.listPublishedByEmployerId(employeurId));
+    @GetMapping("/{email:.+}/stages/published")
+    public ResponseEntity<List<StageDTO>> listPublishedByEmployerEmail(@PathVariable("email") String email) {
+        return ResponseEntity.ok(employeurService.listPublishedByEmployerEmail(email));
     }
-
 
 }
 

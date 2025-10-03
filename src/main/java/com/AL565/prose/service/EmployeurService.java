@@ -59,9 +59,12 @@ public class EmployeurService {
                 .stream().map(StageDTO::fromModel).toList();
     }
 
-    public List<StageDTO> listPublishedByEmployerId(Long employeurId) {
-        return stageRepository.findByEmployeur_IdAndStatus(employeurId, OfferStatus.PUBLIEE)
-                .stream().map(StageDTO::fromModel).toList();
+    public List<StageDTO> listPublishedByEmployerEmail(String email) {
+        return stageRepository
+                .findByEmployeur_Credentials_UsernameAndStatus(email)
+                .stream()
+                .map(StageDTO::fromModel)
+                .toList();
     }
 
 }
