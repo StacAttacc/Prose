@@ -59,7 +59,6 @@ public class Stage {
     @Column(nullable = false, updatable = false)
     private OffsetDateTime createdAt = OffsetDateTime.now();
 
-    @Column(nullable = false)
     private OffsetDateTime updatedAt = OffsetDateTime.now();
 
     @PreUpdate
