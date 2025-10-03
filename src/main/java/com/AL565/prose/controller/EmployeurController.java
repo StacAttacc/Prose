@@ -53,24 +53,7 @@ public class EmployeurController {
     }
 
 
-
-    @GetMapping("/stages")
-    @PreAuthorize("hasRole('EMPLOYEUR')")
-    public ResponseEntity<?> listMyStages(@AuthenticationPrincipal Employeur employeur) {
-        if (employeur == null) {
-            return new ResponseEntity<>("Non autorisé", HttpStatus.UNAUTHORIZED);
-        }
-        try {
-            List<StageDTO> stages = employeurService.listStagesFor(employeur);
-            return new ResponseEntity<>(stages, HttpStatus.OK);
-        } catch (AccessDeniedException e) {
-            return new ResponseEntity<>("Accès refusé", HttpStatus.FORBIDDEN);
-        } catch (Exception e) {
-            return new ResponseEntity<>("Erreur lors de la récupération des stages", HttpStatus.BAD_REQUEST);
-        }
-    }
-
-    @GetMapping("/{email:.+}/stages/published")
+    @GetMapping("/{email:.+}/stages")
     public ResponseEntity<?> listPublishedByEmployerEmail(@PathVariable("email") String email) {
         try {
             List<StageDTO> stages = employeurService.listPublishedByEmployerEmail(email);

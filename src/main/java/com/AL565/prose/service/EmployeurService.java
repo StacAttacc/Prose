@@ -61,7 +61,7 @@ public class EmployeurService {
 
     public List<StageDTO> listPublishedByEmployerEmail(String email) {
         return stageRepository
-                .findByEmployeur_Credentials_UsernameAndStatus(email)
+                .findByEmployeur_Credentials_Username(email)
                 .stream()
                 .map(StageDTO::fromModel)
                 .toList();

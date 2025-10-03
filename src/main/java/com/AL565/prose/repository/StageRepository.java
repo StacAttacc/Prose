@@ -8,6 +8,6 @@ import java.util.List;
 
 public interface StageRepository extends JpaRepository<Stage, Long> {
     List<Stage> findByEmployeur_Id(Long employeurId);
-    List<Stage> findByEmployeur_IdAndStatus(Long employeurId, OfferStatus status);
-    List<Stage> findByEmployeur_Credentials_UsernameAndStatus(String email);
+
+    List<Stage> findByEmployeur_Credentials_Username(String email);
 }
