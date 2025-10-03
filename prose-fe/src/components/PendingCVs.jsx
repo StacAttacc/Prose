@@ -83,15 +83,17 @@ const PendingCVs = () => {
                         className="border border-gray-300 rounded-lg p-4 w-64 cursor-pointer shadow hover:shadow-lg transition"
                         onClick={() => openModal(cv)}
                     >
-                        <h3 className="text-lg font-semibold m-0">{cv.name}</h3>
-                        <p className="text-gray-500 mt-2">Etudiant: {cv.etudiantPrenom} {cv.etudiantNom}</p>
+                        <h3 className="text-lg font-bold m-0 text-center">{cv.etudiantPrenom} {cv.etudiantNom}</h3>
+                        <div className="border-b border-gray-200 my-2"></div>
+                        <p className="text-gray-500">Discipline: {cv.discipline}</p>
+                        <p className="text-gray-500">Email: {cv.etudiantEmail}</p>
                     </div>
                 ))}
             </div>
 
             {modalOpen && selectedCv && (
                 <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg p-6 md:p-8 w-full max-w-3xl shadow-2xl relative max-h-[80vh]">
+                    <div className="bg-white rounded-lg p-6 md:p-8 w-full max-w-3xl shadow-2xl relative max-h-[95vh]">
                         <button
                             onClick={closeModal}
                             className="absolute top-2 right-3 text-2xl text-gray-400 hover:text-gray-700"
@@ -99,11 +101,15 @@ const PendingCVs = () => {
                         >&times;</button>
 
                         <div className="mb-3">
-                            <span className="font-semibold">Etudiant:</span> {selectedCv.etudiantPrenom} {selectedCv.etudiantNom}
+                            <span className="font-semibold">Nom de l'étudiant:</span> {selectedCv.etudiantPrenom} {selectedCv.etudiantNom}
                         </div>
 
                         <div className="mb-3">
-                            <span className="font-semibold">CV Name:</span> {selectedCv.name}
+                            <span className="font-semibold">Nom du fichier:</span> {selectedCv.name}
+                        </div>
+
+                        <div className="mb-3">
+                            <span className="font-semibold">Discipline:</span> {selectedCv.discipline}
                         </div>
 
                         <div className="mb-4">
