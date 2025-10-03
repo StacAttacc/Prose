@@ -56,15 +56,31 @@ public class EmployeurController {
 
     @GetMapping("/stages")
     @PreAuthorize("hasRole('EMPLOYEUR')")
-    public ResponseEntity<List<StageDTO>> listMyStages(@AuthenticationPrincipal Employeur employeur) {
-        if (employeur == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        return ResponseEntity.ok(employeurService.listStagesFor(employeur));
+    public ResponseEntity<?> listMyStages(@AuthenticationPrincipal Employeur employeur) {
+        if (employeur == null) {
+            return new ResponseEntity<>("Non autorisé", HttpStatus.UNAUTHORIZED);
+        }
+        try {
+            List<StageDTO> stages = employeurService.listStagesFor(employeur);
+            return new ResponseEntity<>(stages, HttpStatus.OK);
+        } catch (AccessDeniedException e) {
+            return new ResponseEntity<>("Accès refusé", HttpStatus.FORBIDDEN);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Erreur lors de la récupération des stages", HttpStatus.BAD_REQUEST);
+        }
     }
 
-
     @GetMapping("/{email:.+}/stages/published")
-    public ResponseEntity<List<StageDTO>> listPublishedByEmployerEmail(@PathVariable("email") String email) {
-        return ResponseEntity.ok(employeurService.listPublishedByEmployerEmail(email));
+    public ResponseEntity<?> listPublishedByEmployerEmail(@PathVariable("email") String email) {
+        try {
+            List<StageDTO> stages = employeurService.listPublishedByEmployerEmail(email);
+            if (stages.isEmpty()) {
+                return new ResponseEntity<>("Aucun stage publié trouvé pour cet employeur", HttpStatus.NOT_FOUND);
+            }
+            return new ResponseEntity<>(stages, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Erreur lors de la récupération des stages publiés", HttpStatus.BAD_REQUEST);
+        }
     }
 
 }
