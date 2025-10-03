@@ -16,7 +16,6 @@ export const fetchAllCVs = async (token) => {
             console.error('Erreur:', error.response.data);
             throw new Error(error.response.data);
         }
-        return [];
     }
 }
 

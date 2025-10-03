@@ -9,13 +9,7 @@ const statusColors = {
     REJECTED: "bg-red-100 border-red-300"
 };
 
-const statusLabels = {
-    APPROVED: "Accepté",
-    PENDING: "En Attente",
-    REJECTED: "À Refaire"
-};
-
-const PendingCVs = () => {
+const GestionnaireCV = () => {
     const { user } = useAuth();
     const token = user?.data?.token;
 
@@ -24,6 +18,7 @@ const PendingCVs = () => {
     const [modalOpen, setModalOpen] = useState(false);
     const [pdfUrl, setPdfUrl] = useState(null);
     const [comment, setComment] = useState("");
+    const [tab, setTab] = useState('pending'); // 'pending' or 'nonpending'
 
     useEffect(() => {
         if (token) loadAllCvs();
@@ -34,7 +29,6 @@ const PendingCVs = () => {
         setAllCvs(cvs || []);
     };
 
-    // Filter CVs by status
     const pendingCvs = allCvs.filter(cv => cv.status === "PENDING");
     const approvedCvs = allCvs.filter(cv => cv.status === "APPROVED");
     const rejectedCvs = allCvs.filter(cv => cv.status === "REJECTED");
@@ -90,27 +84,26 @@ const PendingCVs = () => {
 
     return (
         <div className="p-8">
-
-            <div className="flex gap-6 mb-6 justify-center">
-                <div className="flex items-center gap-2">
-                    <span className="inline-block w-4 h-4 rounded bg-green-400"></span>
-                    <span>Accepté</span>
-                </div>
-                <div className="flex items-center gap-2">
-                    <span className="inline-block w-4 h-4 rounded bg-yellow-400"></span>
-                    <span>En Attente</span>
-                </div>
-                <div className="flex items-center gap-2">
-                    <span className="inline-block w-4 h-4 rounded bg-red-400"></span>
-                    <span>À Refaire</span>
-                </div>
+            {/* Sub-tabs */}
+            <div className="flex gap-2 mb-6 justify-center">
+                <button
+                    className={`px-4 py-2 rounded-t font-semibold border-b-2 ${tab === 'pending' ? 'border-blue-600 text-blue-700 bg-blue-50' : 'border-transparent text-gray-500 bg-gray-100 hover:bg-gray-200'}`}
+                    onClick={() => setTab('pending')}
+                >
+                    CV en attente d'acceptation
+                </button>
+                <button
+                    className={`px-4 py-2 rounded-t font-semibold border-b-2 ${tab === 'nonpending' ? 'border-blue-600 text-blue-700 bg-blue-50' : 'border-transparent text-gray-500 bg-gray-100 hover:bg-gray-200'}`}
+                    onClick={() => setTab('nonpending')}
+                >
+                    CV Acceptés & À Refaire
+                </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-
+            {/* Tab Content */}
+            {tab === 'pending' ? (
                 <div>
-                    <h3 className="text-lg font-bold mb-4 text-center">En Attente</h3>
-                    <div className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-4 max-w-md mx-auto">
                         {pendingCvs.map(cv => (
                             <div
                                 key={cv.id}
@@ -126,49 +119,58 @@ const PendingCVs = () => {
                         {pendingCvs.length === 0 && <div className="text-center text-gray-400">Aucun CV</div>}
                     </div>
                 </div>
-
+            ) : (
                 <div>
-                    <h3 className="text-lg font-bold mb-4 text-center">Accepté</h3>
-                    <div className="flex flex-col gap-4">
-                        {approvedCvs.map(cv => (
-                            <div
-                                key={cv.id}
-                                className={`border rounded-lg p-4 cursor-pointer shadow hover:shadow-lg transition ${statusColors.APPROVED}`}
-                                onClick={() => openModal(cv)}
-                            >
-                                <h4 className="font-bold text-center">{cv.etudiantPrenom} {cv.etudiantNom}</h4>
-                                <div className="border-b my-2"></div>
-                                <p className="text-gray-500">Discipline: {cv.discipline}</p>
-                                <p className="text-gray-500">Email: {cv.etudiantEmail}</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h3 className="text-lg font-bold mb-4 text-center">Accepté</h3>
+                            <div className="flex flex-col gap-4">
+                                {approvedCvs.map(cv => (
+                                    <div
+                                        key={cv.id}
+                                        className={`border rounded-lg p-4 cursor-pointer shadow hover:shadow-lg transition ${statusColors.APPROVED}`}
+                                        onClick={() => openModal(cv)}
+                                    >
+                                        <h4 className="font-bold text-center">{cv.etudiantPrenom} {cv.etudiantNom}</h4>
+                                        <div className="border-b my-2"></div>
+                                        <p className="text-gray-500">Discipline: {cv.discipline}</p>
+                                        <p className="text-gray-500">Email: {cv.etudiantEmail}</p>
+                                    </div>
+                                ))}
+                                {approvedCvs.length === 0 && <div className="text-center text-gray-400">Aucun CV</div>}
                             </div>
-                        ))}
-                        {approvedCvs.length === 0 && <div className="text-center text-gray-400">Aucun CV</div>}
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-bold mb-4 text-center">À Refaire</h3>
+                            <div className="flex flex-col gap-4">
+                                {rejectedCvs.map(cv => (
+                                    <div
+                                        key={cv.id}
+                                        className={`border rounded-lg p-4 cursor-pointer shadow hover:shadow-lg transition ${statusColors.REJECTED}`}
+                                        onClick={() => openModal(cv)}
+                                    >
+                                        <h4 className="font-bold text-center">{cv.etudiantPrenom} {cv.etudiantNom}</h4>
+                                        <div className="border-b my-2"></div>
+                                        <p className="text-gray-500">Discipline: {cv.discipline}</p>
+                                        <p className="text-gray-500">Email: {cv.etudiantEmail}</p>
+                                    </div>
+                                ))}
+                                {rejectedCvs.length === 0 && <div className="text-center text-gray-400">Aucun CV</div>}
+                            </div>
+                        </div>
                     </div>
                 </div>
-                {/* Rejected */}
-                <div>
-                    <h3 className="text-lg font-bold mb-4 text-center">À Refaire</h3>
-                    <div className="flex flex-col gap-4">
-                        {rejectedCvs.map(cv => (
-                            <div
-                                key={cv.id}
-                                className={`border rounded-lg p-4 cursor-pointer shadow hover:shadow-lg transition ${statusColors.REJECTED}`}
-                                onClick={() => openModal(cv)}
-                            >
-                                <h4 className="font-bold text-center">{cv.etudiantPrenom} {cv.etudiantNom}</h4>
-                                <div className="border-b my-2"></div>
-                                <p className="text-gray-500">Discipline: {cv.discipline}</p>
-                                <p className="text-gray-500">Email: {cv.etudiantEmail}</p>
-                            </div>
-                        ))}
-                        {rejectedCvs.length === 0 && <div className="text-center text-gray-400">Aucun CV</div>}
-                    </div>
-                </div>
-            </div>
+            )}
 
             {modalOpen && selectedCv && (
-                <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg p-6 md:p-8 w-full max-w-3xl shadow-2xl relative max-h-[95vh]">
+                <div
+                    className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50"
+                    onClick={closeModal}
+                >
+                    <div
+                        className="bg-white rounded-lg p-6 md:p-8 w-[90vw] max-w-3xl shadow-2xl relative max-h-[70vh] overflow-auto"
+                        onClick={e => e.stopPropagation()}
+                    >
                         <button
                             onClick={closeModal}
                             className="absolute top-2 right-3 text-2xl text-gray-400 hover:text-gray-700"
@@ -186,7 +188,7 @@ const PendingCVs = () => {
                         </div>
                         <div className="mb-4">
                             {pdfUrl ? (
-                                <div className="h-[500px] overflow-auto border rounded">
+                                <div className="w-full h-[40vh] max-h-[40vh] overflow-auto border rounded">
                                     <Worker workerUrl={`https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js`}>
                                         <Viewer fileUrl={pdfUrl} />
                                     </Worker>
@@ -224,7 +226,7 @@ const PendingCVs = () => {
                                         ? "bg-red-300 cursor-not-allowed"
                                         : "bg-red-600 hover:bg-red-700"
                                     }`}
-                                    title={decisionsDisabled ? "How can this CV be improved?" : ""}
+                                    title={decisionsDisabled ? "Vous devez entrer un commentaire vant de pouvoir rejeter ce CV" : ""}
                                 >
                                     Reject
                                 </button>
@@ -244,4 +246,4 @@ const PendingCVs = () => {
     );
 };
 
-export default PendingCVs;
+export default GestionnaireCV;

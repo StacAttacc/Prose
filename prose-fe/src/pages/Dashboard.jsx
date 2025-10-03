@@ -57,16 +57,16 @@ export default function Dashboard() {
                                 <button onClick={() => {nav('etudiant/offres-emplois')}}>
                                     Offres d'emplois
                                 </button>
-                                <button onClick={() => {nav('etudiant/mes-statuts')}}>
-                                    Mes statuts
+                                <button onClick={() => {nav('etudiant/mon-cv')}}>
+                                    Mon CV
                                 </button>
                             </>
                         ) : <></>}
                         {user.data.role === "GESTIONNAIRE" ? (
                             <>
                                 {/*Mettre mes options ici*/}
-                                <button onClick={() => {nav('attente-acceptation-cv')}}>
-                                    CV en attente d'acceptation
+                                <button onClick={() => {nav('gestion-cv')}}>
+                                    Gestion des CVs
                                 </button>
                             </>
                         ) : <></>}

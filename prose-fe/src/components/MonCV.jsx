@@ -11,7 +11,7 @@ const statusColors = {
     NONE: "bg-gray-100 border-gray-300"
 };
 
-export default function StudentStatus() {
+export default function MonCV() {
     const { user } = useAuth();
     const [status, setStatus] = useState("loading");
     const [cv, setCv] = useState(null);
@@ -87,7 +87,7 @@ export default function StudentStatus() {
                     {cv && status !== "none" ? (
                         <div className="space-y-4">
                             <h2 className="text-2xl font-bold mb-6 text-gray-800 text-center">
-                                Votre courrant CV
+                                Votre CV courrant
                             </h2>
                             <button
                                 className="flex flex-col items-center justify-center w-full h-32 border-2 border-blue-300 border-dashed rounded-lg cursor-pointer bg-blue-50 hover:bg-blue-100 transition-colors"
@@ -116,8 +116,7 @@ export default function StudentStatus() {
                             </div>
                             {cv && cv.comment && (
                                 <div>
-                                    <span className="text-sm font-medium">Commentaire: </span>
-                                    <text>{cv.comment}</text>
+                                    <p><span className="text-sm font-medium">Commentaire: </span>{cv.comment}</p>
                                 </div>
                             )}
                         </div>
@@ -126,8 +125,14 @@ export default function StudentStatus() {
                     )}
                 </div>
                 {showModal && (
-                    <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-                        <div className="bg-white rounded-lg p-6 md:p-8 w-full max-w-3xl shadow-2xl relative max-h-[80vh]">
+                    <div
+                        className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50"
+                        onClick={closeModal}
+                    >
+                        <div
+                            className="bg-white rounded-lg p-6 md:p-8 w-[90vw] max-w-3xl shadow-2xl relative max-h-[80vh] overflow-auto"
+                            onClick={e => e.stopPropagation()}
+                        >
                             <button
                                 className="absolute top-2 right-2 text-gray-700 text-xl"
                                 onClick={closeModal}
@@ -136,7 +141,7 @@ export default function StudentStatus() {
                             </button>
                             <div className="mb-4">
                                 {pdfUrl ? (
-                                    <div className="h-[500px] overflow-auto border rounded">
+                                    <div className="w-full h-[60vh] max-h-[60vh] overflow-auto border rounded">
                                         <Worker workerUrl={`https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js`}>
                                             <Viewer fileUrl={pdfUrl} />
                                         </Worker>
@@ -147,19 +152,10 @@ export default function StudentStatus() {
                                     </div>
                                 )}
                             </div>
-
                         </div>
                     </div>
                 )}
             </div>
-
-            {/* va lister le statut des offres d'emploi auquels ils ont postulé */}
-            <div className="flex flex-col rounded-xl border shadow bg-white overflow-hidden mt-6">
-                <div>offre d'emploi postulé 1</div>
-                <div>offre d'emploi postulé 2</div>
-                <div>offre d'emploi postulé 3</div>
-            </div>
-
         </div>
     );
 }
