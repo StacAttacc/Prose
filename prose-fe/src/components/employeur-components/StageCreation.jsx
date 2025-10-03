@@ -37,6 +37,7 @@ export default function StageCreation() {
             "endDate": endDate,
             "location": location,
             "compensation": salary,
+            "employeur": user,
             "workMode": workType,
         }
 

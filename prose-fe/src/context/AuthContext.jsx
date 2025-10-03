@@ -26,7 +26,7 @@ export function AuthProvider({ children }) {
 
     useEffect(() => {
         if (user) {
-            sessionStorage.setItem("user", JSON.stringify(user.data));
+            sessionStorage.setItem("user", JSON.stringify(user));
         } else {
             sessionStorage.removeItem("user");
         }

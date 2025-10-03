@@ -42,6 +42,7 @@ public class StageDTO {
     private String compensation;
 
     public static Stage toModel(StageDTO dto) {
+        System.out.println(dto.getEmployeur());
         return Stage.builder()
                 .title(dto.getTitle())
                 .description(dto.getDescription())
@@ -52,13 +53,14 @@ public class StageDTO {
                 .location(dto.getLocation())
                 .workMode(dto.getWorkMode())
                 .compensation(dto.getCompensation())
-                .employeur(EmployeurDTO.toModel(dto.getEmployeur()))
+                .employeurEmail(EmployeurDTO.toModel(dto.getEmployeur()).getEmail())
                 .status(OfferStatus.SOUMISE)
                 .createdAt(OffsetDateTime.now())
+                .updatedAt(OffsetDateTime.now())
                 .build();
     }
 
-    public static StageDTO fromModel(Stage offer) {
+    public static StageDTO fromModel(Stage offer, Employeur employeur) {
         return StageDTO.builder()
                 .id(offer.getId())
                 .title(offer.getTitle())
@@ -71,7 +73,7 @@ public class StageDTO {
                 .workMode(offer.getWorkMode())
                 .compensation(offer.getCompensation())
                 .status(offer.getStatus())
-                .employeur(EmployeurDTO.toDTO(offer.getEmployeur()))
+                .employeur(EmployeurDTO.toDTO(employeur))
                 .createdAt(offer.getCreatedAt())
                 .build();
     }

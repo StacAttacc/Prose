@@ -1,7 +1,6 @@
 package com.AL565.prose.service;
 
 import com.AL565.prose.model.Employeur;
-import com.AL565.prose.model.OfferStatus;
 import com.AL565.prose.model.Stage;
 import com.AL565.prose.repository.EmployeurRepository;
 import com.AL565.prose.repository.ProseUserRepository;
@@ -51,21 +50,16 @@ public class EmployeurService {
         Stage toSave = StageDTO.toModel(dto);
         toSave.setCreatedAt(OffsetDateTime.now());
         Stage saved = stageRepository.save(toSave);
-        return StageDTO.fromModel(saved);
+        Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(saved.getEmployeurEmail());
+        return StageDTO.fromModel(saved, employeur);
     }
 
 
-    public List<StageDTO> listStagesFor(Employeur employeur) {
-        return stageRepository.findByEmployeur_Id(employeur.getId())
-                .stream().map(StageDTO::fromModel).toList();
+    public List<StageDTO> listStagesFor(String email) {
+        return stageRepository.findByEmployeurEmail(email)
+                .stream().map((stage) -> {
+                    Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(stage.getEmployeurEmail());
+                    return StageDTO.fromModel(stage, employeur);
+                }).toList();
     }
-
-    public List<StageDTO> listPublishedByEmployerEmail(String email) {
-        return stageRepository
-                .findByEmployeur_Credentials_Username(email)
-                .stream()
-                .map(StageDTO::fromModel)
-                .toList();
-    }
-
 }

@@ -4,6 +4,7 @@ package com.AL565.prose.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
+import org.hibernate.annotations.JoinFormula;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -50,10 +51,7 @@ public class Stage {
     @Column(nullable = false, length = 20)
     private OfferStatus status = OfferStatus.SOUMISE;
 
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "employeur_username", nullable = false,
-            foreignKey = @ForeignKey(name = "fk_stage_employeur"))
-    private Employeur employeur;
+    private String employeurEmail;
 
 
     @Column(nullable = false, updatable = false)

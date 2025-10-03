@@ -1,7 +1,6 @@
 package com.AL565.prose.controller;
 
 
-import com.AL565.prose.model.Employeur;
 import com.AL565.prose.security.exceptions.UserNotFoundException;
 import com.AL565.prose.service.dto.EmployeurEnregistrerDTO;
 import com.AL565.prose.service.EmployeurService;
@@ -11,9 +10,6 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -49,7 +45,7 @@ public class EmployeurController {
     @GetMapping("/{email:.+}/stages")
     public ResponseEntity<?> listPublishedByEmployerEmail(@PathVariable("email") String email) {
         try {
-            List<StageDTO> stages = employeurService.listPublishedByEmployerEmail(email);
+            List<StageDTO> stages = employeurService.listStagesFor(email);
             if (stages.isEmpty()) {
                 return new ResponseEntity<>("Aucun stage publié trouvé pour cet employeur", HttpStatus.NOT_FOUND);
             }
