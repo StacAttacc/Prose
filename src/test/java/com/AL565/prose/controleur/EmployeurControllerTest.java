@@ -31,7 +31,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -78,7 +78,7 @@ class EmployeurControllerTest {
 
 
     @Test
-    void createOffer_retourne_201_avec_location_et_corps() throws Exception {
+    void createOffer_retourne_201_sans_location_avec_message() throws Exception {
         var dto = StageDTO.builder()
                 .title("Stagiaire Java")
                 .description("Développer des APIs Spring")
@@ -92,24 +92,8 @@ class EmployeurControllerTest {
                 .compensation("22$/h")
                 .build();
 
-        var returned = StageDTO.builder()
-                .id(42L)
-                .title(dto.getTitle())
-                .description(dto.getDescription())
-                .requirements(dto.getRequirements())
-                .skills(dto.getSkills())
-                .startDate(dto.getStartDate())
-                .endDate(dto.getEndDate())
-                .durationWeeks(dto.getDurationWeeks())
-                .location(dto.getLocation())
-                .workMode(dto.getWorkMode())
-                .compensation(dto.getCompensation())
-                .status(OfferStatus.SOUMISE)
-                .createdAt(OffsetDateTime.now())
-                .build();
-
         when(employeurService.createStage(any(Employeur.class), any(StageDTO.class)))
-                .thenReturn(returned);
+                .thenReturn(StageDTO.builder().id(42L).build());
 
         var employeur = new Employeur();
         employeur.setId(7L);
@@ -120,7 +104,7 @@ class EmployeurControllerTest {
         );
 
         var result = mockMvc.perform(
-                post("/employeur/offers")
+                post("/employeur/createStage")
                         .with(csrf())
                         .with(authentication(auth))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -128,11 +112,14 @@ class EmployeurControllerTest {
         ).andReturn();
 
         Assertions.assertThat(result.getResponse().getStatus()).isEqualTo(201);
-        Assertions.assertThat(result.getResponse().getHeader("Location")).isEqualTo("/employeur/offers/42");
+
+        Assertions.assertThat(result.getResponse().getHeader("Location")).isNull();
+
         var body = result.getResponse().getContentAsString();
-        Assertions.assertThat(body).contains("\"id\":42");
-        Assertions.assertThat(body).contains("\"status\":\"SOUMISE\"");
-        Assertions.assertThat(body).contains("\"description\":\"Développer des APIs Spring\"");
+        Assertions.assertThat(body).isEqualTo("Stage créé avec succès");
+
+        verify(employeurService).createStage(any(Employeur.class), any(StageDTO.class));
     }
+
 
 }

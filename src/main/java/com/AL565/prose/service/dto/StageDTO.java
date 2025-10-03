@@ -21,7 +21,7 @@ public class StageDTO {
     private Long id;
     private OfferStatus status;
     private OffsetDateTime createdAt;
-
+    
     private String title;
 
     private String description;
