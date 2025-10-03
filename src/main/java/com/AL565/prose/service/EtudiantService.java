@@ -75,6 +75,7 @@ public class EtudiantService {
                 .data(data)
                 .etudiant(etudiant)
                 .approvedAt(null)
+                .rejectedAt(null)
                 .comment(null)
                 .build();
 
@@ -87,6 +88,7 @@ public class EtudiantService {
                     existingCv.setLastModifiedDate(newCv.getLastModifiedDate());
                     existingCv.setData(newCv.getData());
                     existingCv.setApprovedAt(newCv.getApprovedAt());
+                    existingCv.setRejectedAt(newCv.getRejectedAt());
                     existingCv.setComment(newCv.getComment());
                     return cvRepository.save(existingCv);
                 })

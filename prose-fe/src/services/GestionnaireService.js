@@ -9,6 +9,7 @@ export const fetchAllPendingCvs = async (token) => {
                 'Authorization': `Bearer ${token}`
             },
         });
+        console.log(response.data);
         return response.data;
     } catch (error) {
         console.error('There was an error fetching the pending CVs!', error);
@@ -16,25 +17,33 @@ export const fetchAllPendingCvs = async (token) => {
     }
 };
 
-export const approveCv = async (cvId, token) => {
+export const approveCv = async (cvId, comment, token) => {
     try {
-        await axios.post(`${BASE_URL_GESTIONNAIRE}/cv/${cvId}/approve`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            },
-        });
+        await axios.post(
+            `${BASE_URL_GESTIONNAIRE}/cv/approve`,
+            { id: cvId, comment: comment },
+            {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+            }
+        );
     } catch (error) {
         console.error('Error approving CV:', error);
     }
 };
 
-export const rejectCv = async (cvId, token) => {
+export const rejectCv = async (cvId, comment, token) => {
     try {
-        await axios.post(`${BASE_URL_GESTIONNAIRE}/cv/${cvId}/reject`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            },
-        });
+        await axios.post(
+            `${BASE_URL_GESTIONNAIRE}/cv/reject`,
+            { id: cvId, comment: comment },
+            {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+            }
+        );
     } catch (error) {
         console.error('Error rejecting CV:', error);
     }

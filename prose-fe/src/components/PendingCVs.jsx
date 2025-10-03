@@ -12,7 +12,7 @@ const PendingCVs = () => {
     const [modalOpen, setModalOpen] = useState(false);
 
     const [pdfUrl, setPdfUrl] = useState(null);
-    const [rejectReason, setRejectReason] = useState("");
+    const [comment, setComment] = useState("");
 
     useEffect(() => {
         if (token) loadPendingCvs();
@@ -49,7 +49,7 @@ const PendingCVs = () => {
     const closeModal = () => {
         setModalOpen(false);
         setSelectedCv(null);
-        setRejectReason("");
+        setComment("");
         if (pdfUrl) {
             URL.revokeObjectURL(pdfUrl);
             setPdfUrl(null);
@@ -58,19 +58,20 @@ const PendingCVs = () => {
 
     const handleApprove = async () => {
         if (!selectedCv) return;
-        await approveCv(selectedCv.id, token);
+        console.log(token);
+        await approveCv(selectedCv.id, comment, token);
         closeModal();
         await loadPendingCvs();
     };
 
     const handleReject = async () => {
         if (!selectedCv) return;
-        await rejectCv(selectedCv.id, token, rejectReason);
+        await rejectCv(selectedCv.id, comment, token);
         closeModal();
         await loadPendingCvs();
     };
 
-    const rejectDisabled = rejectReason.trim().length === 0;
+    const decisionsDisabled = comment.trim().length === 0;
 
     return (
         <div className="p-8">
@@ -119,20 +120,19 @@ const PendingCVs = () => {
                             )}
                         </div>
 
-
                         <div className="flex flex-col gap-3">
                             <label className="text-sm font-semibold" htmlFor="reject-reason">
-                                Rejection reason
+                                Commentaires
                             </label>
                             <textarea
-                                id="reject-reason"
+                                id="comment"
                                 className="w-full border rounded p-2 text-sm"
-                                placeholder="Provide a reason to reject..."
-                                value={rejectReason}
-                                onChange={(e) => setRejectReason(e.target.value)}
+                                placeholder="Entrez un commentaire"
+                                value={comment}
+                                onChange={(e) => setComment(e.target.value)}
                                 rows={3}
                             />
-                            <div className="flex gap-4 mt-2">
+                            <div className="flex gap-4 mt-2 justify-center">
                                 <button
                                     onClick={handleApprove}
                                     className="bg-green-600 hover:bg-green-700 text-white rounded px-4 py-2 font-semibold"
@@ -141,12 +141,12 @@ const PendingCVs = () => {
                                 </button>
                                 <button
                                     onClick={handleReject}
-                                    disabled={rejectDisabled}
-                                    className={`rounded px-4 py-2 font-semibold text-white ${rejectDisabled
+                                    disabled={decisionsDisabled}
+                                    className={`rounded px-4 py-2 font-semibold text-white ${decisionsDisabled
                                         ? "bg-red-300 cursor-not-allowed"
                                         : "bg-red-600 hover:bg-red-700"
                                     }`}
-                                    title={rejectDisabled ? "Enter a rejection reason to enable" : ""}
+                                    title={decisionsDisabled ? "How can this CV be improved?" : ""}
                                 >
                                     Reject
                                 </button>

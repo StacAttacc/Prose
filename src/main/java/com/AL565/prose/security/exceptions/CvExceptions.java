@@ -36,4 +36,16 @@ public class CvExceptions {
             super("Échec de la récupération du CV");
         }
     }
+
+    public static class FailedToApproveCvException extends Exception {
+        public FailedToApproveCvException() {
+            super("Échec de l'approbation du CV");
+        }
+    }
+
+    public static class FailedToRejectCvException extends Exception {
+        public FailedToRejectCvException() {
+            super("Échec du rejet du CV");
+        }
+    }
 }

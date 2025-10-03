@@ -1,5 +1,6 @@
 package com.AL565.prose.service;
 
+import com.AL565.prose.model.CV;
 import com.AL565.prose.repository.CvRepository;
 import com.AL565.prose.repository.GestionnaireRepository;
 import com.AL565.prose.security.exceptions.CvExceptions.*;
@@ -39,26 +40,31 @@ public class GestionnaireService {
                     .map(GestionnaireCvDTO::toDto)
                     .toList();
         } catch (Exception e) {
-            System.out.println(e.getMessage());
             throw new FailedToFetchUnapprovedCvsException();
         }
     }
 
     public void approveCv(Long cvId, String comment) throws Exception {
-        cvRepository.findById(cvId).map(cv -> {
+        try {
+            CV cv = cvRepository.findById(cvId).orElseThrow(CvNotFoundException::new);
             cv.setApprovedAt(new Date());
             cv.setRejectedAt(null);
             cv.setComment(comment);
-            return cvRepository.save(cv);
-        }).orElseThrow(CvNotFoundException::new);
+            cvRepository.save(cv);
+        } catch (Exception e) {
+            throw new FailedToApproveCvException();
+        }
     }
 
     public void rejectCv(Long cvId, String comment) throws Exception {
-        cvRepository.findById(cvId).map(cv -> {
+        try {
+            CV cv = cvRepository.findById(cvId).orElseThrow(CvNotFoundException::new);
             cv.setRejectedAt(new Date());
             cv.setApprovedAt(null);
             cv.setComment(comment);
-            return cvRepository.save(cv);
-        }).orElseThrow(CvNotFoundException::new);
+            cvRepository.save(cv);
+        } catch (Exception e) {
+            throw new FailedToRejectCvException();
+        }
     }
 }
