@@ -7,7 +7,6 @@ import lombok.Setter;
 
 import java.time.Instant;
 import java.util.Base64;
-import java.util.Date;
 
 @Getter
 @Setter
@@ -18,8 +17,7 @@ public class EtudiantCvDTO {
     private long size;
     private String lastModified;
     private Instant lastModifiedDate;
-    private Date approvedAt;
-    private Date rejectedAt;
+    private String status;
     private String data;
     private  String comment;
 
@@ -30,8 +28,7 @@ public class EtudiantCvDTO {
         dto.setSize(cv.getSize());
         dto.setLastModified(cv.getLastModified());
         dto.setLastModifiedDate(cv.getLastModifiedDate());
-        dto.setApprovedAt(cv.getApprovedAt());
-        dto.setRejectedAt(cv.getRejectedAt());
+        dto.setStatus(cv.getStatus().name());
         dto.setData(Base64.getEncoder().encodeToString(cv.getData()));
         dto.setComment(cv.getComment());
         return dto;

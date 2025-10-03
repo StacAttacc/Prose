@@ -37,15 +37,9 @@ public class CvExceptions {
         }
     }
 
-    public static class FailedToApproveCvException extends Exception {
-        public FailedToApproveCvException() {
-            super("Échec de l'approbation du CV");
-        }
-    }
-
-    public static class FailedToRejectCvException extends Exception {
-        public FailedToRejectCvException() {
-            super("Échec du rejet du CV");
+    public static class FailedToChangeCvStatusException extends Exception {
+        public FailedToChangeCvStatusException() {
+            super("Échec de la modification du statut du CV");
         }
     }
 }

@@ -1,10 +1,10 @@
 package com.AL565.prose.service;
 
 import com.AL565.prose.model.CV;
+import com.AL565.prose.model.CvStatus;
 import com.AL565.prose.model.Discipline;
 import com.AL565.prose.model.auth.Credentials;
 import com.AL565.prose.repository.CvRepository;
-import com.AL565.prose.repository.GestionnaireRepository;
 import com.AL565.prose.service.dto.GestionnaireCvDTO;
 import com.AL565.prose.model.Etudiant;
 import com.AL565.prose.security.exceptions.CvExceptions;
@@ -29,9 +29,6 @@ public class GestionnaireServiceCvTest {
     @Mock
     private CvRepository cvRepository;
 
-    @Mock
-    private GestionnaireRepository gestionnaireRepository;
-
     @InjectMocks
     private GestionnaireService gestionnaireService;
 
@@ -54,8 +51,7 @@ public class GestionnaireServiceCvTest {
                 .id(1L)
                 .name("CV1")
                 .etudiant(etudiant1)
-                .approvedAt(null)
-                .rejectedAt(null)
+                .status(CvStatus.PENDING)
                 .comment(null)
                 .data(new byte[]{1, 2, 3})
                 .build();
@@ -64,23 +60,22 @@ public class GestionnaireServiceCvTest {
                 .id(2L)
                 .name("CV2")
                 .etudiant(etudiant2)
-                .approvedAt(null)
-                .rejectedAt(null)
+                .status(CvStatus.PENDING)
                 .comment(null)
                 .data(new byte[]{1, 2, 3})
                 .build();
 
 
-        when(cvRepository.findCVSByApprovedAtIsNullAndRejectedAtIsNull()).thenReturn(Arrays.asList(cv1, cv2));
+        when(cvRepository.findCVSByStatus(CvStatus.PENDING)).thenReturn(Arrays.asList(cv1, cv2));
 
         List<GestionnaireCvDTO> result = gestionnaireService.getPendingCvs();
 
         assertThat(result).hasSize(2);
-        assertThat(result.get(0).getApprovedAt()).isNull();
-        assertThat(result.get(0).getRejectedAt()).isNull();
-        assertThat(result.get(1).getApprovedAt()).isNull();
-        assertThat(result.get(1).getRejectedAt()).isNull();
-        verify(cvRepository).findCVSByApprovedAtIsNullAndRejectedAtIsNull();
+        assertThat(result.get(0).getStatus()).isEqualTo(CvStatus.PENDING.name());
+        assertThat(result.get(0).getStatus()).isEqualTo(CvStatus.PENDING.name());
+        assertThat(result.get(1).getStatus()).isEqualTo(CvStatus.PENDING.name());
+        assertThat(result.get(1).getStatus()).isEqualTo(CvStatus.PENDING.name());
+        verify(cvRepository).findCVSByStatus(CvStatus.PENDING);
     }
 
 
@@ -91,19 +86,17 @@ public class GestionnaireServiceCvTest {
         CV cv = CV.builder()
                 .id(cvId)
                 .etudiant(new Etudiant())
-                .approvedAt(null)
-                .rejectedAt(null)
+                .status(CvStatus.PENDING)
                 .build();
 
         when(cvRepository.findById(cvId)).thenReturn(Optional.of(cv));
         when(cvRepository.save(any(CV.class))).thenReturn(cv);
 
-        gestionnaireService.approveCv(cvId, "Looks good");
+        gestionnaireService.changeCvStatus(cvId, CvStatus.APPROVED.name(), "Looks good");
 
         verify(cvRepository).findById(cvId);
         verify(cvRepository).save(cv);
-        assertThat(cv.getApprovedAt()).isNotNull();
-        assertThat(cv.getRejectedAt()).isNull();
+        assertThat(cv.getStatus()).isEqualTo(CvStatus.APPROVED);
     }
 
     @Test
@@ -111,8 +104,8 @@ public class GestionnaireServiceCvTest {
         Long cvId = 99L;
         when(cvRepository.findById(cvId)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> gestionnaireService.approveCv(cvId, "Looks good"))
-                .isInstanceOf(CvExceptions.FailedToApproveCvException.class);
+        assertThatThrownBy(() -> gestionnaireService.changeCvStatus(cvId,CvStatus.APPROVED.name(),"Looks good"))
+                .isInstanceOf(CvExceptions.FailedToChangeCvStatusException.class);
 
         verify(cvRepository).findById(cvId);
         verify(cvRepository, never()).save(any());
@@ -126,19 +119,17 @@ public class GestionnaireServiceCvTest {
         CV cv = CV.builder()
                 .id(cvId)
                 .etudiant(new Etudiant())
-                .approvedAt(null)
-                .rejectedAt(null)
+                .status(CvStatus.PENDING)
                 .build();
 
         when(cvRepository.findById(cvId)).thenReturn(Optional.of(cv));
         when(cvRepository.save(any(CV.class))).thenReturn(cv);
 
-        gestionnaireService.rejectCv(cvId, "Not suitable");
+        gestionnaireService.changeCvStatus(cvId, CvStatus.REJECTED.name() ,"Not suitable");
 
         verify(cvRepository).findById(cvId);
         verify(cvRepository).save(cv);
-        assertThat(cv.getRejectedAt()).isNotNull();
-        assertThat(cv.getApprovedAt()).isNull();
+        assertThat(cv.getStatus()).isEqualTo(CvStatus.REJECTED);
     }
 
     @Test
@@ -146,8 +137,8 @@ public class GestionnaireServiceCvTest {
         Long cvId = 99L;
         when(cvRepository.findById(cvId)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> gestionnaireService.rejectCv(cvId, "Not suitable"))
-                .isInstanceOf(CvExceptions.FailedToRejectCvException.class);
+        assertThatThrownBy(() -> gestionnaireService.changeCvStatus(cvId, CvStatus.REJECTED.name(), "Not suitable"))
+                .isInstanceOf(CvExceptions.FailedToChangeCvStatusException.class);
 
         verify(cvRepository).findById(cvId);
         verify(cvRepository, never()).save(any());

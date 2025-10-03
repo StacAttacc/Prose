@@ -1,6 +1,7 @@
 package com.AL565.prose.service;
 
 import com.AL565.prose.model.CV;
+import com.AL565.prose.model.CvStatus;
 import com.AL565.prose.model.Etudiant;
 import com.AL565.prose.repository.CvRepository;
 import com.AL565.prose.repository.EtudiantRepository;
@@ -74,8 +75,7 @@ public class EtudiantService {
                 .lastModifiedDate(Instant.now())
                 .data(data)
                 .etudiant(etudiant)
-                .approvedAt(null)
-                .rejectedAt(null)
+                .status(CvStatus.PENDING)
                 .comment(null)
                 .build();
 
@@ -87,8 +87,7 @@ public class EtudiantService {
                     existingCv.setLastModified(newCv.getLastModified());
                     existingCv.setLastModifiedDate(newCv.getLastModifiedDate());
                     existingCv.setData(newCv.getData());
-                    existingCv.setApprovedAt(newCv.getApprovedAt());
-                    existingCv.setRejectedAt(newCv.getRejectedAt());
+                    existingCv.setStatus(CvStatus.PENDING);
                     existingCv.setComment(newCv.getComment());
                     return cvRepository.save(existingCv);
                 })

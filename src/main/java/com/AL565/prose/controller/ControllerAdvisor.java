@@ -45,13 +45,8 @@ public class ControllerAdvisor {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Échec de la récupération du CV");
     }
 
-    @ExceptionHandler(FailedToApproveCvException.class)
-    public ResponseEntity<String> FailedToApproveCvException() {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Échec de l'approbation du CV");
-    }
-
-    @ExceptionHandler(FailedToRejectCvException.class)
-    public ResponseEntity<String> FailedToRejectCvException() {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Échec du rejet du CV");
+    @ExceptionHandler(FailedToChangeCvStatusException.class)
+    public ResponseEntity<String> FailedToChangeCvStatusException() {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Échec de la modification du statut du CV");
     }
 }

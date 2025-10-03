@@ -1,6 +1,7 @@
 package com.AL565.prose.service;
 
 import com.AL565.prose.model.CV;
+import com.AL565.prose.model.CvStatus;
 import com.AL565.prose.repository.CvRepository;
 import com.AL565.prose.repository.GestionnaireRepository;
 import com.AL565.prose.security.exceptions.CvExceptions.*;
@@ -12,7 +13,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
 import java.util.List;
 
 @Service
@@ -35,7 +35,7 @@ public class GestionnaireService {
 
     public List<GestionnaireCvDTO> getPendingCvs() throws Exception {
         try {
-            return cvRepository.findCVSByApprovedAtIsNullAndRejectedAtIsNull()
+            return cvRepository.findCVSByStatus(CvStatus.PENDING)
                     .stream()
                     .map(GestionnaireCvDTO::toDto)
                     .toList();
@@ -44,27 +44,14 @@ public class GestionnaireService {
         }
     }
 
-    public void approveCv(Long cvId, String comment) throws Exception {
+    public void changeCvStatus(Long cvId, String status, String comment) throws Exception {
         try {
             CV cv = cvRepository.findById(cvId).orElseThrow(CvNotFoundException::new);
-            cv.setApprovedAt(new Date());
-            cv.setRejectedAt(null);
+            cv.setStatus(CvStatus.valueOf(status));
             cv.setComment(comment);
             cvRepository.save(cv);
         } catch (Exception e) {
-            throw new FailedToApproveCvException();
-        }
-    }
-
-    public void rejectCv(Long cvId, String comment) throws Exception {
-        try {
-            CV cv = cvRepository.findById(cvId).orElseThrow(CvNotFoundException::new);
-            cv.setRejectedAt(new Date());
-            cv.setApprovedAt(null);
-            cv.setComment(comment);
-            cvRepository.save(cv);
-        } catch (Exception e) {
-            throw new FailedToRejectCvException();
+            throw new FailedToChangeCvStatusException();
         }
     }
 }

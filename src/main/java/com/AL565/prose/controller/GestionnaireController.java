@@ -22,15 +22,9 @@ public class GestionnaireController {
         return ResponseEntity.ok(cvs);
     }
 
-    @PostMapping("/cv/approve")
-    public ResponseEntity<Void> approveCv(@RequestBody CvDecisionDTO decisionDTO) throws Exception {
-        gestionnaireService.approveCv(decisionDTO.id, decisionDTO.comment);
-        return ResponseEntity.ok().build();
-    }
-
-    @PostMapping("/cv/reject")
-    public ResponseEntity<Void> rejectCv(@RequestBody CvDecisionDTO decisionDTO) throws Exception {
-        gestionnaireService.rejectCv(decisionDTO.id, decisionDTO.comment);
+    @PostMapping("/cv/change-status")
+    public ResponseEntity<Void> changeCvStatus(@RequestBody CvDecisionDTO cvDecision) throws Exception {
+        gestionnaireService.changeCvStatus(cvDecision.id, cvDecision.status, cvDecision.comment);
         return ResponseEntity.ok().build();
     }
 }

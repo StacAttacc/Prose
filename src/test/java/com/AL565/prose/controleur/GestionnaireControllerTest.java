@@ -1,6 +1,7 @@
 package com.AL565.prose.controleur;
 
 import com.AL565.prose.controller.GestionnaireController;
+import com.AL565.prose.model.CvStatus;
 import com.AL565.prose.security.exceptions.CvExceptions;
 import com.AL565.prose.service.EmployeurService;
 import com.AL565.prose.service.EtudiantService;
@@ -47,8 +48,7 @@ class GestionnaireControllerTest {
         GestionnaireCvDTO dto = new GestionnaireCvDTO();
         dto.setId(1L);
         dto.setName("CV1");
-        dto.setApprovedAt(null);
-        dto.setRejectedAt(null);
+        dto.setStatus(CvStatus.PENDING.name());
         dto.setEtudiantPrenom("John");
         dto.setEtudiantNom("Doe");
         dto.setEtudiantEmail("john@doe.com");
@@ -65,7 +65,7 @@ class GestionnaireControllerTest {
     @WithMockUser(roles = {"GESTIONNAIRE"})
     void approveCv_shouldReturnOk() throws Exception {
         String body = "{\"id\":1,\"comment\":\"ok\"}";
-        mockMvc.perform(post("/gestionnaire/cv/approve")
+        mockMvc.perform(post("/gestionnaire/cv/change-status")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isOk());
@@ -75,7 +75,7 @@ class GestionnaireControllerTest {
     @WithMockUser(roles = {"GESTIONNAIRE"})
     void rejectCv_shouldReturnOk() throws Exception {
         String body = "{\"id\":2,\"comment\":\"not ok\"}";
-        mockMvc.perform(post("/gestionnaire/cv/reject")
+        mockMvc.perform(post("/gestionnaire/cv/change-status")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isOk());
@@ -84,12 +84,12 @@ class GestionnaireControllerTest {
     @Test
     @WithMockUser(roles = {"GESTIONNAIRE"})
     void approveCv_shouldReturnError_whenException() throws Exception {
-        doThrow(new CvExceptions.CvNotFoundException()).when(gestionnaireService).approveCv(99L, "non");
+        doThrow(new CvExceptions.FailedToChangeCvStatusException()).when(gestionnaireService).changeCvStatus(99L,"ewww", "non");
 
-        String body = "{\"id\":99,\"comment\":\"non\"}";
-        mockMvc.perform(post("/gestionnaire/cv/approve")
+        String body = "{\"id\":99,\"status\": ewww,\"comment\":\"non\"}";
+        mockMvc.perform(post("/gestionnaire/cv/change-status")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isInternalServerError());
     }
 }
