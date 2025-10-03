@@ -2,9 +2,10 @@ import {useEffect, useState} from "react";
 import {NavLink} from "react-router-dom";
 import {useAuth} from "../../context/AuthContext.jsx";
 import StageSmall from "../display-components/stage-sm.jsx";
+import {getEmployeurStages} from "../../services/StageService.js";
 
 export default function PostedStages() {
-    const {user, getEmployeurStages} = useAuth();
+    const {user} = useAuth();
     const [stages, setStages] = useState([]);
 
     useEffect(() => {

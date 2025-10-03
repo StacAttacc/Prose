@@ -1,9 +1,10 @@
 import {useState} from "react";
 import {useNavigate} from "react-router-dom";
 import {useAuth} from "../../context/AuthContext.jsx";
+import {createStage} from "../../services/StageService.js";
 
 export default function StageCreation() {
-    const {user, createStage} = useAuth();
+    const {user} = useAuth();
 
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");

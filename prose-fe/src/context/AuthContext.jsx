@@ -55,16 +55,8 @@ export function AuthProvider({ children }) {
         setUser(null);
     }
 
-    async function createStage(payload, token) {
-        await apiCreateStage(payload, token);
-    }
-
-    async function getEmployeurStages(email, token) {
-        return await apiGetEmployeurStages(email, token);
-    }
-
     return (
-        <AuthCtx.Provider value={{ user, isAuthed: !!user, login, registerEmployeur, registerEtudiant, logout, createStage,getEmployeurStages }}>
+        <AuthCtx.Provider value={{ user, isAuthed: !!user, login, registerEmployeur, registerEtudiant, logout }}>
             {children}
         </AuthCtx.Provider>
     );
