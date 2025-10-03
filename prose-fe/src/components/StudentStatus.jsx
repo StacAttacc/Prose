@@ -5,10 +5,10 @@ import TeleversementCV from "./TeleversementCV.jsx";
 import { Worker, Viewer } from '@react-pdf-viewer/core';
 
 const statusColors = {
-    accepted: "bg-green-100 border-green-300",
-    pending: "bg-yellow-100 border-yellow-300",
-    rejected: "bg-red-100 border-red-300",
-    none: "bg-gray-100 border-gray-300"
+    APPROVED: "bg-green-100 border-green-300",
+    PENDING: "bg-yellow-100 border-yellow-300",
+    REJECTED: "bg-red-100 border-red-300",
+    NONE: "bg-gray-100 border-gray-300"
 };
 
 export default function StudentStatus() {
@@ -17,7 +17,7 @@ export default function StudentStatus() {
     const [cv, setCv] = useState(null);
     const [error, setError] = useState(null);
     const [showModal, setShowModal] = useState(false);
-    const [pdfUrl, setPdfUrl] = useState(null | String);
+    const [pdfUrl, setPdfUrl] = useState(null);
     const [refreshTrigger, setRefreshTrigger] = useState(0);
 
     useEffect(() => {
@@ -25,12 +25,11 @@ export default function StudentStatus() {
             try {
                 const cvData = await telechargerCv(user.data.email, user);
                 setCv(cvData);
-                if (cvData.approvedAt) setStatus("accepted");
-                else if (cvData.rejectedAt) setStatus("rejected");
-                else setStatus("pending");
+                if (cvData.status) setStatus(cvData.status);
+                else setStatus("NONE");
             } catch (e) {
                 setError("Could not fetch CV status.");
-                setStatus("none");
+                setStatus("NONE");
             }
         }
         fetchCvStatus();
@@ -123,7 +122,7 @@ export default function StudentStatus() {
                             )}
                         </div>
                     ) : (
-                        <div className="text-gray-500 text-center">No CV found.</div>
+                        <div className="text-gray-500 text-center">Aucun CV trouvé.</div>
                     )}
                 </div>
                 {showModal && (

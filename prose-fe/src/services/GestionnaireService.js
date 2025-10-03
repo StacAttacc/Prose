@@ -20,8 +20,8 @@ export const fetchAllPendingCvs = async (token) => {
 export const approveCv = async (cvId, comment, token) => {
     try {
         await axios.post(
-            `${BASE_URL_GESTIONNAIRE}/cv/approve`,
-            { id: cvId, comment: comment },
+            `${BASE_URL_GESTIONNAIRE}/cv/change-status`,
+            { id: cvId, status: "Approved", comment: comment },
             {
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -36,8 +36,8 @@ export const approveCv = async (cvId, comment, token) => {
 export const rejectCv = async (cvId, comment, token) => {
     try {
         await axios.post(
-            `${BASE_URL_GESTIONNAIRE}/cv/reject`,
-            { id: cvId, comment: comment },
+            `${BASE_URL_GESTIONNAIRE}/cv/change-status`,
+            { id: cvId, status: "Rejected", comment: comment },
             {
                 headers: {
                     'Authorization': `Bearer ${token}`

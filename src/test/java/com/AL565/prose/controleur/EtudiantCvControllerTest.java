@@ -19,6 +19,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.http.MediaType;
 
 import java.util.Base64;
+import java.util.Optional;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -88,15 +89,15 @@ class EtudiantCvControllerTest {
                 .lastModifiedDate(java.time.Instant.now())
                 .build();
 
-        when(etudiantService.getCvOrThrow("email@email.email")).thenReturn(
-                new EtudiantCvDTO() {{
+        when(etudiantService.getByEmail("email@email.email")).thenReturn(
+                Optional.of(new EtudiantCvDTO() {{
                     setName(cv.getName());
                     setType(cv.getType());
                     setSize(cv.getSize());
                     setData(Base64.getEncoder().encodeToString(cv.getData()));
                     setLastModified(cv.getLastModified());
                     setLastModifiedDate(cv.getLastModifiedDate());
-                }}
+                }})
         );
 
         mockMvc.perform(get("/etudiant/telecharger-cv/email@email.email")

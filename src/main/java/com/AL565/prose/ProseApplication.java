@@ -1,6 +1,7 @@
 package com.AL565.prose;
 
 import com.AL565.prose.model.Discipline;
+import com.AL565.prose.repository.CvRepository;
 import com.AL565.prose.service.EtudiantService;
 import com.AL565.prose.service.GestionnaireService;
 import com.AL565.prose.service.dto.EmployeurEnregistrerDTO;
@@ -22,6 +23,7 @@ public class ProseApplication {
     private final EmployeurService employeurService;
     private final EtudiantService etudiantService;
     private final GestionnaireService gestionnaireService;
+    private final CvRepository cvRepository;
 
     public static void main(String[] args) {
         SpringApplication.run(ProseApplication.class, args);
@@ -70,7 +72,6 @@ public class ProseApplication {
                 System.err.println(e.getMessage());
                 System.err.println("gestionnaire pas créé");
             }
-
 
             System.out.println(employeurService.getEmployeur("mcarney@gov.ca"));
         };

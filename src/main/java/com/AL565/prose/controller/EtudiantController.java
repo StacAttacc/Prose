@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Optional;
+
 @RestController
 @RequestMapping("/etudiant")
 public class EtudiantController {
@@ -48,7 +50,7 @@ public class EtudiantController {
     @GetMapping("/telecharger-cv/{email}")
     public ResponseEntity<EtudiantCvDTO> telecharger(@PathVariable String email)
             throws CvExceptions.StudentNotFoundException{
-        EtudiantCvDTO cv = etudiantService.getCvOrThrow(email);
-        return ResponseEntity.ok(cv);
+        Optional<EtudiantCvDTO> cv = etudiantService.getByEmail(email);
+        return ResponseEntity.ok(Optional.of(cv).get().orElse(null));
     }
 }

@@ -18,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -94,9 +95,8 @@ public class EtudiantService {
                 .orElseGet(() -> cvRepository.save(newCv));
     }
 
-    public EtudiantCvDTO getCvOrThrow(String username) throws CvExceptions.StudentNotFoundException {
+    public Optional<EtudiantCvDTO> getByEmail(String username) {
         return cvRepository.findByEtudiant_Credentials_Username(username)
-                .map(EtudiantCvDTO::toDto)
-                .orElseThrow(CvExceptions.StudentNotFoundException::new);
+                .map(EtudiantCvDTO::toDto);
     }
 }
