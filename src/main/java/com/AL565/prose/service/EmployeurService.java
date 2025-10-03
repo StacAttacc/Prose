@@ -16,6 +16,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Service
@@ -48,6 +49,7 @@ public class EmployeurService {
         }
 
         Stage toSave = StageDTO.toModel(dto);
+        toSave.setCreatedAt(OffsetDateTime.now());
         Stage saved = stageRepository.save(toSave);
         return StageDTO.fromModel(saved);
     }

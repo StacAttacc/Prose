@@ -54,6 +54,7 @@ public class StageDTO {
                 .compensation(dto.getCompensation())
                 .employeur(EmployeurDTO.toModel(dto.getEmployeur()))
                 .status(OfferStatus.SOUMISE)
+                .createdAt(OffsetDateTime.now())
                 .build();
     }
 
