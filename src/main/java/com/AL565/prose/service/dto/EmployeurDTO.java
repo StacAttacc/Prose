@@ -18,6 +18,6 @@ public class EmployeurDTO {
     }
 
     public static Employeur toModel(EmployeurDTO employeurDTO) {
-        return new Employeur(employeurDTO.firstName, employeurDTO.lastName, employeurDTO.company, employeurDTO.email);
+        return new Employeur(employeurDTO.id, employeurDTO.firstName, employeurDTO.lastName, employeurDTO.company, employeurDTO.email);
     }
 }

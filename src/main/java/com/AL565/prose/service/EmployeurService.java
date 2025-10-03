@@ -41,15 +41,13 @@ public class EmployeurService {
 
 
     @Transactional
-    public StageDTO createStage(Employeur employeur, StageDTO dto) {
-        if (employeur == null) {
-            throw new IllegalArgumentException("employeur must not be null");
-        }
+    public StageDTO createStage(StageDTO dto) {
+
         if (dto == null) {
             throw new IllegalArgumentException("dto must not be null");
         }
 
-        Stage toSave = StageDTO.toModel(dto, employeur);
+        Stage toSave = StageDTO.toModel(dto);
         Stage saved = stageRepository.save(toSave);
         return StageDTO.fromModel(saved);
     }

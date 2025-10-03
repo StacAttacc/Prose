@@ -41,7 +41,7 @@ public class StageDTO {
 
     private String compensation;
 
-    public static Stage toModel(StageDTO dto, Employeur employeur) {
+    public static Stage toModel(StageDTO dto) {
         return Stage.builder()
                 .title(dto.getTitle())
                 .description(dto.getDescription())

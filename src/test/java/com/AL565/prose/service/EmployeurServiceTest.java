@@ -76,14 +76,11 @@ class EmployeurServiceTest {
                 .skills(List.of("Java", "Spring"))
                 .startDate(LocalDate.now().plusDays(7))
                 .endDate(LocalDate.now().plusWeeks(12))
-                .durationWeeks(12)
                 .location("Montréal")
                 .workMode("HYBRIDE")
                 .compensation("22$/h")
+                .employeur(new EmployeurDTO(8,"Umberto", "Macaco","Zac inc","email"))
                 .build();
-
-        var employeur = new Employeur();
-        employeur.setId(7L);
 
         when(stageRepository.save(any(Stage.class))).thenAnswer(inv -> {
             Stage s = inv.getArgument(0);
@@ -91,30 +88,19 @@ class EmployeurServiceTest {
             return s;
         });
 
-        StageDTO out = employeurService.createStage(employeur, dto);
+        StageDTO out = employeurService.createStage(dto);
 
         assertThat(out.getId()).isEqualTo(42L);
         assertThat(out.getStatus().name()).isEqualTo("SOUMISE");
         verify(stageRepository, times(1)).save(any(Stage.class));
     }
-
-    @Test
-    void createStage_throw_illegalArgument_siEmployeurNull() {
-        var dto = StageDTO.builder().title("Offre").build();
-
-        assertThatThrownBy(() -> employeurService.createStage(null, dto))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("employeur");
-
-        verifyNoInteractions(stageRepository);
-    }
-
+    
     @Test
     void createStage_throw_illegalArgument_siDtoNull() {
         var employeur = new Employeur();
         employeur.setId(7L);
 
-        assertThatThrownBy(() -> employeurService.createStage(employeur, null))
+        assertThatThrownBy(() -> employeurService.createStage(null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("dto");
 

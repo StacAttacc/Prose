@@ -86,13 +86,12 @@ class EmployeurControllerTest {
                 .skills(List.of("Java", "Spring"))
                 .startDate(LocalDate.now().plusDays(7))
                 .endDate(LocalDate.now().plusWeeks(12))
-                .durationWeeks(12)
                 .location("Montréal")
                 .workMode("HYBRIDE")
                 .compensation("22$/h")
                 .build();
 
-        when(employeurService.createStage(any(Employeur.class), any(StageDTO.class)))
+        when(employeurService.createStage(any(StageDTO.class)))
                 .thenReturn(StageDTO.builder().id(42L).build());
 
         var employeur = new Employeur();
@@ -118,7 +117,7 @@ class EmployeurControllerTest {
         var body = result.getResponse().getContentAsString();
         Assertions.assertThat(body).isEqualTo("Stage créé avec succès");
 
-        verify(employeurService).createStage(any(Employeur.class), any(StageDTO.class));
+        verify(employeurService).createStage(any(StageDTO.class));
     }
 
 

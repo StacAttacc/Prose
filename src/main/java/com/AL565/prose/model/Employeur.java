@@ -21,8 +21,8 @@ public class Employeur extends ProseUser {
         this.company = company;
     }
 
-    public Employeur(String firstName, String lastName, String company, String username) {
-        super(firstName, lastName, new Credentials(username, null, Role.EMPLOYEUR));
+    public Employeur(Long id,String firstName, String lastName, String company, String username) {
+        super(id, firstName, lastName, new Credentials(username, null, Role.EMPLOYEUR));
         this.company = company;
     }
 

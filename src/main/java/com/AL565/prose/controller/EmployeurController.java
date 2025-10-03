@@ -36,17 +36,9 @@ public class EmployeurController {
     }
 
     @PostMapping("/createStage")
-    @PreAuthorize("hasRole('EMPLOYEUR')")
-    public ResponseEntity<String> createOffer(
-            @AuthenticationPrincipal Employeur employeur,
-            @Valid @RequestBody StageDTO request
-    ) {
-        if (employeur == null) {
-            return new ResponseEntity<>("Non autorisé", HttpStatus.UNAUTHORIZED);
-        }
-
+    public ResponseEntity<String> createOffer(@Valid @RequestBody StageDTO request) {
         try {
-            employeurService.createStage(employeur, request);
+            employeurService.createStage(request);
             return new ResponseEntity<>("Stage créé avec succès", HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>("Erreur lors de la création du stage", HttpStatus.BAD_REQUEST);
