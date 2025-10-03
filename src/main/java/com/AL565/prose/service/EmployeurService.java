@@ -1,6 +1,7 @@
 package com.AL565.prose.service;
 
 import com.AL565.prose.model.Employeur;
+import com.AL565.prose.model.OfferStatus;
 import com.AL565.prose.model.Stage;
 import com.AL565.prose.repository.EmployeurRepository;
 import com.AL565.prose.repository.ProseUserRepository;
@@ -13,6 +14,8 @@ import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @AllArgsConstructor
@@ -48,6 +51,17 @@ public class EmployeurService {
         Stage toSave = StageDTO.toModel(dto, employeur);
         Stage saved = stageRepository.save(toSave);
         return StageDTO.fromModel(saved);
+    }
+
+
+    public List<StageDTO> listStagesFor(Employeur employeur) {
+        return stageRepository.findByEmployeur_Id(employeur.getId())
+                .stream().map(StageDTO::fromModel).toList();
+    }
+
+    public List<StageDTO> listPublishedByEmployerId(Long employeurId) {
+        return stageRepository.findByEmployeur_IdAndStatus(employeurId, OfferStatus.PUBLIEE)
+                .stream().map(StageDTO::fromModel).toList();
     }
 
 }

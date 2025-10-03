@@ -13,12 +13,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import java.net.URI;
+import java.util.List;
 
 @AllArgsConstructor
 @RestController
@@ -54,6 +51,22 @@ public class EmployeurController {
             return new ResponseEntity<>("Erreur lors de la création du stage", HttpStatus.BAD_REQUEST);
         }
     }
+
+
+
+    @GetMapping("/stages")
+    @PreAuthorize("hasRole('EMPLOYEUR')")
+    public ResponseEntity<List<StageDTO>> listMyStages(@AuthenticationPrincipal Employeur employeur) {
+        if (employeur == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        return ResponseEntity.ok(employeurService.listStagesFor(employeur));
+    }
+
+
+    @GetMapping("/{employeurId}/stages/published")
+    public ResponseEntity<List<StageDTO>> listPublishedByEmployer(@PathVariable Long employeurId) {
+        return ResponseEntity.ok(employeurService.listPublishedByEmployerId(employeurId));
+    }
+
 
 }
 
