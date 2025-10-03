@@ -1,6 +1,7 @@
 package com.AL565.prose.service;
 
 import com.AL565.prose.model.CV;
+import com.AL565.prose.model.Discipline;
 import com.AL565.prose.model.auth.Credentials;
 import com.AL565.prose.repository.CvRepository;
 import com.AL565.prose.repository.GestionnaireRepository;
@@ -40,11 +41,14 @@ public class GestionnaireServiceCvTest {
         etudiant1.setFirstName("John");
         etudiant1.setLastName("Doe");
         etudiant1.setCredentials(new Credentials());
+        etudiant1.setDiscipline(Discipline.INFORMATIQUE);
+
 
         Etudiant etudiant2 = new Etudiant();
         etudiant2.setFirstName("Jane");
         etudiant2.setLastName("Smith");
         etudiant2.setCredentials(new Credentials());
+        etudiant2.setDiscipline(Discipline.INFORMATIQUE);
 
         CV cv1 = CV.builder()
                 .id(1L)
@@ -108,7 +112,7 @@ public class GestionnaireServiceCvTest {
         when(cvRepository.findById(cvId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> gestionnaireService.approveCv(cvId, "Looks good"))
-                .isInstanceOf(CvExceptions.CvNotFoundException.class);
+                .isInstanceOf(CvExceptions.FailedToApproveCvException.class);
 
         verify(cvRepository).findById(cvId);
         verify(cvRepository, never()).save(any());
@@ -143,7 +147,7 @@ public class GestionnaireServiceCvTest {
         when(cvRepository.findById(cvId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> gestionnaireService.rejectCv(cvId, "Not suitable"))
-                .isInstanceOf(CvExceptions.CvNotFoundException.class);
+                .isInstanceOf(CvExceptions.FailedToRejectCvException.class);
 
         verify(cvRepository).findById(cvId);
         verify(cvRepository, never()).save(any());

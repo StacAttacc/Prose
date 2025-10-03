@@ -19,6 +19,7 @@ public class GestionnaireCvDTO {
     private String etudiantPrenom;
     private String etudiantNom;
     private String etudiantEmail;
+    private String discipline;
     private Date approvedAt;
     private Date rejectedAt;
     private String data;
@@ -31,6 +32,7 @@ public class GestionnaireCvDTO {
                 cv.getEtudiant().getFirstName(),
                 cv.getEtudiant().getLastName(),
                 cv.getEtudiant().getEmail(),
+                cv.getEtudiant().getDiscipline().name(),
                 cv.getApprovedAt(),
                 cv.getRejectedAt(),
                 Base64.getEncoder().encodeToString(cv.getData()),
