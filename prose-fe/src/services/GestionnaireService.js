@@ -2,9 +2,9 @@ import axios from "axios";
 
 const BASE_URL_GESTIONNAIRE = 'http://localhost:8080/gestionnaire';
 
-export const fetchAllPendingCvs = async (token) => {
+export const fetchAllCVs = async (token) => {
     try {
-        const response = await axios.get(`${BASE_URL_GESTIONNAIRE}/cv/pending`, {
+        const response = await axios.get(`${BASE_URL_GESTIONNAIRE}/cv/all`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             },
@@ -12,10 +12,13 @@ export const fetchAllPendingCvs = async (token) => {
         console.log(response.data);
         return response.data;
     } catch (error) {
-        console.error('There was an error fetching the pending CVs!', error);
+        if (error.response) {
+            console.error('Erreur:', error.response.data);
+            throw new Error(error.response.data);
+        }
         return [];
     }
-};
+}
 
 export const approveCv = async (cvId, comment, token) => {
     try {
@@ -29,7 +32,7 @@ export const approveCv = async (cvId, comment, token) => {
             }
         );
     } catch (error) {
-        console.error('Error approving CV:', error);
+        console.error('Error approving CV:', error.response.data);
     }
 };
 

@@ -33,21 +33,21 @@ public class GestionnaireService {
         }
     }
 
-    public List<GestionnaireCvDTO> getPendingCvs() throws Exception {
+    public List<GestionnaireCvDTO> getAllCvs() throws Exception {
         try {
-            return cvRepository.findCVSByStatus(CvStatus.PENDING)
+            return cvRepository.findAll()
                     .stream()
                     .map(GestionnaireCvDTO::toDto)
                     .toList();
         } catch (Exception e) {
-            throw new FailedToFetchUnapprovedCvsException();
+            throw new FailedToFetchCvsException();
         }
     }
 
     public void changeCvStatus(Long cvId, String status, String comment) throws Exception {
         try {
             CV cv = cvRepository.findById(cvId).orElseThrow(CvNotFoundException::new);
-            cv.setStatus(CvStatus.valueOf(status));
+            cv.setStatus(CvStatus.valueOf(status.toUpperCase()));
             cv.setComment(comment);
             cvRepository.save(cv);
         } catch (Exception e) {

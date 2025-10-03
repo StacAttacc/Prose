@@ -16,15 +16,15 @@ public class GestionnaireController {
 
     private final GestionnaireService gestionnaireService;
 
-    @GetMapping("/cv/pending")
-    public ResponseEntity<List<GestionnaireCvDTO>> getPendingCvs() throws Exception {
-        List<GestionnaireCvDTO> cvs = gestionnaireService.getPendingCvs();
-        return ResponseEntity.ok(cvs);
-    }
-
     @PostMapping("/cv/change-status")
     public ResponseEntity<Void> changeCvStatus(@RequestBody CvDecisionDTO cvDecision) throws Exception {
         gestionnaireService.changeCvStatus(cvDecision.id, cvDecision.status, cvDecision.comment);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/cv/all")
+    public ResponseEntity<List<GestionnaireCvDTO>> getAllCvs() throws Exception {
+        List<GestionnaireCvDTO> cvs = gestionnaireService.getAllCvs();
+        return ResponseEntity.ok(cvs);
     }
 }
