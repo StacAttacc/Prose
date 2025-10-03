@@ -115,6 +115,12 @@ export default function StudentStatus() {
                                     </div>
                                 </div>
                             </div>
+                            {cv && cv.comment && (
+                                <div>
+                                    <span className="text-sm font-medium">Commentaire: </span>
+                                    <text>{cv.comment}</text>
+                                </div>
+                            )}
                         </div>
                     ) : (
                         <div className="text-gray-500 text-center">No CV found.</div>
