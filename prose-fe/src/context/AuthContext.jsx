@@ -5,7 +5,7 @@ import {
     registerEmployeur as apiRegisterEmployeur,
     registerEtudiant as apiRegisterEtudiant
 } from "../services/AuthService";
-import {createStage as apiCreateStage} from "../services/StageService.js";
+import {createStage as apiCreateStage, getEmployeurStages as apiGetEmployeurStages} from "../services/StageService.js";
 
 const AuthCtx = createContext(null);
 
@@ -59,8 +59,12 @@ export function AuthProvider({ children }) {
         await apiCreateStage(payload, token);
     }
 
+    async function getEmployeurStages(email, token) {
+        return await apiGetEmployeurStages(email, token);
+    }
+
     return (
-        <AuthCtx.Provider value={{ user, isAuthed: !!user, login, registerEmployeur, registerEtudiant, logout, createStage }}>
+        <AuthCtx.Provider value={{ user, isAuthed: !!user, login, registerEmployeur, registerEtudiant, logout, createStage,getEmployeurStages }}>
             {children}
         </AuthCtx.Provider>
     );

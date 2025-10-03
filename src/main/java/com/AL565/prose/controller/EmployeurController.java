@@ -4,6 +4,7 @@ package com.AL565.prose.controller;
 import com.AL565.prose.security.exceptions.UserNotFoundException;
 import com.AL565.prose.service.dto.EmployeurEnregistrerDTO;
 import com.AL565.prose.service.EmployeurService;
+import com.AL565.prose.service.dto.ReturnEntityDTO;
 import com.AL565.prose.service.dto.StageDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import jakarta.validation.Valid;
@@ -43,17 +44,17 @@ public class EmployeurController {
 
 
     @GetMapping("/{email:.+}/stages")
-    public ResponseEntity<?> listPublishedByEmployerEmail(@PathVariable("email") String email) {
+    public ResponseEntity<ReturnEntityDTO<List<StageDTO>>> listPublishedByEmployerEmail(@PathVariable("email") String email) {
         try {
             List<StageDTO> stages = employeurService.listStagesFor(email);
             if (stages.isEmpty()) {
-                return new ResponseEntity<>("Aucun stage publié trouvé pour cet employeur", HttpStatus.NOT_FOUND);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ReturnEntityDTO<>("Aucun stage publié trouvé pour cet employeur", null));
             }
-            return new ResponseEntity<>(stages, HttpStatus.OK);
+            return ResponseEntity.ok(new ReturnEntityDTO<>("Trouvés", stages));
         } catch (UserNotFoundException e) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ReturnEntityDTO<>("Utilisateur n'est pas un employeur", null));
         } catch (Exception e) {
-            return new ResponseEntity<>("Erreur lors de la récupération des stages publiés", HttpStatus.BAD_REQUEST);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ReturnEntityDTO<>("Erreur lors de la récupération des stages publiés", null));
         }
     }
 }

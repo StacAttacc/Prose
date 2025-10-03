@@ -55,6 +55,7 @@ public class EmployeurService {
     }
 
 
+    @Transactional
     public List<StageDTO> listStagesFor(String email) {
         return stageRepository.findByEmployeurEmail(email)
                 .stream().map((stage) -> {

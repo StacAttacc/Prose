@@ -5,13 +5,14 @@ import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import PageAuthentification from "./pages/PageAuthentification.jsx";
 import TeleversementCV from "./components/TeleversementCV.jsx";
 import StageCreation from "./components/employeur-components/StageCreation.jsx";
+import PostedStages from "./components/employeur-components/PostedStages.jsx";
 
 export default function AppRoutes() {
     const { user, loading } = useAuth();
 
     const defaultElement =
         user?.role === "ETUDIANT" ? <TeleversementCV /> :
-            user?.role === "EMPLOYEUR" ? <div>Bienvenue {user.firstName}</div> :
+            user?.role === "EMPLOYEUR" ? <PostedStages /> :
                 user?.role === "PROFESSEUR" ? <div>Bienvenue Professeur</div> :
                     <div>Rôle inconnu</div>;
 
