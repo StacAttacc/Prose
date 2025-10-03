@@ -16,4 +16,8 @@ public class EmployeurDTO {
     public static EmployeurDTO toDTO(Employeur employeur) {
         return new EmployeurDTO(employeur.getId(), employeur.getFirstName(), employeur.getLastName(), employeur.getCompany(), employeur.getEmail());
     }
+
+    public static Employeur toModel(EmployeurDTO employeurDTO) {
+        return new Employeur(employeurDTO.firstName, employeurDTO.lastName, employeurDTO.company, employeurDTO.email);
+    }
 }

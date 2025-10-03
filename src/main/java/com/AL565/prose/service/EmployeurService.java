@@ -6,6 +6,7 @@ import com.AL565.prose.model.Stage;
 import com.AL565.prose.repository.EmployeurRepository;
 import com.AL565.prose.repository.ProseUserRepository;
 import com.AL565.prose.repository.StageRepository;
+import com.AL565.prose.security.exceptions.UserNotFoundException;
 import com.AL565.prose.service.dto.EmployeurDTO;
 import com.AL565.prose.service.dto.EmployeurEnregistrerDTO;
 import com.AL565.prose.service.dto.StageDTO;
@@ -35,7 +36,7 @@ public class EmployeurService {
     }
 
     public EmployeurDTO getEmployeur(String email) {
-        return EmployeurDTO.toDTO((Employeur) proseUserRepository.findByCredentials_Username(email).orElseThrow());
+        return EmployeurDTO.toDTO((Employeur) proseUserRepository.findByCredentials_Username(email).orElseThrow((UserNotFoundException::new)));
     }
 
 

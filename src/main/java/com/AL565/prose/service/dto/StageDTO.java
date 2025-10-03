@@ -21,7 +21,8 @@ public class StageDTO {
     private Long id;
     private OfferStatus status;
     private OffsetDateTime createdAt;
-    
+    private EmployeurDTO employeur;
+
     private String title;
 
     private String description;
@@ -33,8 +34,6 @@ public class StageDTO {
     private LocalDate startDate;
 
     private LocalDate endDate;
-
-    private Integer durationWeeks;
 
     private String location;
 
@@ -50,11 +49,10 @@ public class StageDTO {
                 .skills(dto.getSkills())
                 .startDate(dto.getStartDate())
                 .endDate(dto.getEndDate())
-                .durationWeeks(dto.getDurationWeeks())
                 .location(dto.getLocation())
                 .workMode(dto.getWorkMode())
                 .compensation(dto.getCompensation())
-                .employeur(employeur)
+                .employeur(EmployeurDTO.toModel(dto.getEmployeur()))
                 .status(OfferStatus.SOUMISE)
                 .build();
     }
@@ -68,11 +66,11 @@ public class StageDTO {
                 .skills(offer.getSkills())
                 .startDate(offer.getStartDate())
                 .endDate(offer.getEndDate())
-                .durationWeeks(offer.getDurationWeeks())
                 .location(offer.getLocation())
                 .workMode(offer.getWorkMode())
                 .compensation(offer.getCompensation())
                 .status(offer.getStatus())
+                .employeur(EmployeurDTO.toDTO(offer.getEmployeur()))
                 .createdAt(offer.getCreatedAt())
                 .build();
     }

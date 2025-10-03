@@ -7,7 +7,8 @@ import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import lombok.*;
 
-@Getter @Setter
+@Getter
+@Setter
 @Entity
 @Builder
 @AllArgsConstructor
@@ -19,4 +20,11 @@ public class Employeur extends ProseUser {
         super(firstName, lastName, new Credentials(username, password, Role.EMPLOYEUR));
         this.company = company;
     }
+
+    public Employeur(String firstName, String lastName, String company, String username) {
+        super(firstName, lastName, new Credentials(username, null, Role.EMPLOYEUR));
+        this.company = company;
+    }
+
+
 }

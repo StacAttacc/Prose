@@ -24,9 +24,6 @@ public class Stage {
     private Long id;
 
     private String title;
-
-    private Integer durationWeeks;
-
     @Lob
     private String description;
 
@@ -54,7 +51,7 @@ public class Stage {
     private OfferStatus status = OfferStatus.SOUMISE;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "employeur_id", nullable = false,
+    @JoinColumn(name = "employeur_username", nullable = false,
             foreignKey = @ForeignKey(name = "fk_stage_employeur"))
     private Employeur employeur;
 

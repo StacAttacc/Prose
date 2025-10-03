@@ -2,6 +2,7 @@ package com.AL565.prose.controller;
 
 
 import com.AL565.prose.model.Employeur;
+import com.AL565.prose.security.exceptions.UserNotFoundException;
 import com.AL565.prose.service.dto.EmployeurEnregistrerDTO;
 import com.AL565.prose.service.EmployeurService;
 import com.AL565.prose.service.dto.StageDTO;
@@ -61,10 +62,11 @@ public class EmployeurController {
                 return new ResponseEntity<>("Aucun stage publié trouvé pour cet employeur", HttpStatus.NOT_FOUND);
             }
             return new ResponseEntity<>(stages, HttpStatus.OK);
+        } catch (UserNotFoundException e) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         } catch (Exception e) {
             return new ResponseEntity<>("Erreur lors de la récupération des stages publiés", HttpStatus.BAD_REQUEST);
         }
     }
-
 }
 
