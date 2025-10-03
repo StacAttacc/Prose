@@ -2,6 +2,7 @@ package com.AL565.prose.controleur;
 
 import com.AL565.prose.controller.GestionnaireController;
 import com.AL565.prose.model.CvStatus;
+import com.AL565.prose.repository.CvRepository;
 import com.AL565.prose.security.exceptions.CvExceptions;
 import com.AL565.prose.service.EmployeurService;
 import com.AL565.prose.service.EtudiantService;
@@ -42,9 +43,12 @@ class GestionnaireControllerTest {
     @MockitoBean
     private EtudiantService etudiantService;
 
+    @MockitoBean
+    private CvRepository cvRepository;
+
     @Test
     @WithMockUser(roles = {"GESTIONNAIRE"})
-    void getPendingCvs_shouldReturnOk() throws Exception {
+    void getAllCvs_shouldReturnOk() throws Exception {
         GestionnaireCvDTO dto = new GestionnaireCvDTO();
         dto.setId(1L);
         dto.setName("CV1");
@@ -54,9 +58,9 @@ class GestionnaireControllerTest {
         dto.setEtudiantEmail("john@doe.com");
         dto.setData("data");
 
-        when(gestionnaireService.getPendingCvs()).thenReturn(List.of(dto));
+        when(gestionnaireService.getAllCvs()).thenReturn(List.of(dto));
 
-        mockMvc.perform(get("/gestionnaire/cv/pending")
+        mockMvc.perform(get("/gestionnaire/cv/all")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
@@ -90,6 +94,6 @@ class GestionnaireControllerTest {
         mockMvc.perform(post("/gestionnaire/cv/change-status")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isBadRequest());
     }
 }

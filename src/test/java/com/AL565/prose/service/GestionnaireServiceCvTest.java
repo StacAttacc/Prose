@@ -33,7 +33,7 @@ public class GestionnaireServiceCvTest {
     private GestionnaireService gestionnaireService;
 
     @Test
-    void getPendingCvs_ShouldReturnMappedDTOs() throws Exception {
+    void getAllCvs_ShouldReturnMappedDTOs() throws Exception {
         Etudiant etudiant1 = new Etudiant();
         etudiant1.setFirstName("John");
         etudiant1.setLastName("Doe");
@@ -66,16 +66,16 @@ public class GestionnaireServiceCvTest {
                 .build();
 
 
-        when(cvRepository.findCVSByStatus(CvStatus.PENDING)).thenReturn(Arrays.asList(cv1, cv2));
+        when(cvRepository.findAll()).thenReturn(Arrays.asList(cv1, cv2));
 
-        List<GestionnaireCvDTO> result = gestionnaireService.getPendingCvs();
+        List<GestionnaireCvDTO> result = gestionnaireService.getAllCvs();
 
         assertThat(result).hasSize(2);
         assertThat(result.get(0).getStatus()).isEqualTo(CvStatus.PENDING.name());
         assertThat(result.get(0).getStatus()).isEqualTo(CvStatus.PENDING.name());
         assertThat(result.get(1).getStatus()).isEqualTo(CvStatus.PENDING.name());
         assertThat(result.get(1).getStatus()).isEqualTo(CvStatus.PENDING.name());
-        verify(cvRepository).findCVSByStatus(CvStatus.PENDING);
+        verify(cvRepository).findAll();
     }
 
 

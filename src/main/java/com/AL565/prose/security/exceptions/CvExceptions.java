@@ -25,8 +25,8 @@ public class CvExceptions {
         }
     }
 
-    public static class FailedToFetchUnapprovedCvsException extends Exception {
-        public FailedToFetchUnapprovedCvsException() {
+    public static class FailedToFetchCvsException extends Exception {
+        public FailedToFetchCvsException() {
             super("Échec de la récupération des CVs non approuvés");
         }
     }
