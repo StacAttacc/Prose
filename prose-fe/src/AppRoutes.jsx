@@ -10,9 +10,9 @@ export default function AppRoutes() {
     const { user, loading } = useAuth();
 
     const defaultElement =
-        user?.data.role === "ETUDIANT" ? <TeleversementCV /> :
-            user?.data.role === "EMPLOYEUR" ? <div>Bienvenue {user.firstName}</div> :
-                user?.data.role === "PROFESSEUR" ? <div>Bienvenue Professeur</div> :
+        user?.role === "ETUDIANT" ? <TeleversementCV /> :
+            user?.role === "EMPLOYEUR" ? <div>Bienvenue {user.firstName}</div> :
+                user?.role === "PROFESSEUR" ? <div>Bienvenue Professeur</div> :
                     <div>Rôle inconnu</div>;
 
     return (

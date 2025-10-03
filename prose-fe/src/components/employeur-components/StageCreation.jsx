@@ -1,6 +1,10 @@
 import {useState} from "react";
+import {useNavigate} from "react-router-dom";
+import {useAuth} from "../../context/AuthContext.jsx";
 
 export default function StageCreation() {
+    const {user, createStage} = useAuth();
+
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [prerequisites, setPrerequisites] = useState("");
@@ -11,6 +15,8 @@ export default function StageCreation() {
     const [workType, setWorkType] = useState("");
     const [salary, setSalary] = useState("");
 
+    const nav = useNavigate();
+
     const canSubmit = title.length > 0 &&
         description.length > 0 &&
         prerequisites.length > 0 &&
@@ -20,7 +26,7 @@ export default function StageCreation() {
         workType.length > 0 &&
         salary.length > 0;
 
-    function submit(e) {
+    async function submit(e) {
         e.preventDefault();
         let stage = {
             "title": title,
@@ -29,9 +35,13 @@ export default function StageCreation() {
             "skills": skills,
             "startDate": startDate,
             "endDate": endDate,
+            "location": location,
+            "compensation": salary,
             "workMode": workType,
         }
-        console.log(stage);
+
+        await createStage(stage, user.token)
+        nav('/')
     }
 
     return (

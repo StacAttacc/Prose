@@ -30,7 +30,7 @@ export default function Dashboard() {
                             </div>
                         </div>
                         <div className="ml-auto">
-                            <p className="text-white text-lg">Bienvenue {user.data.firstName + " " + user.data.lastName}
+                            <p className="text-white text-lg">Bienvenue {user.firstName + " " + user.lastName}
                                 <button type="button"
                                         className="text-white bg-gradient-to-r
                                     from-red-400 via-red-500 to-red-600
@@ -46,7 +46,7 @@ export default function Dashboard() {
             <nav className="relative bg-teal-700/95 rounded-xl mt-2 shadow-black shadow-sm">
                 <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
                     <div className="relative flex h-12 items-center justify-around">
-                        {user.data.role === "EMPLOYEUR" ? (
+                        {user.role === "EMPLOYEUR" ? (
                             <>
                                 <button onClick={() => {nav('creation-stage')}} className="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2">
                                     Créer un stage
@@ -55,7 +55,7 @@ export default function Dashboard() {
                                 {/*Mettre mes options ici*/}
                             </>
                         ) : <></>}
-                        {user.data.role === "ETUDIANT" ? (
+                        {user.role === "ETUDIANT" ? (
                             <>
                                 {/*Mettre mes options ici*/}
                                 <button onClick={() => {nav('televersement-cv')}} className="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2">
@@ -63,12 +63,12 @@ export default function Dashboard() {
                                 </button>
                             </>
                         ) : <></>}
-                        {user.data.role === "GESTIONNAIRE" ? (
+                        {user.role === "GESTIONNAIRE" ? (
                             <>
                                 {/*Mettre mes options ici*/}
                             </>
                         ) : <></>}
-                        {user.data.role === "PROFESSEUR" ? (
+                        {user.role === "PROFESSEUR" ? (
                             <>
                                 {/*Mettre mes options ici*/}
                             </>

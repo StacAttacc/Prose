@@ -1,5 +1,11 @@
 import {createContext, useContext, useEffect, useState} from "react";
-import { login as apiLogin, registerEmployeur as apiRegisterEmployeur, registerEtudiant as apiRegisterEtudiant, logout as apiLogout } from "../services/AuthService";
+import {
+    login as apiLogin,
+    logout as apiLogout,
+    registerEmployeur as apiRegisterEmployeur,
+    registerEtudiant as apiRegisterEtudiant
+} from "../services/AuthService";
+import {createStage as apiCreateStage} from "../services/StageService.js";
 
 const AuthCtx = createContext(null);
 
@@ -20,7 +26,7 @@ export function AuthProvider({ children }) {
 
     useEffect(() => {
         if (user) {
-            sessionStorage.setItem("user", JSON.stringify(user));
+            sessionStorage.setItem("user", JSON.stringify(user.data));
         } else {
             sessionStorage.removeItem("user");
         }
@@ -28,19 +34,19 @@ export function AuthProvider({ children }) {
 
     async function login(email, password) {
         const u = await apiLogin(email, password);
-        setUser(u);
+        setUser(u.data);
         return u;
     }
 
     async function registerEmployeur(payload) {
         const u = await apiRegisterEmployeur(payload);
-        setUser(u);
+        setUser(u.data);
         return u;
     }
 
     async function registerEtudiant(payload) {
         const u = await apiRegisterEtudiant(payload);
-        setUser(u);
+        setUser(u.data);
         return u;
     }
 
@@ -49,8 +55,12 @@ export function AuthProvider({ children }) {
         setUser(null);
     }
 
+    async function createStage(payload, token) {
+        await apiCreateStage(payload, token);
+    }
+
     return (
-        <AuthCtx.Provider value={{ user, isAuthed: !!user, login, registerEmployeur, registerEtudiant, logout }}>
+        <AuthCtx.Provider value={{ user, isAuthed: !!user, login, registerEmployeur, registerEtudiant, logout, createStage }}>
             {children}
         </AuthCtx.Provider>
     );
