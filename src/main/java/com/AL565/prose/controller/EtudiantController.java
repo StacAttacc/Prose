@@ -4,6 +4,7 @@ import com.AL565.prose.service.dto.EtudiantCvDto;
 import com.AL565.prose.service.EtudiantService;
 import com.AL565.prose.security.exceptions.CvExceptions;
 import com.AL565.prose.service.dto.EtudiantDTO;
+import com.AL565.prose.service.dto.EtudiantPasswordDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import com.AL565.prose.service.ProseCvService;
 import org.springframework.http.HttpHeaders;
@@ -27,7 +28,7 @@ public class EtudiantController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<String> inscrireEtudiant(@RequestBody EtudiantDTO dto) {
+    public ResponseEntity<String> inscrireEtudiant(@RequestBody EtudiantPasswordDTO dto) {
         try {
             etudiantService.inscrireEtudiant(dto);
             return ResponseEntity.status(HttpStatus.CREATED).build();

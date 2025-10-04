@@ -1,5 +1,10 @@
 import {createContext, useContext, useEffect, useState} from "react";
-import { login as apiLogin, registerEmployeur as apiRegisterEmployeur, registerEtudiant as apiRegisterEtudiant, logout as apiLogout } from "../services/AuthService";
+import {
+    login as apiLogin,
+    logout as apiLogout,
+    registerEmployeur as apiRegisterEmployeur,
+    registerEtudiant as apiRegisterEtudiant
+} from "../services/AuthService";
 
 const AuthCtx = createContext(null);
 
@@ -20,7 +25,7 @@ export function AuthProvider({ children }) {
 
     useEffect(() => {
         if (user) {
-            sessionStorage.setItem("user", JSON.stringify(user));
+            sessionStorage.setItem("user", JSON.stringify(user.data));
         } else {
             sessionStorage.removeItem("user");
         }
@@ -40,7 +45,7 @@ export function AuthProvider({ children }) {
 
     async function registerEtudiant(payload) {
         const u = await apiRegisterEtudiant(payload);
-        setUser(u);
+        setUser(u.data);
         return u;
     }
 

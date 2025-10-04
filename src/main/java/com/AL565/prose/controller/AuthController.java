@@ -24,14 +24,14 @@ public class AuthController {
     public ResponseEntity<ReturnEntityDTO<ProseUserDTO>> login(@Valid @RequestBody LoginRequestDTO request) {
         try {
             ProseUserDTO user = authService.login(request);
-            return ResponseEntity.status(200).body(new ReturnEntityDTO<ProseUserDTO>("Login successful", user));
+            return ResponseEntity.status(200).body(new ReturnEntityDTO<>("Login successful", user));
             
         } catch (UserNotFoundException e) {
-            return ResponseEntity.status(401).body(new ReturnEntityDTO<ProseUserDTO>("User not found", null));
+            return ResponseEntity.status(401).body(new ReturnEntityDTO<>("User not found", null));
         } catch (AuthenticationException e){
-            return ResponseEntity.status(401).body(new ReturnEntityDTO<ProseUserDTO>("Le mot de passe ou l'email est incorrect", null));
+            return ResponseEntity.status(401).body(new ReturnEntityDTO<>("Le mot de passe ou l'email est incorrect", null));
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(new ReturnEntityDTO<ProseUserDTO>("Service indisponible. Veuillez réessayer plus tard.", null));
+            return ResponseEntity.status(500).body(new ReturnEntityDTO<>("Service indisponible. Veuillez réessayer plus tard.", null));
         }
     }
 

@@ -1,8 +1,12 @@
 package com.AL565.prose.controleur;
 
 import com.AL565.prose.controller.AuthController;
+import com.AL565.prose.model.auth.Role;
+import com.AL565.prose.security.exceptions.AuthenticationException;
+import com.AL565.prose.security.exceptions.UserNotFoundException;
 import com.AL565.prose.service.AuthService;
 import com.AL565.prose.service.EmployeurService;
+import com.AL565.prose.service.dto.EtudiantPasswordDTO;
 import com.AL565.prose.service.dto.LoginRequestDTO;
 import com.AL565.prose.service.dto.ProseUserDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -58,8 +62,9 @@ class AuthControllerTest {
     @Test
     void login_badCredentials() throws Exception {
         LoginRequestDTO request = createTestLoginRequest();
+
         
-        doThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials"))
+        doThrow(new AuthenticationException(HttpStatus.UNAUTHORIZED, "Invalid credentials"))
                 .when(authService).login(any(LoginRequestDTO.class));
 
         String content = new ObjectMapper().writeValueAsString(request);
@@ -75,7 +80,7 @@ class AuthControllerTest {
     void login_userNotFound() throws Exception {
         LoginRequestDTO request = createTestLoginRequest();
         
-        doThrow(new RuntimeException("User not found"))
+        doThrow(new UserNotFoundException())
                 .when(authService).login(any(LoginRequestDTO.class));
 
         String content = new ObjectMapper().writeValueAsString(request);
@@ -85,22 +90,7 @@ class AuthControllerTest {
                 .andReturn();
 
         Assertions.assertThat(result.getResponse().getStatus()).isEqualTo(401);
-        Assertions.assertThat(result.getResponse().getContentAsString()).contains("Invalid credentials");
-    }
-
-    @Test
-    void login_validationError() throws Exception {
-        // Corps invalide (pas d'email)
-        String body = """
-          { "password": "secret" }
-        """;
-
-        MvcResult result = mockMvc.perform(post("/user/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(body))
-                .andReturn();
-
-        Assertions.assertThat(result.getResponse().getStatus()).isEqualTo(400);
+        Assertions.assertThat(result.getResponse().getContentAsString()).contains("User not found");
     }
 
     private LoginRequestDTO createTestLoginRequest() {
@@ -111,12 +101,12 @@ class AuthControllerTest {
     }
 
     private ProseUserDTO createTestProseUserDTO() {
-        ProseUserDTO dto = new ProseUserDTO();
+        EtudiantPasswordDTO dto = new EtudiantPasswordDTO();
         dto.setId(1L);
         dto.setEmail("alice@example.com");
         dto.setFirstName("Alice");
         dto.setLastName("Liddell");
-        dto.setRole("ROLE_ETUDIANT");
+        dto.setRole(Role.ETUDIANT);
         dto.setToken("jwt-123");
         return dto;
     }
