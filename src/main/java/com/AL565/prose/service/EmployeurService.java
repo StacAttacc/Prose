@@ -7,7 +7,7 @@ import com.AL565.prose.repository.ProseUserRepository;
 import com.AL565.prose.repository.StageRepository;
 import com.AL565.prose.security.exceptions.UserNotFoundException;
 import com.AL565.prose.service.dto.EmployeurDTO;
-import com.AL565.prose.service.dto.EmployeurEnregistrerDTO;
+import com.AL565.prose.service.dto.EmployeurPasswordDTO;
 import com.AL565.prose.service.dto.StageDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import jakarta.transaction.Transactional;
@@ -26,17 +26,17 @@ public class EmployeurService {
     private PasswordEncoder passwordEncoder;
     private StageRepository stageRepository;
 
-    public void enregistrer(EmployeurEnregistrerDTO employeurDTO) throws EmailAlreadyExistsException {
+    public void enregistrer(EmployeurPasswordDTO employeurDTO) throws EmailAlreadyExistsException {
         if (proseUserRepository.findByCredentials_Username(employeurDTO.getEmail()).isPresent()) {
             throw new EmailAlreadyExistsException("Le email de l'employeur est déja en utilisation.");
         }
 
         employeurDTO.setPassword(passwordEncoder.encode(employeurDTO.getPassword()));
-        employeurRepository.save(EmployeurEnregistrerDTO.toModel(employeurDTO));
+        employeurRepository.save(EmployeurPasswordDTO.toModel(employeurDTO));
     }
 
     public EmployeurDTO getEmployeur(String email) {
-        return EmployeurDTO.toDTO((Employeur) proseUserRepository.findByCredentials_Username(email).orElseThrow((UserNotFoundException::new)));
+        return EmployeurDTO.toDTOTokenless((Employeur) proseUserRepository.findByCredentials_Username(email).orElseThrow((UserNotFoundException::new)));
     }
 
 

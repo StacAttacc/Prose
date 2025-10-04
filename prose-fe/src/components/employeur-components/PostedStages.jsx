@@ -11,7 +11,6 @@ export default function PostedStages() {
     useEffect(() => {
         const fetchData = async () => {
             const res = await getEmployeurStages(user.email, user.token);
-            console.log(res);
             setStages(res.data);
         }
         fetchData();

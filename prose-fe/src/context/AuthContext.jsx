@@ -5,7 +5,6 @@ import {
     registerEmployeur as apiRegisterEmployeur,
     registerEtudiant as apiRegisterEtudiant
 } from "../services/AuthService";
-import {createStage as apiCreateStage, getEmployeurStages as apiGetEmployeurStages} from "../services/StageService.js";
 
 const AuthCtx = createContext(null);
 
@@ -26,7 +25,7 @@ export function AuthProvider({ children }) {
 
     useEffect(() => {
         if (user) {
-            sessionStorage.setItem("user", JSON.stringify(user));
+            sessionStorage.setItem("user", JSON.stringify(user.data));
         } else {
             sessionStorage.removeItem("user");
         }
@@ -34,13 +33,13 @@ export function AuthProvider({ children }) {
 
     async function login(email, password) {
         const u = await apiLogin(email, password);
-        setUser(u.data);
+        setUser(u);
         return u;
     }
 
     async function registerEmployeur(payload) {
         const u = await apiRegisterEmployeur(payload);
-        setUser(u.data);
+        setUser(u);
         return u;
     }
 

@@ -6,7 +6,7 @@ import com.AL565.prose.repository.EmployeurRepository;
 import com.AL565.prose.repository.ProseUserRepository;
 import com.AL565.prose.repository.StageRepository;
 import com.AL565.prose.service.dto.EmployeurDTO;
-import com.AL565.prose.service.dto.EmployeurEnregistrerDTO;
+import com.AL565.prose.service.dto.EmployeurPasswordDTO;
 import com.AL565.prose.service.dto.StageDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import org.junit.jupiter.api.Test;
@@ -36,9 +36,6 @@ class EmployeurServiceTest {
     private EmployeurRepository employeurRepository;
 
     @Mock
-    private PasswordEncoder passwordEncoder;
-
-    @Mock
     private StageRepository stageRepository;
 
     @InjectMocks
@@ -46,7 +43,8 @@ class EmployeurServiceTest {
 
     @Test
     void enregistrer() throws EmailAlreadyExistsException {
-        EmployeurEnregistrerDTO justin = new EmployeurEnregistrerDTO("Justin", "Trudeau", "Gouvernement du Canada", "jt@gov.ca", "gouvernement");
+        Employeur employeur = new Employeur("Justin", "Trudeau", "Gouvernement du Canada", "jt@gov.ca", "gouvernement");
+        EmployeurPasswordDTO justin = new EmployeurPasswordDTO(employeur);
 
         employeurService.enregistrer(justin);
 
@@ -68,7 +66,11 @@ class EmployeurServiceTest {
 
 
     @Test
-    void createStage_retourneDTO_avecId_et_statusSoumise_et_persiste() {
+    void createStage() {
+        Employeur employeur = new Employeur(8L,"Umberto", "Macaco","Zac inc","email");
+        EmployeurDTO empDto = new EmployeurDTO(employeur, null);
+
+
         var dto = StageDTO.builder()
                 .title("Stagiaire Java")
                 .description("Développer des APIs Spring")
@@ -79,7 +81,7 @@ class EmployeurServiceTest {
                 .location("Montréal")
                 .workMode("HYBRIDE")
                 .compensation("22$/h")
-                .employeur(new EmployeurDTO(8,"Umberto", "Macaco","Zac inc","email"))
+                .employeur(empDto)
                 .build();
 
         when(stageRepository.save(any(Stage.class))).thenAnswer(inv -> {
@@ -87,6 +89,8 @@ class EmployeurServiceTest {
             s.setId(42L);
             return s;
         });
+
+        when(employeurRepository.getEmployeurByCredentials_Username(any(String.class))).thenReturn(employeur);
 
         StageDTO out = employeurService.createStage(dto);
 
