@@ -26,8 +26,7 @@ export default function Login({ onSwitchToSignup }) {
 
         try {
             setLoading(true);
-            const user = await login(email.trim(), pwd);
-            sessionStorage.setItem("user", JSON.stringify(user.data))
+            await login(email.trim(), pwd);
             nav('/');
 
         } catch (err) {

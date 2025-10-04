@@ -4,17 +4,19 @@ import Dashboard from "./pages/Dashboard.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import PageAuthentification from "./pages/PageAuthentification.jsx";
 import TeleversementCV from "./components/TeleversementCV.jsx";
+import StageCreation from "./components/employeur-components/StageCreation.jsx";
+import PostedStages from "./components/employeur-components/PostedStages.jsx";
 import PageHomeGestionnaire from "./pages/PageHomeGestionnaire.jsx";
 
 export default function AppRoutes() {
     const { user, loading } = useAuth();
 
     const defaultElement =
-        user?.data.role === "ETUDIANT" ? <TeleversementCV /> :
-            user?.data.role === "EMPLOYEUR" ? <div>Bienvenue Employeur</div> :
-                user?.data.role === "PROFESSEUR" ? <div>Bienvenue Professeur</div> :
+        user?.role === "ETUDIANT" ? <TeleversementCV /> :
+            user?.role === "EMPLOYEUR" ? <PostedStages /> :
+                user?.role === "PROFESSEUR" ? <div>Bienvenue Professeur</div> :
                     user?.data.role === "GESTIONNAIRE" ? <PageHomeGestionnaire /> :
-                        <div>Rôle inconnu</div>;
+                    <div>Rôle inconnu</div>;
 
     return (
         <Routes>
@@ -23,6 +25,7 @@ export default function AppRoutes() {
                 <Route path="/" element={<Dashboard />}>
                     <Route index element={loading ? <div>Loading...</div> : defaultElement} />
                     <Route path="televersement-cv" element={<TeleversementCV />} />
+                    <Route path="creation-stage" element={<StageCreation />} />
                 </Route>
             </Route>
         </Routes>

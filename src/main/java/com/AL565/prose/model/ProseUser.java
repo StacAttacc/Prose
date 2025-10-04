@@ -1,6 +1,7 @@
 package com.AL565.prose.model;
 
 import com.AL565.prose.model.auth.Credentials;
+import com.AL565.prose.model.auth.Role;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -39,7 +40,12 @@ public abstract class ProseUser {
         return credentials.getPassword();
     }
 
+    public Role getRole() {
+        return credentials.getRole();
+    }
+
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return credentials.getAuthorities();
     }
+
 }

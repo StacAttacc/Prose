@@ -4,10 +4,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 public enum Role {
-    GESTIONNAIRE("ROLE_GESTIONNAIRE"),
-    PROFESSEUR("ROLE_PROFESSEUR"),
-    EMPLOYEUR("ROLE_EMPLOYEUR"),
-    ETUDIANT("ROLE_ETUDIANT"),
+    GESTIONNAIRE("GESTIONNAIRE"),
+    PROFESSEUR("PROFESSEUR"),
+    EMPLOYEUR("EMPLOYEUR"),
+    ETUDIANT("ETUDIANT"),
     ;
 
     private final String string;
