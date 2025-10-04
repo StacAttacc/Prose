@@ -6,6 +6,7 @@ import com.AL565.prose.model.Etudiant;
 import com.AL565.prose.repository.CvRepository;
 import com.AL565.prose.repository.EtudiantRepository;
 import com.AL565.prose.repository.ProseUserRepository;
+import com.AL565.prose.service.dto.EtudiantPasswordDTO;
 import com.AL565.prose.security.exceptions.CvExceptions;
 import com.AL565.prose.service.dto.EtudiantCvDTO;
 import com.AL565.prose.service.dto.EtudiantDTO;
@@ -39,12 +40,14 @@ public class EtudiantService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public void inscrireEtudiant(EtudiantDTO dto) {
+    public void inscrireEtudiant(EtudiantPasswordDTO dto) {
         if (proseUserRepository.findByCredentials_Username(dto.getEmail()).isPresent()) {
             throw new EmailAlreadyExistsException("Un compte avec cet email existe déjà");
         }
 
-        Etudiant etudiant = dto.toModel(passwordEncoder);
+        dto.setPassword(passwordEncoder.encode(dto.getPassword()));
+
+        Etudiant etudiant = EtudiantPasswordDTO.toModel(dto);
 
         etudiantRepository.save(etudiant);
     }

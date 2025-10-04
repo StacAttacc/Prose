@@ -9,9 +9,9 @@ const statusColors = {
     REJECTED: "bg-red-100 border-red-300"
 };
 
-const GestionnaireCV = () => {
+const GestionCV = () => {
     const { user } = useAuth();
-    const token = user?.data?.token;
+    const token = user?.token;
 
     const [allCvs, setAllCvs] = useState([]);
     const [selectedCv, setSelectedCv] = useState(null);
@@ -246,4 +246,4 @@ const GestionnaireCV = () => {
     );
 };
 
-export default GestionnaireCV;
+export default GestionCV;

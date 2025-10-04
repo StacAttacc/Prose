@@ -3,9 +3,11 @@ import { useAuth } from "./context/AuthContext.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import PageAuthentification from "./pages/PageAuthentification.jsx";
-import GestionnaireCV from "./components/GestionnaireCV.jsx";
+import StageCreation from "./components/employeur-components/StageCreation.jsx";
+import PostedStages from "./components/employeur-components/PostedStages.jsx";
 import {useEffect, useState} from "react";
-import { telechargerCv } from "./services/EtudiantService.js";
+import GestionCV from "./components/GestionCV.jsx";
+import {telechargerCv} from "./services/EtudiantService.js";
 import MonCV from "./components/MonCV.jsx";
 
 export default function AppRoutes() {
@@ -13,8 +15,8 @@ export default function AppRoutes() {
     const [hasCv, setHasCv] = useState(null);
 
     useEffect(() => {
-        if (user?.data.role === "ETUDIANT") {
-            telechargerCv(user.data.email, user)
+        if (user?.role === "ETUDIANT") {
+            telechargerCv(user.email, user)
                 .then(() => setHasCv(true))
                 .catch(() => setHasCv(false));
         }
@@ -27,12 +29,11 @@ export default function AppRoutes() {
     }
 
     const defaultElement =
-        user?.data.role === "ETUDIANT" ? defaultPathStudent() :
-            user?.data.role === "EMPLOYEUR" ? <div>Bienvenue Employeur</div> :
-                user?.data.role === "PROFESSEUR" ? <div>Bienvenue Professeur</div> :
-                    user?.data.role === "GESTIONNAIRE" ? <GestionnaireCV /> :
+        user?.role === "ETUDIANT" ? defaultPathStudent() :
+            user?.role === "EMPLOYEUR" ? <PostedStages /> :
+                user?.role === "PROFESSEUR" ? <div>Bienvenue Professeur</div> :
+                    user?.role === "GESTIONNAIRE" ? <GestionCV /> :
                         <div>Rôle inconnu</div>;
-
 
     return (
         <Routes>
@@ -42,7 +43,8 @@ export default function AppRoutes() {
                     <Route index element={loading ? <div>Loading...</div> : defaultElement} />
                     <Route path="etudiant/mon-cv" element={<MonCV />} />
                     <Route path="etudiant/offres-emplois" element={<div>Offres d'emplois</div>} />
-                    <Route path="gestion-cv" element={<GestionnaireCV />}/>
+                    <Route path="gestion-cv" element={<GestionCV />}/>
+                    <Route path="creation-stage" element={<StageCreation />} />
                 </Route>
             </Route>
         </Routes>

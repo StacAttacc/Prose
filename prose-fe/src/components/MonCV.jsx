@@ -23,7 +23,7 @@ export default function MonCV() {
     useEffect(() => {
         async function fetchCvStatus() {
             try {
-                const cvData = await telechargerCv(user.data.email, user);
+                const cvData = await telechargerCv(user.email, user);
                 setCv(cvData);
                 if (cvData.status) setStatus(cvData.status);
                 else setStatus("NONE");

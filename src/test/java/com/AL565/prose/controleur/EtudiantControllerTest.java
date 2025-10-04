@@ -6,7 +6,7 @@ import com.AL565.prose.repository.EtudiantRepository;
 import com.AL565.prose.repository.ProseUserRepository;
 import com.AL565.prose.service.EmployeurService;
 import com.AL565.prose.service.EtudiantService;
-import com.AL565.prose.service.dto.EtudiantDTO;
+import com.AL565.prose.service.dto.EtudiantPasswordDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.assertj.core.api.Assertions;
@@ -48,7 +48,7 @@ class EtudiantControllerTest {
     @Test
     void inscrireEtudiant_success() throws Exception {
 
-        EtudiantDTO etudiant = createTestEtudiantDTO();
+        EtudiantPasswordDTO etudiant = createTestEtudiantDTO();
 
         String content = new ObjectMapper().writeValueAsString(etudiant);
         MvcResult result = mockMvc.perform(post("/etudiant/register")
@@ -63,9 +63,9 @@ class EtudiantControllerTest {
     @Test
     void inscrireEtudiant_emailAlreadyExists() throws Exception {
 
-        EtudiantDTO etudiant = createTestEtudiantDTO();
+        EtudiantPasswordDTO etudiant = createTestEtudiantDTO();
         doThrow(new EmailAlreadyExistsException("Un compte avec cet email existe déjà"))
-                .when(etudiantService).inscrireEtudiant(any(EtudiantDTO.class));
+                .when(etudiantService).inscrireEtudiant(any(EtudiantPasswordDTO.class));
 
         String content = new ObjectMapper().writeValueAsString(etudiant);
         MvcResult result = mockMvc.perform(post("/etudiant/register")
@@ -81,9 +81,9 @@ class EtudiantControllerTest {
     @Test
     void inscrireEtudiant_internalError() throws Exception {
 
-        EtudiantDTO etudiant = createTestEtudiantDTO();
+        EtudiantPasswordDTO etudiant = createTestEtudiantDTO();
         doThrow(new RuntimeException("Erreur interne"))
-                .when(etudiantService).inscrireEtudiant(any(EtudiantDTO.class));
+                .when(etudiantService).inscrireEtudiant(any(EtudiantPasswordDTO.class));
 
         String content = new ObjectMapper().writeValueAsString(etudiant);
         MvcResult result = mockMvc.perform(post("/etudiant/register")
@@ -96,13 +96,13 @@ class EtudiantControllerTest {
         Assertions.assertThat(result.getResponse().getContentAsString()).isEqualTo("Erreur lors de l'inscription");
     }
 
-    private EtudiantDTO createTestEtudiantDTO() {
-        EtudiantDTO etudiant = new EtudiantDTO();
+    private EtudiantPasswordDTO createTestEtudiantDTO() {
+        EtudiantPasswordDTO etudiant = new EtudiantPasswordDTO();
         etudiant.setFirstName("Jean");
         etudiant.setLastName("Dupont");
         etudiant.setEmail("jean.dupont@etudiant.ca");
         etudiant.setPassword("motdepasse");
-        etudiant.setDiscipline(Discipline.INFORMATIQUE);
+        etudiant.setDiscipline(String.valueOf(Discipline.INFORMATIQUE));
         return etudiant;
     }
 }

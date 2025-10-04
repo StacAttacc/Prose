@@ -4,7 +4,6 @@ import com.AL565.prose.model.Discipline;
 import com.AL565.prose.repository.CvRepository;
 import com.AL565.prose.service.EtudiantService;
 import com.AL565.prose.service.GestionnaireService;
-import com.AL565.prose.service.dto.EmployeurEnregistrerDTO;
 import com.AL565.prose.service.EmployeurService;
 import com.AL565.prose.service.dto.EtudiantDTO;
 import com.AL565.prose.service.dto.GestionnaireDTO;
@@ -14,6 +13,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Profile;
 
 @AllArgsConstructor
 @SpringBootApplication
@@ -29,10 +29,14 @@ public class ProseApplication {
         SpringApplication.run(ProseApplication.class, args);
     }
 
+
     @Bean
-    public CommandLineRunner run() {
+    @Profile({"dev", "local", "!test"})
+    public CommandLineRunner seedEmployeur(EmployeurService employeurService) {
         return args -> {
-            EmployeurEnregistrerDTO employeurMark = new EmployeurEnregistrerDTO(
+            System.out.println("sdasdhD");
+        };
+            /*EmployeurEnregistrerDTO employeurMark = new EmployeurEnregistrerDTO(
                     "Mark",
                     "Carney",
                     "Gouvernement du Canada",
@@ -74,6 +78,6 @@ public class ProseApplication {
             }
 
             System.out.println(employeurService.getEmployeur("mcarney@gov.ca"));
-        };
+        };*/
     }
 }
