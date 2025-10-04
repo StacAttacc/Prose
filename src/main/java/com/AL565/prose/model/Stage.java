@@ -42,6 +42,8 @@ public class Stage {
 
     private String location;
 
+    private String rejectionReason;
+
     private String workMode;
 
     @Size(max = 255)

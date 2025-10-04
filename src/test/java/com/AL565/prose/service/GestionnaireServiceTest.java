@@ -1,0 +1,224 @@
+package com.AL565.prose.service;
+
+import com.AL565.prose.model.Employeur;
+import com.AL565.prose.model.Gestionnaire;
+import com.AL565.prose.model.OfferStatus;
+import com.AL565.prose.model.Stage;
+import com.AL565.prose.model.auth.Credentials;
+import com.AL565.prose.model.auth.Role;
+import com.AL565.prose.repository.EmployeurRepository;
+import com.AL565.prose.repository.GestionnaireRepository;
+import com.AL565.prose.repository.StageRepository;
+import com.AL565.prose.service.dto.GestionnaireDTO;
+import com.AL565.prose.service.dto.StageDTO;
+import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class GestionnaireServiceTest {
+
+    @Mock
+    private GestionnaireRepository gestionnaireRepository;
+
+    @Mock
+    private StageRepository stageRepository;
+
+    @Mock
+    private EmployeurRepository employeurRepository;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
+    @InjectMocks
+    private GestionnaireService gestionnaireService;
+
+    @Test
+    void saveGestionnaire_success() {
+        GestionnaireDTO dto = new GestionnaireDTO();
+        dto.setFirstName("Jean");
+        dto.setLastName("Dupont");
+        dto.setEmail("jean@example.com");
+        dto.setPassword("password123");
+
+        when(passwordEncoder.encode(anyString())).thenReturn("encoded_password");
+
+        gestionnaireService.saveGestionnaire(dto);
+
+        verify(gestionnaireRepository).save(any(Gestionnaire.class));
+    }
+
+    @Test
+    void saveGestionnaire_emailExists() {
+        GestionnaireDTO dto = new GestionnaireDTO();
+        dto.setEmail("jean@example.com");
+        dto.setPassword("password123");
+
+        doThrow(new RuntimeException()).when(gestionnaireRepository).save(any(Gestionnaire.class));
+
+        assertThatThrownBy(() -> gestionnaireService.saveGestionnaire(dto))
+                .isInstanceOf(EmailAlreadyExistsException.class)
+                .hasMessageContaining("existe déjà");
+    }
+
+    @Test
+    void getStagesSoumises_returnsListOfStages() {
+        Stage stage1 = new Stage();
+        stage1.setId(1L);
+        stage1.setTitle("Stage 1");
+        stage1.setStatus(OfferStatus.SOUMISE);
+        stage1.setEmployeurEmail("employer@company.com");
+
+        Stage stage2 = new Stage();
+        stage2.setId(2L);
+        stage2.setTitle("Stage 2");
+        stage2.setStatus(OfferStatus.SOUMISE);
+        stage2.setEmployeurEmail("employer@company.com");
+
+        Employeur employeur = new Employeur();
+        employeur.setId(1L);
+        employeur.setCompany("Company");
+
+        Credentials credentials = Credentials.builder()
+                .username("employer@company.com")
+                .password("encoded_password")
+                .role(Role.EMPLOYEUR)
+                .build();
+        employeur.setCredentials(credentials);
+
+        when(stageRepository.findByStatus(OfferStatus.SOUMISE)).thenReturn(List.of(stage1, stage2));
+        when(employeurRepository.getEmployeurByCredentials_Username(anyString())).thenReturn(employeur);
+
+        List<StageDTO> result = gestionnaireService.getStagesSoumises();
+
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).getId()).isEqualTo(1L);
+        assertThat(result.get(0).getTitle()).isEqualTo("Stage 1");
+        assertThat(result.get(0).getEmployeur().getCompany()).isEqualTo("Company");
+    }
+
+    @Test
+    void approuverStage_success() {
+        Stage stage = new Stage();
+        stage.setId(1L);
+        stage.setTitle("Stage Test");
+        stage.setStatus(OfferStatus.SOUMISE);
+        stage.setEmployeurEmail("employer@company.com");
+
+        Employeur employeur = new Employeur();
+        employeur.setId(1L);
+        employeur.setCompany("Company");
+
+        Credentials credentials = Credentials.builder()
+                .username("employer@company.com")
+                .password("encoded_password")
+                .role(Role.EMPLOYEUR)
+                .build();
+        employeur.setCredentials(credentials);
+
+        when(stageRepository.findById(1L)).thenReturn(Optional.of(stage));
+        when(stageRepository.save(any(Stage.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(employeurRepository.getEmployeurByCredentials_Username(anyString())).thenReturn(employeur);
+
+        StageDTO result = gestionnaireService.approuverStage(1L);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getStatus()).isEqualTo(OfferStatus.APPROUVEE);
+        verify(stageRepository).save(any(Stage.class));
+    }
+
+    @Test
+    void approuverStage_stageNotFound() {
+        when(stageRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> gestionnaireService.approuverStage(1L))
+                .isInstanceOf(NoSuchElementException.class)
+                .hasMessageContaining("Stage non trouvé");
+    }
+
+    @Test
+    void approuverStage_wrongStatus() {
+        Stage stage = new Stage();
+        stage.setId(1L);
+        stage.setStatus(OfferStatus.APPROUVEE); // Déjà approuvé
+
+        when(stageRepository.findById(1L)).thenReturn(Optional.of(stage));
+
+        assertThatThrownBy(() -> gestionnaireService.approuverStage(1L))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("statut SOUMISE");
+    }
+
+    @Test
+    void rejeterStage_success() {
+        Stage stage = new Stage();
+        stage.setId(1L);
+        stage.setTitle("Stage Test");
+        stage.setStatus(OfferStatus.SOUMISE);
+        stage.setEmployeurEmail("employer@company.com");
+
+        Employeur employeur = new Employeur();
+        employeur.setId(1L);
+        employeur.setCompany("Company");
+
+        Credentials credentials = Credentials.builder()
+                .username("employer@company.com")
+                .password("encoded_password")
+                .role(Role.EMPLOYEUR)
+                .build();
+        employeur.setCredentials(credentials);
+
+        when(stageRepository.findById(1L)).thenReturn(Optional.of(stage));
+        when(stageRepository.save(any(Stage.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(employeurRepository.getEmployeurByCredentials_Username(anyString())).thenReturn(employeur);
+
+        StageDTO result = gestionnaireService.rejeterStage(1L, "Raison du rejet");
+
+        assertThat(result).isNotNull();
+        assertThat(result.getStatus()).isEqualTo(OfferStatus.REJETEE);
+        verify(stageRepository).save(any(Stage.class));
+    }
+
+    @Test
+    void rejeterStage_emptyReason() {
+        assertThatThrownBy(() -> gestionnaireService.rejeterStage(1L, "  "))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("raison du rejet est obligatoire");
+    }
+
+    @Test
+    void rejeterStage_stageNotFound() {
+        when(stageRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> gestionnaireService.rejeterStage(1L, "Raison"))
+                .isInstanceOf(NoSuchElementException.class)
+                .hasMessageContaining("Stage non trouvé");
+    }
+
+    @Test
+    void rejeterStage_wrongStatus() {
+        Stage stage = new Stage();
+        stage.setId(1L);
+        stage.setStatus(OfferStatus.APPROUVEE); // Déjà approuvé
+
+        when(stageRepository.findById(1L)).thenReturn(Optional.of(stage));
+
+        assertThatThrownBy(() -> gestionnaireService.rejeterStage(1L, "Raison"))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("statut SOUMISE");
+    }
+}
