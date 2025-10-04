@@ -1,25 +1,26 @@
 package com.AL565.prose.service.dto;
 
 import com.AL565.prose.model.Gestionnaire;
-import com.AL565.prose.model.auth.Credentials;
 import com.AL565.prose.model.auth.Role;
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Data
-public class GestionnaireDTO {
-    private String firstName;
-    private String lastName;
-    private String email;
-    private String password;
+@AllArgsConstructor
+public class GestionnaireDTO extends ProseUserDTO {
 
-    public Gestionnaire toModel(PasswordEncoder passwordEncoder) {
-        Credentials credentials = Credentials.builder()
-                .username(this.email)
-                .password(passwordEncoder.encode(this.password))
-                .role(Role.GESTIONNAIRE)
-                .build();
+    public GestionnaireDTO(Gestionnaire model, String token) {
+        super(
+                model.getId(),
+                model.getFirstName(),
+                model.getLastName(),
+                model.getEmail(),
+                model.getRole() != null ? model.getRole() : Role.GESTIONNAIRE,
+                token
+        );
+    }
 
-        return new Gestionnaire(this.firstName, this.lastName, credentials);
+    public static GestionnaireDTO toDTO(Gestionnaire model, String token) {
+        return new GestionnaireDTO(model, token);
     }
 }

@@ -6,7 +6,7 @@ import com.AL565.prose.repository.CvRepository;
 import com.AL565.prose.repository.GestionnaireRepository;
 import com.AL565.prose.security.exceptions.CvExceptions.*;
 import com.AL565.prose.service.dto.GestionnaireCvDTO;
-import com.AL565.prose.service.dto.GestionnaireDTO;
+import com.AL565.prose.service.dto.GestionnairePasswordDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,13 +25,16 @@ public class GestionnaireService {
     private final GestionnaireRepository gestionnaireRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public void saveGestionnaire(GestionnaireDTO gestionnaire) {
-        try {
-            gestionnaireRepository.save(gestionnaire.toModel(passwordEncoder));
-        } catch (Exception e) {
+    public void saveGestionnaire(GestionnairePasswordDTO dto) {
+        if (gestionnaireRepository.findByCredentials_Username(dto.getEmail()).isPresent()) {
             throw new EmailAlreadyExistsException("Un compte avec cet email existe déjà");
         }
+
+        dto.setPassword(passwordEncoder.encode(dto.getPassword()));
+
+        gestionnaireRepository.save(GestionnairePasswordDTO.toModel((GestionnairePasswordDTO) passwordEncoder));
     }
+
 
     public List<GestionnaireCvDTO> getAllCvs() throws Exception {
         try {
