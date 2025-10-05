@@ -47,9 +47,7 @@ public class EmployeurService {
             throw new IllegalArgumentException("dto must not be null");
         }
 
-        Stage toSave = StageDTO.toModel(dto);
-        toSave.setCreatedAt(OffsetDateTime.now());
-        Stage saved = stageRepository.save(toSave);
+        Stage saved = stageRepository.save(StageDTO.toModel(dto));
         Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(saved.getEmployeurEmail());
         return StageDTO.fromModel(saved, employeur);
     }

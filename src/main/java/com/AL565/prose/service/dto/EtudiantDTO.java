@@ -4,9 +4,11 @@ import com.AL565.prose.model.Discipline;
 import com.AL565.prose.model.Etudiant;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class EtudiantDTO extends ProseUserDTO {
     private Discipline discipline;
 

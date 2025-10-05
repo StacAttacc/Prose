@@ -68,7 +68,7 @@ export default function SignUp({ onSwitchToLogin }) {
                 setErrorMsg("Cet email est déjà utilisé. Veuillez en choisir un autre");
             } else {
                 setErrorMsg(
-                    err?.response?.data?.message || "Échec de l’inscription. Veuillez réessayer."
+                    err?.response?.data?.message || "Service indisponible. Veuillez réessayer plus tard."
                 );
             }
 
