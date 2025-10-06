@@ -9,7 +9,6 @@ export const fetchAllCVs = async (token) => {
                 'Authorization': `Bearer ${token}`
             },
         });
-        console.log(response.data);
         return response.data;
     } catch (error) {
         if (error.response) {
@@ -50,3 +49,7 @@ export const rejectCv = async (cvId, comment, token) => {
         console.error('Error rejecting CV:', error);
     }
 };
+
+export async function getPageStages(token, page) {
+    const data = axios.get(`${BASE_URL_GESTIONNAIRE}/stages/${page}`);
+}

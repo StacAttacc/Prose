@@ -68,8 +68,6 @@ public class ProseApplication {
             } catch (EmailAlreadyExistsException e) {
                 System.out.println();
             }
-
-            System.out.println(employeurService.getEmployeur("mcarney@gov.ca"));
         };
     }
 }

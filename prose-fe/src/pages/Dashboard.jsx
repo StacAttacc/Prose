@@ -57,10 +57,10 @@ export default function Dashboard() {
                         ) : <></>}
                         {user.role === "ETUDIANT" ? (
                             <>
-                                <button onClick={() => {nav('etudiant/offres-emplois')}}>
+                                <button onClick={() => {nav('etudiant/offres-emplois')}} className="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2">
                                     Offres d'emplois
                                 </button>
-                                <button onClick={() => {nav('etudiant/mon-cv')}}>
+                                <button onClick={() => {nav('etudiant/mon-cv')}} className="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2">
                                     Mon CV
                                 </button>
                             </>
@@ -68,8 +68,11 @@ export default function Dashboard() {
                         {user.role === "GESTIONNAIRE" ? (
                             <>
                                 {/*Mettre mes options ici*/}
-                                <button onClick={() => {nav('gestion-cv')}}>
+                                <button onClick={() => {nav('gestion-cv')}} className="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2">
                                     Gestion des CVs
+                                </button>
+                                <button onClick={() => {nav('gestionnaire/list-stages')}} className="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2">
+                                    Voir Stages
                                 </button>
                             </>
                         ) : <></>}
