@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { telechargerCv } from "../services/EtudiantService.js";
-import { useAuth } from "../context/AuthContext";
+import { telechargerCv } from "../../services/EtudiantService.js";
+import { useAuth } from "../../context/AuthContext.jsx";
 import TeleversementCV from "./TeleversementCV.jsx";
 import { Worker, Viewer } from '@react-pdf-viewer/core';
 

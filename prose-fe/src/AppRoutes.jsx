@@ -6,9 +6,9 @@ import PageAuthentification from "./pages/PageAuthentification.jsx";
 import StageCreation from "./components/employeur-components/StageCreation.jsx";
 import PostedStages from "./components/employeur-components/PostedStages.jsx";
 import {useEffect, useState} from "react";
-import GestionCV from "./components/GestionCV.jsx";
+import GestionCV from "./components/gestionnaire-components/GestionCV.jsx";
 import {telechargerCv} from "./services/EtudiantService.js";
-import MonCV from "./components/MonCV.jsx";
+import MonCV from "./components/etudiant-components/MonCV.jsx";
 
 export default function AppRoutes() {
     const { user, loading } = useAuth();

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useAuth } from "../context/AuthContext.jsx";
-import { approveCv, fetchAllCVs, rejectCv } from "../services/GestionnaireService.js";
+import { useAuth } from "../../context/AuthContext.jsx";
+import { approveCv, fetchAllCVs, rejectCv } from "../../services/GestionnaireService.js";
 import { Worker, Viewer } from '@react-pdf-viewer/core';
 
 const statusColors = {
