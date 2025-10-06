@@ -148,7 +148,7 @@ const TeleversementCV = ({ onUploadSuccess }) => {
                     <button
                         onClick={televerserFichier}
                         disabled={uploading}
-                        className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium py-2 px-4 rounded transition-colors"
+                        className="w-full text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2"
                     >
                         {uploading ? 'Téléversement...' : 'Téléverser'}
                     </button>

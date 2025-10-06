@@ -1,9 +1,9 @@
 package com.AL565.prose;
 
-import com.AL565.prose.repository.CvRepository;
 import com.AL565.prose.service.EtudiantService;
 import com.AL565.prose.service.GestionnaireService;
 import com.AL565.prose.service.EmployeurService;
+import com.AL565.prose.service.dto.EmployeurPasswordDTO;
 import com.AL565.prose.service.dto.EtudiantPasswordDTO;
 import com.AL565.prose.service.dto.GestionnairePasswordDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
@@ -31,7 +31,6 @@ public class ProseApplication {
     @Profile({"dev", "local", "!test"})
     public CommandLineRunner seedEmployeur(EmployeurService employeurService) {
         return args -> {
-            System.out.println("sdasdhD");
             /*EmployeurEnregistrerDTO employeurMark = new EmployeurEnregistrerDTO(
                     "Mark",
                     "Carney",
@@ -46,14 +45,28 @@ public class ProseApplication {
                 System.err.println(e.getMessage());
             }*/
 
-        EtudiantPasswordDTO etudiantJohn = new EtudiantPasswordDTO();
-        etudiantJohn.setFirstName("John");
-        etudiantJohn.setLastName("Doe");
-        etudiantJohn.setEmail("john@doe.com");
-        etudiantJohn.setPassword("password123");
-        etudiantJohn.setDiscipline("INFORMATIQUE");
+            EmployeurPasswordDTO employeurRandy = new EmployeurPasswordDTO();
+            employeurRandy.setFirstName("Randy");
+            employeurRandy.setLastName("Lahey");
+            employeurRandy.setCompany("Tech Corp");
+            employeurRandy.setEmail("employeur@employeur.com");
+            employeurRandy.setPassword("password123");
 
-        try {
+            try {
+                employeurService.enregistrer(employeurRandy);
+            } catch (EmailAlreadyExistsException e) {
+                System.err.println(e.getMessage());
+                System.err.println("employeur pas créé");
+            }
+
+            EtudiantPasswordDTO etudiantJohn = new EtudiantPasswordDTO();
+            etudiantJohn.setFirstName("John");
+            etudiantJohn.setLastName("Doe");
+            etudiantJohn.setEmail("etudiant@etudiant.com");
+            etudiantJohn.setPassword("password123");
+            etudiantJohn.setDiscipline("INFORMATIQUE");
+
+            try {
                 etudiantService.inscrireEtudiant(etudiantJohn);
             } catch (EmailAlreadyExistsException e) {
                 System.err.println(e.getMessage());
