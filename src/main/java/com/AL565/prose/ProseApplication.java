@@ -31,20 +31,6 @@ public class ProseApplication {
     @Profile({"dev", "local", "!test"})
     public CommandLineRunner seedEmployeur(EmployeurService employeurService) {
         return args -> {
-            /*EmployeurEnregistrerDTO employeurMark = new EmployeurEnregistrerDTO(
-                    "Mark",
-                    "Carney",
-                    "Gouvernement du Canada",
-                    "mcarney@gov.ca",
-                    "123456"
-            );
-
-            try {
-                employeurService.enregistrer(employeurMark);
-            } catch (EmailAlreadyExistsException e) {
-                System.err.println(e.getMessage());
-            }*/
-
             EmployeurPasswordDTO employeurRandy = new EmployeurPasswordDTO();
             employeurRandy.setFirstName("Randy");
             employeurRandy.setLastName("Lahey");
@@ -55,8 +41,7 @@ public class ProseApplication {
             try {
                 employeurService.enregistrer(employeurRandy);
             } catch (EmailAlreadyExistsException e) {
-                System.err.println(e.getMessage());
-                System.err.println("employeur pas créé");
+                System.out.println();
             }
 
             EtudiantPasswordDTO etudiantJohn = new EtudiantPasswordDTO();
@@ -69,8 +54,7 @@ public class ProseApplication {
             try {
                 etudiantService.inscrireEtudiant(etudiantJohn);
             } catch (EmailAlreadyExistsException e) {
-                System.err.println(e.getMessage());
-                System.err.println("etudiant pas créé");
+                System.out.println();
             }
 
             GestionnairePasswordDTO gestionnaireJane = new GestionnairePasswordDTO();
@@ -82,8 +66,7 @@ public class ProseApplication {
             try {
                 gestionnaireService.saveGestionnaire(gestionnaireJane);
             } catch (EmailAlreadyExistsException e) {
-                System.err.println(e.getMessage());
-                System.err.println("gestionnaire pas créé");
+                System.out.println();
             }
 
             System.out.println(employeurService.getEmployeur("mcarney@gov.ca"));
