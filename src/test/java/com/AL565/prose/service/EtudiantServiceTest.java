@@ -5,6 +5,7 @@ package com.AL565.prose.service;
     import com.AL565.prose.repository.EtudiantRepository;
     import com.AL565.prose.repository.ProseUserRepository;
     import com.AL565.prose.service.dto.EtudiantDTO;
+    import com.AL565.prose.service.dto.EtudiantPasswordDTO;
     import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
     import org.junit.jupiter.api.Test;
     import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,12 +36,12 @@ package com.AL565.prose.service;
 
         @Test
         void inscrireEtudiant() throws EmailAlreadyExistsException {
-            EtudiantDTO etudiantDTO = new EtudiantDTO();
+            EtudiantPasswordDTO etudiantDTO = new EtudiantPasswordDTO();
             etudiantDTO.setFirstName("Jean");
             etudiantDTO.setLastName("Dupont");
             etudiantDTO.setEmail("jean.dupont@etudiant.ca");
             etudiantDTO.setPassword("motdepasse");
-            etudiantDTO.setDiscipline(Discipline.INFORMATIQUE);
+            etudiantDTO.setDiscipline(String.valueOf(Discipline.INFORMATIQUE));
 
             when(passwordEncoder.encode(anyString())).thenReturn("motdepasseEncode");
             when(proseUserRepository.findByCredentials_Username(anyString())).thenReturn(Optional.empty());

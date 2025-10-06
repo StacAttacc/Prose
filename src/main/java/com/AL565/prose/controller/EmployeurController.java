@@ -2,7 +2,7 @@ package com.AL565.prose.controller;
 
 
 import com.AL565.prose.security.exceptions.UserNotFoundException;
-import com.AL565.prose.service.dto.EmployeurEnregistrerDTO;
+import com.AL565.prose.service.dto.EmployeurPasswordDTO;
 import com.AL565.prose.service.EmployeurService;
 import com.AL565.prose.service.dto.ReturnEntityDTO;
 import com.AL565.prose.service.dto.StageDTO;
@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @AllArgsConstructor
@@ -23,12 +24,14 @@ public class EmployeurController {
     private EmployeurService employeurService;
 
     @PostMapping("/register")
-    public ResponseEntity<String> enregistrer(@RequestBody EmployeurEnregistrerDTO employeurEnregistrerDTO) {
+    public ResponseEntity<String> enregistrer(@RequestBody EmployeurPasswordDTO employeurPasswordDTO) {
         try {
-            employeurService.enregistrer(employeurEnregistrerDTO);
+            employeurService.enregistrer(employeurPasswordDTO);
             return new ResponseEntity<>("Created", HttpStatus.CREATED);
         } catch (EmailAlreadyExistsException e) {
             return new ResponseEntity<>("Le email est déja en cours d'utilisation.", HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Service temporairement indisponible.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -37,8 +40,10 @@ public class EmployeurController {
         try {
             employeurService.createStage(request);
             return new ResponseEntity<>("Stage créé avec succès", HttpStatus.CREATED);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>("Stage invalide",  HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
-            return new ResponseEntity<>("Erreur lors de la création du stage", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("Service temporairement indisponible.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -48,7 +53,8 @@ public class EmployeurController {
         try {
             List<StageDTO> stages = employeurService.listStagesFor(email);
             if (stages.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ReturnEntityDTO<>("Aucun stage publié trouvé pour cet employeur", null));
+                return ResponseEntity.ok().body(new ReturnEntityDTO<>("Aucun stage publié trouvé pour cet employeur", new ArrayList<>() {
+                }));
             }
             return ResponseEntity.ok(new ReturnEntityDTO<>("Trouvés", stages));
         } catch (UserNotFoundException e) {

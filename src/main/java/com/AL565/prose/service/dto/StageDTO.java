@@ -42,7 +42,6 @@ public class StageDTO {
     private String compensation;
 
     public static Stage toModel(StageDTO dto) {
-        System.out.println(dto.getEmployeur());
         return Stage.builder()
                 .title(dto.getTitle())
                 .description(dto.getDescription())
@@ -73,7 +72,7 @@ public class StageDTO {
                 .workMode(offer.getWorkMode())
                 .compensation(offer.getCompensation())
                 .status(offer.getStatus())
-                .employeur(EmployeurDTO.toDTO(employeur))
+                .employeur(EmployeurDTO.toDTOTokenless(employeur))
                 .createdAt(offer.getCreatedAt())
                 .build();
     }
