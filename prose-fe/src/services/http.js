@@ -15,6 +15,10 @@ export function setAccessToken(token) {
     accessToken = token || null;
 }
 
+export function getAccessToken() {
+    return accessToken;
+}
+
 http.interceptors.request.use((config) => {
     if (accessToken) {
         config.headers.Authorization = `Bearer ${accessToken}`;
