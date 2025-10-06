@@ -1,6 +1,5 @@
 package com.AL565.prose;
 
-import com.AL565.prose.repository.GestionnaireRepository;
 import com.AL565.prose.service.EtudiantService;
 import com.AL565.prose.service.GestionnaireService;
 import com.AL565.prose.service.EmployeurService;
@@ -22,7 +21,6 @@ public class ProseApplication {
 
     private final EtudiantService etudiantService;
     private final GestionnaireService gestionnaireService;
-    private final GestionnaireRepository gestionnaireRepository;
 
     public static void main(String[] args) {
         SpringApplication.run(ProseApplication.class, args);
@@ -33,8 +31,6 @@ public class ProseApplication {
     @Profile({"dev", "local", "!test"})
     public CommandLineRunner seedEmployeur(EmployeurService employeurService) {
         return args -> {
-            gestionnaireRepository.deleteAll();
-
             EmployeurPasswordDTO employeurRandy = new EmployeurPasswordDTO();
             employeurRandy.setFirstName("Randy");
             employeurRandy.setLastName("Lahey");
@@ -59,8 +55,7 @@ public class ProseApplication {
             try {
                 etudiantService.inscrireEtudiant(etudiantJohn);
             } catch (EmailAlreadyExistsException e) {
-                System.err.println(e.getMessage());
-                System.err.println("etudiant pas créé");
+                System.out.println();
             }
 
             GestionnairePasswordDTO gestionnaireJane = new GestionnairePasswordDTO();
@@ -72,8 +67,7 @@ public class ProseApplication {
             try {
                 gestionnaireService.saveGestionnaire(gestionnaireJane);
             } catch (EmailAlreadyExistsException e) {
-                System.err.println(e.getMessage());
-                System.err.println("gestionnaire pas créé");
+                System.out.println();
             }
 
             System.out.println(employeurService.getEmployeur("mcarney@gov.ca"));
