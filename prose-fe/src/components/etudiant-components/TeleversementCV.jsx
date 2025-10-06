@@ -1,8 +1,8 @@
 import React, {useRef, useState} from 'react';
-import {televerserCv} from "../services/EtudiantService.js";
-import {useAuth} from "../context/AuthContext.jsx";
+import {televerserCv} from "../../services/EtudiantService.js";
+import {useAuth} from "../../context/AuthContext.jsx";
 
-const TeleversementCV = () => {
+const TeleversementCV = ({ onUploadSuccess }) => {
     const [selectedFile, setSelectedFile] = useState(null);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
@@ -63,6 +63,9 @@ const TeleversementCV = () => {
             if (fileInputRef.current) fileInputRef.current.value = '';
             setError('');
             setSuccess('Cv téléversé avec succès !');
+            if (onUploadSuccess) {
+                onUploadSuccess();
+            }
         } catch (err) {
             setError(err.message || 'Erreur lors du téléversement');
         } finally {
@@ -80,8 +83,8 @@ const TeleversementCV = () => {
     };
 
     return (
-        <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Téléverser mon CV</h2>
+        <div className="max-w-md mx-auto p-6">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Téléverser un CV</h2>
 
             <div className="mb-6">
                 <div className="relative">

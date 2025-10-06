@@ -1,14 +1,19 @@
 package com.AL565.prose.service;
 
-import com.AL565.prose.service.dto.EtudiantCvDto;
+import com.AL565.prose.model.CvStatus;
+import com.AL565.prose.service.dto.EtudiantCvDTO;
 import com.AL565.prose.model.CV;
 import com.AL565.prose.model.Etudiant;
 import com.AL565.prose.repository.EtudiantRepository;
-import com.AL565.prose.repository.ProseCvRepository;
+import com.AL565.prose.repository.CvRepository;
 import com.AL565.prose.security.exceptions.CvExceptions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -17,25 +22,29 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class EtudiantCvServiceTest {
+@ExtendWith(MockitoExtension.class)
+class EtudiantServiceCvTest {
 
-    private ProseCvRepository cvRepository;
+    @Mock
+    private CvRepository cvRepository;
+
+    @Mock
     private EtudiantRepository etudiantRepository;
-    private ProseCvService service;
+
+    @InjectMocks
+    private EtudiantService etudiantService;
+
     private MultipartFile file;
 
     @BeforeEach
     void setUp() {
-        cvRepository = mock(ProseCvRepository.class);
-        etudiantRepository = mock(EtudiantRepository.class);
-        service = new ProseCvService(cvRepository, etudiantRepository);
         file = mock(MultipartFile.class);
     }
 
     @Test
     void saveCv_shouldThrowIfFileIsNull() {
         Exception ex = assertThrows(CvExceptions.NoFileException.class,
-                () -> service.saveCv(null, "email@email.email", "2024-06-01"));
+                () -> etudiantService.saveCv(null, "email@email.email", "2024-06-01"));
         assertEquals("Aucun fichier fourni", ex.getMessage());
     }
 
@@ -43,7 +52,7 @@ class EtudiantCvServiceTest {
     void saveCv_shouldThrowIfFileIsEmpty() {
         when(file.isEmpty()).thenReturn(true);
         Exception ex = assertThrows(CvExceptions.NoFileException.class,
-                () -> service.saveCv(file, "email@email.email", "2024-06-01"));
+                () -> etudiantService.saveCv(file, "email@email.email", "2024-06-01"));
         assertEquals("Aucun fichier fourni", ex.getMessage());
     }
 
@@ -52,7 +61,7 @@ class EtudiantCvServiceTest {
         when(file.isEmpty()).thenReturn(false);
         when(file.getContentType()).thenReturn(MediaType.IMAGE_JPEG_VALUE);
         Exception ex = assertThrows(CvExceptions.IncorrectFileException.class,
-                () -> service.saveCv(file, "email@email.email", "2024-06-01"));
+                () -> etudiantService.saveCv(file, "email@email.email", "2024-06-01"));
         assertEquals("Il faut un fichier PDF valide", ex.getMessage());
     }
 
@@ -70,7 +79,7 @@ class EtudiantCvServiceTest {
 
         when(cvRepository.save(any(CV.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        service.saveCv(file, "email@email.email", "2024-06-01");
+        etudiantService.saveCv(file, "email@email.email", "2024-06-01");
 
         ArgumentCaptor<CV> captor = ArgumentCaptor.forClass(CV.class);
         verify(cvRepository).save(captor.capture());
@@ -84,18 +93,14 @@ class EtudiantCvServiceTest {
 
 
     @Test
-    void getCvOrThrow_shouldReturnCv() throws CvExceptions.StudentNotFoundException {
-        CV cv = CV.builder().name("cv.pdf").build();
+    void getByEmail_shouldReturnCv() throws CvExceptions.StudentNotFoundException {
+        CV cv = CV.builder()
+                .name("cv.pdf")
+                .data(new byte[]{1, 2, 3})
+                .status(CvStatus.PENDING)
+                .build();
         when(cvRepository.findByEtudiant_Credentials_Username("email@email.email")).thenReturn(Optional.of(cv));
-        EtudiantCvDto result = service.getCvOrThrow("email@email.email");
-        assertEquals("cv.pdf", result.getName());
+        Optional<EtudiantCvDTO> result = etudiantService.getByEmail("email@email.email");
+        assertEquals("cv.pdf", result.get().getName());
     }
-
-    @Test
-    void getCvOrThrow_shouldThrowIfNotFound() {
-        when(cvRepository.findByEtudiant_Credentials_Username("email@email.email")).thenReturn(Optional.empty());
-        assertThrows(CvExceptions.StudentNotFoundException.class,
-                () -> service.getCvOrThrow("email@email.email"));
-    }
-
 }

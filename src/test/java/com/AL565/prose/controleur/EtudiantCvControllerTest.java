@@ -3,10 +3,10 @@ package com.AL565.prose.controleur;
 import com.AL565.prose.controller.EtudiantController;
 import com.AL565.prose.service.EmployeurService;
 import com.AL565.prose.service.EtudiantService;
-import com.AL565.prose.service.dto.EtudiantCvDto;
+import com.AL565.prose.service.GestionnaireService;
+import com.AL565.prose.service.dto.EtudiantCvDTO;
 import com.AL565.prose.model.CV;
-import com.AL565.prose.repository.ProseCvRepository;
-import com.AL565.prose.service.ProseCvService;
+import com.AL565.prose.repository.CvRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -18,6 +18,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.http.MediaType;
 
+import java.util.Base64;
+import java.util.Optional;
+
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
@@ -27,22 +30,25 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
 @WebMvcTest(controllers = EtudiantController.class)
-class CvControllerTest {
+class EtudiantCvControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @MockitoBean
-    private ProseCvRepository cvRepository;
-
-    @MockitoBean
-    private ProseCvService cvService;
+    private CvRepository cvRepository;
 
     @MockitoBean
     private EtudiantService etudiantInscriptionService;
 
     @MockitoBean
     private EmployeurService employeurService;
+
+    @MockitoBean
+    private GestionnaireService gestionnaireService;
+
+    @Autowired
+    private EtudiantService etudiantService;
 
     @Test
     @WithMockUser(username = "testuser", roles = {"ETUDIANT"})
@@ -83,15 +89,15 @@ class CvControllerTest {
                 .lastModifiedDate(java.time.Instant.now())
                 .build();
 
-        when(cvService.getCvOrThrow("email@email.email")).thenReturn(
-                new EtudiantCvDto() {{
+        when(etudiantService.getByEmail("email@email.email")).thenReturn(
+                Optional.of(new EtudiantCvDTO() {{
                     setName(cv.getName());
                     setType(cv.getType());
                     setSize(cv.getSize());
-                    setData(cv.getData());
+                    setData(Base64.getEncoder().encodeToString(cv.getData()));
                     setLastModified(cv.getLastModified());
                     setLastModifiedDate(cv.getLastModifiedDate());
-                }}
+                }})
         );
 
         mockMvc.perform(get("/etudiant/telecharger-cv/email@email.email")

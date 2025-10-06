@@ -37,4 +37,9 @@ public class CV {
     @OneToOne
     @JoinColumn(name = "etudiant_id")
     private Etudiant etudiant;
+
+    @Enumerated(EnumType.STRING)
+    private CvStatus status;
+
+    private String comment;
 }
