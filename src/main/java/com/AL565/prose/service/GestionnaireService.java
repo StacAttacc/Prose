@@ -2,6 +2,7 @@ package com.AL565.prose.service;
 
 import com.AL565.prose.model.CV;
 import com.AL565.prose.model.CvStatus;
+import com.AL565.prose.model.Gestionnaire;
 import com.AL565.prose.repository.CvRepository;
 import com.AL565.prose.repository.GestionnaireRepository;
 import com.AL565.prose.security.exceptions.CvExceptions.*;
@@ -32,7 +33,9 @@ public class GestionnaireService {
 
         dto.setPassword(passwordEncoder.encode(dto.getPassword()));
 
-        gestionnaireRepository.save(GestionnairePasswordDTO.toModel((GestionnairePasswordDTO) passwordEncoder));
+        Gestionnaire gestionnaire = GestionnairePasswordDTO.toModel(dto);
+
+        gestionnaireRepository.save(gestionnaire);
     }
 
 

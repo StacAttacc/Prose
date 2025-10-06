@@ -1,5 +1,6 @@
 package com.AL565.prose;
 
+import com.AL565.prose.repository.GestionnaireRepository;
 import com.AL565.prose.service.EtudiantService;
 import com.AL565.prose.service.GestionnaireService;
 import com.AL565.prose.service.EmployeurService;
@@ -21,6 +22,7 @@ public class ProseApplication {
 
     private final EtudiantService etudiantService;
     private final GestionnaireService gestionnaireService;
+    private final GestionnaireRepository gestionnaireRepository;
 
     public static void main(String[] args) {
         SpringApplication.run(ProseApplication.class, args);
@@ -31,19 +33,7 @@ public class ProseApplication {
     @Profile({"dev", "local", "!test"})
     public CommandLineRunner seedEmployeur(EmployeurService employeurService) {
         return args -> {
-            /*EmployeurEnregistrerDTO employeurMark = new EmployeurEnregistrerDTO(
-                    "Mark",
-                    "Carney",
-                    "Gouvernement du Canada",
-                    "mcarney@gov.ca",
-                    "123456"
-            );
-
-            try {
-                employeurService.enregistrer(employeurMark);
-            } catch (EmailAlreadyExistsException e) {
-                System.err.println(e.getMessage());
-            }*/
+            gestionnaireRepository.deleteAll();
 
             EmployeurPasswordDTO employeurRandy = new EmployeurPasswordDTO();
             employeurRandy.setFirstName("Randy");
