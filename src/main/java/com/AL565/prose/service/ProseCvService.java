@@ -1,0 +1,92 @@
+package com.AL565.prose.service;
+
+import com.AL565.prose.service.dto.EtudiantCvDto;
+import com.AL565.prose.model.CV;
+import com.AL565.prose.model.Etudiant;
+import com.AL565.prose.repository.EtudiantRepository;
+import com.AL565.prose.repository.ProseCvRepository;
+import com.AL565.prose.security.exceptions.CvExceptions.*;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.time.Instant;
+
+@Service
+@RequiredArgsConstructor
+public class ProseCvService {
+
+    private final ProseCvRepository cvRepository;
+
+    private final EtudiantRepository etudiantRepository;
+
+    @Transactional
+    public EtudiantCvDto saveCv(MultipartFile cv, String email, String lastModified) throws Exception {
+        if (cv == null || cv.isEmpty()) {
+            throw new NoFileException();
+        }
+
+        if (cv.getContentType() == null || !MediaType.APPLICATION_PDF_VALUE.equalsIgnoreCase(cv.getContentType())) {
+            throw new IncorrectFileException();
+        }
+
+        byte[] data;
+        try {
+            data = cv.getBytes();
+        } catch (IOException e) {
+            throw new FileReadingException();
+        }
+
+        Etudiant etudiant = etudiantRepository.findEtudiantByCredentials_Username(email)
+                .orElseThrow(StudentNotFoundException::new);
+
+        CV newCv = CV.builder()
+                .name(cv.getOriginalFilename())
+                .type(cv.getContentType())
+                .size(cv.getSize())
+                .lastModified(lastModified)
+                .lastModifiedDate(Instant.now())
+                .data(data)
+                .etudiant(etudiant)
+                .build();
+
+        CV savedCv = cvRepository.findByEtudiant_Credentials_Username(email)
+                .map(existingCv -> {
+                    existingCv.setName(newCv.getName());
+                    existingCv.setType(newCv.getType());
+                    existingCv.setSize(newCv.getSize());
+                    existingCv.setLastModified(newCv.getLastModified());
+                    existingCv.setLastModifiedDate(newCv.getLastModifiedDate());
+                    existingCv.setData(newCv.getData());
+                    return cvRepository.save(existingCv);
+                })
+                .orElseGet(() -> cvRepository.save(newCv));
+
+        return new EtudiantCvDto() {{
+            setName(savedCv.getName());
+            setType(savedCv.getType());
+            setSize(savedCv.getSize());
+            setLastModified(savedCv.getLastModified());
+            setLastModifiedDate(savedCv.getLastModifiedDate());
+            setData(savedCv.getData());
+        }};
+    }
+
+    @Transactional(readOnly = true)
+    public EtudiantCvDto getCvOrThrow(String username) throws StudentNotFoundException {
+        CV entity = cvRepository.findByEtudiant_Credentials_Username(username)
+                .orElseThrow(StudentNotFoundException::new);
+
+        return new EtudiantCvDto() {{
+            setName(entity.getName());
+            setType(entity.getType());
+            setSize(entity.getSize());
+            setLastModified(entity.getLastModified());
+            setLastModifiedDate(entity.getLastModifiedDate());
+            setData(entity.getData());
+        }};
+    }
+}
