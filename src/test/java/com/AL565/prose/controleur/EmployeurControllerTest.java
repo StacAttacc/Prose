@@ -2,10 +2,9 @@ package com.AL565.prose.controleur;
 
 import com.AL565.prose.controller.EmployeurController;
 import com.AL565.prose.model.Employeur;
-import com.AL565.prose.model.OfferStatus;
 import com.AL565.prose.repository.EmployeurRepository;
 import com.AL565.prose.repository.ProseUserRepository;
-import com.AL565.prose.service.dto.EmployeurEnregistrerDTO;
+import com.AL565.prose.service.dto.EmployeurPasswordDTO;
 import com.AL565.prose.service.EmployeurService;
 import com.AL565.prose.service.dto.StageDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,7 +26,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -67,7 +65,8 @@ class EmployeurControllerTest {
 
     @Test
     void enregistrer() throws Exception {
-        EmployeurEnregistrerDTO mark = new EmployeurEnregistrerDTO("Mark", "Carney", "Gouvernement du Canada", "mc@gov.ca", "gouvernement");
+        Employeur employeur = new Employeur("Mark", "Carney", "Gouvernement du Canada", "mc@gov.ca", "gouvernement");
+        EmployeurPasswordDTO mark = new EmployeurPasswordDTO(employeur);
 
         String content = new ObjectMapper().writeValueAsString(mark);
         MvcResult result = mockMvc.perform(post("/employeur/register").contentType(MediaType.APPLICATION_JSON).content(content).with(csrf())).andReturn();
@@ -78,7 +77,7 @@ class EmployeurControllerTest {
 
 
     @Test
-    void createOffer_retourne_201_sans_location_avec_message() throws Exception {
+    void createOffer() throws Exception {
         var dto = StageDTO.builder()
                 .title("Stagiaire Java")
                 .description("Développer des APIs Spring")
