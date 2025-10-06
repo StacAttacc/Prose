@@ -8,7 +8,6 @@ export const televerserCv = async (cv, user) => {
         const dataToSend = new FormData();
         dataToSend.append('cv', cv);
         dataToSend.append("email", user.email);
-        console.log(user.email)
 
         const { data } = await axios.post(CV_UPLOAD_URL, dataToSend, {
             headers: {
