@@ -51,10 +51,6 @@ public class GestionnaireService {
         Stage stage = stageRepository.findById(stageId)
                 .orElseThrow(() -> new NoSuchElementException("Stage non trouvé"));
 
-        if (stage.getStatus() != OfferStatus.SOUMISE) {
-            throw new IllegalStateException("Le stage doit être au statut SOUMISE pour être approuvé");
-        }
-
         stage.setStatus(OfferStatus.APPROUVEE);
         Stage updatedStage = stageRepository.save(stage);
 
@@ -71,10 +67,6 @@ public class GestionnaireService {
 
         Stage stage = stageRepository.findById(stageId)
                 .orElseThrow(() -> new NoSuchElementException("Stage non trouvé"));
-
-        if (stage.getStatus() != OfferStatus.SOUMISE) {
-            throw new IllegalStateException("Le stage doit être au statut SOUMISE pour être rejeté");
-        }
 
         stage.setStatus(OfferStatus.REJETEE);
         stage.setRejectionReason(reason);

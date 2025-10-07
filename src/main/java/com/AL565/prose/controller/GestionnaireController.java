@@ -21,9 +21,12 @@ public class GestionnaireController {
 
     @GetMapping("/stages/status/{status}")
     public ResponseEntity<ReturnEntityDTO<List<StageDTO>>> getStagesByStatus(@PathVariable String status) {
-        System.out.println("status: " + status);
-        List<StageDTO> stages = gestionnaireService.getStagesByStatus(status);
-        return ResponseEntity.ok(new ReturnEntityDTO<>("Liste des stages " + status, stages));
+        try {
+            List<StageDTO> stages = gestionnaireService.getStagesByStatus(status);
+            return ResponseEntity.ok(new ReturnEntityDTO<>("Liste des stages " + status, stages));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ReturnEntityDTO<>("Erreur lors de la récupération des stages", null));
+        }
     }
 
     @PutMapping("/stages/{id}/approuver")

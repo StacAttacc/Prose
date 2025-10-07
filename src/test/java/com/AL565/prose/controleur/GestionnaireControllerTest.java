@@ -82,7 +82,7 @@ class GestionnaireControllerTest {
         // Assert
         Assertions.assertThat(result.getResponse().getStatus()).isEqualTo(200);
         String content = result.getResponse().getContentAsString();
-        Assertions.assertThat(content).contains("Liste des stages soumises");
+        Assertions.assertThat(content).contains("Liste des stages SOUMISE");
         Assertions.assertThat(content).contains("Stage Java");
         Assertions.assertThat(content).contains("Stage Python");
         Assertions.assertThat(content).contains("Entreprise Test");

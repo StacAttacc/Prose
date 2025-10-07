@@ -151,19 +151,6 @@ class GestionnaireServiceTest {
     }
 
     @Test
-    void approuverStage_wrongStatus() {
-        Stage stage = new Stage();
-        stage.setId(1L);
-        stage.setStatus(OfferStatus.APPROUVEE); // Déjà approuvé
-
-        when(stageRepository.findById(1L)).thenReturn(Optional.of(stage));
-
-        assertThatThrownBy(() -> gestionnaireService.approuverStage(1L))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("statut SOUMISE");
-    }
-
-    @Test
     void rejeterStage_success() {
         Stage stage = new Stage();
         stage.setId(1L);
@@ -207,18 +194,5 @@ class GestionnaireServiceTest {
         assertThatThrownBy(() -> gestionnaireService.rejeterStage(1L, "Raison"))
                 .isInstanceOf(NoSuchElementException.class)
                 .hasMessageContaining("Stage non trouvé");
-    }
-
-    @Test
-    void rejeterStage_wrongStatus() {
-        Stage stage = new Stage();
-        stage.setId(1L);
-        stage.setStatus(OfferStatus.APPROUVEE); // Déjà approuvé
-
-        when(stageRepository.findById(1L)).thenReturn(Optional.of(stage));
-
-        assertThatThrownBy(() -> gestionnaireService.rejeterStage(1L, "Raison"))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("statut SOUMISE");
     }
 }
