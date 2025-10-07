@@ -30,8 +30,8 @@ public class ControllerAdvisor {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Étudiant non trouvé");
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> handleGeneralException() {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erreur interne du serveur");
-    }
+    //@ExceptionHandler(Exception.class)
+    //public ResponseEntity<String> handleGeneralException() {
+    //    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erreur interne du serveur");
+    //}
 }

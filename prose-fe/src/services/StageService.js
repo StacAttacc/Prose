@@ -6,7 +6,8 @@ export async function createStage(stage, token) {
     await axios.post(url + "/employeur/createStage", stage, {
             headers: {
                 "Content-Type": "application/json",
-                'Authorization': `Bearer ${token}`}
+                'Authorization': `Bearer ${token}`
+            }
     });
 }
 
@@ -18,4 +19,13 @@ export async function getEmployeurStages(email, token) {
     })
 
     return data;
+}
+
+export async function updateStage(stage, token) {
+    await axios.put(url + "/employeur/stages/" + stage.id, stage, {
+        headers: {
+            "Content-Type": "application/json",
+            'Authorization': `Bearer ${token}`
+        }
+    });
 }

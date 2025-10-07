@@ -68,10 +68,10 @@ class GestionnaireControllerTest {
                 .employeur(employeurDTO2)
                 .build();
 
-        when(gestionnaireService.getStagesSoumises()).thenReturn(List.of(stage1, stage2));
+        when(gestionnaireService.getStagesByStatus("SOUMISE")).thenReturn(List.of(stage1, stage2));
 
         // Act
-        MvcResult result = mockMvc.perform(get("/gestionnaire/stages/soumises")
+        MvcResult result = mockMvc.perform(get("/gestionnaire/stages/status/SOUMISE")
                 .with(csrf()))
                 .andReturn();
 

@@ -15,6 +15,7 @@ import java.util.List;
 @Table(name = "stage")
 @Getter
 @Setter
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

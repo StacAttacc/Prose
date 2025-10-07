@@ -30,14 +30,14 @@ public class GestionnaireService {
 
     public void saveGestionnaire(GestionnaireDTO gestionnaire) {
         try {
-            gestionnaireRepository.save(gestionnaire.toModel(passwordEncoder));
+            gestionnaireRepository.save(GestionnaireDTO.toModel(gestionnaire, passwordEncoder));
         } catch (Exception e) {
             throw new EmailAlreadyExistsException("Un compte avec cet email existe déjà");
         }
     }
 
-    public List<StageDTO> getStagesSoumises() {
-        return stageRepository.findByStatus(OfferStatus.SOUMISE)
+    public List<StageDTO> getStagesByStatus(String status) {
+        return stageRepository.findByStatus(OfferStatus.valueOf(status))
                 .stream()
                 .map(stage -> {
                     Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(stage.getEmployeurEmail());

@@ -103,7 +103,7 @@ class GestionnaireServiceTest {
         when(stageRepository.findByStatus(OfferStatus.SOUMISE)).thenReturn(List.of(stage1, stage2));
         when(employeurRepository.getEmployeurByCredentials_Username(anyString())).thenReturn(employeur);
 
-        List<StageDTO> result = gestionnaireService.getStagesSoumises();
+        List<StageDTO> result = gestionnaireService.getStagesByStatus("SOUMISE");
 
         assertThat(result).hasSize(2);
         assertThat(result.get(0).getId()).isEqualTo(1L);

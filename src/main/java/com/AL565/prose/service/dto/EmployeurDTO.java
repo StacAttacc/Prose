@@ -3,8 +3,10 @@ package com.AL565.prose.service.dto;
 import com.AL565.prose.model.Employeur;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
 @AllArgsConstructor
 public class EmployeurDTO extends ProseUserDTO {
     private String company;

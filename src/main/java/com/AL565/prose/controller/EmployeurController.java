@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @AllArgsConstructor
 @RestController
@@ -59,5 +60,16 @@ public class EmployeurController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ReturnEntityDTO<>("Erreur lors de la récupération des stages publiés", null));
         }
     }
-}
 
+    @PutMapping("/stages/{id}")
+    public ResponseEntity<ReturnEntityDTO<Object>> updateStage(@PathVariable("id") Long id, @Valid @RequestBody StageDTO stageDTO) {
+        try {
+            StageDTO updatedStage = employeurService.updateStage(id, stageDTO);
+            return ResponseEntity.ok(new ReturnEntityDTO<>("Stage mis à jour avec succès", updatedStage));
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ReturnEntityDTO<>("Stage non trouvé", e.getMessage()));
+        }catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ReturnEntityDTO<>("Erreur lors de la mise à jour du stage", e.getMessage()));
+        }
+    }
+}

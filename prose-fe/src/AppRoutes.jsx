@@ -15,7 +15,7 @@ export default function AppRoutes() {
         user?.role === "ETUDIANT" ? <TeleversementCV /> :
             user?.role === "EMPLOYEUR" ? <PostedStages /> :
                 user?.role === "PROFESSEUR" ? <div>Bienvenue Professeur</div> :
-                    user?.data.role === "GESTIONNAIRE" ? <PageHomeGestionnaire /> :
+                    user?.role === "GESTIONNAIRE" ? <PageHomeGestionnaire /> :
                     <div>Rôle inconnu</div>;
 
     return (
