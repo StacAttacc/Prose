@@ -21,6 +21,15 @@ export async function getEmployeurStages(email, token) {
     return data;
 }
 
+export async function getEtudiantStages(token) {
+    const { data } = await axios.get(`${url}/etudiant/stages/approuves`, {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    })
+    return data;
+}
+
 export async function updateStage(stage, token) {
     await axios.put(url + "/employeur/stages/" + stage.id, stage, {
         headers: {

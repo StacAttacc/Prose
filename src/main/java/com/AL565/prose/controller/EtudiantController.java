@@ -5,8 +5,13 @@ import com.AL565.prose.service.EtudiantService;
 import com.AL565.prose.security.exceptions.CvExceptions;
 import com.AL565.prose.service.dto.EtudiantDTO;
 import com.AL565.prose.service.dto.EtudiantPasswordDTO;
+import com.AL565.prose.service.dto.ReturnEntityDTO;
+import com.AL565.prose.service.dto.StageDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import com.AL565.prose.service.ProseCvService;
+
+import java.util.List;
+
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -60,6 +65,16 @@ public class EtudiantController {
                 .contentType(MediaType.parseMediaType(cv.getType()))
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + cv.getName() + "\"")
                 .body(cv.getData());
+    }
+
+    @GetMapping("/stages/approuves")
+    public ResponseEntity<ReturnEntityDTO<List<StageDTO>>> getEtudiantStages(@RequestHeader("Authorization") String token) {
+        try {
+            List<StageDTO> stages = etudiantService.getEtudiantStages(token);
+            return ResponseEntity.ok(new ReturnEntityDTO<>("Stages approuvés", stages));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ReturnEntityDTO<>("Erreur lors de la récupération des stages approuvés",null));
+        }
     }
 
 }
