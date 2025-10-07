@@ -3,6 +3,7 @@ package com.AL565.prose.controller;
 import com.AL565.prose.service.GestionnaireService;
 import com.AL565.prose.service.dto.CvDecisionDTO;
 import com.AL565.prose.service.dto.GestionnaireCvDTO;
+import com.AL565.prose.service.dto.StageDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,5 +27,10 @@ public class GestionnaireController {
     public ResponseEntity<List<GestionnaireCvDTO>> getAllCvs() throws Exception {
         List<GestionnaireCvDTO> cvs = gestionnaireService.getAllCvs();
         return ResponseEntity.ok(cvs);
+    }
+
+    @GetMapping("/stages")
+    public List<StageDTO> getAllStages() {
+        return gestionnaireService.getAllStages();
     }
 }

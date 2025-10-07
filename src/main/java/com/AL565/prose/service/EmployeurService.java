@@ -60,4 +60,6 @@ public class EmployeurService {
                     return StageDTO.fromModel(stage, employeur);
                 }).toList();
     }
+
+
 }
