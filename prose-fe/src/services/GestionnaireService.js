@@ -50,6 +50,11 @@ export const rejectCv = async (cvId, comment, token) => {
     }
 };
 
-export async function getPageStages(token, page) {
-    const data = axios.get(`${BASE_URL_GESTIONNAIRE}/stages/${page}`);
+export async function getAllStages(token) {
+    const { data } = await axios.get(`${BASE_URL_GESTIONNAIRE}/stages`, {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    });
+    return data;
 }

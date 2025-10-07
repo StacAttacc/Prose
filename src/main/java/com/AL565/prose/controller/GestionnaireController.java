@@ -3,6 +3,7 @@ package com.AL565.prose.controller;
 import com.AL565.prose.service.GestionnaireService;
 import com.AL565.prose.service.dto.CvDecisionDTO;
 import com.AL565.prose.service.dto.GestionnaireCvDTO;
+import com.AL565.prose.service.dto.ReturnEntityDTO;
 import com.AL565.prose.service.dto.StageDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -30,7 +31,7 @@ public class GestionnaireController {
     }
 
     @GetMapping("/stages")
-    public List<StageDTO> getAllStages() {
-        return gestionnaireService.getAllStages();
+    public ResponseEntity<ReturnEntityDTO<List<StageDTO>>> getAllStages() {
+        return ResponseEntity.ok(new ReturnEntityDTO<>("Stages trouvés", gestionnaireService.getAllStages()));
     }
 }

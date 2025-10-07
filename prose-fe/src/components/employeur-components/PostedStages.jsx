@@ -17,6 +17,7 @@ export default function PostedStages() {
 
     }, [])
     return <div className="mt-2">
+        <h2 className="text-center text-xl font-bold mb-8">Mes Stages</h2>
         {stages.length > 0 ?
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-12 ml-8">
                 {stages.map(stage => (
