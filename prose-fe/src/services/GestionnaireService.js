@@ -12,6 +12,15 @@ export async function listStagesByStatus(status = "SOUMISE", token) {
   return res.data.data;
 }
 
+export async function getAllStages(token) {
+  const res = await axios.get(`${BASE}/stages`, {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+  return res.data.data;
+}
+
 /**
  * Soumission de la décision.
  */

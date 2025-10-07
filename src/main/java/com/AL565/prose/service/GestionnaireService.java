@@ -76,4 +76,14 @@ public class GestionnaireService {
 
         return StageDTO.fromModel(updatedStage, employeur);
     }
+
+    public List<StageDTO> getAllStages() {
+        return stageRepository.findAll()
+                .stream()
+                .map(stage -> {
+                    Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(stage.getEmployeurEmail());
+                    return StageDTO.fromModel(stage, employeur);
+                })
+                .collect(Collectors.toList());
+    }
 }
