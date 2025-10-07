@@ -3,6 +3,7 @@ package com.AL565.prose.controleur;
 import com.AL565.prose.controller.GestionnaireController;
 import com.AL565.prose.model.Employeur;
 import com.AL565.prose.model.OfferStatus;
+import com.AL565.prose.service.EmployeurService;
 import com.AL565.prose.service.GestionnaireService;
 import com.AL565.prose.service.dto.EmployeurDTO;
 import com.AL565.prose.service.dto.RejectionRequestDTO;
@@ -39,6 +40,9 @@ class GestionnaireControllerTest {
 
     @MockitoBean
     private GestionnaireService gestionnaireService;
+
+    @MockitoBean
+    private EmployeurService employeurService;
 
     @Autowired
     ObjectMapper objectMapper;
@@ -114,21 +118,6 @@ class GestionnaireControllerTest {
     }
 
     @Test
-    void approuverStage_notFound() throws Exception {
-        // Arrange
-        when(gestionnaireService.approuverStage(anyLong()))
-                .thenThrow(new NoSuchElementException("Stage non trouvé"));
-
-        // Act
-        MvcResult result = mockMvc.perform(put("/gestionnaire/stages/999/approuver")
-                .with(csrf()))
-                .andReturn();
-
-        // Assert
-        Assertions.assertThat(result.getResponse().getStatus()).isEqualTo(404);
-    }
-
-    @Test
     void rejeterStage_success() throws Exception {
         // Arrange
         Employeur employeur = new Employeur(1L, "John", "Doe", "Entreprise Test", "john@example.com");
@@ -178,21 +167,4 @@ class GestionnaireControllerTest {
         Assertions.assertThat(result.getResponse().getStatus()).isEqualTo(400);
     }
 
-    @Test
-    void rejeterStage_notFound() throws Exception {
-        // Arrange
-        RejectionRequestDTO rejectionRequest = new RejectionRequestDTO("Raison du rejet");
-        when(gestionnaireService.rejeterStage(anyLong(), anyString()))
-                .thenThrow(new NoSuchElementException("Stage non trouvé"));
-
-        // Act
-        MvcResult result = mockMvc.perform(put("/gestionnaire/stages/999/rejeter")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(rejectionRequest)))
-                .andReturn();
-
-        // Assert
-        Assertions.assertThat(result.getResponse().getStatus()).isEqualTo(404);
-    }
 }

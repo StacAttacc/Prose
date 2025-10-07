@@ -5,6 +5,8 @@ import com.AL565.prose.service.dto.ReturnEntityDTO;
 import com.AL565.prose.service.dto.RejectionRequestDTO;
 import com.AL565.prose.service.dto.StageDTO;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,15 +28,23 @@ public class GestionnaireController {
 
     @PutMapping("/stages/{id}/approuver")
     public ResponseEntity<ReturnEntityDTO<StageDTO>> approuverStage(@PathVariable Long id) {
-        StageDTO stage = gestionnaireService.approuverStage(id);
-        return ResponseEntity.ok(new ReturnEntityDTO<>("Stage approuvé avec succès", stage));
+        try {
+            StageDTO stage = gestionnaireService.approuverStage(id);
+            return ResponseEntity.ok(new ReturnEntityDTO<>("Stage approuvé avec succès", stage));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ReturnEntityDTO<>("Erreur lors de l'approuver du stage", null));
+        }
     }
 
     @PutMapping("/stages/{id}/rejeter")
     public ResponseEntity<ReturnEntityDTO<StageDTO>> rejeterStage(
             @PathVariable Long id,
             @RequestBody RejectionRequestDTO rejectionRequest) {
-        StageDTO stage = gestionnaireService.rejeterStage(id, rejectionRequest.getReason());
-        return ResponseEntity.ok(new ReturnEntityDTO<>("Stage rejeté avec succès", stage));
+        try {
+            StageDTO stage = gestionnaireService.rejeterStage(id, rejectionRequest.getReason());
+            return ResponseEntity.ok(new ReturnEntityDTO<>("Stage rejeté avec succès", stage));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ReturnEntityDTO<>("Erreur lors du rejet du stage", null));
+        }
     }
 }
