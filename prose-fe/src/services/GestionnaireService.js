@@ -22,7 +22,7 @@ export const fetchAllCVs = async (token) => {
                 'Authorization': `Bearer ${token}`
             },
         });
-        return response.data;
+        return Array.isArray(response.data) ? response.data : response.data.content;
     } catch (error) {
         if (error.response) {
             console.error('Erreur:', error.response.data);
