@@ -3,7 +3,6 @@ package com.AL565.prose;
 import com.AL565.prose.service.EtudiantService;
 import com.AL565.prose.service.GestionnaireService;
 import com.AL565.prose.service.EmployeurService;
-import com.AL565.prose.service.GestionnaireService;
 import com.AL565.prose.service.dto.EmployeurPasswordDTO;
 import com.AL565.prose.service.dto.EtudiantPasswordDTO;
 import com.AL565.prose.service.dto.GestionnairePasswordDTO;
@@ -21,7 +20,7 @@ import org.springframework.context.annotation.Profile;
 public class ProseApplication {
 
     private final EtudiantService etudiantService;
-    private final GestionnaireService gestionnaireService;
+
 
     public static void main(String[] args) {
         SpringApplication.run(ProseApplication.class, args);
