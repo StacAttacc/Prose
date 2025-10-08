@@ -52,7 +52,6 @@ class EmployeurServiceTest {
         employeurService.enregistrer(justin);
 
         verify(employeurRepository, times(1)).save(any());
-
     }
 
     @Test
@@ -70,7 +69,7 @@ class EmployeurServiceTest {
 
     @Test
     void createStage() {
-        Employeur employeur = new Employeur(8L,"Umberto", "Macaco","Zac inc","email");
+        Employeur employeur = new Employeur(8L, "Umberto", "Macaco", "Zac inc", "email");
         EmployeurDTO empDto = new EmployeurDTO(employeur, null);
 
 

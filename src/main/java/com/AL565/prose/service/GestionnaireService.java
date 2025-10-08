@@ -39,7 +39,7 @@ public class GestionnaireService {
 
         dto.setPassword(passwordEncoder.encode(dto.getPassword()));
 
-        gestionnaireRepository.save(GestionnairePasswordDTO.toModel((GestionnairePasswordDTO) passwordEncoder));
+        gestionnaireRepository.save(GestionnairePasswordDTO.toModel(dto));
     }
 
 

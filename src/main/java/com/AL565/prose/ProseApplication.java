@@ -41,7 +41,8 @@ public class ProseApplication {
             try {
                 employeurService.enregistrer(employeurRandy);
             } catch (EmailAlreadyExistsException e) {
-                System.out.println();
+                System.err.println(e.getMessage());
+                System.err.println("employeur pas créé");
             }
 
             EtudiantPasswordDTO etudiantJohn = new EtudiantPasswordDTO();

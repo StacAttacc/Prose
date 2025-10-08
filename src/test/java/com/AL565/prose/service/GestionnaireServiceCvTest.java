@@ -1,18 +1,19 @@
 package com.AL565.prose.service;
 
-import com.AL565.prose.model.CV;
-import com.AL565.prose.model.CvStatus;
-import com.AL565.prose.model.Discipline;
+import com.AL565.prose.model.*;
 import com.AL565.prose.model.auth.Credentials;
 import com.AL565.prose.repository.CvRepository;
+import com.AL565.prose.repository.GestionnaireRepository;
 import com.AL565.prose.service.dto.GestionnaireCvDTO;
-import com.AL565.prose.model.Etudiant;
 import com.AL565.prose.security.exceptions.CvExceptions;
+import com.AL565.prose.service.dto.GestionnairePasswordDTO;
+import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Arrays;
 import java.util.List;
@@ -29,8 +30,45 @@ public class GestionnaireServiceCvTest {
     @Mock
     private CvRepository cvRepository;
 
+    @Mock
+    private GestionnaireRepository gestionnaireRepository;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
     @InjectMocks
     private GestionnaireService gestionnaireService;
+
+    @Test
+    void saveGestionnaire_shouldSaveWhenEmailNotExists() {
+        GestionnairePasswordDTO dto = new GestionnairePasswordDTO();
+        dto.setEmail("test@example.com");
+        dto.setPassword("plainPassword");
+
+        when(gestionnaireRepository.findByCredentials_Username("test@example.com"))
+                .thenReturn(Optional.empty());
+        when(passwordEncoder.encode("plainPassword")).thenReturn("encodedPassword");
+        when(gestionnaireRepository.save(any(Gestionnaire.class))).thenReturn(new Gestionnaire());
+
+        gestionnaireService.saveGestionnaire(dto);
+
+        verify(passwordEncoder).encode("plainPassword");
+        verify(gestionnaireRepository).save(any(Gestionnaire.class));
+    }
+
+    @Test
+    void saveGestionnaire_shouldThrowWhenEmailExists() {
+        GestionnairePasswordDTO dto = new GestionnairePasswordDTO();
+        dto.setEmail("test@example.com");
+
+        when(gestionnaireRepository.findByCredentials_Username("test@example.com"))
+                .thenReturn(Optional.of(new Gestionnaire()));
+
+        assertThatThrownBy(() -> gestionnaireService.saveGestionnaire(dto))
+                .isInstanceOf(EmailAlreadyExistsException.class);
+
+        verify(gestionnaireRepository, never()).save(any());
+    }
 
     @Test
     void getAllCvs_ShouldReturnMappedDTOs() throws Exception {
