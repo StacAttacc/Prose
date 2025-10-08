@@ -11,6 +11,7 @@ import {useEffect, useState} from "react";
 import GestionCV from "./components/gestionnaire-components/GestionCV.jsx";
 import {telechargerCv} from "./services/EtudiantService.js";
 import MonCV from "./components/etudiant-components/MonCV.jsx";
+import TeleversementCV from "./components/etudiant-components/TeleversementCV.jsx";
 
 export default function AppRoutes() {
     const { user, loading } = useAuth();
@@ -45,6 +46,7 @@ export default function AppRoutes() {
                     <Route index element={loading ? <div>Loading...</div> : defaultElement} />
                     <Route path="etudiant/mon-cv" element={<MonCV />} />
                     <Route path="etudiant/offres-emplois" element={<div>Offres d'emplois</div>} />
+                    <Route path="etudiant/TeleversementCV" element={<TeleversementCV />} />
                     <Route path="gestion-cv" element={<GestionCV />}/>
                     <Route path="creation-stage" element={<StageCreation />} />
                     <Route path="stage-listings" element={<StageListings />} />
