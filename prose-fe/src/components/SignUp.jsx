@@ -28,7 +28,7 @@ export default function SignUp({ onSwitchToLogin }) {
     const [errorMsg, setErrorMsg] = useState("");
 
     const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-    const pwdHint = pwd.length < 10 ? "Min 10 characters" : "mot de pass respecté!";
+    const pwdHint = pwd.length < 10 ? "Min 10 characters" : "Mot de passe respecté!";
 
     const canSubmit =
         emailOk &&
@@ -68,7 +68,7 @@ export default function SignUp({ onSwitchToLogin }) {
                 setErrorMsg("Cet email est déjà utilisé. Veuillez en choisir un autre");
             } else {
                 setErrorMsg(
-                    err?.response?.data?.message || "Échec de l’inscription. Veuillez réessayer."
+                    err?.response?.data?.message || "Service indisponible. Veuillez réessayer plus tard."
                 );
             }
 
@@ -89,8 +89,8 @@ export default function SignUp({ onSwitchToLogin }) {
                     type="button"
                     onClick={() => setAccountType("employer")}
                     className={`px-4 py-2 rounded-lg font-medium transition ${accountType === "employer"
-                            ? "bg-teal-600 text-white"
-                            : "bg-slate-700 text-slate-300 hover:bg-slate-600"
+                            ? "bg-teal-600 text-black"
+                            : "bg-slate-300 text-gray-400 hover:bg-slate-600"
                         }`}
                 >
                     Employeur
@@ -99,8 +99,8 @@ export default function SignUp({ onSwitchToLogin }) {
                     type="button"
                     onClick={() => setAccountType("student")}
                     className={`px-4 py-2 rounded-lg font-medium transition ${accountType === "student"
-                            ? "bg-teal-600 text-white"
-                            : "bg-slate-700 text-slate-300 hover:bg-slate-600"
+                            ? "bg-teal-600 text-black"
+                            : "bg-slate-300 text-gray-400 hover:bg-slate-600"
                         }`}
                 >
                     Étudiant
@@ -123,7 +123,7 @@ export default function SignUp({ onSwitchToLogin }) {
             <form onSubmit={onSubmit} className="space-y-4">
                 {/* Prénom */}
                 <label className="block">
-                    <span className="block text-sm mb-1 text-slate-400">Prénom</span>
+                    <span className="block text-sm mb-1 text-gray-800">Prénom</span>
                     <input
                         type="text"
                         className={`w-full rounded-xl bg-transparent border px-4 py-3 outline-none focus:border-teal-500 ${!firstName.trim() ? "border-rose-600" : "border-slate-700"
@@ -136,7 +136,7 @@ export default function SignUp({ onSwitchToLogin }) {
 
                 {/* Nom */}
                 <label className="block">
-                    <span className="block text-sm mb-1 text-slate-400">Nom</span>
+                    <span className="block text-sm mb-1 text-gray-800">Nom</span>
                     <input
                         type="text"
                         className={`w-full rounded-xl bg-transparent border px-4 py-3 outline-none focus:border-teal-500 ${!lastName.trim() ? "border-rose-600" : "border-slate-700"
@@ -150,7 +150,7 @@ export default function SignUp({ onSwitchToLogin }) {
                 {/* Entreprise / Discipline */}
                 {accountType === "employer" ? (
                     <label className="block">
-                        <span className="block text-sm mb-1 text-slate-400">Entreprise</span>
+                        <span className="block text-sm mb-1 text-gray-800">Entreprise</span>
                         <input
                             type="text"
                             className={`w-full rounded-xl bg-transparent border px-4 py-3 outline-none focus:border-teal-500 ${!company.trim() ? "border-rose-600" : "border-slate-700"
@@ -162,7 +162,7 @@ export default function SignUp({ onSwitchToLogin }) {
                     </label>
                 ) : (
                     <div>
-                        <label className="block text-sm mb-1 text-slate-400" htmlFor="discipline">
+                        <label className="block text-sm mb-1 text-gray-800" htmlFor="discipline">
                             Discipline
                         </label>
                         <select
@@ -185,7 +185,7 @@ export default function SignUp({ onSwitchToLogin }) {
 
                 {/* Email */}
                 <label className="block">
-                    <span className="block text-sm mb-1 text-slate-400">Adresse courriel</span>
+                    <span className="block text-sm mb-1 text-gray-800">Adresse courriel</span>
                     <div className="relative">
                         <input
                             type="email"
@@ -200,7 +200,7 @@ export default function SignUp({ onSwitchToLogin }) {
 
                 {/* Mot de passe */}
                 <label className="block">
-                    <span className="block text-sm mb-1 text-slate-400">Mot de passe</span>
+                    <span className="block text-sm mb-1 text-gray-800">Mot de passe</span>
                     <div className="relative">
                         <input
                             type={showPwd ? "text" : "password"}
@@ -213,13 +213,13 @@ export default function SignUp({ onSwitchToLogin }) {
                         <button
                             type="button"
                             onClick={() => setShowPwd((s) => !s)}
-                            className="absolute right-3 inset-y-0 my-auto grid place-items-center text-slate-400 hover:text-slate-200"
+                            className="absolute right-3 inset-y-0 my-auto grid place-items-center text-gray-800 hover:text-gray-600"
                             aria-label="Toggle password visibility"
                         >
                             {showPwd ? "🙈" : "👁️"}
                         </button>
                     </div>
-                    <div className="mt-1 text-xs text-slate-500">{pwdHint}</div>
+                    <div className="mt-1 text-xs text-gray-800">{pwdHint}</div>
                 </label>
 
                 {/* Submit */}
@@ -227,8 +227,8 @@ export default function SignUp({ onSwitchToLogin }) {
                     type="submit"
                     disabled={!canSubmit || loading}
                     className={`w-full py-3 rounded-xl font-bold transition disabled:opacity-60 ${canSubmit
-                            ? "bg-white text-black shadow-lg hover:bg-slate-200"
-                            : "bg-gradient-to-r from-teal-500 to-slate-500 text-white hover:from-teal-400 hover:to-slate-400"
+                            ? "bg-white text-black shadow-lg hover:bg-gray-200"
+                            : "bg-gradient-to-r from-teal-500 to-slate-500 text-black hover:from-teal-400 hover:to-gray-400"
                         }`}
                 >
                     {loading ? "Création..." : "Souscrire"}
@@ -236,7 +236,7 @@ export default function SignUp({ onSwitchToLogin }) {
 
                 {/* Retour vers Login */}
                 <div className="text-center mt-4">
-                    <span className="text-slate-400">Déjà un compte ? </span>
+                    <span className="text-gray-800">Déjà un compte ? </span>
                     <button
                         type="button"
                         onClick={onSwitchToLogin}

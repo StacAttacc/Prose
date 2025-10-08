@@ -43,7 +43,7 @@ export default function PageAuthentification() {
             </div>
 
             {/* RIGHT PANEL : on alterne Login / SignUp */}
-            <div className="bg-[#1f1f23] text-slate-200 grid place-items-center p-6 md:p-10">
+            <div className="bg-white text-gray-800 grid place-items-center p-6 md:p-10">
                 <div className="w-full max-w-md">
                     {mode === "login" ? (
                         <Login onSwitchToSignup={() => setMode("signup")} />

@@ -1,43 +1,74 @@
 package com.AL565.prose;
 
-import com.AL565.prose.service.dto.EmployeurEnregistrerDTO;
+import com.AL565.prose.service.EtudiantService;
+import com.AL565.prose.service.GestionnaireService;
 import com.AL565.prose.service.EmployeurService;
+import com.AL565.prose.service.dto.EmployeurPasswordDTO;
+import com.AL565.prose.service.dto.EtudiantPasswordDTO;
+import com.AL565.prose.service.dto.GestionnairePasswordDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import lombok.AllArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Profile;
 
 @AllArgsConstructor
 @SpringBootApplication
+
 public class ProseApplication {
 
-    private final EmployeurService employeurService;
+    private final EtudiantService etudiantService;
+
 
     public static void main(String[] args) {
         SpringApplication.run(ProseApplication.class, args);
     }
 
+
     @Bean
-    public CommandLineRunner run() {
-        return args -> {
-            EmployeurEnregistrerDTO employeurMark = new EmployeurEnregistrerDTO(
-                    "Mark",
-                    "Carney",
-                    "Gouvernement du Canada",
-                    "mcarney@gov.ca",
-                    "123456"
-            );
+    @Profile({"dev", "local", "test"})
+    public CommandLineRunner seedEmployeur(EmployeurService employeurService, GestionnaireService gestionnaireService) {
+        return _ -> {
+            EmployeurPasswordDTO employeurRandy = new EmployeurPasswordDTO();
+            employeurRandy.setFirstName("Randy");
+            employeurRandy.setLastName("Lahey");
+            employeurRandy.setCompany("Tech Corp");
+            employeurRandy.setEmail("employeur@employeur.com");
+            employeurRandy.setPassword("password123");
 
             try {
-                employeurService.enregistrer(employeurMark);
+                employeurService.enregistrer(employeurRandy);
             } catch (EmailAlreadyExistsException e) {
                 System.err.println(e.getMessage());
+                System.err.println("employeur pas créé");
             }
 
+            EtudiantPasswordDTO etudiantJohn = new EtudiantPasswordDTO();
+            etudiantJohn.setFirstName("John");
+            etudiantJohn.setLastName("Doe");
+            etudiantJohn.setEmail("etudiant@etudiant.com");
+            etudiantJohn.setPassword("password123");
+            etudiantJohn.setDiscipline("INFORMATIQUE");
 
-            System.out.println(employeurService.getEmployeur("mcarney@gov.ca"));
+            try {
+                etudiantService.inscrireEtudiant(etudiantJohn);
+            } catch (EmailAlreadyExistsException e) {
+                System.out.println();
+            }
+
+            GestionnairePasswordDTO gestionnaireJane = new GestionnairePasswordDTO();
+            gestionnaireJane.setFirstName("Jane");
+            gestionnaireJane.setLastName("Doe");
+            gestionnaireJane.setEmail("gestionnaire@gestionnaire.com");
+            gestionnaireJane.setPassword("password123");
+
+            try {
+                gestionnaireService.saveGestionnaire(gestionnaireJane);
+            } catch (EmailAlreadyExistsException e) {
+                System.out.println();
+            }
         };
     }
 }

@@ -29,13 +29,14 @@ import org.springframework.web.filter.CorsFilter;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.springframework.boot.autoconfigure.security.servlet.PathRequest.toH2Console;
 import static org.springframework.http.HttpMethod.*;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity // Enables @PreAuthorize, @PostAuthorize, etc.
 @RequiredArgsConstructor
-@Profile("!test")
+//@Profile("!test")
 public class SecurityConfiguration {
 
     private final JwtTokenProvider jwtTokenProvider;
@@ -89,7 +90,7 @@ public class SecurityConfiguration {
         // 1. Specify allowed origins (VERY IMPORTANT!)
         //    Must match your React app's URL exactly (e.g., http://localhost:3000)
         //    Do NOT use "*" if you need credentials (like sending Authorization headers)
-        configuration.setAllowedOrigins(List.of("http://localhost:5173")); // Adjust if your frontend runs elsewhere
+        configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:5130")); // Adjust if your frontend runs elsewhere
 
         // 2. Specify allowed HTTP methods
         configuration.setAllowedMethods(Arrays.asList(
@@ -108,9 +109,7 @@ public class SecurityConfiguration {
                 "Cache-Control",
                 "Content-Type",
                 "Accept",
-                "X-Requested-With",
-                "*"
-                // Add any other headers needed by your frontend
+                "X-Requested-With"// Add any other headers needed by your frontend
         ));
 
         // 4. Allow credentials (cookies, Authorization headers)

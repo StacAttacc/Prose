@@ -1,5 +1,7 @@
 package com.AL565.prose.service;
 
+import com.AL565.prose.model.Discipline;
+import com.AL565.prose.model.Etudiant;
 import com.AL565.prose.model.ProseUser;
 import com.AL565.prose.model.auth.Credentials;
 import com.AL565.prose.model.auth.Role;
@@ -62,7 +64,7 @@ class AuthServiceTest {
         assertThat(result.getEmail()).isEqualTo(request.getEmail());
         assertThat(result.getFirstName()).isEqualTo("Alice");
         assertThat(result.getLastName()).isEqualTo("Liddell");
-        assertThat(result.getRole()).isEqualTo("ETUDIANT");
+        assertThat(result.getRole()).isEqualTo(Role.ETUDIANT);
         assertThat(result.getToken()).isEqualTo(expectedToken);
 
         verify(authenticationManager, times(1)).authenticate(any(UsernamePasswordAuthenticationToken.class));
@@ -105,7 +107,7 @@ class AuthServiceTest {
         // Act & Assert
         assertThatThrownBy(() -> authService.login(request))
                 .isInstanceOf(RuntimeException.class)
-                .hasMessage("User not found");
+                .hasMessage("userNotFound");
 
         verify(authenticationManager, times(1)).authenticate(any(UsernamePasswordAuthenticationToken.class));
         verify(jwtTokenProvider, times(1)).generateToken(authentication);
@@ -126,7 +128,7 @@ class AuthServiceTest {
                 .role(Role.ETUDIANT)
                 .build();
         
-        ProseUser user = new ProseUser("Alice", "Liddell", credentials) {
+        ProseUser user = new Etudiant("Alice", "Liddell", credentials, Discipline.INFIRMIER) {
         };
         
         user.setId(1L);
