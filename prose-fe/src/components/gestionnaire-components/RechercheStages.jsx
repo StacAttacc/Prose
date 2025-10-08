@@ -25,7 +25,7 @@ export default function GestRechercheStages() {
         if (searchField === "") {
             setStages(allStages);
         } else {
-            const filtered = allStages.filter((stage) => stage.employeur.company.toLowerCase().includes(searchField));
+            const filtered = allStages.filter((stage) => stage.employeur.company.toLowerCase().includes(searchField.toLowerCase()));
             setStages(filtered);
         }
 
