@@ -25,7 +25,7 @@ export default function GestRechercheStages() {
         if (searchField === "") {
             setStages(allStages);
         } else {
-            const filtered = allStages.filter((stage) => stage.employeur.company.includes(searchField));
+            const filtered = allStages.filter((stage) => stage.employeur.company.toLowerCase().includes(searchField));
             setStages(filtered);
         }
 
@@ -35,7 +35,7 @@ export default function GestRechercheStages() {
         <h2 className="text-center text-xl font-bold mb-8">Recherche de stages</h2>
 
         <label className="block mb-6">
-            <span className="block text-sm mb-1 text-center">Nom de l'employeur</span>
+            <span className="block text-sm mb-1 text-center">Nom de l'entreprise</span>
             <input type="text" className="w-full rounded-xl bg-transparent border px-4 py-3 outline-none focus:border-teal-500 border-black mb-1" value={searchField} onChange={(e) => setSearchField(e.target.value)} />
             <div className="flex justify-center">
                 <button onClick={() => {applySearch()}} className="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2">
