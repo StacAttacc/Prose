@@ -8,6 +8,7 @@ export default function StageSmall({ stage }) {
                 <p className="text-center my-1">Salaire {stage.compensation}</p>
                 <p className="text-center my-1"> Se trouve a: {stage.location}</p>
                 <p className="text-center my-1">Offert par: {stage.employeur.company}</p>
+                <p className="text-center my-1">Statut: {stage.status}</p>
                 <hr />
                 <div className="card-actions justify-end">
 

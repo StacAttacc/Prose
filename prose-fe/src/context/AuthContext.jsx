@@ -45,7 +45,7 @@ export function AuthProvider({ children }) {
 
     async function registerEtudiant(payload) {
         const u = await apiRegisterEtudiant(payload);
-        setUser(u.data);
+        setUser(u);
         return u;
     }
 

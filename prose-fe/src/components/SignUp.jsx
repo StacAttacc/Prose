@@ -114,7 +114,7 @@ export default function SignUp({ onSwitchToLogin }) {
                 </div>
             )}
             {errorMsg && (
-                <div className="mb-4 rounded-lg border border-rose-600 bg-rose-900/30 p-3 text-rose-300">
+                <div className="mb-4 rounded-lg border border-rose-600 bg-rose-900/30 p-3 text-rose-900">
                     {errorMsg}
                 </div>
             )}
@@ -227,8 +227,8 @@ export default function SignUp({ onSwitchToLogin }) {
                     type="submit"
                     disabled={!canSubmit || loading}
                     className={`w-full py-3 rounded-xl font-bold transition disabled:opacity-60 ${canSubmit
-                            ? "bg-white text-black shadow-lg hover:bg-gray-200"
-                            : "bg-gradient-to-r from-teal-500 to-slate-500 text-black hover:from-teal-400 hover:to-gray-400"
+                            ? "bg-black text-white shadow-lg hover:bg-gray-200"
+                            : "bg-gradient-to-r from-teal-500 to-slate-500 text-white hover:from-teal-400 hover:to-gray-400"
                         }`}
                 >
                     {loading ? "Création..." : "Souscrire"}

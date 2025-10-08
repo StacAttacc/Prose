@@ -29,7 +29,7 @@ public class EtudiantController {
     public ResponseEntity<String> inscrireEtudiant(@RequestBody EtudiantPasswordDTO dto) {
         try {
             etudiantService.inscrireEtudiant(dto);
-            return ResponseEntity.status(HttpStatus.CREATED).build();
+            return ResponseEntity.status(HttpStatus.CREATED).body("Inscription réussie");
         } catch (EmailAlreadyExistsException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(e.getMessage());
