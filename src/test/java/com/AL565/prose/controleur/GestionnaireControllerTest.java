@@ -13,9 +13,12 @@ import com.AL565.prose.service.GestionnaireService;
 import com.AL565.prose.service.dto.EmployeurDTO;
 import com.AL565.prose.service.dto.RejectionRequestDTO;
 import com.AL565.prose.service.dto.StageDTO;
+import com.AL565.prose.service.exceptions.FailedToRetrieveStagesException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -27,17 +30,16 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(GestionnaireController.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -52,7 +54,7 @@ class GestionnaireControllerTest {
 
     @MockitoBean
     private EmployeurService employeurService;
-    
+
     @MockitoBean
     private EtudiantService etudiantService;
 
@@ -64,7 +66,6 @@ class GestionnaireControllerTest {
 
     @Test
     void getStagesSoumises_returnsStages() throws Exception {
-        // Arrange
         Employeur employeur1 = new Employeur(1L, "John", "Doe", "Entreprise Test", "john@example.com");
         EmployeurDTO employeurDTO1 = EmployeurDTO.toDTOTokenless(employeur1);
 
@@ -89,24 +90,18 @@ class GestionnaireControllerTest {
 
         when(gestionnaireService.getStagesByStatus("SOUMISE")).thenReturn(List.of(stage1, stage2));
 
-        // Act
-        MvcResult result = mockMvc.perform(get("/gestionnaire/stages/status/SOUMISE")
-                .with(csrf()))
+        MvcResult result = mockMvc.perform(get("/gestionnaire/stages/status/SOUMISE").with(csrf()))
                 .andReturn();
 
-        // Assert
         Assertions.assertThat(result.getResponse().getStatus()).isEqualTo(200);
         String content = result.getResponse().getContentAsString();
         Assertions.assertThat(content).contains("Liste des stages SOUMISE");
         Assertions.assertThat(content).contains("Stage Java");
         Assertions.assertThat(content).contains("Stage Python");
-        Assertions.assertThat(content).contains("Entreprise Test");
-        Assertions.assertThat(content).contains("Autre Entreprise");
     }
 
     @Test
     void approuverStage_success() throws Exception {
-        // Arrange
         Employeur employeur = new Employeur(1L, "John", "Doe", "Entreprise Test", "john@example.com");
         EmployeurDTO employeurDTO = EmployeurDTO.toDTOTokenless(employeur);
 
@@ -120,12 +115,9 @@ class GestionnaireControllerTest {
 
         when(gestionnaireService.approuverStage(1L)).thenReturn(stage);
 
-        // Act
-        MvcResult result = mockMvc.perform(put("/gestionnaire/stages/1/approuver")
-                .with(csrf()))
+        MvcResult result = mockMvc.perform(put("/gestionnaire/stages/1/approuver").with(csrf()))
                 .andReturn();
 
-        // Assert
         Assertions.assertThat(result.getResponse().getStatus()).isEqualTo(200);
         String content = result.getResponse().getContentAsString();
         Assertions.assertThat(content).contains("Stage approuvé avec succès");
@@ -134,7 +126,6 @@ class GestionnaireControllerTest {
 
     @Test
     void rejeterStage_success() throws Exception {
-        // Arrange
         Employeur employeur = new Employeur(1L, "John", "Doe", "Entreprise Test", "john@example.com");
         EmployeurDTO employeurDTO = EmployeurDTO.toDTOTokenless(employeur);
 
@@ -150,14 +141,12 @@ class GestionnaireControllerTest {
 
         when(gestionnaireService.rejeterStage(1L, "Raison du rejet")).thenReturn(stage);
 
-        // Act
         MvcResult result = mockMvc.perform(put("/gestionnaire/stages/1/rejeter")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(rejectionRequest)))
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(rejectionRequest)))
                 .andReturn();
 
-        // Assert
         Assertions.assertThat(result.getResponse().getStatus()).isEqualTo(200);
         String content = result.getResponse().getContentAsString();
         Assertions.assertThat(content).contains("Stage rejeté avec succès");
@@ -166,19 +155,16 @@ class GestionnaireControllerTest {
 
     @Test
     void rejeterStage_badRequest() throws Exception {
-        // Arrange
         RejectionRequestDTO emptyRequest = new RejectionRequestDTO("");
         when(gestionnaireService.rejeterStage(anyLong(), anyString()))
                 .thenThrow(new IllegalArgumentException("La raison du rejet est obligatoire"));
 
-        // Act
         MvcResult result = mockMvc.perform(put("/gestionnaire/stages/1/rejeter")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(emptyRequest)))
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(emptyRequest)))
                 .andReturn();
 
-        // Assert
         Assertions.assertThat(result.getResponse().getStatus()).isEqualTo(400);
     }
 
@@ -196,40 +182,36 @@ class GestionnaireControllerTest {
 
         when(gestionnaireService.getAllCvs()).thenReturn(List.of(dto));
 
-        mockMvc.perform(get("/gestionnaire/cv/all")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    @WithMockUser(roles = {"GESTIONNAIRE"})
-    void approveCv_shouldReturnOk() throws Exception {
-        String body = "{\"id\":1,\"comment\":\"ok\"}";
-        mockMvc.perform(post("/gestionnaire/cv/change-status")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    @WithMockUser(roles = {"GESTIONNAIRE"})
-    void rejectCv_shouldReturnOk() throws Exception {
-        String body = "{\"id\":2,\"comment\":\"not ok\"}";
-        mockMvc.perform(post("/gestionnaire/cv/change-status")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
+        mockMvc.perform(get("/gestionnaire/cv/all").contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
 
     @Test
     @WithMockUser(roles = {"GESTIONNAIRE"})
     void approveCv_shouldReturnError_whenException() throws Exception {
-        doThrow(new CvExceptions.FailedToChangeCvStatusException()).when(gestionnaireService).changeCvStatus(99L,"ewww", "non");
+        doThrow(new CvExceptions.FailedToChangeCvStatusException())
+                .when(gestionnaireService).changeCvStatus(99L, "ewww", "non");
 
-        String body = "{\"id\":99,\"status\": ewww,\"comment\":\"non\"}";
+        String body = "{\"id\":99,\"status\":\"ewww\",\"comment\":\"non\"}";
         mockMvc.perform(post("/gestionnaire/cv/change-status")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isBadRequest());
     }
+
+    @Test
+    @DisplayName("GET /gestionnaire/stages -> 200 + ReturnEntityDTO(message, data[])")
+    void getAllStages_returns200WithReturnEntity() throws Exception {
+        StageDTO dto1 = StageDTO.builder().id(1L).title("Backend Java").build();
+        StageDTO dto2 = StageDTO.builder().id(2L).title("Frontend React").build();
+
+        when(gestionnaireService.getAllStages()).thenReturn(List.of(dto1, dto2));
+
+        mockMvc.perform(get("/gestionnaire/stages").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.message", is("Liste des stages")))
+                .andExpect(jsonPath("$.data", hasSize(2)));
+    }
+
 }

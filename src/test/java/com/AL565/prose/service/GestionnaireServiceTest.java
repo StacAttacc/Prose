@@ -12,6 +12,8 @@ import com.AL565.prose.repository.StageRepository;
 import com.AL565.prose.service.dto.GestionnairePasswordDTO;
 import com.AL565.prose.service.dto.StageDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
+import com.AL565.prose.service.exceptions.FailedToRetrieveStagesException;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -19,6 +21,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.OffsetDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -195,4 +199,83 @@ class GestionnaireServiceTest {
                 .isInstanceOf(NoSuchElementException.class)
                 .hasMessageContaining("Stage non trouvé");
     }
+
+
+    @Test
+    @DisplayName("getAllStages() -> retourne des StageDTO mappés (happy path)")
+    void getAllStages_returnsMappedDtos() {
+        Stage s1 = Stage.builder()
+                .id(1L)
+                .title("Backend Java")
+                .employeurEmail("emp1@company.com")
+                .createdAt(OffsetDateTime.now())
+                .updatedAt(OffsetDateTime.now())
+                .build();
+
+        Stage s2 = Stage.builder()
+                .id(2L)
+                .title("Frontend React")
+                .employeurEmail("emp2@company.com")
+                .createdAt(OffsetDateTime.now())
+                .updatedAt(OffsetDateTime.now())
+                .build();
+
+        when(stageRepository.findAll()).thenReturn(List.of(s1, s2));
+
+        Employeur e1 = new Employeur();
+        e1.setCompany("Company 1");
+        e1.setCredentials(
+                com.AL565.prose.model.auth.Credentials.builder()
+                        .username("emp1@company.com")
+                        .password("x")        // peu importe pour le test
+                        .role(com.AL565.prose.model.auth.Role.EMPLOYEUR)
+                        .build()
+        );
+
+        Employeur e2 = new Employeur();
+        e2.setCompany("Company 2");
+        e2.setCredentials(
+                com.AL565.prose.model.auth.Credentials.builder()
+                        .username("emp2@company.com")
+                        .password("x")
+                        .role(com.AL565.prose.model.auth.Role.EMPLOYEUR)
+                        .build()
+        );
+
+        when(employeurRepository.getEmployeurByCredentials_Username("emp1@company.com")).thenReturn(e1);
+        when(employeurRepository.getEmployeurByCredentials_Username("emp2@company.com")).thenReturn(e2);
+
+        List<StageDTO> result = gestionnaireService.getAllStages();
+
+        assertThat(result).hasSize(2);
+        verify(stageRepository, times(1)).findAll();
+        verify(employeurRepository, times(1)).getEmployeurByCredentials_Username("emp1@company.com");
+        verify(employeurRepository, times(1)).getEmployeurByCredentials_Username("emp2@company.com");
+    }
+
+
+    @Test
+    @DisplayName("getAllStages() -> retourne une liste vide quand aucun stage n'existe")
+    void getAllStages_returnsEmptyList_whenNoStages() {
+        when(stageRepository.findAll()).thenReturn(Collections.emptyList());
+
+        List<StageDTO> result = gestionnaireService.getAllStages();
+
+        assertThat(result).isEmpty();
+        verify(stageRepository, times(1)).findAll();
+        verifyNoInteractions(employeurRepository);
+    }
+
+    @Test
+    @DisplayName("getAllStages() -> wrap en FailedToRetrieveStagesException si le repo lève une exception")
+    void getAllStages_whenRepoFails_wrapsToCustomException() {
+        when(stageRepository.findAll()).thenThrow(new RuntimeException("DB down"));
+
+        assertThatThrownBy(() -> gestionnaireService.getAllStages())
+                .isInstanceOf(FailedToRetrieveStagesException.class);
+
+        verify(stageRepository, times(1)).findAll();
+        verifyNoInteractions(employeurRepository);
+    }
+
 }
