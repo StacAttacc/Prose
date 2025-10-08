@@ -32,10 +32,9 @@ export default function StageApproving() {
       await submitStageDecision(stage.id, { approved: true }, user.token);
       setStages(stages.map(s => s.id === stage.id ? { ...s, status: "APPROUVEE" } : s));
       closeModal();
-      alert("Stage approuvé avec succès !");
     } catch (error) {
       console.error("Erreur lors de l'approbation:", error);
-      alert("Erreur lors de l'approbation du stage");
+      setError("Erreur lors de l'approbation du stage");
     } finally {
       setIsProcessing(false);
     }
@@ -50,10 +49,8 @@ export default function StageApproving() {
       }, user.token);
       setStages(stages.map(s => s.id === stage.id ? { ...s, status: "REJETEE" } : s));
       closeModal();
-      alert("Stage rejeté avec succès !");
     } catch (error) {
       console.error("Erreur lors du rejet:", error);
-      alert("Erreur lors du rejet du stage");
     } finally {
       setIsProcessing(false);
     }

@@ -10,7 +10,7 @@ export default function StageSmall({ stage }) {
                 <p className="text-center my-1">Offert par: {stage.employeur.company}</p>
                 <hr />
                 <div className="card-actions justify-end">
-                    <button onClick={() => {StageDetailsModal()}}>Détails</button>
+
                 </div>
             </div>
         </div>

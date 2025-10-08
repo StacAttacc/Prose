@@ -13,6 +13,7 @@ export default function StageDetailsModal({
   const { user } = useAuth();
   const [rejectionReason, setRejectionReason] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState("");
 
   // Déterminer si les boutons de gestion doivent être affichés
   const shouldShowManagementButtons = showManagementButtons && user?.role === 'GESTIONNAIRE';
@@ -35,7 +36,7 @@ export default function StageDetailsModal({
     if (!onReject) return;
     
     if (!rejectionReason.trim()) {
-      alert("Veuillez fournir une raison de rejet");
+      setError("Veuillez fournir une raison de rejet");
       return;
     }
     
@@ -45,6 +46,7 @@ export default function StageDetailsModal({
       setRejectionReason("");
     } catch (error) {
       console.error("Erreur lors du rejet:", error);
+      setError("Erreur lors du rejet:" + error);
     } finally {
       setIsProcessing(false);
     }
@@ -102,6 +104,11 @@ export default function StageDetailsModal({
           </div>
         </div>
 
+        {error && (
+            <div className="mb-4 rounded-lg border border-rose-600 bg-rose-900/30 p-3">
+              {error}
+            </div>
+        )}
         {/* Affichage de la raison de rejet si le stage est rejeté */}
         {stage.status === 'REJETEE' && stage.rejectionReason && (
           <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded">
@@ -137,18 +144,18 @@ export default function StageDetailsModal({
           </button>
           
           {/* Boutons spécifiques aux étudiants */}
-          {user?.role === 'ETUDIANT' && stage.status === 'APPROUVEE' && (
-            <button
-              onClick={() => {
-                // Logique pour postuler au stage
-                console.log("Postuler au stage:", stage.id);
-                alert("Fonctionnalité de candidature à venir !");
-              }}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-            >
-              Postuler
-            </button>
-          )}
+          {/*{user?.role === 'ETUDIANT' && stage.status === 'APPROUVEE' && (*/}
+          {/*  <button*/}
+          {/*    onClick={() => {*/}
+          {/*      // Logique pour postuler au stage*/}
+          {/*      console.log("Postuler au stage:", stage.id);*/}
+          {/*      alert("Fonctionnalité de candidature à venir !");*/}
+          {/*    }}*/}
+          {/*    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"*/}
+          {/*  >*/}
+          {/*    Postuler*/}
+          {/*  </button>*/}
+          {/*)}*/}
           
           {/* Boutons de gestion (seulement pour les gestionnaires) */}
           {shouldShowManagementButtons && (
