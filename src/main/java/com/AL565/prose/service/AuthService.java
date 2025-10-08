@@ -2,12 +2,8 @@ package com.AL565.prose.service;
 
 import com.AL565.prose.model.Employeur;
 import com.AL565.prose.model.Etudiant;
-import com.AL565.prose.service.dto.EmployeurDTO;
-import com.AL565.prose.service.dto.EtudiantDTO;
-import com.AL565.prose.service.dto.LoginRequestDTO;
-import com.AL565.prose.service.dto.ProseUserDTO;
 import com.AL565.prose.model.Gestionnaire;
-import com.AL565.prose.service.dto.GestionnaireDTO;
+import com.AL565.prose.service.dto.*;
 
 import lombok.RequiredArgsConstructor;
 

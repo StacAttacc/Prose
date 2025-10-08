@@ -41,6 +41,8 @@ public class StageDTO {
 
     private String compensation;
 
+    private String rejectionReason;
+
     public static Stage toModel(StageDTO dto) {
         return Stage.builder()
                 .title(dto.getTitle())
@@ -56,6 +58,7 @@ public class StageDTO {
                 .status(OfferStatus.SOUMISE)
                 .createdAt(OffsetDateTime.now())
                 .updatedAt(OffsetDateTime.now())
+                .rejectionReason(dto.getRejectionReason())
                 .build();
     }
 
@@ -74,6 +77,7 @@ public class StageDTO {
                 .status(offer.getStatus())
                 .employeur(EmployeurDTO.toDTOTokenless(employeur))
                 .createdAt(offer.getCreatedAt())
+                .rejectionReason(offer.getRejectionReason())
                 .build();
     }
 }

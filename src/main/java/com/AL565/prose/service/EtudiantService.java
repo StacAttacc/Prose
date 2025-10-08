@@ -1,12 +1,21 @@
 package com.AL565.prose.service;
 
+import com.AL565.prose.model.Employeur;
+import com.AL565.prose.model.Etudiant;
+import com.AL565.prose.model.OfferStatus;
+import com.AL565.prose.repository.EmployeurRepository;
 import com.AL565.prose.model.CV;
 import com.AL565.prose.model.CvStatus;
-import com.AL565.prose.model.Etudiant;
 import com.AL565.prose.repository.CvRepository;
 import com.AL565.prose.repository.EtudiantRepository;
 import com.AL565.prose.repository.ProseUserRepository;
+import com.AL565.prose.repository.StageRepository;
 import com.AL565.prose.service.dto.EtudiantPasswordDTO;
+import com.AL565.prose.service.dto.StageDTO;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.AL565.prose.security.exceptions.CvExceptions;
 import com.AL565.prose.service.dto.EtudiantCvDTO;
 import com.AL565.prose.service.dto.EtudiantDTO;
@@ -29,15 +38,21 @@ public class EtudiantService {
     private final ProseUserRepository proseUserRepository;
     private final CvRepository cvRepository;
     private final PasswordEncoder passwordEncoder;
+    private final StageRepository stageRepository;
+    private final EmployeurRepository employeurRepository;
 
     public EtudiantService(EtudiantRepository etudiantRepository,
                            ProseUserRepository proseUserRepository,
                            PasswordEncoder passwordEncoder,
+                           StageRepository stageRepository,
+                           EmployeurRepository employeurRepository,
                            CvRepository cvRepository) {
         this.cvRepository = cvRepository;
         this.etudiantRepository = etudiantRepository;
         this.proseUserRepository = proseUserRepository;
         this.passwordEncoder = passwordEncoder;
+        this.employeurRepository = employeurRepository;
+        this.stageRepository = stageRepository;
     }
 
     public void inscrireEtudiant(EtudiantPasswordDTO dto) {
@@ -52,6 +67,16 @@ public class EtudiantService {
         etudiantRepository.save(etudiant);
     }
 
+    public List<StageDTO> getEtudiantStages(String token) {
+        return stageRepository.findByStatus(OfferStatus.APPROUVEE)
+                .stream()
+                .map(stage -> {
+                    Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(stage.getEmployeurEmail());
+                    return StageDTO.fromModel(stage, employeur);
+                })
+                .collect(Collectors.toList());
+    }
+  
     public void saveCv(MultipartFile cv, String email, String lastModified) throws Exception {
         if (cv == null || cv.isEmpty()) {
             throw new CvExceptions.NoFileException();

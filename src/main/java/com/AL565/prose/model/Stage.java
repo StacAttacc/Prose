@@ -15,6 +15,7 @@ import java.util.List;
 @Table(name = "stage")
 @Getter
 @Setter
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -41,6 +42,8 @@ public class Stage {
 
 
     private String location;
+
+    private String rejectionReason;
 
     private String workMode;
 
