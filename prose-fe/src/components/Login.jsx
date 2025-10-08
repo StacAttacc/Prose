@@ -67,7 +67,7 @@ export default function Login({ onSwitchToSignup }) {
             <form onSubmit={onSubmit} className="space-y-4">
                 {/* Email */}
                 <label className="block">
-                    <span className="block text-sm mb-1 text-slate-400">Adresse courriel</span>
+                    <span className="block text-sm mb-1 text-gray-800">Adresse courriel</span>
                     <div className="relative">
                         <input
                             type="email"
@@ -85,7 +85,7 @@ export default function Login({ onSwitchToSignup }) {
 
                 {/* Mot de passe */}
                 <label className="block">
-                    <span className="block text-sm mb-1 text-slate-400">Mot de passe</span>
+                    <span className="block text-sm mb-1 text-gray-800">Mot de passe</span>
                     <div className="relative">
                         <input
                             type={showPwd ? "text" : "password"}
@@ -101,7 +101,7 @@ export default function Login({ onSwitchToSignup }) {
                         <button
                             type="button"
                             onClick={() => setShowPwd((s) => !s)}
-                            className="absolute right-3 inset-y-0 my-auto grid place-items-center text-slate-400 hover:text-slate-200"
+                            className="absolute right-3 inset-y-0 my-auto grid place-items-center text-gray-800 hover:text-gray-800"
                             aria-label="Toggle password visibility"
                         >
                             {showPwd ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
@@ -114,7 +114,7 @@ export default function Login({ onSwitchToSignup }) {
                     type="submit"
                     disabled={!canSubmit || loading}
                     className={`w-full py-3 rounded-xl font-bold transition disabled:opacity-60 ${canSubmit
-                            ? "bg-white text-black shadow-lg hover:bg-slate-200"
+                            ? "bg-black text-white shadow-lg hover:bg-slate-800"
                             : "bg-gradient-to-r from-teal-500 to-slate-500 text-white hover:from-teal-400 hover:to-slate-400"
                         }`}
                 >

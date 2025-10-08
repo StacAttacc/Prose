@@ -17,7 +17,7 @@ export async function submitStageDecision(id, { approved, reason }, token) {
 
 export const fetchAllCVs = async (token) => {
     try {
-        const response = await axios.get(`${BASE_URL_GESTIONNAIRE}/cv/all`, {
+        const response = await axios.get(`${BASE}/cv/all`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             },
@@ -34,7 +34,7 @@ export const fetchAllCVs = async (token) => {
 export const approveCv = async (cvId, comment, token) => {
     try {
         await axios.post(
-            `${BASE_URL_GESTIONNAIRE}/cv/change-status`,
+            `${BASE}/cv/change-status`,
             { id: cvId, status: "Approved", comment: comment },
             {
                 headers: {
@@ -50,7 +50,7 @@ export const approveCv = async (cvId, comment, token) => {
 export const rejectCv = async (cvId, comment, token) => {
     try {
         await axios.post(
-            `${BASE_URL_GESTIONNAIRE}/cv/change-status`,
+            `${BASE}/cv/change-status`,
             { id: cvId, status: "Rejected", comment: comment },
             {
                 headers: {
