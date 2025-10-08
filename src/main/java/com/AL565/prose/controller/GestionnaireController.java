@@ -7,6 +7,9 @@ import com.AL565.prose.service.dto.StageDTO;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.HttpStatus;
+import com.AL565.prose.service.dto.CvDecisionDTO;
+import com.AL565.prose.service.dto.GestionnaireCvDTO;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -60,5 +63,17 @@ public class GestionnaireController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ReturnEntityDTO<>("Erreur lors du rejet du stage", null));
         }
+    }
+  
+    @PostMapping("/cv/change-status")
+    public ResponseEntity<Void> changeCvStatus(@RequestBody CvDecisionDTO cvDecision) throws Exception {
+        gestionnaireService.changeCvStatus(cvDecision.id, cvDecision.status, cvDecision.comment);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/cv/all")
+    public ResponseEntity<List<GestionnaireCvDTO>> getAllCvs() throws Exception {
+        List<GestionnaireCvDTO> cvs = gestionnaireService.getAllCvs();
+        return ResponseEntity.ok(cvs);
     }
 }

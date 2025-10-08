@@ -1,8 +1,8 @@
 import React, {useRef, useState} from 'react';
-import {televerserCv} from "../services/EtudiantService.js";
-import {useAuth} from "../context/AuthContext.jsx";
+import {televerserCv} from "../../services/EtudiantService.js";
+import {useAuth} from "../../context/AuthContext.jsx";
 
-const TeleversementCV = () => {
+const TeleversementCV = ({ onUploadSuccess }) => {
     const [selectedFile, setSelectedFile] = useState(null);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
@@ -63,6 +63,9 @@ const TeleversementCV = () => {
             if (fileInputRef.current) fileInputRef.current.value = '';
             setError('');
             setSuccess('Cv téléversé avec succès !');
+            if (onUploadSuccess) {
+                onUploadSuccess();
+            }
         } catch (err) {
             setError(err.message || 'Erreur lors du téléversement');
         } finally {
@@ -80,8 +83,8 @@ const TeleversementCV = () => {
     };
 
     return (
-        <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Téléverser mon CV</h2>
+        <div className="max-w-md mx-auto p-6">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Téléverser un CV</h2>
 
             <div className="mb-6">
                 <div className="relative">
@@ -145,7 +148,7 @@ const TeleversementCV = () => {
                     <button
                         onClick={televerserFichier}
                         disabled={uploading}
-                        className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium py-2 px-4 rounded transition-colors"
+                        className="w-full text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2"
                     >
                         {uploading ? 'Téléversement...' : 'Téléverser'}
                     </button>

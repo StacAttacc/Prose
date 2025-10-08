@@ -16,6 +16,8 @@ export default function StageCreation() {
     const [workType, setWorkType] = useState("");
     const [salary, setSalary] = useState("");
 
+    const [errorMsg, setErrorMsg] = useState("");
+
     const nav = useNavigate();
 
     const canSubmit = title.length > 0 &&
@@ -42,15 +44,31 @@ export default function StageCreation() {
             "workMode": workType,
         }
 
-        await createStage(stage, user.token)
-        nav('/')
+        try {
+            await createStage(stage, user.token)
+            nav('/')
+        } catch (error) {
+            if (!navigator.onLine) {
+                setErrorMsg("Connexion Internet instable. Veuillez vérifier votre connexion.");
+            } else {
+                setErrorMsg(error.response?.data?.message || "Service indisponible. Veuillez réessayer plus tard.");
+            }
+        }
+
+
     }
 
     return (
         <>
             <h2 className="text-center text-xl font-bold">Création de stage</h2>
 
-            <form className="my-8" onSubmit={submit}>
+            {errorMsg && (
+                <div className="mb-4 rounded-lg border border-rose-600 bg-rose-900/30 p-3">
+                    {errorMsg}
+                </div>
+            )}
+
+            <form className="mt-8 mb-3" onSubmit={submit}>
                 <label className="block">
                     <span className="block text-sm mb-1 text-slate-400">Titre d'emploi</span>
                     <div className="relative">
@@ -195,6 +213,13 @@ export default function StageCreation() {
                     className={`w-full py-3 mt-3 rounded-xl font-bold transition disabled:opacity-60 text-white bg-gradient-to-r from-teal-500 to-slate-500  hover:from-teal-400 hover:to-slate-400"
                     }`}>Créer</button>
             </form>
+            <button type="button"
+                    className="text-white bg-gradient-to-r
+                                    from-red-400 via-red-500 to-red-600
+                                    hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300
+                                    dark:focus:ring-red-800 font-medium rounded-lg text-sm px-3 py-2.5 text-center me-2"
+                    onClick={() => nav('/')}
+            >Retour</button>
         </>
     )
 }

@@ -31,6 +31,8 @@ public class EmployeurController {
             return new ResponseEntity<>("Created", HttpStatus.CREATED);
         } catch (EmailAlreadyExistsException e) {
             return new ResponseEntity<>("Le email est déja en cours d'utilisation.", HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Service temporairement indisponible.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -39,8 +41,10 @@ public class EmployeurController {
         try {
             employeurService.createStage(request);
             return new ResponseEntity<>("Stage créé avec succès", HttpStatus.CREATED);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>("Stage invalide",  HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
-            return new ResponseEntity<>("Erreur lors de la création du stage", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("Service temporairement indisponible.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

@@ -2,7 +2,6 @@ import { http, setAccessToken } from "./http";
 
 export async function login(email, password) {
     const { data } = await http.post("/user/login", { email, password });
-    console.log(data.data);
     return data.data;
 }
 
@@ -21,4 +20,5 @@ export async function registerEtudiant(payload) {
 export async function logout() {
     setAccessToken(null);
     sessionStorage.removeItem("user");
+
 }

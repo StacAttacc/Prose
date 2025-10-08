@@ -38,8 +38,6 @@ public class AuthService {
         ProseUser user = userRepository.findByCredentials_Username(request.getEmail())
             .orElseThrow(UserNotFoundException::new);
 
-
-
         return switch (user.getRole()) {
             case EMPLOYEUR -> EmployeurDTO.toDTO((Employeur) user, token);
             case ETUDIANT -> EtudiantDTO.toDTO((Etudiant) user, token);

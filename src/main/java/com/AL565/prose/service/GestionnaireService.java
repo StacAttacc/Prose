@@ -3,10 +3,16 @@ package com.AL565.prose.service;
 import com.AL565.prose.model.Employeur;
 import com.AL565.prose.model.OfferStatus;
 import com.AL565.prose.model.Stage;
+import com.AL565.prose.model.CV;
+import com.AL565.prose.model.CvStatus;
+import com.AL565.prose.model.Gestionnaire;
 import com.AL565.prose.repository.EmployeurRepository;
 import com.AL565.prose.repository.GestionnaireRepository;
 import com.AL565.prose.repository.StageRepository;
+import com.AL565.prose.repository.CvRepository;
+import com.AL565.prose.security.exceptions.CvExceptions.*;
 import com.AL565.prose.service.dto.GestionnaireDTO;
+import com.AL565.prose.service.dto.GestionnairePasswordDTO;
 import com.AL565.prose.service.dto.StageDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,6 +31,7 @@ public class GestionnaireService {
 
     private final GestionnaireRepository gestionnaireRepository;
     private final StageRepository stageRepository;
+    private final CvRepository cvRepository;
     private final EmployeurRepository employeurRepository;
     private final PasswordEncoder passwordEncoder;
 
@@ -85,5 +92,27 @@ public class GestionnaireService {
                     return StageDTO.fromModel(stage, employeur);
                 })
                 .collect(Collectors.toList());
+    }
+
+    public List<GestionnaireCvDTO> getAllCvs() throws Exception {
+        try {
+            return cvRepository.findAll()
+                    .stream()
+                    .map(GestionnaireCvDTO::toDto)
+                    .toList();
+        } catch (Exception e) {
+            throw new FailedToFetchCvsException();
+        }
+    }
+
+    public void changeCvStatus(Long cvId, String status, String comment) throws Exception {
+        try {
+            CV cv = cvRepository.findById(cvId).orElseThrow(CvNotFoundException::new);
+            cv.setStatus(CvStatus.valueOf(status.toUpperCase()));
+            cv.setComment(comment);
+            cvRepository.save(cv);
+        } catch (Exception e) {
+            throw new FailedToChangeCvStatusException();
+        }
     }
 }

@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 public class EmployeurDTO extends ProseUserDTO {
     private String company;
 

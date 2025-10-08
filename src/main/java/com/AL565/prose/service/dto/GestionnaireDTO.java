@@ -1,11 +1,9 @@
 package com.AL565.prose.service.dto;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
-
 import com.AL565.prose.model.Gestionnaire;
 import com.AL565.prose.model.auth.Credentials;
 import com.AL565.prose.model.auth.Role;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -30,9 +28,5 @@ public class GestionnaireDTO extends ProseUserDTO {
 
     public static GestionnaireDTO toDTO(Gestionnaire gestionnaire, String token) {
         return new GestionnaireDTO(gestionnaire, token);
-    }
-
-    public GestionnaireDTO() {
-        //TODO Auto-generated constructor stub
     }
 }

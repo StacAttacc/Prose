@@ -36,6 +36,9 @@ class EmployeurServiceTest {
     private EmployeurRepository employeurRepository;
 
     @Mock
+    private PasswordEncoder passwordEncoder;
+
+    @Mock
     private StageRepository stageRepository;
 
     @InjectMocks
@@ -49,7 +52,6 @@ class EmployeurServiceTest {
         employeurService.enregistrer(justin);
 
         verify(employeurRepository, times(1)).save(any());
-
     }
 
     @Test
@@ -67,7 +69,7 @@ class EmployeurServiceTest {
 
     @Test
     void createStage() {
-        Employeur employeur = new Employeur(8L,"Umberto", "Macaco","Zac inc","email");
+        Employeur employeur = new Employeur(8L, "Umberto", "Macaco", "Zac inc", "email");
         EmployeurDTO empDto = new EmployeurDTO(employeur, null);
 
 
@@ -98,7 +100,7 @@ class EmployeurServiceTest {
         assertThat(out.getStatus().name()).isEqualTo("SOUMISE");
         verify(stageRepository, times(1)).save(any(Stage.class));
     }
-    
+
     @Test
     void createStage_throw_illegalArgument_siDtoNull() {
         var employeur = new Employeur();
