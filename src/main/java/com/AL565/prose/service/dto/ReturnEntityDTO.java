@@ -12,6 +12,4 @@ public class ReturnEntityDTO<T> {
     
     private T data;
 
-    
-
 }

@@ -1,6 +1,7 @@
 package com.AL565.prose.service;
 
 import com.AL565.prose.model.Employeur;
+import com.AL565.prose.model.OfferStatus;
 import com.AL565.prose.model.Stage;
 import com.AL565.prose.repository.EmployeurRepository;
 import com.AL565.prose.repository.ProseUserRepository;
@@ -16,6 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 @AllArgsConstructor
@@ -59,5 +61,26 @@ public class EmployeurService {
                     Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(stage.getEmployeurEmail());
                     return StageDTO.fromModel(stage, employeur);
                 }).toList();
+    }
+
+    public StageDTO updateStage(Long id, StageDTO stageDTO) {
+        Stage stage = stageRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Stage non trouvé"));
+        
+        stage.setTitle(stageDTO.getTitle());
+        stage.setDescription(stageDTO.getDescription());
+        stage.setRequirements(stageDTO.getRequirements());
+        stage.setSkills(stageDTO.getSkills());
+        stage.setStartDate(stageDTO.getStartDate());
+        stage.setEndDate(stageDTO.getEndDate());
+        stage.setLocation(stageDTO.getLocation());
+        stage.setWorkMode(stageDTO.getWorkMode());
+        stage.setCompensation(stageDTO.getCompensation());
+        stage.setRejectionReason(null);
+        stage.setStatus(OfferStatus.SOUMISE);
+        stage.setUpdatedAt(OffsetDateTime.now());
+        Stage updatedStage = stageRepository.save(stage);
+        Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(updatedStage.getEmployeurEmail());
+        return StageDTO.fromModel(updatedStage, employeur);
     }
 }

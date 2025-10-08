@@ -5,6 +5,8 @@ import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import PageAuthentification from "./pages/PageAuthentification.jsx";
 import StageCreation from "./components/employeur-components/StageCreation.jsx";
 import PostedStages from "./components/employeur-components/PostedStages.jsx";
+import HomeGestionnaire from "./components/gestionnaire-components/HomeGestionnaire.jsx";
+import StageListings from "./components/etudiant-components/StageListings.jsx";
 import {useEffect, useState} from "react";
 import GestionCV from "./components/gestionnaire-components/GestionCV.jsx";
 import {telechargerCv} from "./services/EtudiantService.js";
@@ -32,8 +34,8 @@ export default function AppRoutes() {
         user?.role === "ETUDIANT" ? defaultPathStudent() :
             user?.role === "EMPLOYEUR" ? <PostedStages /> :
                 user?.role === "PROFESSEUR" ? <div>Bienvenue Professeur</div> :
-                    user?.role === "GESTIONNAIRE" ? <GestionCV /> :
-                        <div>Rôle inconnu</div>;
+                    user?.role === "GESTIONNAIRE" ? <div>Bienvenue Gestionnaire</div>:
+                    <div>Rôle inconnu</div>;
 
     return (
         <Routes>
@@ -45,6 +47,8 @@ export default function AppRoutes() {
                     <Route path="etudiant/offres-emplois" element={<div>Offres d'emplois</div>} />
                     <Route path="gestion-cv" element={<GestionCV />}/>
                     <Route path="creation-stage" element={<StageCreation />} />
+                    <Route path="stage-listings" element={<StageListings />} />
+                    <Route path="home-gestionnaire" element={<HomeGestionnaire />} />
                 </Route>
             </Route>
         </Routes>

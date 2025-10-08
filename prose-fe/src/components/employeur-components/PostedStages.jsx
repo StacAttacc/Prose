@@ -8,19 +8,30 @@ export default function PostedStages() {
     const {user} = useAuth();
     const [stages, setStages] = useState([]);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            const res = await getEmployeurStages(user.email, user.token);
-            setStages(res.data);
+    const fetchStages = async () => {
+        try {
+            const data = await getEmployeurStages(user.email, user.token);
+            setStages(data.data);
+        } catch (error) {
+            console.error("Erreur lors du chargement des stages:", error);
+        } finally {
+            setLoading(false);
         }
-        fetchData();
+    };
 
-    }, [])
+    useEffect(() => {
+        fetchStages();
+    }, []);
+
     return <div className="mt-2">
         {stages.length > 0 ?
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-12 ml-8">
-                {stages.map(stage => (
-                    <StageSmall key={stage.id} stage={stage} />))}
+                {stages.map((stage, index) => (
+                <StageSmall 
+                    key={index} 
+                    stage={stage} 
+                    onModifyStage={fetchStages}
+                />))}
             </div>
             : <div className="flex flex-col items-center justify-center h-screen">
                 <h1 className="text-3xl">Pas encore de stages? Créez-en un!</h1>

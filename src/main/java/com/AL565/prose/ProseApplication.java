@@ -3,6 +3,7 @@ package com.AL565.prose;
 import com.AL565.prose.service.EtudiantService;
 import com.AL565.prose.service.GestionnaireService;
 import com.AL565.prose.service.EmployeurService;
+import com.AL565.prose.service.GestionnaireService;
 import com.AL565.prose.service.dto.EmployeurPasswordDTO;
 import com.AL565.prose.service.dto.EtudiantPasswordDTO;
 import com.AL565.prose.service.dto.GestionnairePasswordDTO;
@@ -28,8 +29,8 @@ public class ProseApplication {
 
 
     @Bean
-    @Profile({"dev", "local", "!test"})
-    public CommandLineRunner seedEmployeur(EmployeurService employeurService) {
+    @Profile({"dev", "local", "test"})
+    public CommandLineRunner seedEmployeur(EmployeurService employeurService, GestionnaireService gestionnaireService) {
         return args -> {
             EmployeurPasswordDTO employeurRandy = new EmployeurPasswordDTO();
             employeurRandy.setFirstName("Randy");

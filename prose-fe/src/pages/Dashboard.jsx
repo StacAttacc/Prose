@@ -1,10 +1,9 @@
-import {logout} from "../services/AuthService.js";
-import {useNavigate} from "react-router-dom";
-import {Outlet} from "react-router";
-import {useAuth} from "../context/AuthContext.jsx";
+import { logout } from "../services/AuthService.js";
+import { useNavigate, NavLink, Outlet } from "react-router-dom";
+import { useAuth } from "../context/AuthContext.jsx";
 
 export default function Dashboard() {
-    const {user} = useAuth();
+    const { user } = useAuth();
     const nav = useNavigate();
 
     async function userLogout() {
@@ -12,7 +11,8 @@ export default function Dashboard() {
         nav('/login');
     }
 
-    return <>
+    return (
+    <>
         <header className="p-2">
             <nav className="relative bg-teal-700/95 rounded-xl shadow-black shadow-sm">
                 <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
@@ -63,11 +63,16 @@ export default function Dashboard() {
                                 <button onClick={() => {nav('etudiant/mon-cv')}}>
                                     Mon CV
                                 </button>
+                                <button onClick={() => {nav('stage-listings')}} className="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2">
+                                    Stages Disponibles
+                                </button>
                             </>
                         ) : <></>}
                         {user.role === "GESTIONNAIRE" ? (
                             <>
-                                {/*Mettre mes options ici*/}
+                                <button onClick={() => {nav('home-gestionnaire')}} className="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2">
+                                    Vérifier les offres
+                                </button>
                                 <button onClick={() => {nav('gestion-cv')}}>
                                     Gestion des CVs
                                 </button>
@@ -82,13 +87,11 @@ export default function Dashboard() {
                 </div>
             </nav>
         </header>
-        <main className="flex">
-            <div className="mx-auto">
-                <Outlet/>
-            </div>
-            <div className="ml-4 mr-6">
-                {/*Notifications*/}
-            </div>
+
+        {/* MAIN */}
+        <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
+            <Outlet />
         </main>
     </>
+    )
 }
