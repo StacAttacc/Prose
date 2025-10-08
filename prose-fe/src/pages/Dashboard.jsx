@@ -49,32 +49,28 @@ export default function Dashboard() {
                     <div className="relative flex h-12 items-center justify-around">
                         {user.role === "EMPLOYEUR" ? (
                             <>
-                                <button onClick={() => {nav('creation-stage')}} className="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2">
+                                <button onClick={() => {nav('employeur/creation-stage')}} className="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2">
                                     Créer un stage
                                 </button>
                                 {/*Ex: <button onClick(() => {navigate('/create-stage')})>*/}
-                                {/*Mettre mes options ici*/}
                             </>
                         ) : <></>}
                         {user.role === "ETUDIANT" ? (
                             <>
-                                <button onClick={() => {nav('etudiant/offres-emplois')}} className="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2">
-                                    Offres d'emplois
-                                </button>
                                 <button onClick={() => {nav('etudiant/mon-cv')}} className="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2">
                                     Mon CV
                                 </button>
-                                <button onClick={() => {nav('stage-listings')}} className="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2">
+                                <button onClick={() => {nav('etudiant/stage-listings')}} className="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2">
                                     Stages Disponibles
                                 </button>
                             </>
                         ) : <></>}
                         {user.role === "GESTIONNAIRE" ? (
                             <>
-                                <button onClick={() => {nav('home-gestionnaire')}} className="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2">
+                                <button onClick={() => {nav('gestionnaire/stage-approval')}} className="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2">
                                     Vérifier les offres
                                 </button>
-                                <button onClick={() => {nav('gestion-cv')}}>
+                                <button onClick={() => {nav('gestionnaire/gestion-cv')}} className="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2">
                                     Gestion des CVs
                                 </button>
                                 <button onClick={() => {nav('gestionnaire/list-stages')}} className="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2">

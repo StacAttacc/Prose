@@ -5,7 +5,7 @@ import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import PageAuthentification from "./pages/PageAuthentification.jsx";
 import StageCreation from "./components/employeur-components/StageCreation.jsx";
 import PostedStages from "./components/employeur-components/PostedStages.jsx";
-import HomeGestionnaire from "./components/gestionnaire-components/HomeGestionnaire.jsx";
+import StageApproving from "./components/gestionnaire-components/StageApproving.jsx";
 import StageListings from "./components/etudiant-components/StageListings.jsx";
 import {useEffect, useState} from "react";
 import GestionCV from "./components/gestionnaire-components/GestionCV.jsx";
@@ -27,7 +27,7 @@ export default function AppRoutes() {
 
     const defaultPathStudent = () => {
         return hasCv === null ? <div>Loading...</div> :
-            hasCv ? <div>Offres d'emplois</div> :
+            hasCv ? <StageListings /> :
                 <MonCV />;
     }
 
@@ -44,13 +44,12 @@ export default function AppRoutes() {
             <Route element={<ProtectedRoute />}>
                 <Route path="/" element={<Dashboard />}>
                     <Route index element={loading ? <div>Loading...</div> : defaultElement} />
+                    <Route path="employeur/creation-stage" element={<StageCreation />} />
                     <Route path="etudiant/mon-cv" element={<MonCV />} />
-                    <Route path="etudiant/offres-emplois" element={<div>Offres d'emplois</div>} />
-                    <Route path="gestion-cv" element={<GestionCV />}/>
-                    <Route path="creation-stage" element={<StageCreation />} />
+                    <Route path="etudiant/stage-listings" element={<StageListings />} />
+                    <Route path="gestionnaire/gestion-cv" element={<GestionCV />}/>
                     <Route path="gestionnaire/list-stages" element={<GestRechercheStages />}/>
-                    <Route path="stage-listings" element={<StageListings />} />
-                    <Route path="home-gestionnaire" element={<HomeGestionnaire />} />
+                    <Route path="gestionnaire/stage-approval" element={<StageApproving />} />
                 </Route>
             </Route>
         </Routes>

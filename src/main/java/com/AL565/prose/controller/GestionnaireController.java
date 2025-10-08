@@ -5,13 +5,9 @@ import com.AL565.prose.service.dto.ReturnEntityDTO;
 import com.AL565.prose.service.dto.RejectionRequestDTO;
 import com.AL565.prose.service.dto.StageDTO;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.http.HttpStatus;
 import com.AL565.prose.service.dto.CvDecisionDTO;
 import com.AL565.prose.service.dto.GestionnaireCvDTO;
-import com.AL565.prose.service.dto.ReturnEntityDTO;
-import com.AL565.prose.service.dto.StageDTO;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,7 +27,7 @@ public class GestionnaireController {
             return ResponseEntity.ok(new ReturnEntityDTO<>("Liste des stages", stages));
         }
         catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ReturnEntityDTO<>("Erreur lors de la récupération des stages", null));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ReturnEntityDTO<>("Erreur lors de la récupération des stages", null));
         }
     }
 
@@ -77,10 +73,5 @@ public class GestionnaireController {
     public ResponseEntity<List<GestionnaireCvDTO>> getAllCvs() throws Exception {
         List<GestionnaireCvDTO> cvs = gestionnaireService.getAllCvs();
         return ResponseEntity.ok(cvs);
-    }
-
-    @GetMapping("/stages")
-    public ResponseEntity<ReturnEntityDTO<List<StageDTO>>> getAllStages() {
-        return ResponseEntity.ok(new ReturnEntityDTO<>("Stages trouvés", gestionnaireService.getAllStages()));
     }
 }

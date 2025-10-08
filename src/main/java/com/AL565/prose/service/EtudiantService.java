@@ -18,7 +18,6 @@ import java.util.stream.Collectors;
 
 import com.AL565.prose.security.exceptions.CvExceptions;
 import com.AL565.prose.service.dto.EtudiantCvDTO;
-import com.AL565.prose.service.dto.EtudiantDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;

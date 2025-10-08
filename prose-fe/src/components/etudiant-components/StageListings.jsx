@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { getEtudiantStages } from "../../services/StageService";
-import StageDetailsModal from "../StageDetailsModal";
+import StageDetailsModal from "../display-components/StageDetailsModal.jsx";
 
 export default function StageListings() {
     const { user } = useAuth();
@@ -58,7 +58,7 @@ export default function StageListings() {
               <div className="mb-4">
                 <h3 className="text-xl font-semibold text-gray-800 mb-2">{stage.title}</h3>
                 <p className="text-gray-600 text-sm mb-2">
-                  <strong>Employeur:</strong> {stage.employeur?.email}
+                  <strong>Employeur:</strong> {stage.employeur?.company}
                 </p>
                 <p className="text-gray-600 text-sm mb-2">
                   <strong>Lieu:</strong> {stage.location}

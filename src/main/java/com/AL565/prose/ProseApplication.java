@@ -31,7 +31,7 @@ public class ProseApplication {
     @Bean
     @Profile({"dev", "local", "test"})
     public CommandLineRunner seedEmployeur(EmployeurService employeurService, GestionnaireService gestionnaireService) {
-        return args -> {
+        return _ -> {
             EmployeurPasswordDTO employeurRandy = new EmployeurPasswordDTO();
             employeurRandy.setFirstName("Randy");
             employeurRandy.setLastName("Lahey");

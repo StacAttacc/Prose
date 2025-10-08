@@ -1,3 +1,5 @@
+import StageDetailsModal from "./StageDetailsModal.jsx";
+
 export default function StageSmall({ stage }) {
     return (
         <div className="card w-48 bg-base-100 shadow-black shadow-lg border-2 rounded-xl mb-2 p-2">
@@ -8,7 +10,7 @@ export default function StageSmall({ stage }) {
                 <p className="text-center my-1">Offert par: {stage.employeur.company}</p>
                 <hr />
                 <div className="card-actions justify-end">
-                    {/**Future: Page de détails pour appliquer pour un stage.**/}
+                    <button onClick={() => {StageDetailsModal()}}>Détails</button>
                 </div>
             </div>
         </div>

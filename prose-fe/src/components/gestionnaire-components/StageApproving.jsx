@@ -1,10 +1,9 @@
-// src/pages/HomeGestionnaire.jsx
 import React, { useEffect, useState } from "react";
 import { getAllStages, submitStageDecision } from "../../services/GestionnaireService.js";
 import { useAuth } from "../../context/AuthContext.jsx";
-import StageDetailsModal from "../StageDetailsModal.jsx";
+import StageDetailsModal from "../display-components/StageDetailsModal.jsx";
 
-export default function HomeGestionnaire() {
+export default function StageApproving() {
   const { user } = useAuth();
   const [stages, setStages] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -17,7 +16,7 @@ export default function HomeGestionnaire() {
     async function fetchAllStages() {
       try {
         const data = await getAllStages(user.token);
-        setStages(data);
+        setStages(data.data);
       } catch (err) {
         setError(err.message);
       } finally {
