@@ -9,7 +9,7 @@ import com.AL565.prose.model.auth.Role;
 import com.AL565.prose.repository.EmployeurRepository;
 import com.AL565.prose.repository.GestionnaireRepository;
 import com.AL565.prose.repository.StageRepository;
-import com.AL565.prose.service.dto.GestionnaireDTO;
+import com.AL565.prose.service.dto.GestionnairePasswordDTO;
 import com.AL565.prose.service.dto.StageDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import org.junit.jupiter.api.Test;
@@ -49,7 +49,7 @@ class GestionnaireServiceTest {
 
     @Test
     void saveGestionnaire_success() {
-        GestionnaireDTO dto = new GestionnaireDTO();
+        GestionnairePasswordDTO dto = new GestionnairePasswordDTO();
         dto.setFirstName("Jean");
         dto.setLastName("Dupont");
         dto.setEmail("jean@example.com");
@@ -64,7 +64,7 @@ class GestionnaireServiceTest {
 
     @Test
     void saveGestionnaire_emailExists() {
-        GestionnaireDTO dto = new GestionnaireDTO();
+        GestionnairePasswordDTO dto = new GestionnairePasswordDTO();
         dto.setEmail("jean@example.com");
         dto.setPassword("password123");
 

@@ -5,12 +5,12 @@ import com.AL565.prose.model.OfferStatus;
 import com.AL565.prose.model.Stage;
 import com.AL565.prose.model.CV;
 import com.AL565.prose.model.CvStatus;
-import com.AL565.prose.model.Gestionnaire;
 import com.AL565.prose.repository.EmployeurRepository;
 import com.AL565.prose.repository.GestionnaireRepository;
 import com.AL565.prose.repository.StageRepository;
 import com.AL565.prose.repository.CvRepository;
 import com.AL565.prose.security.exceptions.CvExceptions.*;
+import com.AL565.prose.service.dto.GestionnaireCvDTO;
 import com.AL565.prose.service.dto.GestionnaireDTO;
 import com.AL565.prose.service.dto.GestionnairePasswordDTO;
 import com.AL565.prose.service.dto.StageDTO;
@@ -35,13 +35,16 @@ public class GestionnaireService {
     private final EmployeurRepository employeurRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public void saveGestionnaire(GestionnaireDTO gestionnaire) {
-        try {
-            gestionnaireRepository.save(GestionnaireDTO.toModel(gestionnaire, passwordEncoder));
-        } catch (Exception e) {
+    public void saveGestionnaire(GestionnairePasswordDTO dto) {
+        if (gestionnaireRepository.findByCredentials_Username(dto.getEmail()).isPresent()) {
             throw new EmailAlreadyExistsException("Un compte avec cet email existe déjà");
         }
+
+        dto.setPassword(passwordEncoder.encode(dto.getPassword()));
+
+        gestionnaireRepository.save(GestionnairePasswordDTO.toModel(dto));
     }
+
 
     public List<StageDTO> getStagesByStatus(String status) {
         return stageRepository.findByStatus(OfferStatus.valueOf(status))

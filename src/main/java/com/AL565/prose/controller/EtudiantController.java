@@ -3,16 +3,11 @@ package com.AL565.prose.controller;
 import com.AL565.prose.service.EtudiantService;
 import com.AL565.prose.service.dto.EtudiantCvDTO;
 import com.AL565.prose.security.exceptions.CvExceptions;
-import com.AL565.prose.service.dto.EtudiantDTO;
 import com.AL565.prose.service.dto.EtudiantPasswordDTO;
 import com.AL565.prose.service.dto.ReturnEntityDTO;
 import com.AL565.prose.service.dto.StageDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
-import com.AL565.prose.service.ProseCvService;
-
 import java.util.List;
-
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
