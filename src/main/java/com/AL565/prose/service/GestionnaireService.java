@@ -5,10 +5,9 @@ import com.AL565.prose.model.OfferStatus;
 import com.AL565.prose.model.Stage;
 import com.AL565.prose.model.CV;
 import com.AL565.prose.model.CvStatus;
-import com.AL565.prose.repository.EmployeurRepository;
-import com.AL565.prose.repository.CvRepository;
-import com.AL565.prose.repository.GestionnaireRepository;
-import com.AL565.prose.repository.StageRepository;
+import com.AL565.prose.model.notifications.Notification;
+import com.AL565.prose.model.notifications.NotificationType;
+import com.AL565.prose.repository.*;
 import com.AL565.prose.security.exceptions.CvExceptions.*;
 import com.AL565.prose.service.dto.GestionnaireCvDTO;
 import com.AL565.prose.service.dto.GestionnairePasswordDTO;
@@ -34,6 +33,7 @@ public class GestionnaireService {
     private final StageRepository stageRepository;
     private final EmployeurRepository employeurRepository;
     private final PasswordEncoder passwordEncoder;
+    private final NotificationRepository notificationRepository;
 
     public void saveGestionnaire(GestionnairePasswordDTO dto) {
         if (gestionnaireRepository.findByCredentials_Username(dto.getEmail()).isPresent()) {
@@ -119,5 +119,9 @@ public class GestionnaireService {
         } catch (Exception e) {
             throw new FailedToRetrieveStagesException("Échec lors de la récupération des stages.", e);
         }
+    }
+
+    public List<Notification> getAllNotifications() {
+        return notificationRepository.findNotificationsByType(NotificationType.STAGE_NOTIFICATION);
     }
 }

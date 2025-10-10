@@ -1,5 +1,6 @@
 package com.AL565.prose.controller;
 
+import com.AL565.prose.model.notifications.Notification;
 import com.AL565.prose.service.GestionnaireService;
 import com.AL565.prose.service.dto.ReturnEntityDTO;
 import com.AL565.prose.service.dto.RejectionRequestDTO;
@@ -73,5 +74,15 @@ public class GestionnaireController {
     public ResponseEntity<List<GestionnaireCvDTO>> getAllCvs() throws Exception {
         List<GestionnaireCvDTO> cvs = gestionnaireService.getAllCvs();
         return ResponseEntity.ok(cvs);
+    }
+
+    @GetMapping("/notifications")
+    public ResponseEntity<List<Notification>> getAllNotifications() {
+        try {
+            List<Notification> notifications = gestionnaireService.getAllNotifications();
+            return ResponseEntity.ok(notifications);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
 }
