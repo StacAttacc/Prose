@@ -19,6 +19,9 @@ const GestionCV = () => {
     const [pdfUrl, setPdfUrl] = useState(null);
     const [comment, setComment] = useState("");
     const [tab, setTab] = useState('pending'); // 'pending' or 'nonpending'
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [rejectionReason, setRejectionReason] = useState("");
+    const [isRejecting, setIsRejecting] = useState(false);
 
     useEffect(() => {
         if (token) loadAllCvs();
@@ -50,7 +53,7 @@ const GestionCV = () => {
             const blob = new Blob([byteArray], { type: cv.type || "application/pdf" });
             const url = URL.createObjectURL(blob);
             setPdfUrl(url);
-        } catch (e) {
+        } catch {
             setPdfUrl(null);
         }
         setModalOpen(true);
@@ -60,6 +63,8 @@ const GestionCV = () => {
         setModalOpen(false);
         setSelectedCv(null);
         setComment("");
+        setIsRejecting(false);
+        setRejectionReason("");
         if (pdfUrl) {
             URL.revokeObjectURL(pdfUrl);
             setPdfUrl(null);
@@ -68,16 +73,24 @@ const GestionCV = () => {
 
     const handleApprove = async () => {
         if (!selectedCv) return;
+        setIsProcessing(true);
         await approveCv(selectedCv.id, comment, token);
         closeModal();
         await loadAllCvs();
+        setIsProcessing(false);
+        setIsRejecting(false);
+        setRejectionReason("");
     };
 
     const handleReject = async () => {
         if (!selectedCv) return;
+        setIsProcessing(true);
         await rejectCv(selectedCv.id, comment, token);
         closeModal();
         await loadAllCvs();
+        setIsProcessing(false);
+        setIsRejecting(false);
+        setRejectionReason("");
     };
 
     const decisionsDisabled = comment.trim().length === 0;
@@ -200,43 +213,57 @@ const GestionCV = () => {
                             )}
                         </div>
 
-                        <div className="flex flex-col gap-3">
-                            <label className="text-sm font-semibold" htmlFor="reject-reason">
-                                Commentaires
-                            </label>
-                            <textarea
-                                id="comment"
-                                className="w-full border rounded p-2 text-sm"
-                                placeholder="Entrez un commentaire"
-                                value={comment}
-                                onChange={(e) => setComment(e.target.value)}
-                                rows={3}
-                            />
-                            <div className="flex gap-4 mt-2 justify-center">
-                                <button
-                                    onClick={handleApprove}
-                                    className="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2"
-                                >
-                                    Approver
-                                </button>
-                                <button
-                                    onClick={handleReject}
-                                    disabled={decisionsDisabled}
-                                    className={`rounded px-4 py-2 font-semibold text-white ${decisionsDisabled
-                                        ? "bg-red-300 cursor-not-allowed"
-                                        : "text-white bg-gradient-to-r from-red-400 via-red-500 to-red-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm px-3 py-2.5 text-center me-2"
-                                    }`}
-                                    title={decisionsDisabled ? "Vous devez entrer un commentaire vant de pouvoir rejeter ce CV" : ""}
-                                >
-                                    Rejeter
-                                </button>
-                            </div>
-                        </div>
-
-                        {selectedCv.comment && (
-                            <div className="mt-4">
-                                <span className="text-sm font-medium">Commentaire: </span>
-                                <span>{selectedCv.comment}</span>
+                        {decisionsDisabled && (
+                            <div className="w-full">
+                                <div className="flex flex-col">
+                                    <button
+                                        onClick={handleApprove}
+                                        className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50 mb-1"
+                                        disabled={isProcessing || isRejecting}
+                                    >
+                                        {isProcessing ? "Traitement..." : "Approuver"}
+                                    </button>
+                                    <button
+                                        onClick={() => {setIsRejecting(!isRejecting)}}
+                                        className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 disabled:opacity-50"
+                                        disabled={isProcessing}
+                                    >
+                                        Rejeter
+                                    </button>
+                                    {isRejecting && (
+                                        <div className="mt-6 ">
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                Raison de rejet (obligatoire pour rejeter le CV) :
+                                            </label>
+                                            <textarea
+                                                value={rejectionReason}
+                                                onChange={(e) => setRejectionReason(e.target.value)}
+                                                placeholder="Expliquez pourquoi ce CV est rejeté..."
+                                                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                rows="3"
+                                                disabled={isProcessing}
+                                            />
+                                            <div className="flex justify-center">
+                                                <button
+                                                    onClick={handleReject}
+                                                    className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 disabled:opacity-50 mt-2"
+                                                    disabled={isProcessing || !rejectionReason}
+                                                >
+                                                    {isProcessing ? "Traitement..." : "Confirmer"}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="flex justify-end mt-2">
+                                    <button
+                                        onClick={closeModal}
+                                        className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 disabled:opacity-50 align-end"
+                                        disabled={isProcessing}
+                                    >
+                                        Fermer
+                                    </button>
+                                </div>
                             </div>
                         )}
                     </div>

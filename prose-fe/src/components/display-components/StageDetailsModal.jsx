@@ -15,6 +15,8 @@ export default function StageDetailsModal({
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState("");
 
+  const [isRejecting, setIsRejecting] = useState(false);
+
   // Déterminer si les boutons de gestion doivent être affichés
   const shouldShowManagementButtons = showManagementButtons && user?.role === 'GESTIONNAIRE';
 
@@ -29,6 +31,8 @@ export default function StageDetailsModal({
       console.error("Erreur lors de l'approbation:", error);
     } finally {
       setIsProcessing(false);
+      setIsRejecting(false);
+      setError("");
     }
   };
 
@@ -49,11 +53,14 @@ export default function StageDetailsModal({
       setError("Erreur lors du rejet:" + error);
     } finally {
       setIsProcessing(false);
+      setIsRejecting(false);
+
     }
   };
 
   const handleClose = () => {
     setRejectionReason("");
+    setIsRejecting(false);
     onClose();
   };
 
@@ -114,32 +121,8 @@ export default function StageDetailsModal({
             <p className="text-red-700">{stage.rejectionReason}</p>
           </div>
         )}
-
-        {/* Champ pour la raison de rejet (seulement pour les gestionnaires) */}
-        {shouldShowManagementButtons && (
-          <div className="mt-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Raison de rejet (obligatoire pour rejeter le stage) :
-            </label>
-            <textarea
-              value={rejectionReason}
-              onChange={(e) => setRejectionReason(e.target.value)}
-              placeholder="Expliquez pourquoi ce stage est rejeté..."
-              className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              rows="3"
-              disabled={isProcessing}
-            />
-          </div>
-        )}
         
         <div className="mt-6 flex justify-end space-x-4">
-          <button
-            onClick={handleClose}
-            className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 disabled:opacity-50"
-            disabled={isProcessing}
-          >
-            Fermer
-          </button>
           
           {/* Boutons spécifiques aux étudiants */}
           {/*{user?.role === 'ETUDIANT' && stage.status === 'APPROUVEE' && (*/}
@@ -154,26 +137,60 @@ export default function StageDetailsModal({
           {/*    Postuler*/}
           {/*  </button>*/}
           {/*)}*/}
-          
-          {/* Boutons de gestion (seulement pour les gestionnaires) */}
-          {shouldShowManagementButtons && (
-            <>
+
+          <div className="w-full">
+            {shouldShowManagementButtons && (
+                <div className="flex flex-col">
+                  <button
+                      onClick={handleApprove}
+                      className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50 mb-1"
+                      disabled={isProcessing || isRejecting}
+                  >
+                    {isProcessing ? "Traitement..." : "Approuver"}
+                  </button>
+                  <button
+                      onClick={() => {setIsRejecting(!isRejecting)}}
+                      className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 disabled:opacity-50"
+                      disabled={isProcessing}
+                  >
+                    Rejeter
+                  </button>
+                  {isRejecting && (
+                      <div className="mt-6 ">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Raison de rejet (obligatoire pour rejeter le stage) :
+                        </label>
+                        <textarea
+                            value={rejectionReason}
+                            onChange={(e) => setRejectionReason(e.target.value)}
+                            placeholder="Expliquez pourquoi ce stage est rejeté..."
+                            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            rows="3"
+                            disabled={isProcessing}
+                        />
+                        <div className="flex justify-center">
+                          <button
+                              onClick={handleReject}
+                              className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 disabled:opacity-50 mt-2"
+                              disabled={isProcessing || !rejectionReason}
+                          >
+                            {isProcessing ? "Traitement..." : "Confirmer"}
+                          </button>
+                        </div>
+                      </div>
+                  )}
+                </div>
+            )}
+            <div className="flex justify-end mt-2">
               <button
-                onClick={handleApprove}
-                className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50"
-                disabled={isProcessing}
+                  onClick={handleClose}
+                  className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 disabled:opacity-50 align-end"
+                  disabled={isProcessing}
               >
-                {isProcessing ? "Traitement..." : "Approuver"}
+                Fermer
               </button>
-              <button
-                onClick={handleReject}
-                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 disabled:opacity-50"
-                disabled={isProcessing}
-              >
-                {isProcessing ? "Traitement..." : "Rejeter"}
-              </button>
-            </>
-          )}
+            </div>
+          </div>
         </div>
       </div>
     </div>
