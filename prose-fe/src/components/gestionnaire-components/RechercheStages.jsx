@@ -1,57 +1,259 @@
-import {useEffect, useState} from "react";
-import StageSmall from "../display-components/stage-sm.jsx";
-import {useAuth} from "../../context/AuthContext.jsx";
-import {getAllStages} from "../../services/GestionnaireService.js";
+// src/components/gestionnaire-components/RechercheStages.jsx
+import React, { useState, useEffect, useMemo } from "react";
+import { useAuth } from "../../context/AuthContext";
+import { getAllStages } from "../../services/GestionnaireService";
+import StageDetailsModal from "../display-components/StageDetailsModal";
 
 export default function GestRechercheStages() {
-    const { user } = useAuth();
+  const { user } = useAuth();
+  const [stages, setStages] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selectedStage, setSelectedStage] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  // États pour la recherche et les filtres
+  const [searchTerm, setSearchTerm] = useState("");
+  const [locationFilter, setLocationFilter] = useState("");
+  const [compensationFilter, setCompensationFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
 
-    const [allStages, setAllStages] = useState([]);
-
-    const [stages, setStages] = useState([]);
-
-    const [searchField, setSearchField] = useState("");
-
-    useEffect(() => {
-        const fetchData = async () => {
-            const res = await getAllStages(user.token);
-            setAllStages(res.data);
-            setStages(res.data);
-        }
-        fetchData();
-    }, [])
-
-    function applySearch() {
-        if (searchField === "") {
-            setStages(allStages);
-        } else {
-            const filtered = allStages.filter((stage) => stage.employeur.company.toLowerCase().includes(searchField.toLowerCase()));
-            setStages(filtered);
-        }
-
+  useEffect(() => {
+    async function fetchAllStages() {
+      try {
+        const data = await getAllStages(user.token);
+        setStages(data.data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
     }
+    fetchAllStages();
+  }, [user.token]);
 
-    return <>
-        <h2 className="text-center text-xl font-bold mb-8">Recherche de stages</h2>
+  // Filtrage des stages basé sur les critères de recherche
+  const filteredStages = useMemo(() => {
+    return stages.filter(stage => {
+      const matchesSearch = stage.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          stage.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          stage.employeur?.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          stage.employeur?.company?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          stage.skills?.some(skill => skill.toLowerCase().includes(searchTerm.toLowerCase()));
+      
+      const matchesLocation = !locationFilter || 
+                            stage.location.toLowerCase().includes(locationFilter.toLowerCase());
+      
+      const matchesCompensation = !compensationFilter || 
+                                 stage.compensation.toLowerCase().includes(compensationFilter.toLowerCase());
+      
+      const matchesStatus = !statusFilter || 
+                           stage.status.toLowerCase().includes(statusFilter.toLowerCase());
+      
+      return matchesSearch && matchesLocation && matchesCompensation && matchesStatus;
+    });
+  }, [stages, searchTerm, locationFilter, compensationFilter, statusFilter]);
 
-        <label className="block mb-6">
-            <span className="block text-sm mb-1 text-center">Nom de l'entreprise</span>
-            <input type="text" className="w-full rounded-xl bg-transparent border px-4 py-3 outline-none focus:border-teal-500 border-black mb-1" value={searchField} onChange={(e) => setSearchField(e.target.value)} />
-            <div className="flex justify-center">
-                <button onClick={() => {applySearch()}} className="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2">
-                    Rechercher
+  const handleStageClick = (stage) => {
+    setSelectedStage(stage);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedStage(null);
+  };
+
+  const clearFilters = () => {
+    setSearchTerm("");
+    setLocationFilter("");
+    setCompensationFilter("");
+    setStatusFilter("");
+  };
+
+  // Fonction pour obtenir la couleur du badge selon le statut
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'SOUMISE':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'APPROUVEE':
+        return 'bg-green-100 text-green-800';
+      case 'REJETEE':
+        return 'bg-red-100 text-red-800';
+      case 'PUBLIEE':
+        return 'bg-blue-100 text-blue-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  // Fonction pour obtenir le texte du statut en français
+  const getStatusText = (status) => {
+    switch (status) {
+      case 'SOUMISE':
+        return 'Soumise';
+      case 'APPROUVEE':
+        return 'Approuvée';
+      case 'REJETEE':
+        return 'Rejetée';
+      case 'PUBLIEE':
+        return 'Publiée';
+      default:
+        return status;
+    }
+  };
+
+  if (loading) return <p className="text-center mt-10">Chargement des stages...</p>;
+  if (error) return <p className="text-center mt-10 text-red-500">Erreur: {error}</p>;
+
+  return (
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-6 text-center">Recherche de Stages</h1>
+      
+      {/* Barre de recherche et filtres */}
+      <div className="mb-8 bg-white rounded-lg shadow-md border border-gray-200 p-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
+          {/* Recherche générale */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Recherche
+            </label>
+            <input
+              type="text"
+              placeholder="Titre, description, employeur, entreprise..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+            />
+          </div>
+
+          {/* Filtre par lieu */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Lieu
+            </label>
+            <input
+              type="text"
+              placeholder="Montréal, Québec, Télétravail..."
+              value={locationFilter}
+              onChange={(e) => setLocationFilter(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+            />
+          </div>
+
+          {/* Filtre par compensation */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Compensation
+            </label>
+            <input
+              type="text"
+              placeholder="20$/h, 500$/semaine..."
+              value={compensationFilter}
+              onChange={(e) => setCompensationFilter(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+            />
+          </div>
+
+          {/* Filtre par statut */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Statut
+            </label>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+            >
+              <option value="">Tous les statuts</option>
+              <option value="SOUMISE">Soumise</option>
+              <option value="APPROUVEE">Approuvée</option>
+              <option value="REJETEE">Rejetée</option>
+            </select>
+          </div>
+
+          {/* Bouton pour effacer les filtres */}
+          <div className="flex items-end">
+            <button
+              onClick={clearFilters}
+              className="w-full px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
+            >
+              Effacer les filtres
+            </button>
+          </div>
+        </div>
+
+        {/* Affichage du nombre de résultats */}
+        <div className="text-sm text-gray-600">
+          {filteredStages.length} stage(s) trouvé(s) sur {stages.length} au total
+        </div>
+      </div>
+      
+      {/* Liste des stages filtrés */}
+      {filteredStages.length === 0 ? (
+        <div className="text-center py-8">
+          <p className="text-gray-500 text-lg">
+            {stages.length === 0 
+              ? "Aucun stage disponible pour le moment."
+              : "Aucun stage ne correspond à vos critères de recherche."
+            }
+          </p>
+          {stages.length > 0 && (
+            <button
+              onClick={clearFilters}
+              className="mt-4 px-4 py-2 bg-teal-500 text-white rounded-md hover:bg-teal-600 transition-colors"
+            >
+              Effacer les filtres
+            </button>
+          )}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredStages.map((stage, index) => (
+            <div 
+              key={index} 
+              className="bg-white rounded-lg shadow-md border border-gray-200 p-6 hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => handleStageClick(stage)}
+            >
+              <div className="mb-4">
+                <h3 className="text-xl font-semibold text-gray-800 mb-2">{stage.title}</h3>
+                <p className="text-gray-600 text-sm mb-2">
+                  <strong>Employeur:</strong> {stage.employeur?.company || stage.employeur?.email}
+                </p>
+                <p className="text-gray-600 text-sm mb-2">
+                  <strong>Lieu:</strong> {stage.location}
+                </p>
+                <p className="text-gray-600 text-sm mb-2">
+                  <strong>Compensation:</strong> {stage.compensation}
+                </p>
+                <p className="text-gray-600 text-sm mb-2">
+                  <strong>Période:</strong> {stage.startDate} - {stage.endDate}
+                </p>
+                <p className="text-gray-600 text-sm">
+                  <strong>Date de création:</strong> {stage.createdAt ? new Date(stage.createdAt).toLocaleDateString('fr-FR') : '-'}
+                </p>
+              </div>
+              
+              <div className="flex justify-between items-center">
+                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getStatusColor(stage.status)}`}>
+                  {getStatusText(stage.status)}
+                </span>
+                <button className="text-teal-600 hover:text-teal-800 font-medium">
+                  Voir détails →
                 </button>
+              </div>
             </div>
-        </label>
+          ))}
+        </div>
+      )}
 
-        {stages.length > 0 ?
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-12 ml-8">
-                {stages.map(stage => (
-                    <StageSmall key={stage.id} stage={stage} />))}
-            </div>
-            : <div className="flex flex-col items-center justify-center h-screen">
-                <h1 className="text-3xl">Aucun stage trouvé.</h1>
-            </div>
-        }
-    </>
+      {/* Modal pour afficher les détails */}
+      <StageDetailsModal
+        stage={selectedStage}
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        showManagementButtons={false}
+      />
+    </div>
+  );
 }

@@ -59,7 +59,7 @@ export default function Login({ onSwitchToSignup }) {
                 </div>
             )}
             {errorMsg && (
-                <div className="mb-4 rounded-lg border border-rose-600 bg-rose-900/30 p-3 text-rose-300">
+                <div className="mb-4 rounded-lg border border-rose-600 bg-rose-900/30 p-3 text-rose-800">
                     {errorMsg}
                 </div>
             )}
