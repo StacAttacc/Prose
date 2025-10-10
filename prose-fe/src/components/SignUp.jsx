@@ -87,8 +87,8 @@ export default function SignUp({ onSwitchToLogin }) {
                     type="button"
                     onClick={() => setAccountType("employer")}
                     className={`px-4 py-2 rounded-lg font-medium transition ${accountType === "employer"
-                            ? "bg-teal-600 text-black"
-                            : "bg-slate-300 text-gray-400 hover:bg-slate-600"
+                            ? "text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+                            : "bg-slate-300 text-gray-400 hover:bg-slate-600 text-sm px-5 py-2.5 font-medium rounded-lg text-center"
                         }`}
                 >
                     Employeur
@@ -97,8 +97,8 @@ export default function SignUp({ onSwitchToLogin }) {
                     type="button"
                     onClick={() => setAccountType("student")}
                     className={`px-4 py-2 rounded-lg font-medium transition ${accountType === "student"
-                            ? "bg-teal-600 text-black"
-                            : "bg-slate-300 text-gray-400 hover:bg-slate-600"
+                            ? "text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+                            : "bg-slate-300 text-gray-400 hover:bg-slate-600 text-sm px-5 py-2.5 font-medium rounded-lg text-center"
                         }`}
                 >
                     Étudiant
@@ -216,10 +216,7 @@ export default function SignUp({ onSwitchToLogin }) {
                 <button
                     type="submit"
                     disabled={!canSubmit || loading}
-                    className={`w-full py-3 rounded-xl font-bold transition disabled:opacity-60 ${canSubmit
-                            ? "bg-black text-white shadow-lg hover:bg-gray-200"
-                            : "bg-gradient-to-r from-teal-500 to-slate-500 text-white hover:from-teal-400 hover:to-gray-400"
-                        }`}
+                    className="w-full transition disabled:opacity-60 text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
                 >
                     {loading ? "Création..." : "Souscrire"}
                 </button>
