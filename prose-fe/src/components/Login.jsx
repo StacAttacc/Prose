@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Eye, EyeOff } from "lucide-react";
 import {useNavigate} from "react-router-dom";
+import ErrorBanner from "./display-components/ErrorBanner.jsx";
 
 export default function Login({ onSwitchToSignup }) {
     const { login } = useAuth();
@@ -11,7 +12,6 @@ export default function Login({ onSwitchToSignup }) {
     const [showPwd, setShowPwd] = useState(false);
     const [loading, setLoading] = useState(false);
     const [errorMsg, setErrorMsg] = useState("");
-    const [success, setSuccess] = useState("");
     const nav = useNavigate();
 
     const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -21,7 +21,6 @@ export default function Login({ onSwitchToSignup }) {
     const onSubmit = async (e) => {
         e.preventDefault();
         setErrorMsg("");
-        setSuccess("");
         if (!canSubmit) return;
 
         try {
@@ -33,6 +32,8 @@ export default function Login({ onSwitchToSignup }) {
             console.error(err);
             if (!navigator.onLine) {
                 setErrorMsg("Connexion Internet instable. Veuillez vérifier votre connexion.");
+            } else if (err?.response?.status === 409) {
+                setErrorMsg("Cet email est déjà utilisé. Veuillez en choisir un autre");
             } else {
                 setErrorMsg(err?.response?.data?.message || "Service indisponible. Veuillez réessayer plus tard.");
             }
@@ -52,16 +53,8 @@ export default function Login({ onSwitchToSignup }) {
         <>
             <h2 className="text-3xl font-bold text-center mb-8">Connexion</h2>
 
-            {/* Messages */}
-            {success && (
-                <div className="mb-4 rounded-lg border border-emerald-600 bg-emerald-900/30 p-3 text-emerald-300">
-                    {success}
-                </div>
-            )}
             {errorMsg && (
-                <div className="mb-4 rounded-lg border border-rose-600 bg-rose-900/30 p-3 text-rose-800">
-                    {errorMsg}
-                </div>
+                <ErrorBanner message={errorMsg} />
             )}
 
             <form onSubmit={onSubmit} className="space-y-4">

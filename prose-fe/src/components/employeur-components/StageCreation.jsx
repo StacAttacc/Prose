@@ -2,6 +2,7 @@ import {useState} from "react";
 import {useNavigate} from "react-router-dom";
 import {useAuth} from "../../context/AuthContext.jsx";
 import {createStage} from "../../services/StageService.js";
+import ErrorBanner from "../display-components/ErrorBanner.jsx";
 
 export default function StageCreation() {
     const {user} = useAuth();
@@ -63,9 +64,7 @@ export default function StageCreation() {
             <h2 className="text-center text-xl font-bold">Création de stage</h2>
 
             {errorMsg && (
-                <div className="mb-4 rounded-lg border border-rose-600 bg-rose-900/30 p-3">
-                    {errorMsg}
-                </div>
+                <ErrorBanner message={errorMsg} />
             )}
 
             <form className="mt-8 mb-3" onSubmit={submit}>

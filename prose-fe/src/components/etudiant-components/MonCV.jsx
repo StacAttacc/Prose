@@ -3,6 +3,7 @@ import { telechargerCv } from "../../services/EtudiantService.js";
 import { useAuth } from "../../context/AuthContext.jsx";
 import TeleversementCV from "./TeleversementCV.jsx";
 import { Worker, Viewer } from '@react-pdf-viewer/core';
+import ErrorBanner from "../display-components/ErrorBanner.jsx";
 
 const statusColors = {
     APPROVED: "bg-green-100 border-green-300",
@@ -40,7 +41,7 @@ export default function MonCV() {
     };
 
     if (status === "loading") return <div>Loading...</div>;
-    if (error) return <div>{error}</div>;
+    if (error) return <ErrorBanner message={error} />;
 
     function openPdfModal(cv) {
         if (!cv?.data) {

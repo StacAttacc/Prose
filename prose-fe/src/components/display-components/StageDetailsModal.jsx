@@ -1,6 +1,6 @@
-// src/components/display-components/StageDetailsModal.jsx
 import React, { useState } from "react";
 import { useAuth } from "../../context/AuthContext.jsx";
+import ErrorBanner from "./ErrorBanner.jsx";
 
 export default function StageDetailsModal({ 
   stage, 
@@ -105,9 +105,7 @@ export default function StageDetailsModal({
         </div>
 
         {error && (
-            <div className="mb-4 rounded-lg border border-rose-600 bg-rose-900/30 p-3">
-              {error}
-            </div>
+           <ErrorBanner message={error} />
         )}
         {/* Affichage de la raison de rejet si le stage est rejeté */}
         {stage.status === 'REJETEE' && stage.rejectionReason && (

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import ErrorBanner from "./display-components/ErrorBanner.jsx";
 
 export default function SignUp({ onSwitchToLogin }) {
     const { registerEmployeur, registerEtudiant } = useAuth();
@@ -24,7 +25,6 @@ export default function SignUp({ onSwitchToLogin }) {
     const [pwd, setPwd] = useState("");
     const [showPwd, setShowPwd] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [success, setSuccess] = useState("");
     const [errorMsg, setErrorMsg] = useState("");
 
     const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -39,7 +39,6 @@ export default function SignUp({ onSwitchToLogin }) {
 
     const onSubmit = async (e) => {
         e.preventDefault();
-        setSuccess("");
         setErrorMsg("");
         if (!canSubmit) return;
 
@@ -60,7 +59,6 @@ export default function SignUp({ onSwitchToLogin }) {
                 await registerEtudiant(payload);
             }
             //await login(email,pwd); au cas si le backend renvoie pas de token
-            setSuccess("Compte créé avec succès !");
             navigate("/");
         } catch (err) {
             console.error(err);
@@ -107,16 +105,8 @@ export default function SignUp({ onSwitchToLogin }) {
                 </button>
             </div>
 
-            {/* Alertes */}
-            {success && (
-                <div className="mb-4 rounded-lg border border-emerald-600 bg-emerald-900/30 p-3 text-emerald-300">
-                    {success}
-                </div>
-            )}
             {errorMsg && (
-                <div className="mb-4 rounded-lg border border-rose-600 bg-rose-900/30 p-3 text-rose-900">
-                    {errorMsg}
-                </div>
+                <ErrorBanner message={errorMsg} />
             )}
 
             {/* FORM */}

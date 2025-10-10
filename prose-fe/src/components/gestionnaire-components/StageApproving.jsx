@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { getAllStages, submitStageDecision } from "../../services/GestionnaireService.js";
 import { useAuth } from "../../context/AuthContext.jsx";
 import StageDetailsModal from "../display-components/StageDetailsModal.jsx";
+import ErrorBanner from "../display-components/ErrorBanner.jsx";
 
 export default function StageApproving() {
   const { user } = useAuth();
@@ -66,7 +67,6 @@ export default function StageApproving() {
     setSelectedStage(null);
   };
 
-  // Fonction pour obtenir la couleur du badge selon le statut
   const getStatusColor = (status) => {
     switch (status) {
       case 'SOUMISE':
@@ -82,7 +82,6 @@ export default function StageApproving() {
     }
   };
 
-  // Fonction pour obtenir le texte du statut en français
   const getStatusText = (status) => {
     switch (status) {
       case 'SOUMISE':
@@ -98,7 +97,6 @@ export default function StageApproving() {
     }
   };
 
-  // Grouper les stages par statut
   const stagesByStatus = stages.reduce((acc, stage) => {
     const status = stage.status;
     if (!acc[status]) {
@@ -108,12 +106,11 @@ export default function StageApproving() {
     return acc;
   }, {});
 
-  // Ordre des statuts pour l'affichage
   const statusOrder = ['SOUMISE', 'APPROUVEE', 'REJETEE', 'PUBLIEE'];
 
 
   if (loading) return <p className="text-center mt-10">Chargement...</p>;
-  if (error) return <p className="text-center mt-10 text-red-500">{error}</p>;
+  if (error) return <ErrorBanner message={error} />;
 
   return (
     <div className="p-6">
@@ -178,7 +175,6 @@ export default function StageApproving() {
         </div>
       )}
 
-      {/* Modal réutilisable */}
       <StageDetailsModal
         stage={selectedStage}
         isOpen={isModalOpen}
