@@ -9,34 +9,29 @@ import StageApproving from "./components/gestionnaire-components/StageApproving.
 import StageListings from "./components/etudiant-components/StageListings.jsx";
 import {useEffect, useState} from "react";
 import GestionCV from "./components/gestionnaire-components/GestionCV.jsx";
-import {telechargerCv} from "./services/EtudiantService.js";
 import MonCV from "./components/etudiant-components/MonCV.jsx";
 import GestRechercheStages from "./components/gestionnaire-components/RechercheStages.jsx";
+import StageApplicants from "./components/employeur-components/StageApplicants.jsx";
+
+
 
 export default function AppRoutes() {
-    const { user, loading } = useAuth();
-    const [hasCv, setHasCv] = useState(null);
+    const { user, loading: authLoading } = useAuth();
+    const [loading, setLoading] = useState(true);
+    const [defaultElement, setDefaultElement] = useState(<div />);
+
 
     useEffect(() => {
-        if (user?.role === "ETUDIANT") {
-            telechargerCv(user.email, user)
-                .then(() => setHasCv(true))
-                .catch(() => setHasCv(false));
-        }
-    }, [user]);
+        if (authLoading) return;
+        if (!user) { setLoading(false); return; }
 
-    const defaultPathStudent = () => {
-        return hasCv === null ? <div>Loading...</div> :
-            hasCv ? <StageListings /> :
-                <MonCV />;
-    }
 
-    const defaultElement =
-        user?.role === "ETUDIANT" ? defaultPathStudent() :
-            user?.role === "EMPLOYEUR" ? <PostedStages /> :
-                user?.role === "PROFESSEUR" ? <div>Bienvenue Professeur</div> :
-                    user?.role === "GESTIONNAIRE" ? <GestionCV /> :
-                        <div>Rôle inconnu</div>;
+        if (user.role === 'EMPLOYEUR') setDefaultElement(<PostedStages />);
+        else if (user.role === 'ETUDIANT') setDefaultElement(<StageListings />);
+        else setDefaultElement(<GestRechercheStages />);
+        setLoading(false);
+    }, [authLoading, user]);
+
 
     return (
         <Routes>
@@ -45,11 +40,14 @@ export default function AppRoutes() {
                 <Route path="/" element={<Dashboard />}>
                     <Route index element={loading ? <div>Loading...</div> : defaultElement} />
                     <Route path="employeur/creation-stage" element={<StageCreation />} />
+                    <Route path="employeur/posted-stages" element={<PostedStages />} />
+                    <Route path="employeur/stages/:id/candidatures" element={<StageApplicants />} />
                     <Route path="etudiant/mon-cv" element={<MonCV />} />
                     <Route path="etudiant/stage-listings" element={<StageListings />} />
-                    <Route path="gestionnaire/gestion-cv" element={<GestionCV />}/>
-                    <Route path="gestionnaire/list-stages" element={<GestRechercheStages />}/>
+                    <Route path="gestionnaire/gestion-cv" element={<GestionCV />} />
+                    <Route path="gestionnaire/list-stages" element={<GestRechercheStages />} />
                     <Route path="gestionnaire/stage-approval" element={<StageApproving />} />
+                    <Route path="employeur/modifier-stage/:id" element={<StageCreation mode="edit" />} />
                 </Route>
             </Route>
         </Routes>

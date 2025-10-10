@@ -4,9 +4,12 @@ import {useAuth} from "../../context/AuthContext.jsx";
 import StageSmall from "../display-components/stage-sm.jsx";
 import {getEmployeurStages} from "../../services/StageService.js";
 
+
 export default function PostedStages() {
     const {user} = useAuth();
     const [stages, setStages] = useState([]);
+    const [loading, setLoading] = useState(true);
+
 
     const fetchStages = async () => {
         try {
@@ -19,27 +22,38 @@ export default function PostedStages() {
         }
     };
 
+
     useEffect(() => {
         fetchStages();
     }, []);
 
-    return <div className="mt-2">
-        <h2 className="text-center text-xl font-bold mb-8">Mes Stages</h2>
-        {stages.length > 0 ?
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-12 ml-8">
-                {stages.map((stage, index) => (
-                <StageSmall 
-                    key={index} 
-                    stage={stage} 
-                    onModifyStage={fetchStages}
-                />))}
+
+    if (loading) return <div className="p-4">Chargement…</div>;
+
+
+    return (
+        <div className="p-4 md:p-6">
+            <div className="flex items-center justify-between">
+                <h1 className="text-2xl font-bold">Mes offres publiées</h1>
             </div>
-            : <div className="flex flex-col items-center justify-center h-screen">
-                <h1 className="text-3xl">Pas encore de stages? Créez-en un!</h1>
-                <button className="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mt-3">
-                    <NavLink to="creation-stage">Créer un stage</NavLink>
-                </button>
+
+
+            <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                {stages?.length ? stages.map((s) => (
+                    <div key={s.id} className="rounded-2xl border bg-white shadow-sm p-4 flex flex-col">
+                        <StageSmall stage={s}/>
+                        <div className="mt-4 flex justify-center gap-2">
+                            <NavLink
+                                to={`/employeur/stages/${s.id}/candidatures`}
+                                className="px-4 py-1.5 text-sm rounded-lg border border-teal-600 text-shadow-black hover:bg-teal-50 transition"
+                            >Voir candidatures
+                            </NavLink>
+                        </div>
+                    </div>
+                )) : (
+                    <div>Aucune offre publiée.</div>
+                )}
             </div>
-        }
-    </div>
+        </div>
+    )
 }

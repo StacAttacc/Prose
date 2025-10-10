@@ -2,18 +2,26 @@ import StageDetailsModal from "./StageDetailsModal.jsx";
 
 export default function StageSmall({ stage }) {
     return (
-        <div className="card w-48 bg-base-100 shadow-black shadow-lg border-2 rounded-xl mb-2 p-2">
-            <div className="card-body">
-                <h2 className="card-title text-center text-xl font-bold">{stage.title}</h2>
-                <p className="text-center my-1">Salaire {stage.compensation}</p>
-                <p className="text-center my-1"> Se trouve a: {stage.location}</p>
-                <p className="text-center my-1">Offert par: {stage.employeur.company}</p>
-                <p className="text-center my-1">Statut: {stage.status}</p>
-                <hr />
-                <div className="card-actions justify-end">
-
-                </div>
+        <div className="rounded-2xl bg-white border border-gray-100 p-5 flex flex-col items-center text-center">
+            <h2 className="text-lg font-semibold text-gray-800 mb-1">{stage.title}</h2>
+            <div className="text-sm text-gray-600 space-y-1">
+                <p>
+                    <span className="font-medium text-teal-600">Salaire:</span>{" "}
+                    {stage.compensation || "Non spécifié"}
+                </p>
+                <p>
+                    <span className="font-medium text-teal-600">Lieu:</span> {stage.location}
+                </p>
+                <p>
+                    <span className="font-medium text-teal-600">Offert par:</span>{" "}
+                    {stage.employeur?.company}
+                </p>
+                <p>
+                    <span className="font-medium text-teal-600">Statut:</span> {stage.status}
+                </p>
             </div>
+
+            <div className="mt-4 w-full border-t border-gray-200" />
         </div>
-    )
+    );
 }
