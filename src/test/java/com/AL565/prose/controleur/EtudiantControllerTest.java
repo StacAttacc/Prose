@@ -6,6 +6,7 @@ import com.AL565.prose.repository.EtudiantRepository;
 import com.AL565.prose.repository.ProseUserRepository;
 import com.AL565.prose.service.EmployeurService;
 import com.AL565.prose.service.EtudiantService;
+import com.AL565.prose.service.GestionnaireService;
 import com.AL565.prose.service.dto.EtudiantPasswordDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -35,6 +36,9 @@ class EtudiantControllerTest {
 
     @MockitoBean
     private EtudiantService etudiantService;
+
+    @MockitoBean
+    private GestionnaireService gestionnaireService;
 
     @MockitoBean
     private EtudiantRepository etudiantRepository;

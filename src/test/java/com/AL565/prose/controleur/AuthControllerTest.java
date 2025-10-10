@@ -6,15 +6,19 @@ import com.AL565.prose.security.exceptions.AuthenticationException;
 import com.AL565.prose.security.exceptions.UserNotFoundException;
 import com.AL565.prose.service.AuthService;
 import com.AL565.prose.service.EmployeurService;
+import com.AL565.prose.service.EtudiantService;
+import com.AL565.prose.service.GestionnaireService;
 import com.AL565.prose.service.dto.EtudiantPasswordDTO;
 import com.AL565.prose.service.dto.LoginRequestDTO;
 import com.AL565.prose.service.dto.ProseUserDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -41,6 +45,12 @@ class AuthControllerTest {
 
     @MockitoBean
     private EmployeurService employeurService;
+
+    @MockitoBean
+    private EtudiantService etudiantService;
+
+    @MockitoBean
+    private GestionnaireService gestionnaireService;
 
     @Test
     void login_success() throws Exception {

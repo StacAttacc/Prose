@@ -4,6 +4,8 @@ import com.AL565.prose.controller.EmployeurController;
 import com.AL565.prose.model.Employeur;
 import com.AL565.prose.repository.EmployeurRepository;
 import com.AL565.prose.repository.ProseUserRepository;
+import com.AL565.prose.service.EtudiantService;
+import com.AL565.prose.service.GestionnaireService;
 import com.AL565.prose.service.dto.EmployeurPasswordDTO;
 import com.AL565.prose.service.EmployeurService;
 import com.AL565.prose.service.dto.StageDTO;
@@ -59,6 +61,12 @@ class EmployeurControllerTest {
 
     @MockitoBean
     private ProseUserRepository proseUserRepository;
+
+    @MockitoBean
+    private GestionnaireService gestionnaireService;
+
+    @MockitoBean
+    private EtudiantService etudiantService;
 
     @Autowired
     ObjectMapper objectMapper;

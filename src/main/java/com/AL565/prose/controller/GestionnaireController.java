@@ -64,7 +64,7 @@ public class GestionnaireController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ReturnEntityDTO<>("Erreur lors du rejet du stage", null));
         }
     }
-  
+
     @PostMapping("/cv/change-status")
     public ResponseEntity<ReturnEntityDTO<Void>> changeCvStatus(@RequestBody CvDecisionDTO cvDecision) throws Exception {
         try {

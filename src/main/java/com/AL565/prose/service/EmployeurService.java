@@ -48,7 +48,7 @@ public class EmployeurService {
 
 
     @Transactional
-    public StageDTO createStage(StageDTO dto) throws Exception {
+    public StageDTO createStage(StageDTO dto) {
         if (dto == null) {
             throw new IllegalArgumentException("dto must not be null");
         }
@@ -56,21 +56,23 @@ public class EmployeurService {
         Stage saved = stageRepository.save(StageDTO.toModel(dto));
         Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(saved.getEmployeurEmail());
 
-        try {
-            StageNotification notification = new StageNotification();
-            notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
-            notification.setStage(saved);
-            notification.setSenderEmail(saved.getEmployeurEmail());
-            notification.setType(NotificationType.STAGE_NOTIFICATION);
-            notification.setMessage("Nouvelle offre de stage soumise");
-            notificationRepository.save(notification);
-        } catch (Exception e) {
-            throw new NotificationCreationException();
-        }
-
         return StageDTO.fromModel(saved, employeur);
     }
 
+    @Transactional
+    public void createNotificationForNewStage(StageDTO stageDTO) {
+        if (stageDTO == null) {
+            throw new IllegalArgumentException("stageDTO must not be null");
+        }
+        Stage stage = StageDTO.toModel(stageDTO);
+        StageNotification notification = new StageNotification();
+        notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
+        notification.setStage(stage);
+        notification.setSenderEmail(stage.getEmployeurEmail());
+        notification.setType(NotificationType.STAGE_NOTIFICATION);
+        notification.setMessage("Nouvelle offre de stage soumise");
+        notificationRepository.save(notification);
+    }
 
     @Transactional
     public List<StageDTO> listStagesFor(String email) {
