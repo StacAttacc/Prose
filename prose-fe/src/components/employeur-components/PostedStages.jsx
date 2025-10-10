@@ -3,8 +3,6 @@ import {NavLink} from "react-router-dom";
 import {useAuth} from "../../context/AuthContext.jsx";
 import StageSmall from "../display-components/stage-sm.jsx";
 import {getEmployeurStages} from "../../services/StageService.js";
-
-
 export default function PostedStages() {
     const {user} = useAuth();
     const [stages, setStages] = useState([]);
@@ -46,7 +44,7 @@ export default function PostedStages() {
                             <NavLink
                                 to={`/employeur/stages/${s.id}/candidatures`}
                                 className="px-4 py-1.5 text-sm rounded-lg border border-teal-600 text-shadow-black hover:bg-teal-50 transition"
-                            >Voir candidatures
+                            >Voir les candidatures
                             </NavLink>
                         </div>
                     </div>

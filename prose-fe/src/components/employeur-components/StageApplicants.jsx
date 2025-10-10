@@ -1,8 +1,12 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useParams } from "react-router-dom";
 import ApplicantRow from "../display-components/ApplicantRow";
+import { useAuth } from "../../context/AuthContext.jsx";
 
-const StageApplicantsPage = ({ id, user, updateApplicantStatus, fetchApplicants }) => {
+const StageApplicantsPage = ({ updateApplicantStatus, fetchApplicants }) => {
+    const { id } = useParams();
+    const { user } = useAuth();
+
     const [q, setQ] = useState("");
     const [statusFilter, setStatusFilter] = useState("ALL");
     const [applicants, setApplicants] = useState([]);
@@ -13,7 +17,7 @@ const StageApplicantsPage = ({ id, user, updateApplicantStatus, fetchApplicants 
         try {
             await updateApplicantStatus(id, applicant.id, "ACCEPTEE", user.token);
             await reload();
-        } catch (e) {
+        } catch {
             setError("Échec de la mise à jour du statut.");
         }
     };
@@ -22,7 +26,7 @@ const StageApplicantsPage = ({ id, user, updateApplicantStatus, fetchApplicants 
         try {
             await updateApplicantStatus(id, applicant.id, "REJETEE", user.token, reason);
             await reload();
-        } catch (e) {
+        } catch {
             setError("Échec de la mise à jour du statut.");
         }
     };
@@ -30,19 +34,17 @@ const StageApplicantsPage = ({ id, user, updateApplicantStatus, fetchApplicants 
     const reload = async () => {
         try {
             setLoading(true);
-            const data = await fetchApplicants();
+            const data = await fetchApplicants(id, user.token);
             setApplicants(data || []);
             setError(null);
-        } catch (e) {
+        } catch {
             setError("Impossible de charger les candidatures.");
         } finally {
             setLoading(false);
         }
     };
 
-    useEffect(() => {
-        reload();
-    }, [id]);
+    useEffect(() => { reload(); }, [id]);
 
     const filtered = useMemo(() => {
         const query = q.trim().toLowerCase();
@@ -54,7 +56,6 @@ const StageApplicantsPage = ({ id, user, updateApplicantStatus, fetchApplicants 
                 app.competences?.some((c) => c.toLowerCase().includes(query));
 
             const matchesStatus = statusFilter === "ALL" || app.status === statusFilter;
-
             return matchesQuery && matchesStatus;
         });
     }, [applicants, q, statusFilter]);
