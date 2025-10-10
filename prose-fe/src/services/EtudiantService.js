@@ -37,6 +37,7 @@ export const telechargerCv = async (email, user) => {
             }
         });
 
+
         return response.data;
     } catch (e) {
         if (e.response) {
