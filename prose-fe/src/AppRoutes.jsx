@@ -17,11 +17,18 @@ export default function AppRoutes() {
     const { user, loading } = useAuth();
     const [hasCv, setHasCv] = useState(null);
 
+    async function getCV() {
+        const data = await telechargerCv(user.email, user);
+        if (data) {
+            setHasCv(true);
+        } else {
+            setHasCv(false);
+        }
+    }
+
     useEffect(() => {
         if (user?.role === "ETUDIANT") {
-            telechargerCv(user.email, user)
-                .then(() => setHasCv(true))
-                .catch(() => setHasCv(false));
+            getCV();
         }
     }, [user]);
 
