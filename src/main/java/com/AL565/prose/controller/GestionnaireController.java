@@ -1,6 +1,7 @@
 package com.AL565.prose.controller;
 
 import com.AL565.prose.model.notifications.Notification;
+import com.AL565.prose.security.exceptions.CvExceptions;
 import com.AL565.prose.service.GestionnaireService;
 import com.AL565.prose.service.dto.ReturnEntityDTO;
 import com.AL565.prose.service.dto.RejectionRequestDTO;
@@ -43,7 +44,7 @@ public class GestionnaireController {
     }
 
     @PutMapping("/stages/{id}/approuver")
-    public ResponseEntity<ReturnEntityDTO<StageDTO>> approuverStage(@PathVariable Long id) {
+    public ResponseEntity<ReturnEntityDTO<StageDTO>> approuverStage(@PathVariable Long id) throws CvExceptions.FailedToChangeCvStatusException {
         try {
             StageDTO stage = gestionnaireService.approuverStage(id);
             return ResponseEntity.ok(new ReturnEntityDTO<>("Stage approuvé avec succès", stage));
@@ -65,9 +66,14 @@ public class GestionnaireController {
     }
   
     @PostMapping("/cv/change-status")
-    public ResponseEntity<Void> changeCvStatus(@RequestBody CvDecisionDTO cvDecision) throws Exception {
-        gestionnaireService.changeCvStatus(cvDecision.id, cvDecision.status, cvDecision.comment);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<ReturnEntityDTO<Void>> changeCvStatus(@RequestBody CvDecisionDTO cvDecision) throws Exception {
+        try {
+            gestionnaireService.changeCvStatus(cvDecision.id, cvDecision.status, cvDecision.comment);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ReturnEntityDTO<>("Erreur lors de la modification du statut du CV", null));
+        }
     }
 
     @GetMapping("/cv/all")

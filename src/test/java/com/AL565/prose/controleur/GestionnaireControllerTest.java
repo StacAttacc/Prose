@@ -65,7 +65,7 @@ class GestionnaireControllerTest {
 
     @Autowired
     ObjectMapper objectMapper;
-
+    private record CvDecisionStub(Long id, String status, String comment) {}
     @Test
     void getStagesSoumises_returnsStages() throws Exception {
         Employeur employeur1 = new Employeur(1L, "John", "Doe", "Entreprise Test", "john@example.com");
@@ -189,16 +189,18 @@ class GestionnaireControllerTest {
     }
 
     @Test
-    @WithMockUser(roles = {"GESTIONNAIRE"})
-    void approveCv_shouldReturnError_whenException() throws Exception {
-        doThrow(new CvExceptions.FailedToChangeCvStatusException())
-                .when(gestionnaireService).changeCvStatus(99L, "ewww", "non");
+    @DisplayName("POST /gestionnaire/cv/change-status -> 500 with error message when service throws")
+    void changeCvStatus_whenServiceThrows_returns500() throws Exception {
+        String payload = objectMapper.writeValueAsString(new CvDecisionStub(99L, "INVALID", "no"));
+        doThrow(new Exception("boom")).when(gestionnaireService).changeCvStatus(99L, "INVALID", "no");
 
-        String body = "{\"id\":99,\"status\":\"ewww\",\"comment\":\"non\"}";
         mockMvc.perform(post("/gestionnaire/cv/change-status")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
-                .andExpect(status().isBadRequest());
+                        .content(payload))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.message", is("Erreur lors de la modification du statut du CV")))
+                .andExpect(jsonPath("$.data").doesNotExist());
     }
 
     @Test
