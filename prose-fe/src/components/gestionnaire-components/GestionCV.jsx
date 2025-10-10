@@ -218,14 +218,17 @@ const GestionCV = () => {
                                 <div className="flex flex-col">
                                     <button
                                         onClick={handleApprove}
-                                        className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50 mb-1"
+                                        className="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-4 py-2 text-center disabled:opacity-50 mb-1"
                                         disabled={isProcessing || isRejecting}
                                     >
                                         {isProcessing ? "Traitement..." : "Approuver"}
                                     </button>
                                     <button
                                         onClick={() => {setIsRejecting(!isRejecting)}}
-                                        className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 disabled:opacity-50"
+                                        className="text-white bg-gradient-to-r
+                                    from-red-400 via-red-500 to-red-600
+                                    hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300
+                                    dark:focus:ring-red-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center disabled:opacity-50"
                                         disabled={isProcessing}
                                     >
                                         Rejeter
@@ -246,7 +249,10 @@ const GestionCV = () => {
                                             <div className="flex justify-center">
                                                 <button
                                                     onClick={handleReject}
-                                                    className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 disabled:opacity-50 mt-2"
+                                                    className="text-white bg-gradient-to-r
+                                    from-red-400 via-red-500 to-red-600
+                                    hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300
+                                    dark:focus:ring-red-800 font-medium rounded-lg text-sm px-3 py-2.5 text-center disabled:opacity-50 mt-2"
                                                     disabled={isProcessing || !rejectionReason}
                                                 >
                                                     {isProcessing ? "Traitement..." : "Confirmer"}

@@ -106,10 +106,7 @@ export default function Login({ onSwitchToSignup }) {
                 <button
                     type="submit"
                     disabled={!canSubmit || loading}
-                    className={`w-full py-3 rounded-xl font-bold transition disabled:opacity-60 ${canSubmit
-                            ? "bg-black text-white shadow-lg hover:bg-slate-800"
-                            : "bg-gradient-to-r from-teal-500 to-slate-500 text-white hover:from-teal-400 hover:to-slate-400"
-                        }`}
+                    className="w-full transition disabled:opacity-60 text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
                 >
                     {loading ? "Connexion..." : "Se connecter"}
                 </button>
