@@ -90,14 +90,14 @@ class EtudiantCvControllerTest {
                 .build();
 
         when(etudiantService.getByEmail("email@email.email")).thenReturn(
-                Optional.of(new EtudiantCvDTO() {{
+                new EtudiantCvDTO() {{
                     setName(cv.getName());
                     setType(cv.getType());
                     setSize(cv.getSize());
                     setData(Base64.getEncoder().encodeToString(cv.getData()));
                     setLastModified(cv.getLastModified());
                     setLastModifiedDate(cv.getLastModifiedDate());
-                }})
+                }}
         );
 
         mockMvc.perform(get("/etudiant/telecharger-cv/email@email.email")

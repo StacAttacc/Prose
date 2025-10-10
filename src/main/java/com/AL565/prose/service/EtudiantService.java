@@ -110,8 +110,9 @@ public class EtudiantService {
                 .orElseGet(() -> cvRepository.save(newCv));
     }
 
-    public Optional<EtudiantCvDTO> getByEmail(String username) {
+    public EtudiantCvDTO getByEmail(String username) {
         return cvRepository.findByEtudiant_Credentials_Username(username)
-                .map(EtudiantCvDTO::toDto);
+                .map(EtudiantCvDTO::toDto)
+                .orElse(null);
     }
 }

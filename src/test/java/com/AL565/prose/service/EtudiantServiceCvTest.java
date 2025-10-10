@@ -100,7 +100,7 @@ class EtudiantServiceCvTest {
                 .status(CvStatus.PENDING)
                 .build();
         when(cvRepository.findByEtudiant_Credentials_Username("email@email.email")).thenReturn(Optional.of(cv));
-        Optional<EtudiantCvDTO> result = etudiantService.getByEmail("email@email.email");
-        assertEquals("cv.pdf", result.get().getName());
+        EtudiantCvDTO result = etudiantService.getByEmail("email@email.email");
+        assertEquals("cv.pdf", result.getName());
     }
 }

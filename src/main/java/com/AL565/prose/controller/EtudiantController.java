@@ -52,8 +52,8 @@ public class EtudiantController {
 
     @GetMapping("/telecharger-cv/{email}")
     public ResponseEntity<EtudiantCvDTO> telecharger(@PathVariable String email) {
-        Optional<EtudiantCvDTO> cv = etudiantService.getByEmail(email);
-        return ResponseEntity.ok(Optional.of(cv).get().orElse(null));
+        EtudiantCvDTO cv = etudiantService.getByEmail(email);
+        return ResponseEntity.ok(cv);
     }
 
     @GetMapping("/stages/approuves")
