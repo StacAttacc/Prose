@@ -6,4 +6,10 @@ public class NotificationExceptions {
             super("Erreur lors de la création de la notification");
         }
     }
+
+    public static class NotificationFetchException extends Exception {
+        public NotificationFetchException() {
+            super("Erreur lors de la récupération des notifications");
+        }
+    }
 }

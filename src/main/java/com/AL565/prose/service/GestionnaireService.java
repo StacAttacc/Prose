@@ -7,6 +7,7 @@ import com.AL565.prose.model.CV;
 import com.AL565.prose.model.CvStatus;
 import com.AL565.prose.model.notifications.Notification;
 import com.AL565.prose.model.notifications.NotificationType;
+import com.AL565.prose.security.exceptions.NotificationExceptions.*;
 import com.AL565.prose.repository.*;
 import com.AL565.prose.security.exceptions.CvExceptions.*;
 import com.AL565.prose.service.dto.GestionnaireCvDTO;
@@ -121,7 +122,11 @@ public class GestionnaireService {
         }
     }
 
-    public List<Notification> getAllNotifications() {
-        return notificationRepository.findNotificationsByType(NotificationType.STAGE_NOTIFICATION);
+    public List<Notification> getNotifications() throws Exception {
+        try {
+            return notificationRepository.findNotificationsByType(NotificationType.STAGE_NOTIFICATION);
+        } catch (Exception e) {
+            throw new NotificationFetchException();
+        }
     }
 }

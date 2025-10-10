@@ -76,13 +76,9 @@ public class GestionnaireController {
         return ResponseEntity.ok(cvs);
     }
 
-    @GetMapping("/notifications")
-    public ResponseEntity<List<Notification>> getAllNotifications() {
-        try {
-            List<Notification> notifications = gestionnaireService.getAllNotifications();
-            return ResponseEntity.ok(notifications);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
+    @GetMapping("/notifications/all")
+    public ResponseEntity<List<Notification>> getAllNotifications() throws Exception {
+        List<Notification> notifications = gestionnaireService.getNotifications();
+        return ResponseEntity.ok(notifications);
     }
 }
