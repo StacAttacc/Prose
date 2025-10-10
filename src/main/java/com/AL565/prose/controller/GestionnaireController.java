@@ -77,8 +77,13 @@ public class GestionnaireController {
     }
 
     @GetMapping("/notifications/all")
-    public ResponseEntity<List<Notification>> getAllNotifications() throws Exception {
-        List<Notification> notifications = gestionnaireService.getNotifications();
-        return ResponseEntity.ok(notifications);
+    public ResponseEntity<ReturnEntityDTO<List<Notification>>> getAllNotifications() throws Exception {
+        try {
+            List<Notification> notifications = gestionnaireService.getNotifications();
+            return ResponseEntity.ok(new ReturnEntityDTO<>("notifications: ", notifications));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ReturnEntityDTO<>("Erreur lors de la récupération des notifications", null));
+        }
     }
 }

@@ -8,6 +8,7 @@ import com.AL565.prose.model.auth.Credentials;
 import com.AL565.prose.model.auth.Role;
 import com.AL565.prose.repository.EmployeurRepository;
 import com.AL565.prose.repository.GestionnaireRepository;
+import com.AL565.prose.repository.NotificationRepository;
 import com.AL565.prose.repository.StageRepository;
 import com.AL565.prose.service.dto.GestionnairePasswordDTO;
 import com.AL565.prose.service.dto.StageDTO;
@@ -48,6 +49,9 @@ class GestionnaireServiceTest {
     @Mock
     private PasswordEncoder passwordEncoder;
 
+    @Mock
+    private NotificationRepository notificationRepository;
+
     @InjectMocks
     private GestionnaireService gestionnaireService;
 
@@ -72,7 +76,7 @@ class GestionnaireServiceTest {
         dto.setEmail("jean@example.com");
         dto.setPassword("password123");
 
-        doThrow(new RuntimeException()).when(gestionnaireRepository).save(any(Gestionnaire.class));
+        doThrow(new EmailAlreadyExistsException("existe déjà")).when(gestionnaireRepository).save(any(Gestionnaire.class));
 
         assertThatThrownBy(() -> gestionnaireService.saveGestionnaire(dto))
                 .isInstanceOf(EmailAlreadyExistsException.class)

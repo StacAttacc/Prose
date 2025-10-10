@@ -3,6 +3,7 @@ package com.AL565.prose.service;
 import com.AL565.prose.model.Employeur;
 import com.AL565.prose.model.Stage;
 import com.AL565.prose.repository.EmployeurRepository;
+import com.AL565.prose.repository.NotificationRepository;
 import com.AL565.prose.repository.ProseUserRepository;
 import com.AL565.prose.repository.StageRepository;
 import com.AL565.prose.service.dto.EmployeurDTO;
@@ -41,6 +42,9 @@ class EmployeurServiceTest {
     @Mock
     private StageRepository stageRepository;
 
+    @Mock
+    private NotificationRepository notificationRepository;
+
     @InjectMocks
     private EmployeurService employeurService;
 
@@ -68,7 +72,7 @@ class EmployeurServiceTest {
 
 
     @Test
-    void createStage() {
+    void createStage() throws Exception {
         Employeur employeur = new Employeur(8L, "Umberto", "Macaco", "Zac inc", "email");
         EmployeurDTO empDto = new EmployeurDTO(employeur, null);
 
@@ -93,6 +97,7 @@ class EmployeurServiceTest {
         });
 
         when(employeurRepository.getEmployeurByCredentials_Username(any(String.class))).thenReturn(employeur);
+        when(notificationRepository.save(any())).thenReturn(null);
 
         StageDTO out = employeurService.createStage(dto);
 
