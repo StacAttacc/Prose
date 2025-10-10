@@ -3,9 +3,13 @@ package com.AL565.prose.service;
 import com.AL565.prose.model.Employeur;
 import com.AL565.prose.model.OfferStatus;
 import com.AL565.prose.model.Stage;
+import com.AL565.prose.model.notifications.NotificationType;
+import com.AL565.prose.model.notifications.StageNotification;
 import com.AL565.prose.repository.EmployeurRepository;
+import com.AL565.prose.repository.NotificationRepository;
 import com.AL565.prose.repository.ProseUserRepository;
 import com.AL565.prose.repository.StageRepository;
+import com.AL565.prose.security.exceptions.NotificationExceptions.*;
 import com.AL565.prose.security.exceptions.UserNotFoundException;
 import com.AL565.prose.service.dto.EmployeurDTO;
 import com.AL565.prose.service.dto.EmployeurPasswordDTO;
@@ -27,6 +31,7 @@ public class EmployeurService {
     private EmployeurRepository employeurRepository;
     private PasswordEncoder passwordEncoder;
     private StageRepository stageRepository;
+    private NotificationRepository notificationRepository;
 
     public void enregistrer(EmployeurPasswordDTO employeurDTO) throws EmailAlreadyExistsException {
         if (proseUserRepository.findByCredentials_Username(employeurDTO.getEmail()).isPresent()) {
@@ -43,14 +48,26 @@ public class EmployeurService {
 
 
     @Transactional
-    public StageDTO createStage(StageDTO dto) {
-
+    public StageDTO createStage(StageDTO dto) throws Exception {
         if (dto == null) {
             throw new IllegalArgumentException("dto must not be null");
         }
 
         Stage saved = stageRepository.save(StageDTO.toModel(dto));
         Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(saved.getEmployeurEmail());
+
+        try {
+            StageNotification notification = new StageNotification();
+            notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
+            notification.setStage(saved);
+            notification.setSenderEmail(saved.getEmployeurEmail());
+            notification.setType(NotificationType.STAGE_NOTIFICATION);
+            notification.setMessage("Nouvelle offre de stage soumise");
+            notificationRepository.save(notification);
+        } catch (Exception e) {
+            throw new NotificationCreationException();
+        }
+
         return StageDTO.fromModel(saved, employeur);
     }
 
