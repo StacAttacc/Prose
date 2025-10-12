@@ -24,7 +24,7 @@ import lombok.ToString;
 import lombok.EqualsAndHashCode;
 
 @Entity
-@Table(name = "postuler")
+@Table(name = "postulation")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -32,7 +32,7 @@ import lombok.EqualsAndHashCode;
 @Builder
 @ToString
 @EqualsAndHashCode(of = "id")
-public class Postuler {
+public class Postulation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -60,12 +60,9 @@ public class Postuler {
     @Column(name = "status", nullable = false)
     private OfferStatus status;
 
-    @Column(name = "comment", length = 500)
-    private String comment;
-
     @Column(name = "date_decision")
     private LocalDateTime dateDecision;
 
-    @Column(name = "decision", length = 20)
+    @Column(name = "decision", length = 500)
     private String decision;
 }

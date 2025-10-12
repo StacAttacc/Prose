@@ -6,14 +6,14 @@ import com.AL565.prose.model.OfferStatus;
 import com.AL565.prose.repository.EmployeurRepository;
 import com.AL565.prose.model.CV;
 import com.AL565.prose.model.CvStatus;
-import com.AL565.prose.model.Postuler;
+import com.AL565.prose.model.Postulation;
 import com.AL565.prose.repository.CvRepository;
 import com.AL565.prose.repository.EtudiantRepository;
-import com.AL565.prose.repository.PostulerRepository;
+import com.AL565.prose.repository.PostulationRepository;
 import com.AL565.prose.repository.ProseUserRepository;
 import com.AL565.prose.repository.StageRepository;
 import com.AL565.prose.service.dto.EtudiantPasswordDTO;
-import com.AL565.prose.service.dto.PostulerDTO;
+import com.AL565.prose.service.dto.PostulationDTO;
 import com.AL565.prose.service.dto.StageDTO;
 
 import java.util.List;
@@ -42,7 +42,7 @@ public class EtudiantService {
     private final PasswordEncoder passwordEncoder;
     private final StageRepository stageRepository;
     private final EmployeurRepository employeurRepository;
-    private final PostulerRepository postulerRepository;
+    private final PostulationRepository postulationRepository;
 
     public EtudiantService(EtudiantRepository etudiantRepository,
                            ProseUserRepository proseUserRepository,
@@ -50,14 +50,14 @@ public class EtudiantService {
                            StageRepository stageRepository,
                            EmployeurRepository employeurRepository,
                            CvRepository cvRepository,
-                           PostulerRepository postulerRepository) {
+                           PostulationRepository postulationRepository) {
         this.cvRepository = cvRepository;
         this.etudiantRepository = etudiantRepository;
         this.proseUserRepository = proseUserRepository;
         this.passwordEncoder = passwordEncoder;
         this.employeurRepository = employeurRepository;
         this.stageRepository = stageRepository;
-        this.postulerRepository = postulerRepository;
+        this.postulationRepository = postulationRepository;
     }
 
     public void inscrireEtudiant(EtudiantPasswordDTO dto) {
@@ -133,12 +133,12 @@ public class EtudiantService {
                 .map(EtudiantCvDTO::toDto);
     }
 
-    public void savePostuler(PostulerDTO dto) {
+    public void savePostulation(PostulationDTO dto) throws IllegalArgumentException {
         if (dto == null) {
             throw new IllegalArgumentException("dto must not be null");
         }
 
-        Postuler postuler = PostulerDTO.toModel(dto);
-        postulerRepository.save(postuler);
+        Postulation postulation = PostulationDTO.toModel(dto);
+        postulationRepository.save(postulation);
     }
 }

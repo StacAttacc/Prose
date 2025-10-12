@@ -12,7 +12,7 @@ import com.AL565.prose.service.dto.EmployeurDTO;
 import com.AL565.prose.service.dto.EtudiantCvDTO;
 import com.AL565.prose.service.dto.EtudiantDTO;
 import com.AL565.prose.service.dto.EtudiantPasswordDTO;
-import com.AL565.prose.service.dto.PostulerDTO;
+import com.AL565.prose.service.dto.PostulationDTO;
 import com.AL565.prose.service.dto.StageDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -31,8 +31,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-
-import java.time.LocalDateTime;
 
 @WebMvcTest(EtudiantController.class)
 @AutoConfigureMockMvc
@@ -120,11 +118,11 @@ class EtudiantControllerTest {
     }
 
     @Test
-    void postuler_success() throws Exception {
-        PostulerDTO postulerDTO = createTestPostulerDTO();
+    void postulation_success() throws Exception {
+        PostulationDTO postulationDTO = createTestPostulationDTO();
 
-        String content = new ObjectMapper().writeValueAsString(postulerDTO);
-        MvcResult result = mockMvc.perform(post("/etudiant/postuler")
+        String content = new ObjectMapper().writeValueAsString(postulationDTO);
+        MvcResult result = mockMvc.perform(post("/etudiant/postulation")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(content)
                 .with(csrf()))
@@ -134,7 +132,7 @@ class EtudiantControllerTest {
         Assertions.assertThat(result.getResponse().getContentAsString()).isEqualTo("Postulation réussie");
     }
 
-    private PostulerDTO createTestPostulerDTO() {
+    private PostulationDTO createTestPostulationDTO() {
             // Créer un EtudiantDTO
         EtudiantDTO etudiantDTO = new EtudiantDTO();
         etudiantDTO.setId(1L);
@@ -168,15 +166,15 @@ class EtudiantControllerTest {
         cvDTO.setData("base64EncodedData"); // Données CV en Base64
         
         // Créer le PostulerDTO
-        PostulerDTO postulerDTO = new PostulerDTO();
-        postulerDTO.setEtudiant(etudiantDTO);
-        postulerDTO.setStage(stageDTO);
-        postulerDTO.setCv(cvDTO);
-        postulerDTO.setMotivationLetter("base64EncodedMotivationLetter"); // Lettre de motivation en Base64
-        postulerDTO.setComment("Je suis très intéressé par ce stage car il correspond parfaitement à mes compétences.");
-        postulerDTO.setDatePostulation(null);
-        postulerDTO.setStatus(OfferStatus.SOUMISE);
+        PostulationDTO postulationDTO = new PostulationDTO();
+        postulationDTO.setEtudiant(etudiantDTO);
+        postulationDTO.setStage(stageDTO);
+        postulationDTO.setCv(cvDTO);
+        postulationDTO.setMotivationLetter("base64EncodedMotivationLetter"); // Lettre de motivation en Base64
+        postulationDTO.setDecision(null);
+        postulationDTO.setDatePostulation(null);
+        postulationDTO.setStatus(OfferStatus.SOUMISE);
         
-        return postulerDTO;
+        return postulationDTO;
     }
 }

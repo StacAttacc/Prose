@@ -3,15 +3,15 @@ package com.AL565.prose.service;
 import com.AL565.prose.model.Discipline;
 import com.AL565.prose.model.Etudiant;
 import com.AL565.prose.model.OfferStatus;
-import com.AL565.prose.model.Postuler;
+import com.AL565.prose.model.Postulation;
 import com.AL565.prose.repository.EtudiantRepository;
-import com.AL565.prose.repository.PostulerRepository;
+import com.AL565.prose.repository.PostulationRepository;
 import com.AL565.prose.repository.ProseUserRepository;
 import com.AL565.prose.service.dto.EmployeurDTO;
 import com.AL565.prose.service.dto.EtudiantCvDTO;
 import com.AL565.prose.service.dto.EtudiantDTO;
 import com.AL565.prose.service.dto.EtudiantPasswordDTO;
-import com.AL565.prose.service.dto.PostulerDTO;
+import com.AL565.prose.service.dto.PostulationDTO;
 import com.AL565.prose.service.dto.StageDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import org.junit.jupiter.api.Test;
@@ -37,7 +37,7 @@ import static org.mockito.Mockito.*;
         private EtudiantRepository etudiantRepository;
 
         @Mock
-        private PostulerRepository postulerRepository;
+        private PostulationRepository postulationRepository;
 
         @Mock
         private PasswordEncoder passwordEncoder;
@@ -63,13 +63,13 @@ import static org.mockito.Mockito.*;
         }
 
         @Test
-        void savePostuler_success() {
-            PostulerDTO postulerDTO = createValidPostulerDTO();
-            etudiantService.savePostuler(postulerDTO);
-            verify(postulerRepository, times(1)).save(any(Postuler.class));
+        void savePostulation_success() {
+            PostulationDTO postulationDTO = createValidPostulationDTO();
+            etudiantService.savePostulation(postulationDTO);
+            verify(postulationRepository, times(1)).save(any(Postulation.class));
         }
 
-        private PostulerDTO createValidPostulerDTO() {
+        private PostulationDTO createValidPostulationDTO() {
             EtudiantDTO etudiantDTO = new EtudiantDTO();
             etudiantDTO.setId(1L);
             etudiantDTO.setFirstName("Jean");
@@ -98,14 +98,14 @@ import static org.mockito.Mockito.*;
             cvDTO.setStatus("APPROVED");
             cvDTO.setData("dGVzdCBkYXRh"); // Base64 pour "test data"
 
-            PostulerDTO postulerDTO = new PostulerDTO();
-            postulerDTO.setEtudiant(etudiantDTO);
-            postulerDTO.setStage(stageDTO);
-            postulerDTO.setCv(cvDTO);
-            postulerDTO.setMotivationLetter("bGV0dHJlIGRlIG1vdGl2YXRpb24="); // Base64
-            postulerDTO.setComment("Je suis très intéressé par ce stage.");
-            postulerDTO.setStatus(OfferStatus.SOUMISE);
+            PostulationDTO postulationDTO = new PostulationDTO();
+            postulationDTO.setEtudiant(etudiantDTO);
+            postulationDTO.setStage(stageDTO);
+            postulationDTO.setCv(cvDTO);
+            postulationDTO.setMotivationLetter("bGV0dHJlIGRlIG1vdGl2YXRpb24="); // Base64
+            postulationDTO.setDecision(null);
+            postulationDTO.setStatus(OfferStatus.SOUMISE);
 
-            return postulerDTO;
+            return postulationDTO;
         }
     }
