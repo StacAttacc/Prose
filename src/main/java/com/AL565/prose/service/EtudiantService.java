@@ -6,11 +6,14 @@ import com.AL565.prose.model.OfferStatus;
 import com.AL565.prose.repository.EmployeurRepository;
 import com.AL565.prose.model.CV;
 import com.AL565.prose.model.CvStatus;
+import com.AL565.prose.model.Postuler;
 import com.AL565.prose.repository.CvRepository;
 import com.AL565.prose.repository.EtudiantRepository;
+import com.AL565.prose.repository.PostulerRepository;
 import com.AL565.prose.repository.ProseUserRepository;
 import com.AL565.prose.repository.StageRepository;
 import com.AL565.prose.service.dto.EtudiantPasswordDTO;
+import com.AL565.prose.service.dto.PostulerDTO;
 import com.AL565.prose.service.dto.StageDTO;
 
 import java.util.List;
@@ -39,19 +42,22 @@ public class EtudiantService {
     private final PasswordEncoder passwordEncoder;
     private final StageRepository stageRepository;
     private final EmployeurRepository employeurRepository;
+    private final PostulerRepository postulerRepository;
 
     public EtudiantService(EtudiantRepository etudiantRepository,
                            ProseUserRepository proseUserRepository,
                            PasswordEncoder passwordEncoder,
                            StageRepository stageRepository,
                            EmployeurRepository employeurRepository,
-                           CvRepository cvRepository) {
+                           CvRepository cvRepository,
+                           PostulerRepository postulerRepository) {
         this.cvRepository = cvRepository;
         this.etudiantRepository = etudiantRepository;
         this.proseUserRepository = proseUserRepository;
         this.passwordEncoder = passwordEncoder;
         this.employeurRepository = employeurRepository;
         this.stageRepository = stageRepository;
+        this.postulerRepository = postulerRepository;
     }
 
     public void inscrireEtudiant(EtudiantPasswordDTO dto) {
@@ -125,5 +131,14 @@ public class EtudiantService {
     public Optional<EtudiantCvDTO> getByEmail(String username) {
         return cvRepository.findByEtudiant_Credentials_Username(username)
                 .map(EtudiantCvDTO::toDto);
+    }
+
+    public void savePostuler(PostulerDTO dto) {
+        if (dto == null) {
+            throw new IllegalArgumentException("dto must not be null");
+        }
+
+        Postuler postuler = PostulerDTO.toModel(dto);
+        postulerRepository.save(postuler);
     }
 }

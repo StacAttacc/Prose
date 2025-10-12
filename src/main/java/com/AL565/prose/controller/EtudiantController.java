@@ -4,9 +4,13 @@ import com.AL565.prose.service.EtudiantService;
 import com.AL565.prose.service.dto.EtudiantCvDTO;
 import com.AL565.prose.security.exceptions.CvExceptions;
 import com.AL565.prose.service.dto.EtudiantPasswordDTO;
+import com.AL565.prose.service.dto.PostulerDTO;
 import com.AL565.prose.service.dto.ReturnEntityDTO;
 import com.AL565.prose.service.dto.StageDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
+
+import jakarta.validation.Valid;
+
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -65,6 +69,12 @@ public class EtudiantController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ReturnEntityDTO<>("Erreur lors de la récupération des stages approuvés",null));
         }
+    }
+
+    @PostMapping("/postuler")
+    public ResponseEntity<String> postuler(@Valid @RequestBody PostulerDTO dto) {
+        etudiantService.savePostuler(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body("Postulation réussie");
     }
 
 }

@@ -1,6 +1,8 @@
 package com.AL565.prose.service.dto;
 
 import com.AL565.prose.model.CV;
+import com.AL565.prose.model.CvStatus;
+
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -32,5 +34,18 @@ public class EtudiantCvDTO {
         dto.setData(Base64.getEncoder().encodeToString(cv.getData()));
         dto.setComment(cv.getComment());
         return dto;
+    }
+
+    public static CV fromDTO(EtudiantCvDTO dto) {
+        return CV.builder()
+                .name(dto.getName())
+                .type(dto.getType())
+                .size(dto.getSize())
+                .lastModified(dto.getLastModified())
+                .lastModifiedDate(dto.getLastModifiedDate())
+                .data(Base64.getDecoder().decode(dto.getData()))
+                .status(CvStatus.valueOf(dto.getStatus()))
+                .comment(dto.getComment())
+                .build();
     }
 }
