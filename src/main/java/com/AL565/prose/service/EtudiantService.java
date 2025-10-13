@@ -141,4 +141,52 @@ public class EtudiantService {
         Postulation postulation = PostulationDTO.toModel(dto);
         postulationRepository.save(postulation);
     }
+
+    public boolean hasApprovedCv(String email) {
+        return cvRepository.findByEtudiant_Credentials_Username(email)
+                .map(cv -> cv.getStatus() == CvStatus.APPROVED)
+                .orElse(false);
+    }
+
+    public void createCandidature(String email, Long stageId, String motivationLetter) throws Exception {
+        // Vérifier si l'étudiant a déjà postulé à ce stage
+        if (postulationRepository.existsByEtudiant_Credentials_UsernameAndStage_Id(email, stageId)) {
+            throw new Exception("Vous avez déjà postulé à ce stage");
+        }
+
+        // Récupérer l'étudiant
+        Etudiant etudiant = etudiantRepository.findEtudiantByCredentials_Username(email)
+                .orElseThrow(() -> new Exception("Étudiant non trouvé"));
+
+        // Récupérer le CV approuvé
+        CV cv = cvRepository.findByEtudiant_Credentials_Username(email)
+                .orElseThrow(() -> new Exception("CV non trouvé"));
+
+        if (cv.getStatus() != CvStatus.APPROVED) {
+            throw new Exception("Le CV n'est pas approuvé");
+        }
+
+        // Récupérer le stage
+        var stage = stageRepository.findById(stageId)
+                .orElseThrow(() -> new Exception("Stage non trouvé"));
+
+        // Encoder la lettre de motivation en Base64
+        byte[] motivationBytes = motivationLetter != null ? motivationLetter.getBytes() : new byte[0];
+
+        // Créer la postulation
+        Postulation postulation = Postulation.builder()
+                .etudiant(etudiant)
+                .cv(cv)
+                .stage(stage)
+                .motivationLetter(motivationBytes)
+                .datePostulation(java.time.LocalDateTime.now())
+                .status(OfferStatus.SOUMISE)
+                .build();
+
+        postulationRepository.save(postulation);
+    }
+
+    public boolean hasAlreadyApplied(String email, Long stageId) {
+        return postulationRepository.existsByEtudiant_Credentials_UsernameAndStage_Id(email, stageId);
+    }
 }

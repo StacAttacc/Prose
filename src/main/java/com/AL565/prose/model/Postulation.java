@@ -41,7 +41,7 @@ public class Postulation {
     @JoinColumn(name = "etudiant_id", nullable = false)
     private Etudiant etudiant;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "cv_id", nullable = false)
     private CV cv;
 

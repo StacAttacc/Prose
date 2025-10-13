@@ -1,5 +1,6 @@
 package com.AL565.prose.controller;
 
+import com.AL565.prose.security.JwtTokenProvider;
 import com.AL565.prose.service.EtudiantService;
 import com.AL565.prose.service.dto.EtudiantCvDTO;
 import com.AL565.prose.security.exceptions.CvExceptions;
@@ -11,7 +12,10 @@ import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 
 import jakarta.validation.Valid;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,9 +28,11 @@ import java.util.Optional;
 public class EtudiantController {
 
     private final EtudiantService etudiantService;
+    private final JwtTokenProvider jwtTokenProvider;
 
-    public EtudiantController(EtudiantService etudiantService) {
+    public EtudiantController(EtudiantService etudiantService, JwtTokenProvider jwtTokenProvider) {
         this.etudiantService = etudiantService;
+        this.jwtTokenProvider = jwtTokenProvider;
     }
 
     @PostMapping("/register")
@@ -78,6 +84,64 @@ public class EtudiantController {
             return ResponseEntity.status(HttpStatus.CREATED).body("Postulation réussie");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Erreur lors de la postulation");
+        }
+    }
+
+    @PostMapping("/candidature")
+    public ResponseEntity<String> soumettreCandidat(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestBody Map<String, Object> payload) {
+        try {
+            String token = authHeader.replace("Bearer ", "");
+            String email = jwtTokenProvider.getEmailFromJWT(token);
+
+            Long stageId = Long.valueOf(payload.get("stageId").toString());
+            String motivationLetter = payload.get("motivationLetter").toString();
+
+            etudiantService.createCandidature(email, stageId, motivationLetter);
+            return ResponseEntity.status(HttpStatus.CREATED).body("Candidature soumise avec succès");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Erreur lors de la soumission de la candidature: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/candidature/check/{stageId}")
+    public ResponseEntity<Map<String, Boolean>> checkIfAlreadyApplied(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable Long stageId) {
+        try {
+            String token = authHeader.replace("Bearer ", "");
+            String email = jwtTokenProvider.getEmailFromJWT(token);
+
+            boolean hasApplied = etudiantService.hasAlreadyApplied(email, stageId);
+
+            Map<String, Boolean> response = new HashMap<>();
+            response.put("hasApplied", hasApplied);
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Boolean> response = new HashMap<>();
+            response.put("hasApplied", false);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    @GetMapping("/cv/status")
+    public ResponseEntity<Map<String, Boolean>> checkCvStatus(@RequestHeader("Authorization") String authHeader) {
+        try {
+            String token = authHeader.replace("Bearer ", "");
+            String email = jwtTokenProvider.getEmailFromJWT(token);
+            boolean hasApprovedCv = etudiantService.hasApprovedCv(email);
+
+            Map<String, Boolean> response = new HashMap<>();
+            response.put("available", hasApprovedCv);
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Boolean> response = new HashMap<>();
+            response.put("available", false);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
