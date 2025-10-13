@@ -14,6 +14,7 @@ import com.AL565.prose.repository.ProseUserRepository;
 import com.AL565.prose.repository.StageRepository;
 import com.AL565.prose.service.dto.EtudiantPasswordDTO;
 import com.AL565.prose.service.dto.PostulationDTO;
+import com.AL565.prose.service.dto.CandidatureDTO;
 import com.AL565.prose.service.dto.StageDTO;
 
 import java.util.List;
@@ -148,18 +149,40 @@ public class EtudiantService {
                 .orElse(false);
     }
 
-    public void createCandidature(String email, Long stageId, String motivationLetter) throws Exception {
+    public void createCandidature(CandidatureDTO candidatureDTO) throws Exception {
+        // Validation du DTO
+        if (candidatureDTO == null) {
+            throw new IllegalArgumentException("Les données de candidature sont requises");
+        }
+
+        if (candidatureDTO.getStageId() == null) {
+            throw new IllegalArgumentException("L'ID du stage est requis");
+        }
+
+        if (candidatureDTO.getEtudiantEmail() == null || candidatureDTO.getEtudiantEmail().isEmpty()) {
+            throw new IllegalArgumentException("L'email de l'étudiant est requis");
+        }
+
         // Vérifier si l'étudiant a déjà postulé à ce stage
-        if (postulationRepository.existsByEtudiant_Credentials_UsernameAndStage_Id(email, stageId)) {
+        if (postulationRepository.existsByEtudiant_Credentials_UsernameAndStage_Id(
+                candidatureDTO.getEtudiantEmail(), candidatureDTO.getStageId())) {
             throw new Exception("Vous avez déjà postulé à ce stage");
         }
 
+        // Vérifier le fichier de lettre de motivation (optionnel, mais si fourni doit être PDF)
+        if (candidatureDTO.getMotivationLetterData() != null && candidatureDTO.getMotivationLetterData().length > 0) {
+            if (candidatureDTO.getMotivationLetterContentType() == null ||
+                !MediaType.APPLICATION_PDF_VALUE.equalsIgnoreCase(candidatureDTO.getMotivationLetterContentType())) {
+                throw new Exception("La lettre de motivation doit être au format PDF");
+            }
+        }
+
         // Récupérer l'étudiant
-        Etudiant etudiant = etudiantRepository.findEtudiantByCredentials_Username(email)
+        Etudiant etudiant = etudiantRepository.findEtudiantByCredentials_Username(candidatureDTO.getEtudiantEmail())
                 .orElseThrow(() -> new Exception("Étudiant non trouvé"));
 
         // Récupérer le CV approuvé
-        CV cv = cvRepository.findByEtudiant_Credentials_Username(email)
+        CV cv = cvRepository.findByEtudiant_Credentials_Username(candidatureDTO.getEtudiantEmail())
                 .orElseThrow(() -> new Exception("CV non trouvé"));
 
         if (cv.getStatus() != CvStatus.APPROVED) {
@@ -167,18 +190,15 @@ public class EtudiantService {
         }
 
         // Récupérer le stage
-        var stage = stageRepository.findById(stageId)
+        var stage = stageRepository.findById(candidatureDTO.getStageId())
                 .orElseThrow(() -> new Exception("Stage non trouvé"));
 
-        // Encoder la lettre de motivation en Base64
-        byte[] motivationBytes = motivationLetter != null ? motivationLetter.getBytes() : new byte[0];
-
-        // Créer la postulation
+        // Créer la postulation (conversion DTO -> Entité)
         Postulation postulation = Postulation.builder()
                 .etudiant(etudiant)
                 .cv(cv)
                 .stage(stage)
-                .motivationLetter(motivationBytes)
+                .motivationLetter(candidatureDTO.getMotivationLetterData()) // Peut être null
                 .datePostulation(java.time.LocalDateTime.now())
                 .status(OfferStatus.SOUMISE)
                 .build();

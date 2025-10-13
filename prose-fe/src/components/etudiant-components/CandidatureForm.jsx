@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext.jsx';
-import { checkCvStatus, checkIfAlreadyApplied, submitCandidature } from '../../services/EtudiantService.js';
+import { checkCvStatus, checkIfAlreadyApplied, submitCandidature, getCvInfo } from '../../services/EtudiantService.js';
 
 export default function CandidatureForm({ stage, onClose, onSuccess }) {
   const { user } = useAuth();
-  const [motivationLetter, setMotivationLetter] = useState('');
+  const [motivationLetterFile, setMotivationLetterFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [cvStatus, setCvStatus] = useState('loading'); // 'loading', 'available', 'notFound'
+  const [cvInfo, setCvInfo] = useState(null);
   const [hasAlreadyApplied, setHasAlreadyApplied] = useState(false);
   const [checkingApplication, setCheckingApplication] = useState(true);
 
@@ -19,6 +20,14 @@ export default function CandidatureForm({ stage, onClose, onSuccess }) {
         const cvResponse = await checkCvStatus();
         if (cvResponse.available) {
           setCvStatus('available');
+
+          // Récupérer les informations du CV
+          try {
+            const cvData = await getCvInfo();
+            setCvInfo(cvData);
+          } catch (cvErr) {
+            console.error("Erreur lors de la récupération des infos du CV:", cvErr);
+          }
         } else {
           setCvStatus('notFound');
         }
@@ -40,16 +49,42 @@ export default function CandidatureForm({ stage, onClose, onSuccess }) {
     fetchStatus();
   }, [stage.id]);
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Vérifier que c'est un PDF
+      if (file.type !== 'application/pdf') {
+        setError('Veuillez téléverser un fichier PDF pour la lettre de motivation.');
+        setMotivationLetterFile(null);
+        return;
+      }
+      // Vérifier la taille (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setError('Le fichier est trop volumineux. Taille maximale: 5MB.');
+        setMotivationLetterFile(null);
+        return;
+      }
+      setError(null);
+      setMotivationLetterFile(file);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     setLoading(true);
     setError(null);
 
     try {
-      await submitCandidature({
-        stageId: stage.id,
-        motivationLetter: motivationLetter
-      });
+      const formData = new FormData();
+      formData.append('stageId', stage.id);
+
+      // Ajouter la lettre de motivation seulement si elle est fournie
+      if (motivationLetterFile) {
+        formData.append('motivationLetter', motivationLetterFile);
+      }
+
+      await submitCandidature(formData);
 
       setLoading(false);
       onSuccess();
@@ -133,19 +168,44 @@ export default function CandidatureForm({ stage, onClose, onSuccess }) {
 
           {cvStatus === 'available' && (
             <form onSubmit={handleSubmit}>
+              {/* Afficher les informations du CV */}
+              {cvInfo && (
+                <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <p className="font-semibold text-green-800 mb-2">✓ CV détecté et approuvé</p>
+                  <div className="text-sm text-green-700">
+                    <p><strong>Fichier:</strong> {cvInfo.name || cvInfo.fileName || 'CV.pdf'}</p>
+                    {cvInfo.size && (
+                      <p><strong>Taille:</strong> {(cvInfo.size / 1024).toFixed(2)} KB</p>
+                    )}
+                    {cvInfo.lastModifiedDate && (
+                      <p><strong>Dernière modification:</strong> {new Date(cvInfo.lastModifiedDate).toLocaleDateString('fr-FR')}</p>
+                    )}
+                  </div>
+                  <p className="mt-2 text-xs text-green-600">
+                    Ce CV sera joint à votre candidature
+                  </p>
+                </div>
+              )}
+
               <div className="mb-4">
                 <label htmlFor="motivationLetter" className="block text-sm font-medium text-gray-700 mb-2">
-                  Lettre de motivation
+                  Lettre de motivation (PDF) - Optionnel
                 </label>
-                <textarea
+                <input
                   id="motivationLetter"
-                  rows={6}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-                  placeholder="Expliquez pourquoi vous êtes intéressé par ce stage et quelles sont vos compétences pertinentes..."
-                  value={motivationLetter}
-                  onChange={(e) => setMotivationLetter(e.target.value)}
-                  required
-                ></textarea>
+                  type="file"
+                  accept=".pdf"
+                  onChange={handleFileChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                />
+                {motivationLetterFile && (
+                  <p className="mt-2 text-sm text-green-600">
+                    ✓ Fichier sélectionné: {motivationLetterFile.name} ({(motivationLetterFile.size / 1024).toFixed(2)} KB)
+                  </p>
+                )}
+                <p className="mt-2 text-xs text-gray-500">
+                  Format accepté: PDF uniquement. Taille maximale: 5MB
+                </p>
               </div>
 
               <div className="mt-6 flex justify-end space-x-4">

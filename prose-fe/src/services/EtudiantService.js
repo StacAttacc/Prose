@@ -57,6 +57,16 @@ export const checkCvStatus = async () => {
     }
 };
 
+export const getCvInfo = async () => {
+    try {
+        const { data } = await http.get("/etudiant/cv/info");
+        return data;
+    } catch (e) {
+        console.error("Erreur lors de la récupération des infos du CV:", e);
+        throw e;
+    }
+};
+
 export const checkIfAlreadyApplied = async (stageId) => {
     try {
         const { data } = await http.get(`/etudiant/candidature/check/${stageId}`);
@@ -67,9 +77,13 @@ export const checkIfAlreadyApplied = async (stageId) => {
     }
 };
 
-export const submitCandidature = async (candidatureData) => {
+export const submitCandidature = async (formData) => {
     try {
-        const { data } = await http.post("/etudiant/candidature", candidatureData);
+        const { data } = await http.post("/etudiant/candidature", formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
         return data;
     } catch (e) {
         console.error("Erreur lors de la soumission de la candidature:", e);

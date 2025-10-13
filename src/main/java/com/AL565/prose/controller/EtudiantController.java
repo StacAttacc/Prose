@@ -2,6 +2,7 @@ package com.AL565.prose.controller;
 
 import com.AL565.prose.security.JwtTokenProvider;
 import com.AL565.prose.service.EtudiantService;
+import com.AL565.prose.service.dto.CandidatureDTO;
 import com.AL565.prose.service.dto.EtudiantCvDTO;
 import com.AL565.prose.security.exceptions.CvExceptions;
 import com.AL565.prose.service.dto.EtudiantPasswordDTO;
@@ -90,15 +91,28 @@ public class EtudiantController {
     @PostMapping("/candidature")
     public ResponseEntity<String> soumettreCandidat(
             @RequestHeader("Authorization") String authHeader,
-            @RequestBody Map<String, Object> payload) {
+            @RequestParam("stageId") Long stageId,
+            @RequestParam(value = "motivationLetter", required = false) MultipartFile motivationLetter) {
         try {
             String token = authHeader.replace("Bearer ", "");
             String email = jwtTokenProvider.getEmailFromJWT(token);
 
-            Long stageId = Long.valueOf(payload.get("stageId").toString());
-            String motivationLetter = payload.get("motivationLetter").toString();
+            // Construire le DTO avec ou sans lettre de motivation
+            CandidatureDTO.CandidatureDTOBuilder builder = CandidatureDTO.builder()
+                    .stageId(stageId)
+                    .etudiantEmail(email);
 
-            etudiantService.createCandidature(email, stageId, motivationLetter);
+            // Ajouter la lettre de motivation si elle est fournie
+            if (motivationLetter != null && !motivationLetter.isEmpty()) {
+                builder.motivationLetterData(motivationLetter.getBytes())
+                       .motivationLetterFileName(motivationLetter.getOriginalFilename())
+                       .motivationLetterContentType(motivationLetter.getContentType())
+                       .motivationLetterSize(motivationLetter.getSize());
+            }
+
+            CandidatureDTO candidatureDTO = builder.build();
+
+            etudiantService.createCandidature(candidatureDTO);
             return ResponseEntity.status(HttpStatus.CREATED).body("Candidature soumise avec succès");
         } catch (Exception e) {
             e.printStackTrace();
@@ -142,6 +156,24 @@ public class EtudiantController {
             Map<String, Boolean> response = new HashMap<>();
             response.put("available", false);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    @GetMapping("/cv/info")
+    public ResponseEntity<EtudiantCvDTO> getCvInfo(@RequestHeader("Authorization") String authHeader) {
+        try {
+            String token = authHeader.replace("Bearer ", "");
+            String email = jwtTokenProvider.getEmailFromJWT(token);
+
+            Optional<EtudiantCvDTO> cvInfo = etudiantService.getByEmail(email);
+
+            if (cvInfo.isPresent()) {
+                return ResponseEntity.ok(cvInfo.get());
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 
