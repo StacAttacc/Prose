@@ -1,4 +1,3 @@
-// src/components/etudiant-components/StageListings.jsx
 import React, { useState, useEffect, useMemo } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { getEtudiantStages } from "../../services/StageService";
@@ -176,10 +175,7 @@ export default function StageListings() {
                 </p>
               </div>
               
-              <div className="flex justify-between items-center">
-                <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">
-                  Approuvé
-                </span>
+              <div className="flex justify-end items-center">
                 <button className="text-teal-600 hover:text-teal-800 font-medium">
                   Voir détails →
                 </button>
