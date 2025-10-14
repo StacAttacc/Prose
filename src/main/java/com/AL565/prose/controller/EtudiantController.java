@@ -6,7 +6,6 @@ import com.AL565.prose.service.dto.CandidatureDTO;
 import com.AL565.prose.service.dto.EtudiantCvDTO;
 import com.AL565.prose.security.exceptions.CvExceptions;
 import com.AL565.prose.service.dto.EtudiantPasswordDTO;
-import com.AL565.prose.service.dto.PostulationDTO;
 import com.AL565.prose.service.dto.ReturnEntityDTO;
 import com.AL565.prose.service.dto.StageDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
@@ -75,16 +74,6 @@ public class EtudiantController {
             return ResponseEntity.ok(new ReturnEntityDTO<>("Stages approuvés", stages));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ReturnEntityDTO<>("Erreur lors de la récupération des stages approuvés",null));
-        }
-    }
-
-    @PostMapping("/postulation")
-    public ResponseEntity<String> postulation(@Valid @RequestBody PostulationDTO dto) {
-        try {
-            etudiantService.savePostulation(dto);
-            return ResponseEntity.status(HttpStatus.CREATED).body("Postulation réussie");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Erreur lors de la postulation");
         }
     }
 

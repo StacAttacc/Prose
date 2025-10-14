@@ -11,7 +11,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
@@ -24,7 +23,7 @@ import lombok.ToString;
 import lombok.EqualsAndHashCode;
 
 @Entity
-@Table(name = "postulation")
+@Table(name = "candidature")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -32,7 +31,7 @@ import lombok.EqualsAndHashCode;
 @Builder
 @ToString
 @EqualsAndHashCode(of = "id")
-public class Postulation {
+public class Candidature {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -53,8 +52,8 @@ public class Postulation {
     @JoinColumn(name = "stage_id", nullable = false)
     private Stage stage;
 
-    @Column(name = "date_postulation", nullable = false)
-    private LocalDateTime datePostulation;
+    @Column(name = "date_candidature", nullable = false)
+    private LocalDateTime dateCandidature;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)

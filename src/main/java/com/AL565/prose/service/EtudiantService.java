@@ -6,14 +6,13 @@ import com.AL565.prose.model.OfferStatus;
 import com.AL565.prose.repository.EmployeurRepository;
 import com.AL565.prose.model.CV;
 import com.AL565.prose.model.CvStatus;
-import com.AL565.prose.model.Postulation;
+import com.AL565.prose.model.Candidature;
 import com.AL565.prose.repository.CvRepository;
 import com.AL565.prose.repository.EtudiantRepository;
-import com.AL565.prose.repository.PostulationRepository;
+import com.AL565.prose.repository.CandidatureRepository;
 import com.AL565.prose.repository.ProseUserRepository;
 import com.AL565.prose.repository.StageRepository;
 import com.AL565.prose.service.dto.EtudiantPasswordDTO;
-import com.AL565.prose.service.dto.PostulationDTO;
 import com.AL565.prose.service.dto.CandidatureDTO;
 import com.AL565.prose.service.dto.StageDTO;
 
@@ -43,7 +42,7 @@ public class EtudiantService {
     private final PasswordEncoder passwordEncoder;
     private final StageRepository stageRepository;
     private final EmployeurRepository employeurRepository;
-    private final PostulationRepository postulationRepository;
+    private final CandidatureRepository candidatureRepository;
 
     public EtudiantService(EtudiantRepository etudiantRepository,
                            ProseUserRepository proseUserRepository,
@@ -51,14 +50,14 @@ public class EtudiantService {
                            StageRepository stageRepository,
                            EmployeurRepository employeurRepository,
                            CvRepository cvRepository,
-                           PostulationRepository postulationRepository) {
+                           CandidatureRepository candidatureRepository) {
         this.cvRepository = cvRepository;
         this.etudiantRepository = etudiantRepository;
         this.proseUserRepository = proseUserRepository;
         this.passwordEncoder = passwordEncoder;
         this.employeurRepository = employeurRepository;
         this.stageRepository = stageRepository;
-        this.postulationRepository = postulationRepository;
+        this.candidatureRepository = candidatureRepository;
     }
 
     public void inscrireEtudiant(EtudiantPasswordDTO dto) {
@@ -134,14 +133,6 @@ public class EtudiantService {
                 .map(EtudiantCvDTO::toDto);
     }
 
-    public void savePostulation(PostulationDTO dto) throws IllegalArgumentException {
-        if (dto == null) {
-            throw new IllegalArgumentException("dto must not be null");
-        }
-
-        Postulation postulation = PostulationDTO.toModel(dto);
-        postulationRepository.save(postulation);
-    }
 
     public boolean hasApprovedCv(String email) {
         return cvRepository.findByEtudiant_Credentials_Username(email)
@@ -164,7 +155,7 @@ public class EtudiantService {
         }
 
         // Vérifier si l'étudiant a déjà postulé à ce stage
-        if (postulationRepository.existsByEtudiant_Credentials_UsernameAndStage_Id(
+        if (candidatureRepository.existsByEtudiant_Credentials_UsernameAndStage_Id(
                 candidatureDTO.getEtudiantEmail(), candidatureDTO.getStageId())) {
             throw new Exception("Vous avez déjà postulé à ce stage");
         }
@@ -193,12 +184,12 @@ public class EtudiantService {
         var stage = stageRepository.findById(candidatureDTO.getStageId())
                 .orElseThrow(() -> new Exception("Stage non trouvé"));
 
-        Postulation postulation = candidatureDTO.toPostulation(etudiant, cv, stage);
+        Candidature candidature = candidatureDTO.toModel(etudiant, cv, stage);
 
-        postulationRepository.save(postulation);
+        candidatureRepository.save(candidature);
     }
 
     public boolean hasAlreadyApplied(String email, Long stageId) {
-        return postulationRepository.existsByEtudiant_Credentials_UsernameAndStage_Id(email, stageId);
+        return candidatureRepository.existsByEtudiant_Credentials_UsernameAndStage_Id(email, stageId);
     }
 }

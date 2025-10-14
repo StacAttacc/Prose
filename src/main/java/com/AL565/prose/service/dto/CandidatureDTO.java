@@ -3,7 +3,7 @@ package com.AL565.prose.service.dto;
 import com.AL565.prose.model.CV;
 import com.AL565.prose.model.Etudiant;
 import com.AL565.prose.model.OfferStatus;
-import com.AL565.prose.model.Postulation;
+import com.AL565.prose.model.Candidature;
 import com.AL565.prose.model.Stage;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,13 +24,13 @@ public class CandidatureDTO {
     private String motivationLetterContentType;
     private long motivationLetterSize;
 
-    public Postulation toPostulation(Etudiant etudiant, CV cv, Stage stage) {
-        return Postulation.builder()
+    public Candidature toModel (Etudiant etudiant, CV cv, Stage stage) {
+        return Candidature.builder()
                 .etudiant(etudiant)
                 .cv(cv)
                 .stage(stage)
                 .motivationLetter(this.motivationLetterData)
-                .datePostulation(LocalDateTime.now())
+                .dateCandidature(LocalDateTime.now())
                 .status(OfferStatus.SOUMISE)
                 .build();
     }
