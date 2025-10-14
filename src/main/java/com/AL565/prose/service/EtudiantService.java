@@ -193,15 +193,7 @@ public class EtudiantService {
         var stage = stageRepository.findById(candidatureDTO.getStageId())
                 .orElseThrow(() -> new Exception("Stage non trouvé"));
 
-        // Créer la postulation (conversion DTO -> Entité)
-        Postulation postulation = Postulation.builder()
-                .etudiant(etudiant)
-                .cv(cv)
-                .stage(stage)
-                .motivationLetter(candidatureDTO.getMotivationLetterData()) // Peut être null
-                .datePostulation(java.time.LocalDateTime.now())
-                .status(OfferStatus.SOUMISE)
-                .build();
+        Postulation postulation = candidatureDTO.toPostulation(etudiant, cv, stage);
 
         postulationRepository.save(postulation);
     }
