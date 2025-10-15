@@ -1,11 +1,11 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { NavLink, useParams } from "react-router-dom";
+import React, {useEffect, useMemo, useState} from "react";
+import {NavLink, useParams} from "react-router-dom";
 import ApplicantRow from "../display-components/ApplicantRow";
-import { useAuth } from "../../context/AuthContext.jsx";
+import {useAuth} from "../../context/AuthContext.jsx";
 
-const StageApplicantsPage = ({ updateApplicantStatus, fetchApplicants }) => {
-    const { id } = useParams();
-    const { user } = useAuth();
+const StageApplicantsPage = ({updateApplicantStatus, fetchApplicants}) => {
+    const {id} = useParams();
+    const {user} = useAuth();
 
     const [q, setQ] = useState("");
     const [statusFilter, setStatusFilter] = useState("ALL");
@@ -44,7 +44,9 @@ const StageApplicantsPage = ({ updateApplicantStatus, fetchApplicants }) => {
         }
     };
 
-    useEffect(() => { reload(); }, [id]);
+    useEffect(() => {
+        reload();
+    }, [id]);
 
     const filtered = useMemo(() => {
         const query = q.trim().toLowerCase();
@@ -81,7 +83,8 @@ const StageApplicantsPage = ({ updateApplicantStatus, fetchApplicants }) => {
                         onChange={(e) => setQ(e.target.value)}
                         aria-label="Recherche"
                     />
-                    <div className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-gray-400 text-base">
+                    <div
+                        className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-gray-400 text-base">
                         ⌕
                     </div>
                 </div>
@@ -145,7 +148,7 @@ const StageApplicantsPage = ({ updateApplicantStatus, fetchApplicants }) => {
                 </div>
             </div>
 
-            <div className="mt-4" />
+            <div className="mt-4"/>
 
             <NavLink
                 to="/employeur/posted-stages"
