@@ -3,13 +3,9 @@ package com.AL565.prose.controller;
 import com.AL565.prose.model.notifications.Notification;
 import com.AL565.prose.security.exceptions.CvExceptions;
 import com.AL565.prose.service.GestionnaireService;
-import com.AL565.prose.service.dto.ReturnEntityDTO;
-import com.AL565.prose.service.dto.RejectionRequestDTO;
-import com.AL565.prose.service.dto.StageDTO;
+import com.AL565.prose.service.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import com.AL565.prose.service.dto.CvDecisionDTO;
-import com.AL565.prose.service.dto.GestionnaireCvDTO;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -83,9 +79,9 @@ public class GestionnaireController {
     }
 
     @GetMapping("/notifications/all")
-    public ResponseEntity<ReturnEntityDTO<List<Notification>>> getAllNotifications() {
+    public ResponseEntity<ReturnEntityDTO<StageNotificationDTO>> getAllNotifications() {
         try {
-            List<Notification> notifications = gestionnaireService.getNotifications();
+            StageNotificationDTO notifications = gestionnaireService.getStageNotifications();
             return ResponseEntity.ok(new ReturnEntityDTO<>("notifications: ", notifications));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

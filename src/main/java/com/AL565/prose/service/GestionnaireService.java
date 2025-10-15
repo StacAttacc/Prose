@@ -13,6 +13,7 @@ import com.AL565.prose.security.exceptions.CvExceptions.*;
 import com.AL565.prose.service.dto.GestionnaireCvDTO;
 import com.AL565.prose.service.dto.GestionnairePasswordDTO;
 import com.AL565.prose.service.dto.StageDTO;
+import com.AL565.prose.service.dto.StageNotificationDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import com.AL565.prose.service.exceptions.FailedToRetrieveStagesException;
 import lombok.RequiredArgsConstructor;
@@ -121,9 +122,11 @@ public class GestionnaireService {
         }
     }
 
-    public List<Notification> getNotifications() throws Exception {
+    public StageNotificationDTO getStageNotifications() throws Exception {
         try {
-            return notificationRepository.findNotificationsByType(NotificationType.STAGE_NOTIFICATION);
+            List<Notification> notifications = notificationRepository
+                    .findNotificationsByType(NotificationType.STAGE_NOTIFICATION);
+            return new StageNotificationDTO(notifications, notifications.size());
         } catch (Exception e) {
             throw new NotificationFetchException();
         }
