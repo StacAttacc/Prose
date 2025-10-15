@@ -83,7 +83,7 @@ public class GestionnaireController {
     }
 
     @GetMapping("/notifications/all")
-    public ResponseEntity<ReturnEntityDTO<List<Notification>>> getAllNotifications() throws Exception {
+    public ResponseEntity<ReturnEntityDTO<List<Notification>>> getAllNotifications() {
         try {
             List<Notification> notifications = gestionnaireService.getNotifications();
             return ResponseEntity.ok(new ReturnEntityDTO<>("notifications: ", notifications));

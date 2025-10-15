@@ -71,3 +71,13 @@ export async function getAllStages(token) {
     });
     return data;
 }
+
+export async function getGestionnaireNotifications(token) {
+    const { data } = await axios.get(`${BASE_URL_GESTIONNAIRE}/notifications/all`, {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    });
+    console.log(data)
+    return data;
+}
