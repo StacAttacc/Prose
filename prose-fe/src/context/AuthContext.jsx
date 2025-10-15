@@ -5,6 +5,7 @@ import {
     registerEmployeur as apiRegisterEmployeur,
     registerEtudiant as apiRegisterEtudiant
 } from "../services/AuthService";
+import { setAccessToken } from "../services/http";
 
 const AuthCtx = createContext(null);
 
@@ -15,7 +16,14 @@ export function AuthProvider({ children }) {
     useEffect(() => {
         try {
             const raw = sessionStorage.getItem("user");
-            if (raw) setUser(JSON.parse(raw));
+            if (raw) {
+                const userData = JSON.parse(raw);
+                setUser(userData);
+                // Restaurer le token dans l'instance http
+                if (userData.token) {
+                    setAccessToken(userData.token);
+                }
+            }
         } catch {
             sessionStorage.removeItem("user");
         } finally {
@@ -25,7 +33,7 @@ export function AuthProvider({ children }) {
 
     useEffect(() => {
         if (user) {
-            sessionStorage.setItem("user", JSON.stringify(user.data));
+            sessionStorage.setItem("user", JSON.stringify(user));
         } else {
             sessionStorage.removeItem("user");
         }
