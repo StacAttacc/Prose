@@ -1,6 +1,7 @@
 package com.AL565.prose.controleur;
 
 import com.AL565.prose.controller.EtudiantController;
+import com.AL565.prose.security.JwtTokenProvider;
 import com.AL565.prose.service.EmployeurService;
 import com.AL565.prose.service.EtudiantService;
 import com.AL565.prose.service.GestionnaireService;
@@ -19,7 +20,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.http.MediaType;
 
 import java.util.Base64;
-import java.util.Optional;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -49,6 +49,9 @@ class EtudiantCvControllerTest {
 
     @Autowired
     private EtudiantService etudiantService;
+
+    @MockitoBean
+    private JwtTokenProvider jwtTokenProvider;
 
     @Test
     @WithMockUser(username = "testuser", roles = {"ETUDIANT"})

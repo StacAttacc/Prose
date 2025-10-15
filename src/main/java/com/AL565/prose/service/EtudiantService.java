@@ -6,11 +6,14 @@ import com.AL565.prose.model.OfferStatus;
 import com.AL565.prose.repository.EmployeurRepository;
 import com.AL565.prose.model.CV;
 import com.AL565.prose.model.CvStatus;
+import com.AL565.prose.model.Candidature;
 import com.AL565.prose.repository.CvRepository;
 import com.AL565.prose.repository.EtudiantRepository;
+import com.AL565.prose.repository.CandidatureRepository;
 import com.AL565.prose.repository.ProseUserRepository;
 import com.AL565.prose.repository.StageRepository;
 import com.AL565.prose.service.dto.EtudiantPasswordDTO;
+import com.AL565.prose.service.dto.CandidatureDTO;
 import com.AL565.prose.service.dto.StageDTO;
 
 import java.util.List;
@@ -28,7 +31,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.util.Optional;
 
 @Service
 @Transactional
@@ -41,6 +43,7 @@ public class EtudiantService {
     private final PasswordEncoder passwordEncoder;
     private final StageRepository stageRepository;
     private final EmployeurRepository employeurRepository;
+    private final CandidatureRepository candidatureRepository;
 
     public void inscrireEtudiant(EtudiantPasswordDTO dto) {
         if (proseUserRepository.findByCredentials_Username(dto.getEmail()).isPresent()) {
@@ -114,5 +117,58 @@ public class EtudiantService {
         return cvRepository.findByEtudiant_Credentials_Username(username)
                 .map(EtudiantCvDTO::toDto)
                 .orElse(null);
+    }
+
+    public boolean hasApprovedCv(String email) {
+        return cvRepository.findByEtudiant_Credentials_Username(email)
+                .map(cv -> cv.getStatus() == CvStatus.APPROVED)
+                .orElse(false);
+    }
+
+    public void createCandidature(CandidatureDTO candidatureDTO) throws Exception {
+        if (candidatureDTO == null) {
+            throw new IllegalArgumentException("Les données de candidature sont requises");
+        }
+
+        if (candidatureDTO.getStageId() == null) {
+            throw new IllegalArgumentException("L'ID du stage est requis");
+        }
+
+        if (candidatureDTO.getEtudiantEmail() == null || candidatureDTO.getEtudiantEmail().isEmpty()) {
+            throw new IllegalArgumentException("L'email de l'étudiant est requis");
+        }
+
+        if (candidatureRepository.existsByEtudiant_Credentials_UsernameAndStage_Id(
+                candidatureDTO.getEtudiantEmail(), candidatureDTO.getStageId())) {
+            throw new Exception("Vous avez déjà postulé à ce stage");
+        }
+
+        if (candidatureDTO.getMotivationLetterData() != null && candidatureDTO.getMotivationLetterData().length > 0) {
+            if (candidatureDTO.getMotivationLetterContentType() == null ||
+                !MediaType.APPLICATION_PDF_VALUE.equalsIgnoreCase(candidatureDTO.getMotivationLetterContentType())) {
+                throw new Exception("La lettre de motivation doit être au format PDF");
+            }
+        }
+
+        Etudiant etudiant = etudiantRepository.findEtudiantByCredentials_Username(candidatureDTO.getEtudiantEmail())
+                .orElseThrow(() -> new Exception("Étudiant non trouvé"));
+
+        CV cv = cvRepository.findByEtudiant_Credentials_Username(candidatureDTO.getEtudiantEmail())
+                .orElseThrow(() -> new Exception("CV non trouvé"));
+
+        if (cv.getStatus() != CvStatus.APPROVED) {
+            throw new Exception("Le CV n'est pas approuvé");
+        }
+
+        var stage = stageRepository.findById(candidatureDTO.getStageId())
+                .orElseThrow(() -> new Exception("Stage non trouvé"));
+
+        Candidature candidature = candidatureDTO.toModel(etudiant, cv, stage);
+
+        candidatureRepository.save(candidature);
+    }
+
+    public boolean hasAlreadyApplied(String email, Long stageId) {
+        return candidatureRepository.existsByEtudiant_Credentials_UsernameAndStage_Id(email, stageId);
     }
 }

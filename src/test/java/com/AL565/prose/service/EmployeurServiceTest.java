@@ -97,7 +97,6 @@ class EmployeurServiceTest {
         });
 
         when(employeurRepository.getEmployeurByCredentials_Username(any(String.class))).thenReturn(employeur);
-        when(notificationRepository.save(any())).thenReturn(null);
 
         StageDTO out = employeurService.createStage(dto);
 

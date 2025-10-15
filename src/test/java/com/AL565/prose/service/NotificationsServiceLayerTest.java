@@ -1,14 +1,9 @@
-// Java
 package com.AL565.prose.service;
 
 import com.AL565.prose.model.notifications.Notification;
 import com.AL565.prose.model.notifications.NotificationType;
 import com.AL565.prose.model.notifications.StageNotification;
-import com.AL565.prose.repository.CvRepository;
-import com.AL565.prose.repository.EmployeurRepository;
-import com.AL565.prose.repository.GestionnaireRepository;
 import com.AL565.prose.repository.NotificationRepository;
-import com.AL565.prose.repository.StageRepository;
 import com.AL565.prose.security.exceptions.NotificationExceptions.NotificationFetchException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -16,7 +11,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,22 +21,6 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class NotificationsServiceLayerTest {
-
-    @Mock
-    private CvRepository cvRepository;
-
-    @Mock
-    private GestionnaireRepository gestionnaireRepository;
-
-    @Mock
-    private StageRepository stageRepository;
-
-    @Mock
-    private EmployeurRepository employeurRepository;
-
-    @Mock
-    private PasswordEncoder passwordEncoder;
-
     @Mock
     private NotificationRepository notificationRepository;
 
