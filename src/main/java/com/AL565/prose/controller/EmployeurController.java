@@ -40,7 +40,6 @@ public class EmployeurController {
     public ResponseEntity<String> createOffer(@Valid @RequestBody StageDTO request) {
         try {
             employeurService.createStage(request);
-            employeurService.createNotificationForNewStage(request);
             return new ResponseEntity<>("Stage créé avec succès", HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>("Stage invalide",  HttpStatus.BAD_REQUEST);

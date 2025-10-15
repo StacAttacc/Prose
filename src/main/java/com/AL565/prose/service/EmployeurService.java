@@ -50,22 +50,23 @@ public class EmployeurService {
     @Transactional
     public StageDTO createStage(StageDTO dto) {
         if (dto == null) {
-            throw new IllegalArgumentException("dto must not be null");
+            throw new IllegalArgumentException("stage must not be null");
         }
 
         Stage saved = stageRepository.save(StageDTO.toModel(dto));
         Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(saved.getEmployeurEmail());
+        createNotificationForNewStage(saved);
 
         return StageDTO.fromModel(saved, employeur);
     }
 
-    @Transactional
-    public void createNotificationForNewStage(StageDTO stageDTO) {
-        if (stageDTO == null) {
-            throw new IllegalArgumentException("stageDTO must not be null");
+    private void createNotificationForNewStage(Stage stage) {
+        if (stage == null) {
+            throw new IllegalArgumentException("stage must not be null");
         }
-        Stage stage = StageDTO.toModel(stageDTO);
+        System.out.println("HERe");
         StageNotification notification = new StageNotification();
+        notification.setReadAt(null);
         notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
         notification.setStage(stage);
         notification.setSenderEmail(stage.getEmployeurEmail());
