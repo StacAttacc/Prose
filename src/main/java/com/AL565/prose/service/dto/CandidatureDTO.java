@@ -34,4 +34,12 @@ public class CandidatureDTO {
                 .status(OfferStatus.SOUMISE)
                 .build();
     }
+
+    public static CandidatureDTO toDTO (Candidature candidature) {
+        return CandidatureDTO.builder()
+                .stageId(candidature.getStage().getId())
+                .etudiantEmail(candidature.getEtudiant().getEmail())
+                .motivationLetterData(candidature.getMotivationLetter())
+                .build();
+    }
 }

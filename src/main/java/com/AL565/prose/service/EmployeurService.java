@@ -1,22 +1,27 @@
 package com.AL565.prose.service;
 
+import com.AL565.prose.model.Candidature;
 import com.AL565.prose.model.Employeur;
 import com.AL565.prose.model.OfferStatus;
 import com.AL565.prose.model.Stage;
+import com.AL565.prose.repository.CandidatureRepository;
 import com.AL565.prose.repository.EmployeurRepository;
 import com.AL565.prose.repository.ProseUserRepository;
 import com.AL565.prose.repository.StageRepository;
 import com.AL565.prose.security.exceptions.UserNotFoundException;
+import com.AL565.prose.service.dto.CandidatureDTO;
 import com.AL565.prose.service.dto.EmployeurDTO;
 import com.AL565.prose.service.dto.EmployeurPasswordDTO;
 import com.AL565.prose.service.dto.StageDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
+import com.AL565.prose.service.exceptions.StageNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -27,6 +32,7 @@ public class EmployeurService {
     private EmployeurRepository employeurRepository;
     private PasswordEncoder passwordEncoder;
     private StageRepository stageRepository;
+    private CandidatureRepository candidatureRepository;
 
     public void enregistrer(EmployeurPasswordDTO employeurDTO) throws EmailAlreadyExistsException {
         if (proseUserRepository.findByCredentials_Username(employeurDTO.getEmail()).isPresent()) {
@@ -64,9 +70,9 @@ public class EmployeurService {
                 }).toList();
     }
 
-    public StageDTO updateStage(Long id, StageDTO stageDTO) {
+    public StageDTO updateStage(Long id, StageDTO stageDTO) throws StageNotFoundException {
         Stage stage = stageRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Stage non trouvé"));
+                .orElseThrow(() -> new StageNotFoundException("Stage non trouvé"));
 
         stage.setTitle(stageDTO.getTitle());
         stage.setDescription(stageDTO.getDescription());
@@ -83,5 +89,15 @@ public class EmployeurService {
         Stage updatedStage = stageRepository.save(stage);
         Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(updatedStage.getEmployeurEmail());
         return StageDTO.fromModel(updatedStage, employeur);
+    }
+
+    @Transactional
+    public List<CandidatureDTO> getStageCandidatures(long stageId) throws StageNotFoundException {
+        if (stageRepository.findById(stageId).isEmpty()) {
+            throw new StageNotFoundException("Le stage n'existe pas");
+        }
+        List<Candidature> candidatures = candidatureRepository.findAllByStage_Id(stageId).orElse(new ArrayList<>());
+
+        return candidatures.stream().map((CandidatureDTO::toDTO)).toList();
     }
 }

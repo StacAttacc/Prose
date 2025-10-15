@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 import com.AL565.prose.security.exceptions.CvExceptions;
 import com.AL565.prose.service.dto.EtudiantCvDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
+import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -34,6 +35,7 @@ import java.util.Optional;
 
 @Service
 @Transactional
+@AllArgsConstructor
 public class EtudiantService {
 
     private final EtudiantRepository etudiantRepository;
@@ -43,22 +45,6 @@ public class EtudiantService {
     private final StageRepository stageRepository;
     private final EmployeurRepository employeurRepository;
     private final CandidatureRepository candidatureRepository;
-
-    public EtudiantService(EtudiantRepository etudiantRepository,
-                           ProseUserRepository proseUserRepository,
-                           PasswordEncoder passwordEncoder,
-                           StageRepository stageRepository,
-                           EmployeurRepository employeurRepository,
-                           CvRepository cvRepository,
-                           CandidatureRepository candidatureRepository) {
-        this.cvRepository = cvRepository;
-        this.etudiantRepository = etudiantRepository;
-        this.proseUserRepository = proseUserRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.employeurRepository = employeurRepository;
-        this.stageRepository = stageRepository;
-        this.candidatureRepository = candidatureRepository;
-    }
 
     public void inscrireEtudiant(EtudiantPasswordDTO dto) {
         if (proseUserRepository.findByCredentials_Username(dto.getEmail()).isPresent()) {
@@ -141,7 +127,6 @@ public class EtudiantService {
     }
 
     public void createCandidature(CandidatureDTO candidatureDTO) throws Exception {
-        // Validation du DTO
         if (candidatureDTO == null) {
             throw new IllegalArgumentException("Les données de candidature sont requises");
         }
@@ -154,13 +139,11 @@ public class EtudiantService {
             throw new IllegalArgumentException("L'email de l'étudiant est requis");
         }
 
-        // Vérifier si l'étudiant a déjà postulé à ce stage
         if (candidatureRepository.existsByEtudiant_Credentials_UsernameAndStage_Id(
                 candidatureDTO.getEtudiantEmail(), candidatureDTO.getStageId())) {
             throw new Exception("Vous avez déjà postulé à ce stage");
         }
 
-        // Vérifier le fichier de lettre de motivation (optionnel, mais si fourni doit être PDF)
         if (candidatureDTO.getMotivationLetterData() != null && candidatureDTO.getMotivationLetterData().length > 0) {
             if (candidatureDTO.getMotivationLetterContentType() == null ||
                 !MediaType.APPLICATION_PDF_VALUE.equalsIgnoreCase(candidatureDTO.getMotivationLetterContentType())) {
@@ -168,11 +151,9 @@ public class EtudiantService {
             }
         }
 
-        // Récupérer l'étudiant
         Etudiant etudiant = etudiantRepository.findEtudiantByCredentials_Username(candidatureDTO.getEtudiantEmail())
                 .orElseThrow(() -> new Exception("Étudiant non trouvé"));
 
-        // Récupérer le CV approuvé
         CV cv = cvRepository.findByEtudiant_Credentials_Username(candidatureDTO.getEtudiantEmail())
                 .orElseThrow(() -> new Exception("CV non trouvé"));
 
@@ -180,7 +161,6 @@ public class EtudiantService {
             throw new Exception("Le CV n'est pas approuvé");
         }
 
-        // Récupérer le stage
         var stage = stageRepository.findById(candidatureDTO.getStageId())
                 .orElseThrow(() -> new Exception("Stage non trouvé"));
 
