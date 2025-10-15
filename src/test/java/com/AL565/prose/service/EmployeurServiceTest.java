@@ -2,6 +2,7 @@ package com.AL565.prose.service;
 
 import com.AL565.prose.model.Employeur;
 import com.AL565.prose.model.Stage;
+import com.AL565.prose.model.notifications.StageNotification;
 import com.AL565.prose.repository.EmployeurRepository;
 import com.AL565.prose.repository.NotificationRepository;
 import com.AL565.prose.repository.ProseUserRepository;
@@ -12,6 +13,7 @@ import com.AL565.prose.service.dto.StageDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -72,10 +74,10 @@ class EmployeurServiceTest {
 
 
     @Test
-    void createStage() throws Exception {
-        Employeur employeur = new Employeur(8L, "Umberto", "Macaco", "Zac inc", "email");
+    void createStage_saves_stage_and_creates_notification() {
+        // arrange
+        Employeur employeur = new Employeur(8L, "Umberto", "Macaco", "Zac inc", "employer@example.com");
         EmployeurDTO empDto = new EmployeurDTO(employeur, null);
-
 
         var dto = StageDTO.builder()
                 .title("Stagiaire Java")
@@ -96,13 +98,26 @@ class EmployeurServiceTest {
             return s;
         });
 
-        when(employeurRepository.getEmployeurByCredentials_Username(any(String.class))).thenReturn(employeur);
+        when(employeurRepository.getEmployeurByCredentials_Username(anyString())).thenReturn(employeur);
 
+        // act
         StageDTO out = employeurService.createStage(dto);
 
+        // assert stage result
         assertThat(out.getId()).isEqualTo(42L);
         assertThat(out.getStatus().name()).isEqualTo("SOUMISE");
         verify(stageRepository, times(1)).save(any(Stage.class));
+
+        // assert notification created and saved
+        ArgumentCaptor<StageNotification> notifCaptor = ArgumentCaptor.forClass(StageNotification.class);
+        verify(notificationRepository, times(1)).save(notifCaptor.capture());
+        StageNotification savedNotif = notifCaptor.getValue();
+
+        assertThat(savedNotif).isNotNull();
+        assertThat(savedNotif.getStage()).isNotNull();
+        assertThat(savedNotif.getStage().getId()).isEqualTo(42L);
+        assertThat(savedNotif.getSenderEmail()).isEqualTo(dto.getEmployeur().getEmail());
+        assertThat(savedNotif.getMessage()).isEqualTo("Nouvelle offre de stage soumise");
     }
 
     @Test
@@ -112,7 +127,7 @@ class EmployeurServiceTest {
 
         assertThatThrownBy(() -> employeurService.createStage(null))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("dto");
+                .hasMessageContaining("stage must not be null");
 
         verifyNoInteractions(stageRepository);
     }
