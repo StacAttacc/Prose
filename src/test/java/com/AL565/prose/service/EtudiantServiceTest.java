@@ -2,6 +2,7 @@ package com.AL565.prose.service;
 
 import com.AL565.prose.model.Discipline;
 import com.AL565.prose.model.Etudiant;
+import com.AL565.prose.model.Employeur;
 import com.AL565.prose.model.OfferStatus;
 import com.AL565.prose.model.Candidature;
 import com.AL565.prose.model.CV;
@@ -10,12 +11,14 @@ import com.AL565.prose.model.Stage;
 import com.AL565.prose.model.auth.Credentials;
 import com.AL565.prose.model.auth.Role;
 import com.AL565.prose.repository.EtudiantRepository;
+import com.AL565.prose.repository.EmployeurRepository;
 import com.AL565.prose.repository.CandidatureRepository;
 import com.AL565.prose.repository.CvRepository;
 import com.AL565.prose.repository.StageRepository;
 import com.AL565.prose.repository.ProseUserRepository;
 import com.AL565.prose.service.dto.CandidatureDTO;
 import com.AL565.prose.service.dto.EtudiantPasswordDTO;
+import com.AL565.prose.service.dto.MesCandidaturesDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,6 +27,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -42,6 +49,9 @@ class EtudiantServiceTest {
 
     @Mock
     private CandidatureRepository candidatureRepository;
+
+    @Mock
+    private EmployeurRepository employeurRepository;
 
     @Mock
     private CvRepository cvRepository;
@@ -264,6 +274,42 @@ class EtudiantServiceTest {
         assertFalse(result);
     }
 
+    @Test
+    void getMesCandidatures_success() {
+        String email = "jean.dupont@etudiant.ca";
+
+        // Créer les données de test
+        Etudiant etudiant = createMockEtudiant(email);
+        Employeur employeur = createMockEmployeur("employer@company.com");
+        Stage stage = createMockStageWithDetails(1L, "employer@company.com");
+        Candidature candidature = createMockCandidature(etudiant, stage, OfferStatus.SOUMISE);
+
+        List<Candidature> candidatures = Arrays.asList(candidature);
+
+        when(candidatureRepository.findByEtudiant_Credentials_Username(email))
+                .thenReturn(candidatures);
+        when(employeurRepository.getEmployeurByCredentials_Username("employer@company.com"))
+                .thenReturn(employeur);
+
+        // Appeler la méthode
+        List<MesCandidaturesDTO> result = etudiantService.getMesCandidatures(email);
+
+        // Vérifications
+        assertNotNull(result);
+        assertEquals(1, result.size());
+
+        MesCandidaturesDTO dto = result.get(0);
+        assertEquals("SOUMISE", dto.getStatus());
+        assertEquals("Développeur Java", dto.getStage().getTitle());
+        assertEquals("Stage en développement Java", dto.getStage().getDescription());
+        assertEquals("Tech Solutions Inc.", dto.getStage().getEmployeur().getCompany());
+        assertEquals("Jean", dto.getStage().getEmployeur().getFirstName());
+        assertEquals("Dupont", dto.getStage().getEmployeur().getLastName());
+
+        verify(candidatureRepository, times(1)).findByEtudiant_Credentials_Username(email);
+        verify(employeurRepository, times(1)).getEmployeurByCredentials_Username("employer@company.com");
+    }
+
     // Méthodes utilitaires pour créer des objets mock
     private Etudiant createMockEtudiant(String email) {
         Etudiant etudiant = new Etudiant();
@@ -302,5 +348,48 @@ class EtudiantServiceTest {
         stage.setStatus(OfferStatus.APPROUVEE);
         stage.setEmployeurEmail("employer@company.com");
         return stage;
+    }
+
+    private Employeur createMockEmployeur(String email) {
+        Employeur employeur = new Employeur();
+        employeur.setId(1L);
+        employeur.setFirstName("Jean");
+        employeur.setLastName("Dupont");
+        employeur.setCompany("Tech Solutions Inc.");
+
+        Credentials credentials = new Credentials();
+        credentials.setUsername(email);
+        credentials.setPassword("encodedPassword");
+        credentials.setRole(Role.EMPLOYEUR);
+        employeur.setCredentials(credentials);
+
+        return employeur;
+    }
+
+    private Stage createMockStageWithDetails(Long stageId, String employeurEmail) {
+        Stage stage = new Stage();
+        stage.setId(stageId);
+        stage.setTitle("Développeur Java");
+        stage.setDescription("Stage en développement Java");
+        stage.setLocation("Montréal, QC");
+        stage.setCompensation("25$/h");
+        stage.setStartDate(LocalDate.of(2025, 5, 1));
+        stage.setEndDate(LocalDate.of(2025, 8, 31));
+        stage.setSkills(Arrays.asList("Java", "Spring", "SQL"));
+        stage.setStatus(OfferStatus.APPROUVEE);
+        stage.setEmployeurEmail(employeurEmail);
+        return stage;
+    }
+
+    private Candidature createMockCandidature(Etudiant etudiant, Stage stage, OfferStatus status) {
+        Candidature candidature = new Candidature();
+        candidature.setId(1L);
+        candidature.setEtudiant(etudiant);
+        candidature.setStage(stage);
+        candidature.setStatus(status);
+        candidature.setDateCandidature(LocalDateTime.of(2025, 10, 10, 10, 30));
+        candidature.setDecision(null);
+        candidature.setDateDecision(null);
+        return candidature;
     }
 }

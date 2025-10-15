@@ -90,3 +90,13 @@ export const submitCandidature = async (formData) => {
         throw e;
     }
 };
+
+export const getMesCandidatures = async () => {
+    try {
+        const { data } = await http.get("/etudiant/candidatures");
+        return data.data;
+    } catch (e) {
+        console.error("Erreur lors de la récupération des candidatures:", e);
+        throw e;
+    }
+};

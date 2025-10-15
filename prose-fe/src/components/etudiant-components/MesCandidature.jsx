@@ -1,8 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
-import { useAuth } from "../../context/AuthContext.jsx";
+import { getMesCandidatures } from "../../services/EtudiantService.js";
 
 export default function MesCandidature() {
-    const { user } = useAuth();
     const [candidatures, setCandidatures] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -12,80 +11,10 @@ export default function MesCandidature() {
     const [statusFilter, setStatusFilter] = useState("");
 
     useEffect(() => {
-        // TODO: Implémenter la récupération des candidatures depuis le backend
-        // Pour l'instant, on simule un chargement
         const fetchCandidatures = async () => {
             try {
-                // Simulation d'un délai de chargement
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                
-                // TODO: Remplacer par un vrai appel API
-                // const data = await getMesCandidatures(user.token);
-                // setCandidatures(data);
-                
-                // Données hardcodées pour test
-                setCandidatures([
-                    {
-                        stage: {
-                            title: "Développeur Full Stack",
-                            description: "Développement d'applications web modernes",
-                            location: "Montréal, QC",
-                            compensation: "25$/h",
-                            startDate: "2025-05-01",
-                            endDate: "2025-08-31",
-                            skills: ["React", "Node.js", "MongoDB"],
-                            employeur: {
-                                company: "Tech Solutions Inc.",
-                                firstName: "Jean",
-                                lastName: "Dupont"
-                            }
-                        },
-                        status: "SOUMISE",
-                        datePostulation: "2025-10-10T10:30:00",
-                        decision: null,
-                        dateDecision: null
-                    },
-                    {
-                        stage: {
-                            title: "Analyste de données",
-                            description: "Analyse et visualisation de données",
-                            location: "Télétravail",
-                            compensation: "30$/h",
-                            startDate: "2025-06-01",
-                            endDate: "2025-09-30",
-                            skills: ["Python", "SQL", "Tableau"],
-                            employeur: {
-                                company: "Data Analytics Co.",
-                                firstName: "Marie",
-                                lastName: "Martin"
-                            }
-                        },
-                        status: "ACCEPTEE",
-                        datePostulation: "2025-10-05T14:20:00",
-                        decision: "Votre profil correspond parfaitement à nos besoins.",
-                        dateDecision: "2025-10-12T09:15:00"
-                    },
-                    {
-                        stage: {
-                            title: "Designer UX/UI",
-                            description: "Conception d'interfaces utilisateur",
-                            location: "Québec, QC",
-                            compensation: "500$/semaine",
-                            startDate: "2025-05-15",
-                            endDate: "2025-08-15",
-                            skills: ["Figma", "Adobe XD", "Prototypage"],
-                            employeur: {
-                                company: "Creative Studio",
-                                firstName: "Pierre",
-                                lastName: "Tremblay"
-                            }
-                        },
-                        status: "REFUSEE",
-                        datePostulation: "2025-10-01T11:45:00",
-                        decision: "Nous recherchons un candidat avec plus d'expérience en design mobile.",
-                        dateDecision: "2025-10-08T16:30:00"
-                    }
-                ]);
+                const data = await getMesCandidatures();
+                setCandidatures(data);
             } catch (err) {
                 setError("Erreur lors du chargement des candidatures");
                 console.error(err);
@@ -95,7 +24,7 @@ export default function MesCandidature() {
         };
 
         fetchCandidatures();
-    }, [user.token]);
+    }, []);
 
     // Filtrage des candidatures basé sur les critères de recherche
   const filteredCandidatures = useMemo(() => {

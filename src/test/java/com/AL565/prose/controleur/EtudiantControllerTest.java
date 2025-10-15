@@ -11,6 +11,7 @@ import com.AL565.prose.service.GestionnaireService;
 import com.AL565.prose.service.dto.EtudiantCvDTO;
 import com.AL565.prose.service.dto.EtudiantPasswordDTO;
 import com.AL565.prose.service.dto.StageDTO;
+import com.AL565.prose.service.dto.MesCandidaturesDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.assertj.core.api.Assertions;
@@ -354,6 +355,26 @@ class EtudiantControllerTest {
                 .andExpect(status().isInternalServerError());
     }
 
+    @Test
+    void getMesCandidatures_success() throws Exception {
+        List<MesCandidaturesDTO> candidatures = createTestCandidatures();
+
+        when(jwtTokenProvider.getEmailFromJWT(anyString())).thenReturn("test@test.com");
+        when(etudiantService.getMesCandidatures("test@test.com")).thenReturn(candidatures);
+
+        mockMvc.perform(get("/etudiant/candidatures")
+                .header("Authorization", "Bearer token123")
+                .with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Candidatures récupérées avec succès"))
+                .andExpect(jsonPath("$.data").isArray())
+                .andExpect(jsonPath("$.data[0].status").value("SOUMISE"))
+                .andExpect(jsonPath("$.data[0].stage.title").value("Développeur Full Stack"))
+                .andExpect(jsonPath("$.data[0].stage.employeur.company").value("Tech Solutions Inc."));
+
+        verify(etudiantService, times(1)).getMesCandidatures("test@test.com");
+    }
+
     // Méthode utilitaire
     private EtudiantPasswordDTO createTestEtudiantDTO() {
         EtudiantPasswordDTO etudiant = new EtudiantPasswordDTO();
@@ -363,5 +384,37 @@ class EtudiantControllerTest {
         etudiant.setPassword("motdepasse");
         etudiant.setDiscipline(String.valueOf(Discipline.INFORMATIQUE));
         return etudiant;
+    }
+
+    private List<MesCandidaturesDTO> createTestCandidatures() {
+        List<MesCandidaturesDTO> candidatures = new ArrayList<>();
+
+        MesCandidaturesDTO.EmployeurInfoDTO employeur = MesCandidaturesDTO.EmployeurInfoDTO.builder()
+                .company("Tech Solutions Inc.")
+                .firstName("Jean")
+                .lastName("Dupont")
+                .build();
+
+        MesCandidaturesDTO.StageInfoDTO stage = MesCandidaturesDTO.StageInfoDTO.builder()
+                .title("Développeur Full Stack")
+                .description("Développement d'applications web modernes")
+                .location("Montréal, QC")
+                .compensation("25$/h")
+                .startDate("2025-05-01")
+                .endDate("2025-08-31")
+                .skills(Arrays.asList("React", "Node.js", "MongoDB"))
+                .employeur(employeur)
+                .build();
+
+        MesCandidaturesDTO candidature = MesCandidaturesDTO.builder()
+                .stage(stage)
+                .status("SOUMISE")
+                .datePostulation(java.time.LocalDateTime.of(2025, 10, 10, 10, 30))
+                .decision(null)
+                .dateDecision(null)
+                .build();
+
+        candidatures.add(candidature);
+        return candidatures;
     }
 }

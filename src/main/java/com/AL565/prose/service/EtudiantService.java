@@ -15,6 +15,7 @@ import com.AL565.prose.repository.StageRepository;
 import com.AL565.prose.service.dto.EtudiantPasswordDTO;
 import com.AL565.prose.service.dto.CandidatureDTO;
 import com.AL565.prose.service.dto.StageDTO;
+import com.AL565.prose.service.dto.MesCandidaturesDTO;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -191,5 +192,17 @@ public class EtudiantService {
 
     public boolean hasAlreadyApplied(String email, Long stageId) {
         return candidatureRepository.existsByEtudiant_Credentials_UsernameAndStage_Id(email, stageId);
+    }
+
+    public List<MesCandidaturesDTO> getMesCandidatures(String email) {
+        List<Candidature> candidatures = candidatureRepository.findByEtudiant_Credentials_Username(email);
+
+        return candidatures.stream()
+                .map(candidature -> {
+                    String employeurEmail = candidature.getStage().getEmployeurEmail();
+                    Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(employeurEmail);
+                    return MesCandidaturesDTO.toDTO(candidature, employeur);
+                })
+                .collect(Collectors.toList());
     }
 }

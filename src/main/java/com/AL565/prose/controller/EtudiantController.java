@@ -8,6 +8,7 @@ import com.AL565.prose.security.exceptions.CvExceptions;
 import com.AL565.prose.service.dto.EtudiantPasswordDTO;
 import com.AL565.prose.service.dto.ReturnEntityDTO;
 import com.AL565.prose.service.dto.StageDTO;
+import com.AL565.prose.service.dto.MesCandidaturesDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 
 import jakarta.validation.Valid;
@@ -163,6 +164,21 @@ public class EtudiantController {
             }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+    @GetMapping("/candidatures")
+    public ResponseEntity<ReturnEntityDTO<List<MesCandidaturesDTO>>> getMesCandidatures(@RequestHeader("Authorization") String authHeader) {
+        try {
+            String token = authHeader.replace("Bearer ", "");
+            String email = jwtTokenProvider.getEmailFromJWT(token);
+
+            List<MesCandidaturesDTO> candidatures = etudiantService.getMesCandidatures(email);
+
+            return ResponseEntity.ok(new ReturnEntityDTO<>("Candidatures récupérées avec succès", candidatures));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ReturnEntityDTO<>("Erreur lors de la récupération des candidatures", null));
         }
     }
 
