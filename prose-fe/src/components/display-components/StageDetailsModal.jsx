@@ -85,7 +85,7 @@ export default function StageDetailsModal({
             <h3 className="text-lg font-semibold mb-2">Informations générales</h3>
             <div className="space-y-2">
               <p><strong>Titre :</strong> {stage.title}</p>
-              <p><strong>Employeur :</strong> {stage.employeur?.email}</p>
+              <p><strong>Employeur :</strong> {stage.employeur?.company} ({stage.employeur?.email})</p>
               <p><strong>Statut :</strong> {stage.status}</p>
               <p><strong>Date de début :</strong> {stage.startDate}</p>
               <p><strong>Date de fin :</strong> {stage.endDate}</p>
