@@ -11,11 +11,8 @@ import com.AL565.prose.security.JwtTokenProvider;
 import com.AL565.prose.security.exceptions.NotificationExceptions;
 import com.AL565.prose.service.EmployeurService;
 import com.AL565.prose.service.EtudiantService;
-import com.AL565.prose.service.dto.GestionnaireCvDTO;
+import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.GestionnaireService;
-import com.AL565.prose.service.dto.EmployeurDTO;
-import com.AL565.prose.service.dto.RejectionRequestDTO;
-import com.AL565.prose.service.dto.StageDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -223,7 +220,7 @@ class GestionnaireControllerTest {
 
     @Test
     @DisplayName("GET /gestionnaire/notifications/all -> 200 + list of notifications")
-    void getAllNotifications_returnsOkWithList() throws Exception {
+    void getStageNotifications_returnsOkWithList() throws Exception {
         StageNotification n1 = new StageNotification();
         n1.setType(NotificationType.STAGE_NOTIFICATION);
         n1.setMessage("Stage submitted");
@@ -238,7 +235,7 @@ class GestionnaireControllerTest {
         n2.setSenderEmail("employer2@example.com");
         n2.setStage(null);
 
-        when(gestionnaireService.getNotifications()).thenReturn(List.of(n1, n2));
+        when(gestionnaireService.getStageNotifications()).thenReturn(StageNotificationDTO.builder().stageNotifications(List.of(n1, n2)).count(2).build());
 
         mockMvc.perform(get("/gestionnaire/notifications/all").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -248,7 +245,7 @@ class GestionnaireControllerTest {
     @Test
     @DisplayName("GET /gestionnaire/notifications/all -> 500 when service throws")
     void getAllNotifications_whenServiceThrows_returns500() throws Exception {
-        when(gestionnaireService.getNotifications()).thenThrow(new NotificationExceptions.NotificationFetchException());
+        when(gestionnaireService.getStageNotifications()).thenThrow(new NotificationExceptions.NotificationFetchException());
 
         mockMvc.perform(get("/gestionnaire/notifications/all").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isInternalServerError());

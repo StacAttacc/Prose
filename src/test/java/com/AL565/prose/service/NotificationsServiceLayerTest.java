@@ -5,6 +5,7 @@ import com.AL565.prose.model.notifications.NotificationType;
 import com.AL565.prose.model.notifications.StageNotification;
 import com.AL565.prose.repository.NotificationRepository;
 import com.AL565.prose.security.exceptions.NotificationExceptions.NotificationFetchException;
+import com.AL565.prose.service.dto.StageNotificationDTO;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,7 +30,7 @@ class NotificationsServiceLayerTest {
 
     @Test
     @DisplayName("getNotifications() returns stage notifications from repository")
-    void getNotifications_returnsStageNotifications() throws Exception {
+    void getStageNotifications_returnsStageNotifications() throws Exception {
         StageNotification n1 = new StageNotification();
         n1.setType(NotificationType.STAGE_NOTIFICATION);
         n1.setMessage("Stage submitted");
@@ -43,12 +44,12 @@ class NotificationsServiceLayerTest {
         when(notificationRepository.findNotificationsByType(NotificationType.STAGE_NOTIFICATION))
                 .thenReturn(List.of(n1, n2));
 
-        List<Notification> result = gestionnaireService.getNotifications();
+        StageNotificationDTO result = gestionnaireService.getStageNotifications();
 
-        assertThat(result).hasSize(2);
-        assertThat(result.getFirst()).isInstanceOf(StageNotification.class);
-        assertThat(result.getFirst().getType()).isEqualTo(NotificationType.STAGE_NOTIFICATION);
-        assertThat(result.getFirst().getMessage()).isEqualTo("Stage submitted");
+        assertThat(result.getStageNotifications()).hasSize(2);
+        assertThat(result.getStageNotifications().getFirst()).isInstanceOf(StageNotification.class);
+        assertThat(result.getStageNotifications().getFirst().getType()).isEqualTo(NotificationType.STAGE_NOTIFICATION);
+        assertThat(result.getStageNotifications().getFirst().getMessage()).isEqualTo("Stage submitted");
 
         verify(notificationRepository, times(1))
                 .findNotificationsByType(NotificationType.STAGE_NOTIFICATION);
@@ -61,7 +62,7 @@ class NotificationsServiceLayerTest {
         when(notificationRepository.findNotificationsByType(any()))
                 .thenThrow(new RuntimeException("DB down"));
 
-        assertThatThrownBy(() -> gestionnaireService.getNotifications())
+        assertThatThrownBy(() -> gestionnaireService.getStageNotifications())
                 .isInstanceOf(NotificationFetchException.class);
 
         verify(notificationRepository, times(1))
