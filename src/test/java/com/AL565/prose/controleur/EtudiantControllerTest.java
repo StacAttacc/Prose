@@ -272,7 +272,6 @@ class EtudiantControllerTest {
                 .andExpect(jsonPath("$.hasApplied").value(false));
     }
 
-    // Tests pour /cv/status
     @Test
     void checkCvStatus_cvApproved() throws Exception {
         when(jwtTokenProvider.getEmailFromJWT(anyString())).thenReturn("test@test.com");
@@ -312,7 +311,6 @@ class EtudiantControllerTest {
                 .andExpect(jsonPath("$.available").value(false));
     }
 
-    // Tests pour /cv/info
     @Test
     void getCvInfo_cvExists() throws Exception {
         EtudiantCvDTO cvDTO = new EtudiantCvDTO();
