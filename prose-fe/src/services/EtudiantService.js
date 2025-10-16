@@ -29,10 +29,16 @@ export const televerserCv = async (cv, user) => {
     }
 };
 
-export const telechargerCv = async (email) => {
+export const telechargerCv = async (email, token) => {
     try {
-        const response = await http.get(`${CV_DOWNLOAD_URL}/${email}`);
-        return response.data;
+        const url = `${CV_DOWNLOAD_URL}/${encodeURIComponent(email)}`;
+
+        const config = token
+            ? { headers: { Authorization: `Bearer ${token}` } }
+            : undefined;
+
+        const { data } = await http.get(url, config);
+        return data;
     } catch (e) {
         if (e.response) {
             console.error("Erreur:", e.response.data);
@@ -46,6 +52,7 @@ export const telechargerCv = async (email) => {
         }
     }
 };
+
 
 export const checkCvStatus = async () => {
     try {

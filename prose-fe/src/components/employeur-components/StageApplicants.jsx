@@ -2,8 +2,10 @@ import React, {useEffect, useMemo, useState} from "react";
 import {NavLink, useParams} from "react-router-dom";
 import ApplicantRow from "../display-components/ApplicantRow";
 import {useAuth} from "../../context/AuthContext.jsx";
+import {getStageApplicants} from "../../services/ApplicationService.js";
+import {getEmployeurStages} from "../../services/StageService.js";
 
-const StageApplicantsPage = ({updateApplicantStatus, fetchApplicants}) => {
+const StageApplicantsPage = () => {
     const {id} = useParams();
     const {user} = useAuth();
 
@@ -12,52 +14,95 @@ const StageApplicantsPage = ({updateApplicantStatus, fetchApplicants}) => {
     const [applicants, setApplicants] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [stageTitle, setStageTitle] = useState(null);
 
-    const handleAccept = async (applicant) => {
-        try {
-            await updateApplicantStatus(id, applicant.id, "ACCEPTEE", user.token);
-            await reload();
-        } catch {
-            setError("Échec de la mise à jour du statut.");
-        }
-    };
-
-    const handleReject = async (applicant, reason) => {
-        try {
-            await updateApplicantStatus(id, applicant.id, "REJETEE", user.token, reason);
-            await reload();
-        } catch {
-            setError("Échec de la mise à jour du statut.");
-        }
-    };
+    const safeEmail = useMemo(() => {
+        const candidates = [
+            user?.email,
+            user?.username,
+            user?.credentials?.username,
+            user?.principal?.username,
+        ];
+        return (
+            candidates.find(
+                (v) => typeof v === "string" && v.trim().length > 0
+            ) || null
+        );
+    }, [user]);
 
     const reload = async () => {
         try {
             setLoading(true);
-            const data = await fetchApplicants(id, user.token);
-            setApplicants(data || []);
+            const data = await getStageApplicants(id, user.token);
+            setApplicants(Array.isArray(data) ? data : []);
             setError(null);
-        } catch {
+        } catch (e) {
+            console.debug("getStageApplicants error:", e);
             setError("Impossible de charger les candidatures.");
         } finally {
             setLoading(false);
         }
     };
 
+    const loadStageTitle = async () => {
+        try {
+            if (!safeEmail) {
+                setStageTitle(null);
+                return;
+            }
+            const list = await getEmployeurStages(safeEmail, user?.token);
+            const stages = Array.isArray(list)
+                ? list
+                : Array.isArray(list?.content)
+                    ? list.content
+                    : Array.isArray(list?.data)
+                        ? list.data
+                        : [];
+
+            const target = stages.find(
+                (s) => String(s?.id ?? "") === String(id ?? "")
+            );
+
+            setStageTitle(target?.title ?? target?.titre ?? target?.name ?? null);
+        } catch (e) {
+            console.debug("loadStageTitle/getEmployeurStages error", e);
+            setStageTitle(null);
+        }
+    };
+
     useEffect(() => {
         reload();
+        loadStageTitle();
     }, [id]);
 
     const filtered = useMemo(() => {
+        const base = Array.isArray(applicants) ? applicants : [];
         const query = q.trim().toLowerCase();
-        return (applicants || []).filter((app) => {
+
+        return base.filter((app) => {
+            const name =
+                app?.fullName ??
+                app?.nom ??
+                [app?.prenom, app?.nom].filter(Boolean).join(" ") ??
+                "";
+
+            const email = app?.email ?? "";
+
+            const skills = Array.isArray(app?.skills)
+                ? app.skills
+                : Array.isArray(app?.competences)
+                    ? app.competences
+                    : [];
+
             const matchesQuery =
                 !query ||
-                app.nom?.toLowerCase().includes(query) ||
-                app.email?.toLowerCase().includes(query) ||
-                app.competences?.some((c) => c.toLowerCase().includes(query));
+                name.toLowerCase().includes(query) ||
+                email.toLowerCase().includes(query) ||
+                skills.some((c) => c?.toLowerCase?.().includes(query));
 
-            const matchesStatus = statusFilter === "ALL" || app.status === statusFilter;
+            const status = app?.status ?? app?.statut ?? null;
+            const matchesStatus = statusFilter === "ALL" || status === statusFilter;
+
             return matchesQuery && matchesStatus;
         });
     }, [applicants, q, statusFilter]);
@@ -67,7 +112,9 @@ const StageApplicantsPage = ({updateApplicantStatus, fetchApplicants}) => {
             {/* Header */}
             <div className="flex items-end justify-between gap-3">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Candidatures du stage #{id}</h1>
+                    <h1 className="text-2xl font-bold">
+                        Candidature(s) du stage {stageTitle ? `"${stageTitle}"` : `#${id}`}
+                    </h1>
                     <p className="text-sm text-gray-500 mt-1">
                         {filtered.length} candidature{filtered.length > 1 ? "s" : ""}
                     </p>
@@ -102,7 +149,6 @@ const StageApplicantsPage = ({updateApplicantStatus, fetchApplicants}) => {
                 </select>
             </div>
 
-
             <div className="mt-6 bg-white rounded-2xl border border-gray-100 shadow-md overflow-hidden">
                 {error && (
                     <div className="px-4 py-3 bg-rose-50 text-rose-700 text-sm border-b border-rose-200">
@@ -115,9 +161,12 @@ const StageApplicantsPage = ({updateApplicantStatus, fetchApplicants}) => {
                         <thead>
                         <tr className="bg-gray-50 text-left border-b">
                             <th className="py-3 px-4 font-medium text-gray-600">Candidat</th>
-                            <th className="py-3 px-4 font-medium text-gray-600">Présentation & Compétences</th>
-                            <th className="py-3 px-4 font-medium text-gray-600">CV</th>
-                            <th className="py-3 px-4 font-medium text-gray-600">Actions</th>
+                            <th className="py-3 px-4 font-medium text-gray-600">
+                                Cv de l'étudiant
+                            </th>
+                            <th className="py-3 px-4 font-medium text-gray-600">
+                                Lettre de motivation
+                            </th>
                         </tr>
                         </thead>
                         <tbody>
@@ -135,12 +184,7 @@ const StageApplicantsPage = ({updateApplicantStatus, fetchApplicants}) => {
                             </tr>
                         ) : (
                             filtered.map((app) => (
-                                <ApplicantRow
-                                    key={app.id}
-                                    applicant={app}
-                                    onAccept={handleAccept}
-                                    onReject={handleReject}
-                                />
+                                <ApplicantRow key={app.id} applicant={app}/>
                             ))
                         )}
                         </tbody>

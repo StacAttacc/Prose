@@ -37,4 +37,7 @@ export async function updateStage(stage, token) {
             'Authorization': `Bearer ${token}`
         }
     });
+
+
+
 }
