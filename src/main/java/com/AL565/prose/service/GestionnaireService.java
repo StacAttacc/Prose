@@ -131,4 +131,15 @@ public class GestionnaireService {
             throw new NotificationFetchException();
         }
     }
+
+    public void markNotificationAsRead(Long notificationId) throws Exception {
+        try {
+            Notification notification = notificationRepository.findById(notificationId)
+                    .orElseThrow(NotificationFetchException::new);
+            notification.setReadAt(java.time.OffsetDateTime.now().toLocalDateTime());
+            notificationRepository.save(notification);
+        } catch (Exception e) {
+            throw new NotificationFetchException();
+        }
+    }
 }
