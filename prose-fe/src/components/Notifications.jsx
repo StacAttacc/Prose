@@ -83,9 +83,9 @@ export default function Notifications() {
         setOpen(false);
         const stageId = notification?.stage?.id || notification?.stageId;
         if (stageId) {
-            navigate(`/stages/${stageId}`);
+            navigate("/gestionnaire/list-stages", { state: { openStageId: stageId } });
         } else {
-            navigate("/notifications");
+            navigate("/gestionnaire/list-stages");
         }
     }, [navigate]);
 
