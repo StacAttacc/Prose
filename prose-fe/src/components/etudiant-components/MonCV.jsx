@@ -107,7 +107,7 @@ export default function MonCV() {
                                     </div>
                                     <div>
                                         <span className="inline-block w-4 h-4 rounded bg-yellow-400 ml-4 mr-2"></span>
-                                        <span className="whitespace-nowrap">En Attente</span>
+                                        <span className="whitespace-nowrap">En Attente d'Approbation</span>
                                     </div>
                                     <div>
                                         <span className="inline-block w-4 h-4 rounded bg-red-400 ml-4 mr-2"></span>

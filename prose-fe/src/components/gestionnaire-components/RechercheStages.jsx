@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { getAllStages } from "../../services/GestionnaireService";
+import {getAllStages, submitStageDecision} from "../../services/GestionnaireService";
 import StageDetailsModal from "../display-components/StageDetailsModal";
 import ErrorBanner from "../display-components/ErrorBanner.jsx";
 
@@ -11,8 +11,7 @@ export default function GestRechercheStages() {
   const [error, setError] = useState(null);
   const [selectedStage, setSelectedStage] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
-  // États pour la recherche et les filtres
+
   const [searchTerm, setSearchTerm] = useState("");
   const [locationFilter, setLocationFilter] = useState("");
   const [compensationFilter, setCompensationFilter] = useState("");
@@ -105,7 +104,7 @@ export default function GestRechercheStages() {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6 text-center">Recherche de Stages</h1>
+      <h1 className="text-2xl font-bold mb-6 text-center">Recherche/Approbation de Stages</h1>
 
       <div className="mb-8 bg-white rounded-lg shadow-md border border-gray-200 p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
@@ -240,7 +239,7 @@ export default function GestRechercheStages() {
         stage={selectedStage}
         isOpen={isModalOpen}
         onClose={closeModal}
-        showManagementButtons={false}
+        showManagementButtons={true}
       />
     </div>
   );
