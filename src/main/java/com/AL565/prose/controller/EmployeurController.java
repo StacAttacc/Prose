@@ -74,7 +74,7 @@ public class EmployeurController {
             return ResponseEntity.ok(new ReturnEntityDTO<>("Stage mis à jour avec succès", updatedStage));
         } catch (StageNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ReturnEntityDTO<>("Stage non trouvé", null));
-        }catch (Exception e) {
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ReturnEntityDTO<>("Erreur lors de la mise à jour du stage", null));
         }
     }
@@ -85,7 +85,7 @@ public class EmployeurController {
             List<CandidatureDTO> candidatures = employeurService.getStageCandidatures(id);
             return ResponseEntity.ok(new ReturnEntityDTO<>("Candidatures trouvées", candidatures));
         } catch (NoSuchElementException e) {
-          return ResponseEntity.ok(new ReturnEntityDTO<>("Aucune candidature trouvee", new ArrayList<>()));
+            return ResponseEntity.ok(new ReturnEntityDTO<>("Aucune candidature trouvee", new ArrayList<>()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ReturnEntityDTO<>("Erreur interne du serveur", null));
         }
