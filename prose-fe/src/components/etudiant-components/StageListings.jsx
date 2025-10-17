@@ -58,6 +58,10 @@ export default function StageListings() {
     setSelectedStage(null);
   };
 
+  const handleCandidatureSuccess = (stage) => {
+    setStages(prevStages => prevStages.filter(s => s.id !== stage.id));
+  };
+
   const clearFilters = () => {
     setSearchTerm("");
     setLocationFilter("");
@@ -189,6 +193,7 @@ export default function StageListings() {
         isOpen={isModalOpen}
         onClose={closeModal}
         showManagementButtons={false}
+        onCandidatureSuccess={handleCandidatureSuccess}
       />
     </div>
   );

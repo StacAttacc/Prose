@@ -10,7 +10,8 @@ export default function StageDetailsModal({
   onApprove, 
   onReject,
   showManagementButtons = false,
-  showPostulerButton = true
+  showPostulerButton = true,
+  onCandidatureSuccess
 }) {
   const { user } = useAuth();
   const [rejectionReason, setRejectionReason] = useState("");
@@ -78,6 +79,10 @@ export default function StageDetailsModal({
     const handleCandidatureSuccess = () => {
         setShowCandidatureForm(false);
         setCandidatureSuccess(true);
+        // Notifier le parent que la candidature a été envoyée
+        if (onCandidatureSuccess) {
+            onCandidatureSuccess(stage);
+        }
     };
 
   if (!isOpen || !stage) return null;

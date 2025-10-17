@@ -3,6 +3,7 @@ package com.AL565.prose.service;
 import com.AL565.prose.model.Employeur;
 import com.AL565.prose.model.Etudiant;
 import com.AL565.prose.model.OfferStatus;
+import com.AL565.prose.model.Stage;
 import com.AL565.prose.repository.EmployeurRepository;
 import com.AL565.prose.model.CV;
 import com.AL565.prose.model.CvStatus;
@@ -16,8 +17,10 @@ import com.AL565.prose.service.dto.EtudiantPasswordDTO;
 import com.AL565.prose.service.dto.CandidatureDTO;
 import com.AL565.prose.service.dto.StageDTO;
 import com.AL565.prose.service.dto.EtudiantCandidatureDTO;
+import com.AL565.prose.security.JwtTokenProvider;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.AL565.prose.security.exceptions.CvExceptions;
@@ -41,6 +44,7 @@ public class EtudiantService {
 
     private final EtudiantRepository etudiantRepository;
     private final ProseUserRepository proseUserRepository;
+    private final JwtTokenProvider jwtTokenProvider;
     private final CvRepository cvRepository;
     private final PasswordEncoder passwordEncoder;
     private final StageRepository stageRepository;
@@ -60,13 +64,29 @@ public class EtudiantService {
     }
 
     public List<StageDTO> getEtudiantStages(String token) {
-        return stageRepository.findByStatus(OfferStatus.APPROUVEE)
+
+        String cleanToken = token.replace("Bearer ", "");
+        String etudiantEmail = jwtTokenProvider.getEmailFromJWT(cleanToken);
+
+        // Récupérer tous les stages approuvés
+        List<Stage> stagesApprouves = stageRepository.findByStatus(OfferStatus.APPROUVEE);
+        
+        // Récupérer les IDs des stages auxquels l'étudiant a déjà postulé
+        Set<Long> stageIdsPostules = candidatureRepository
+                .findByEtudiant_Credentials_Username(etudiantEmail)
                 .stream()
+                .map(candidature -> candidature.getStage().getId())
+                .collect(Collectors.toSet());
+        
+        // Filtrer pour ne garder que les stages non postulés
+        return stagesApprouves.stream()
+                .filter(stage -> !stageIdsPostules.contains(stage.getId()))
                 .map(stage -> {
                     Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(stage.getEmployeurEmail());
                     return StageDTO.fromModel(stage, employeur);
                 })
                 .collect(Collectors.toList());
+
     }
   
     public void saveCv(MultipartFile cv, String email, String lastModified) throws Exception {
