@@ -28,6 +28,8 @@ public class MesCandidaturesDTO {
     public static class StageInfoDTO {
         private String title;
         private String description;
+        private String requirements;
+        private String workMode;
         private String location;
         private String compensation;
         private String startDate;
@@ -44,6 +46,7 @@ public class MesCandidaturesDTO {
         private String company;
         private String firstName;
         private String lastName;
+        private  String email;
     }
 
     public static MesCandidaturesDTO toDTO (Candidature candidature, Employeur employeur) {
@@ -53,6 +56,8 @@ public class MesCandidaturesDTO {
                 .stage(StageInfoDTO.builder()
                         .title(stage.getTitle())
                         .description(stage.getDescription())
+                        .requirements(stage.getRequirements())
+                        .workMode(stage.getWorkMode())
                         .location(stage.getLocation())
                         .compensation(stage.getCompensation())
                         .startDate(stage.getStartDate() != null ? stage.getStartDate().toString() : null)
@@ -62,6 +67,7 @@ public class MesCandidaturesDTO {
                                 .company(employeur.getCompany())
                                 .firstName(employeur.getFirstName())
                                 .lastName(employeur.getLastName())
+                                .email(employeur.getEmail())
                                 .build())
                         .build())
                 .status(candidature.getStatus().name())

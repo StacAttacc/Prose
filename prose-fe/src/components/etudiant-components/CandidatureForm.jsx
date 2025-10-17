@@ -7,21 +7,18 @@ export default function CandidatureForm({ stage, onClose, onSuccess }) {
   const [motivationLetterFile, setMotivationLetterFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [cvStatus, setCvStatus] = useState('loading'); // 'loading', 'available', 'notFound'
+  const [cvStatus, setCvStatus] = useState('loading');
   const [cvInfo, setCvInfo] = useState(null);
   const [hasAlreadyApplied, setHasAlreadyApplied] = useState(false);
   const [checkingApplication, setCheckingApplication] = useState(true);
 
   useEffect(() => {
-    // Vérifier si l'étudiant a un CV disponible et s'il a déjà postulé
     const fetchStatus = async () => {
       try {
-        // Vérifier le CV
         const cvResponse = await checkCvStatus();
         if (cvResponse.available) {
           setCvStatus('available');
 
-          // Récupérer les informations du CV
           try {
             const cvData = await getCvInfo();
             setCvInfo(cvData);
@@ -32,7 +29,6 @@ export default function CandidatureForm({ stage, onClose, onSuccess }) {
           setCvStatus('notFound');
         }
 
-        // Vérifier si déjà postulé
         const applicationResponse = await checkIfAlreadyApplied(stage.id);
         setHasAlreadyApplied(applicationResponse.hasApplied);
       } catch (err) {
@@ -52,13 +48,11 @@ export default function CandidatureForm({ stage, onClose, onSuccess }) {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Vérifier que c'est un PDF
       if (file.type !== 'application/pdf') {
         setError('Veuillez téléverser un fichier PDF pour la lettre de motivation.');
         setMotivationLetterFile(null);
         return;
       }
-      // Vérifier la taille (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         setError('Le fichier est trop volumineux. Taille maximale: 5MB.');
         setMotivationLetterFile(null);
@@ -79,7 +73,6 @@ export default function CandidatureForm({ stage, onClose, onSuccess }) {
       const formData = new FormData();
       formData.append('stageId', stage.id);
 
-      // Ajouter la lettre de motivation seulement si elle est fournie
       if (motivationLetterFile) {
         formData.append('motivationLetter', motivationLetterFile);
       }
@@ -168,7 +161,6 @@ export default function CandidatureForm({ stage, onClose, onSuccess }) {
 
           {cvStatus === 'available' && (
             <form onSubmit={handleSubmit}>
-              {/* Afficher les informations du CV */}
               {cvInfo && (
                 <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
                   <p className="font-semibold text-green-800 mb-2">✓ CV détecté et approuvé</p>

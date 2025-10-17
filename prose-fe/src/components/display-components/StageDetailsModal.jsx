@@ -8,7 +8,8 @@ export default function StageDetailsModal({
   onClose, 
   onApprove, 
   onReject,
-  showManagementButtons = false 
+  showManagementButtons = false,
+  showPostulerButton = true
 }) {
   const { user } = useAuth();
   const [rejectionReason, setRejectionReason] = useState("");
@@ -17,11 +18,9 @@ export default function StageDetailsModal({
   const [showCandidatureForm, setShowCandidatureForm] = useState(false);
   const [candidatureSuccess, setCandidatureSuccess] = useState(false);
 
-  // Déterminer si les boutons de gestion doivent être affichés
   const shouldShowManagementButtons = showManagementButtons && user?.role === 'GESTIONNAIRE';
 
-  // Déterminer si le bouton Postuler doit être affiché
-  const showPostulerButton = user?.role === 'ETUDIANT' && stage?.status === 'APPROUVEE' && !showCandidatureForm && !candidatureSuccess;
+  const shouldShowPostulerButton = showPostulerButton && user?.role === 'ETUDIANT' && stage?.status === 'APPROUVEE' && !showCandidatureForm && !candidatureSuccess;
 
   const handleApprove = async () => {
     if (!onApprove) return;
@@ -78,7 +77,6 @@ export default function StageDetailsModal({
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div className="bg-white rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            {/* Afficher le formulaire de candidature si nécessaire */}
             {showCandidatureForm ? (
                 <CandidatureForm
                     stage={stage}
@@ -98,7 +96,6 @@ export default function StageDetailsModal({
           </button>
         </div>
 
-        {/* Message de confirmation de candidature */}
         {candidatureSuccess && (
             <div className="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
                 <p className="font-medium">Votre candidature a été envoyée avec succès !</p>
@@ -112,7 +109,9 @@ export default function StageDetailsModal({
             <div className="space-y-2">
               <p><strong>Titre :</strong> {stage.title}</p>
               <p><strong>Employeur :</strong> {stage.employeur?.email}</p>
-              <p><strong>Statut :</strong> {stage.status}</p>
+              {user?.role === 'GESTIONNAIRE' && (
+                <p><strong>Statut :</strong> {stage.status}</p>
+              )}
               <p><strong>Date de début :</strong> {stage.startDate}</p>
               <p><strong>Date de fin :</strong> {stage.endDate}</p>
               <p><strong>Lieu :</strong> {stage.location}</p>
@@ -142,7 +141,6 @@ export default function StageDetailsModal({
               {error}
             </div>
         )}
-        {/* Affichage de la raison de rejet si le stage est rejeté */}
         {stage.status === 'REJETEE' && stage.rejectionReason && (
           <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded">
             <h3 className="text-lg font-semibold mb-2 text-red-800">Raison du rejet</h3>
@@ -150,7 +148,6 @@ export default function StageDetailsModal({
           </div>
         )}
 
-        {/* Champ pour la raison de rejet (seulement pour les gestionnaires) */}
         {shouldShowManagementButtons && (
           <div className="mt-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -176,8 +173,7 @@ export default function StageDetailsModal({
             Fermer
           </button>
 
-            {/* Bouton Postuler pour les étudiants */}
-            {showPostulerButton && (
+            {shouldShowPostulerButton && (
                 <button
                     onClick={handlePostuler}
                     className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
@@ -186,7 +182,6 @@ export default function StageDetailsModal({
                 </button>
             )}
 
-            {/* Boutons de gestion existants */}
             {shouldShowManagementButtons && (
                 <>
                     <button

@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { getMesCandidatures } from "../../services/EtudiantService.js";
+import StageDetailsModal from "../display-components/StageDetailsModal.jsx";
 
 export default function MesCandidature() {
     const [candidatures, setCandidatures] = useState([]);
@@ -9,6 +10,8 @@ export default function MesCandidature() {
     const [locationFilter, setLocationFilter] = useState("");
     const [compensationFilter, setCompensationFilter] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
+    const [selectedStage, setSelectedStage] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     useEffect(() => {
         const fetchCandidatures = async () => {
@@ -26,12 +29,10 @@ export default function MesCandidature() {
         fetchCandidatures();
     }, []);
 
-    // Filtrage des candidatures basé sur les critères de recherche
   const filteredCandidatures = useMemo(() => {
     return candidatures.filter(candidature => {
       const stage = candidature.stage;
       
-      // Si pas de stage, on ne peut pas filtrer
       if (!stage) return false;
       
       const matchesSearch = !searchTerm ||
@@ -58,6 +59,16 @@ export default function MesCandidature() {
         setLocationFilter("");
         setCompensationFilter("");
         setStatusFilter("");
+    };
+
+    const handleViewDetails = (candidature) => {
+        setSelectedStage(candidature.stage);
+        setIsModalOpen(true);
+    };
+
+    const closeModal = () => {
+        setIsModalOpen(false);
+        setSelectedStage(null);
     };
 
     const getStatusColor = (status) => {
@@ -90,10 +101,8 @@ export default function MesCandidature() {
         <div className="p-6">
             <h1 className="text-2xl font-bold mb-6 text-center">Mes Candidatures</h1>
 
-            {/* Barre de recherche et filtres */}
             <div className="mb-8 bg-white rounded-lg shadow-md border border-gray-200 p-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-4">
-                {/* Recherche générale */}
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                     Recherche
@@ -107,7 +116,6 @@ export default function MesCandidature() {
                     />
                 </div>
 
-                {/* Filtre par lieu */}
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                     Lieu
@@ -121,7 +129,6 @@ export default function MesCandidature() {
                     />
                 </div>
 
-                {/* Filtre par compensation */}
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                     Compensation
@@ -135,7 +142,6 @@ export default function MesCandidature() {
                     />
                 </div>
 
-                {/* Filtre par statut */}
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                     Statut
@@ -152,7 +158,6 @@ export default function MesCandidature() {
                     </select>
                 </div>
 
-                {/* Bouton pour effacer les filtres */}
                 <div className="flex items-end">
                     <button
                     onClick={clearFilters}
@@ -163,13 +168,11 @@ export default function MesCandidature() {
                 </div>
                 </div>
 
-                {/* Affichage du nombre de résultats */}
                 <div className="text-sm text-gray-600">
                 {filteredCandidatures.length} candidature(s) trouvée(s) sur {candidatures.length} au total
                 </div>
             </div>
 
-            {/* Affichage du contenu selon l'état */}
             {loading ? (
                 <div className="text-center py-12">
                     <p className="text-gray-600 text-lg">Chargement de vos candidatures...</p>
@@ -257,10 +260,27 @@ export default function MesCandidature() {
                                     </p>
                                 </div>
                             )}
+
+                            <div className="mt-4 flex justify-end items-center">
+                                <button
+                                    onClick={() => handleViewDetails(candidature)}
+                                    className="text-teal-600 hover:text-teal-800 font-medium"
+                                >
+                                    Voir détails →
+                                </button>
+                            </div>
                         </div>
                     ))}
                 </div>
             )}
+
+            <StageDetailsModal
+                stage={selectedStage}
+                isOpen={isModalOpen}
+                onClose={closeModal}
+                showManagementButtons={false}
+                showPostulerButton={false}
+            />
         </div>
     );
 }
