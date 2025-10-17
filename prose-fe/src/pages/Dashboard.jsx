@@ -114,9 +114,11 @@ export default function Dashboard() {
             <div className="mx-auto">
                 <Outlet/>
             </div>
-            <div className="px-1 sm:px-1 lg:px-2">
-                <Notifications />
-            </div>
+            {user.role === "GESTIONNAIRE" && (
+                <div className="px-1 sm:px-1 lg:px-2">
+                    <Notifications/>
+                </div>)
+            }
         </main>
     </>
     )

@@ -64,14 +64,13 @@ public class EmployeurService {
         if (stage == null) {
             throw new IllegalArgumentException("stage must not be null");
         }
-        System.out.println("HERe");
         StageNotification notification = new StageNotification();
         notification.setReadAt(null);
         notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
         notification.setStage(stage);
         notification.setSenderEmail(stage.getEmployeurEmail());
         notification.setType(NotificationType.STAGE_NOTIFICATION);
-        notification.setMessage("Nouvelle offre de stage soumise");
+        notification.setMessage(stage.getTitle());
         notificationRepository.save(notification);
     }
 
