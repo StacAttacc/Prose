@@ -221,26 +221,6 @@ export default function StageDetailsModal({
               )}
             </div>
           </div>
-
-            {/* Boutons de gestion existants */}
-            {shouldShowManagementButtons && (
-                <>
-                    <button
-                        onClick={handleApprove}
-                        className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50"
-                        disabled={isProcessing}
-                    >
-                        {isProcessing ? "Traitement..." : "Approuver"}
-                    </button>
-                    <button
-                        onClick={handleReject}
-                        className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 disabled:opacity-50"
-                        disabled={isProcessing}
-                    >
-                {isProcessing ? "Traitement..." : "Rejeter"}
-                    </button>
-                </>
-            )}
         </div>
                 </>
             )}
