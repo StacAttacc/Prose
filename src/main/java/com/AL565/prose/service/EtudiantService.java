@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 import com.AL565.prose.security.exceptions.CvExceptions;
 import com.AL565.prose.service.dto.EtudiantCvDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -36,7 +37,7 @@ import java.util.Optional;
 
 @Service
 @Transactional
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class EtudiantService {
 
     private final EtudiantRepository etudiantRepository;
@@ -46,22 +47,6 @@ public class EtudiantService {
     private final StageRepository stageRepository;
     private final EmployeurRepository employeurRepository;
     private final CandidatureRepository candidatureRepository;
-
-    public EtudiantService(EtudiantRepository etudiantRepository,
-                           ProseUserRepository proseUserRepository,
-                           PasswordEncoder passwordEncoder,
-                           StageRepository stageRepository,
-                           EmployeurRepository employeurRepository,
-                           CvRepository cvRepository,
-                           CandidatureRepository candidatureRepository) {
-        this.cvRepository = cvRepository;
-        this.etudiantRepository = etudiantRepository;
-        this.proseUserRepository = proseUserRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.employeurRepository = employeurRepository;
-        this.stageRepository = stageRepository;
-        this.candidatureRepository = candidatureRepository;
-    }
 
     public void inscrireEtudiant(EtudiantPasswordDTO dto) {
         if (proseUserRepository.findByCredentials_Username(dto.getEmail()).isPresent()) {
