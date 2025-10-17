@@ -74,6 +74,20 @@ export default function Notifications() {
         navigate("/gestionnaire/list-stages");
     }, [navigate]);
 
+    const handleCloseCardClick = useCallback(async (e) => {
+        e?.stopPropagation();
+        e?.preventDefault();
+        if (!user?.token) return;
+        const ids = (notifications || []).map(n => n.id).filter(Boolean);
+        if (ids.length === 0) return;
+        try {
+            await markNotificationsRead(ids, user.token);
+            setReadNotifications(prev => prev + ids.length);
+        } catch (err) {
+            console.error("Failed to mark notifications as read:", err);
+        }
+    }, [notifications, user?.token]);
+
     const handleCardKeyDown = useCallback((e) => {
         if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
@@ -104,6 +118,20 @@ export default function Notifications() {
         }
     }, [navigate, notifications, user?.token]);
 
+    const handleItemCloseClick = useCallback(async (e, notification) => {
+        e.stopPropagation();
+        setOpen(false);
+        const stageId = notification?.stage?.id || notification?.stageId;
+        try {
+            if (stageId) {
+                await markNotificationRead(notification.id, user.token);
+                setReadNotifications(prev => prev + 1);
+            }
+        } catch (err) {
+            console.error("Failed to mark notifications as read:", err);
+        }
+    }, [navigate, notifications, user?.token]);
+
     function shortText(text, max = 80) {
         if (!text) return "";
         return text.length > max ? `${text.slice(0, max - 1)}…` : text;
@@ -125,13 +153,13 @@ export default function Notifications() {
                         <div className="flex items-start gap-3 flex-1">
                             <div>
                                 <div className="text-xs text-gray-500" aria-live="polite">
-                                    Vous avez {count} nouvelle(s) offre(s) de stage à approuver
+                                    {count} nouvelle(s) offre(s) de stage à approuver
                                 </div>
 
                                 {count <= 3 ? (
                                         <ul className="mt-3 space-y-2">
                                             {notifications.map((n) => (
-                                                <li key={n.id}>
+                                                <li key={n.id} className="flex inline-flex justify-between w-full">
                                                     <button
                                                         type="button"
                                                         onClick={(e) => handleItemClick(e, n)}
@@ -151,6 +179,15 @@ export default function Notifications() {
                                                             </div>
                                                         </div>
                                                     </button>
+                                                    <button
+                                                        className="inline-flex items-center ml-2 py-1 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200 "
+                                                        onClick={(e) => handleItemCloseClick(e, n)}
+                                                    >
+                                                        <svg className={`m-2 w-4 h-4`} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" role="img" aria-hidden>
+                                                            <line x1="4" y1="4" x2="20" y2="20" stroke="#ff0000" strokeWidth="2.5" strokeLinecap="round"/>
+                                                            <line x1="20" y1="4" x2="4" y2="20" stroke="#ff0000" strokeWidth="2.5" strokeLinecap="round"/>
+                                                        </svg>
+                                                    </button>
                                                 </li>
                                             ))}
                                         </ul>
@@ -161,27 +198,42 @@ export default function Notifications() {
 
                         <div className="flex items-center gap-2">
                             {count >= 4 && (
-                                <button
-                                    type="button"
-                                    onClick={handleToggle}
-                                    className="inline-flex items-center mx-2 py-1 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200 "
-                                    aria-haspopup="true"
-                                    aria-expanded={open}
-                                    aria-controls={dropdownId}
-                                    aria-label="Toggle notifications dropdown"
-                                >
-                                    <svg className={`m-2 w-4 h-4 transition-transform ${open ? "transform rotate-180" : ""}`}
-                                         viewBox="0 0 20 20" fill="currentColor" aria-hidden>
-                                        <path fillRule="evenodd"
-                                              d="M5.23 7.21a.75.75 0 011.06.02L10 11.584l3.71-4.354a.75.75 0 111.14.976l-4.25 5a.75.75 0 01-1.14 0l-4.25-5a.75.75 0 01.02-1.06z"
-                                              clipRule="evenodd"/>
-                                    </svg>
-                                </button>
+                                <>
+                                    <button
+                                        type="button"
+                                        onClick={handleToggle}
+                                        className="inline-flex items-center ml-2 py-1 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200 "
+                                        aria-haspopup="true"
+                                        aria-expanded={open}
+                                        aria-controls={dropdownId}
+                                        aria-label="Toggle notifications dropdown"
+                                    >
+                                        <svg className={`m-2 w-4 h-4 transition-transform ${open ? "transform rotate-180" : ""}`}
+                                             viewBox="0 0 20 20" fill="currentColor" aria-hidden>
+                                            <path fillRule="evenodd"
+                                                  d="M5.23 7.21a.75.75 0 011.06.02L10 11.584l3.71-4.354a.75.75 0 111.14.976l-4.25 5a.75.75 0 01-1.14 0l-4.25-5a.75.75 0 01.02-1.06z"
+                                                  clipRule="evenodd"/>
+                                        </svg>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={handleCloseCardClick}
+                                        className="inline-flex items-center mr-2 py-1 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200 "
+                                        aria-label="Mark all notifications as read"
+                                        title="Mark all as read"
+                                    >
+                                        <svg className={`m-2 w-4 h-4`} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" role="img" aria-hidden>
+                                            <line x1="4" y1="4" x2="20" y2="20" stroke="#ff0000" strokeWidth="2.5" strokeLinecap="round"/>
+                                            <line x1="20" y1="4" x2="4" y2="20" stroke="#ff0000" strokeWidth="2.5" strokeLinecap="round"/>
+                                        </svg>
+                                    </button>
+                                </>
                             )}
                         </div>
                     </div>
 
                     {count >= 4 && (
+                        <>
                         <div id={dropdownId}
                              className={`origin-top-right absolute right-0 mt-2 w-full z-50 ${open ? "block" : "hidden"}`}
                              role="menu" aria-hidden={!open}>
@@ -211,16 +263,6 @@ export default function Notifications() {
                                                         onClick={(e) => handleItemClick(e, n)}
                                                         className="w-full text-left px-4 py-3 hover:bg-gray-50 cursor-pointer flex items-start gap-3"
                                                     >
-                                                        <div className="flex-shrink-0">
-                                                            <div
-                                                                className="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
-                                                                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"
-                                                                     aria-hidden>
-                                                                    <path
-                                                                        d="M12 2a6 6 0 016 6v4l2 2v1H4v-1l2-2V8a6 6 0 016-6z"/>
-                                                                </svg>
-                                                            </div>
-                                                        </div>
                                                         <div className="flex-1 min-w-0">
                                                             <div className="text-sm font-medium text-gray-900 truncate"
                                                                  title={n.message || ""}>
@@ -238,6 +280,7 @@ export default function Notifications() {
                                 </div>
                             </div>
                         </div>
+                        </>
                     )}
                 </div>
             )
