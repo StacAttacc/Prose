@@ -5,7 +5,6 @@ import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import PageAuthentification from "./pages/PageAuthentification.jsx";
 import StageCreation from "./components/employeur-components/StageCreation.jsx";
 import PostedStages from "./components/employeur-components/PostedStages.jsx";
-import StageApproving from "./components/gestionnaire-components/StageApproving.jsx";
 import StageListings from "./components/etudiant-components/StageListings.jsx";
 import Stages from "./components/etudiant-components/Stages.jsx";
 import MesCandidature from "./components/etudiant-components/MesCandidature.jsx";
@@ -19,11 +18,18 @@ export default function AppRoutes() {
     const { user, loading } = useAuth();
     const [hasCv, setHasCv] = useState(null);
 
+    async function getCV() {
+        const data = await telechargerCv(user.email, user);
+        if (data) {
+            setHasCv(true);
+        } else {
+            setHasCv(false);
+        }
+    }
+
     useEffect(() => {
         if (user?.role === "ETUDIANT") {
-            telechargerCv(user.email, user)
-                .then(() => setHasCv(true))
-                .catch(() => setHasCv(false));
+            getCV();
         }
     }, [user]);
 
@@ -55,7 +61,6 @@ export default function AppRoutes() {
                     </Route>
                     <Route path="gestionnaire/gestion-cv" element={<GestionCV />}/>
                     <Route path="gestionnaire/list-stages" element={<GestRechercheStages />}/>
-                    <Route path="gestionnaire/stage-approval" element={<StageApproving />} />
                 </Route>
             </Route>
         </Routes>
