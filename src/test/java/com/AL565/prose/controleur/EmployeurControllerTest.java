@@ -2,6 +2,7 @@ package com.AL565.prose.controleur;
 
 import com.AL565.prose.controller.EmployeurController;
 import com.AL565.prose.model.Employeur;
+import com.AL565.prose.model.Etudiant;
 import com.AL565.prose.model.OfferStatus;
 import com.AL565.prose.model.Stage;
 import com.AL565.prose.repository.EmployeurRepository;
@@ -10,11 +11,8 @@ import com.AL565.prose.repository.ProseUserRepository;
 import com.AL565.prose.repository.StageRepository;
 import com.AL565.prose.service.EtudiantService;
 import com.AL565.prose.service.GestionnaireService;
-import com.AL565.prose.service.dto.CandidatureDTO;
-import com.AL565.prose.service.dto.EmployeurPasswordDTO;
+import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.EmployeurService;
-import com.AL565.prose.service.dto.ReturnEntityDTO;
-import com.AL565.prose.service.dto.StageDTO;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -133,30 +131,32 @@ class EmployeurControllerTest {
 
     @Test
     void getCandidatures() throws Exception {
-        Stage stage = new Stage(1L, "Démissioner", "Partir immédiatement!", "Rien", new ArrayList<>(), LocalDate.now(), LocalDate.now(), "Chez vous", null, "Remote", "0$", OfferStatus.APPROUVEE, "jemployeur1@gmail.com", OffsetDateTime.now(), OffsetDateTime.now());
-
-        CandidatureDTO candidatureDTO = new CandidatureDTO(stage.getId(), "john@doe.com", null, null, null, 0L);
-
-        String content = objectMapper.writeValueAsString(candidatureDTO);
-
-        doNothing().when(etudiantService).createCandidature(any(CandidatureDTO.class));
-
-        mockMvc.perform(post("/etudiant/candidature")
-                .content(content)
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
+        Stage stage = new Stage(
+                1L, "Démissioner", "Partir immédiatement!", "Rien", new ArrayList<>(),
+                LocalDate.now(), LocalDate.now(), "Chez vous", null, "Remote", "0$",
+                OfferStatus.APPROUVEE, "jemployeur1@gmail.com", OffsetDateTime.now(), OffsetDateTime.now()
         );
 
-        when(employeurService.getStageCandidatures(any(Long.class))).thenReturn(List.of(candidatureDTO));
+        CandidatureDTO candidatureDTO = new CandidatureDTO(
+                stage.getId(), 1L, null, null, null, 0L, new EtudiantDTO()
+        );
 
-        MvcResult result = mockMvc.perform(get("/employeur/stages/1/applications")
-                .with(csrf())
-        ).andExpect(status().isOk()).andReturn();
+        when(employeurService.getStageCandidatures(any(Long.class)))
+                .thenReturn(List.of(candidatureDTO));
 
-        ReturnEntityDTO<List<CandidatureDTO>> candidatures = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
-        });
+        MvcResult result = mockMvc.perform(
+                        get("/employeur/stages/1/applications").with(csrf())
+                )
+                .andExpect(status().isOk())
+                .andReturn();
+
+        ReturnEntityDTO<List<CandidatureDTO>> candidatures =
+                objectMapper.readValue(
+                        result.getResponse().getContentAsString(),
+                        new TypeReference<ReturnEntityDTO<List<CandidatureDTO>>>() {}
+                );
 
         assertThat(candidatures.getData().size()).isEqualTo(1);
-
     }
+
 }

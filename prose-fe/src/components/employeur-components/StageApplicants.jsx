@@ -113,7 +113,7 @@ const StageApplicantsPage = () => {
             <div className="flex items-end justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold">
-                        Candidature(s) du stage {stageTitle ? `"${stageTitle}"` : `#${id}`}
+                        Candidature(s) pour le stage {stageTitle ? `"${stageTitle}"` : `#${id}`}
                     </h1>
                     <p className="text-sm text-gray-500 mt-1">
                         {filtered.length} candidature{filtered.length > 1 ? "s" : ""}

@@ -13,7 +13,7 @@ function firstNonEmpty(...vals) {
 }
 
 const ApplicantRow = ({applicant}) => {
-    const {user} = useAuth(); // token employeur
+    const {user} = useAuth();
 
     const [loadingCv, setLoadingCv] = useState(false);
     const [showCv, setShowCv] = useState(false);
@@ -30,7 +30,6 @@ const ApplicantRow = ({applicant}) => {
         applicant && applicant.etudiantEmail,
     ];
     const email = firstNonEmpty(...emailCandidates);
-
     const normalizedFullName =
         typeof applicant?.fullName === "string" && applicant.fullName.trim()
             ? applicant.fullName.trim()
