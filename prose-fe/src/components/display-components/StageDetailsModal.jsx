@@ -154,18 +154,10 @@ export default function StageDetailsModal({
           </div>
         )}
         
-        <div className="mt-6 flex justify-end space-x-4">
-          {shouldShowPostulerButton && (
-                <button
-                    onClick={handlePostuler}
-                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                >
-                    Postuler
-                </button>
-            )}
+        <div className="mt-6">
           <div className="w-full">
             {shouldShowManagementButtons && (
-                <div className="flex flex-col">
+                <div className="flex flex-col mb-4">
                   <button
                       onClick={handleApprove}
                       className="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center disabled:opacity-50 mb-1"
@@ -212,16 +204,27 @@ export default function StageDetailsModal({
                   )}
                 </div>
             )}
-            <div className="flex justify-end mt-2">
+            <div className="flex justify-end space-x-4">
+              {shouldShowPostulerButton && (
+                <button
+                    onClick={handlePostuler}
+                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                >
+                    Postuler
+                </button>
+              )}
               <button
                   onClick={handleClose}
-                  className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 disabled:opacity-50 align-end"
+                  className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 disabled:opacity-50"
                   disabled={isProcessing}
               >
                 Fermer
               </button>
             </div>
           </div>
+        </div>
+                </>
+            )}
         </div>
     </div>
   );
