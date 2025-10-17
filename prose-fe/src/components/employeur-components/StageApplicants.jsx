@@ -5,14 +5,44 @@ import { useAuth } from "../../context/AuthContext.jsx";
 import { getStageApplicants } from "../../services/EmployeurService.js";
 import { getEmployeurStages } from "../../services/StageService.js";
 
+const txt = (v) => (v == null ? "" : String(v));
+const norm = (s) =>
+    txt(s)
+        .normalize("NFD")
+        .replace(/\p{Diacritic}/gu, "")
+        .toLowerCase()
+        .trim();
+
+function buildSearchFields(app) {
+    const email =
+        app?.email ??
+        app?.etudiant?.email ??
+        "";
+
+    const fullName =
+        app?.fullName ??
+        app?.etudiant?.fullName ??
+        [app?.firstName, app?.lastName].filter(Boolean).join(" ") ??
+        [app?.etudiant?.firstName, app?.etudiant?.lastName].filter(Boolean).join(" ") ??
+        "";
+
+    const skills = Array.isArray(app?.skills)
+        ? app.skills
+        : Array.isArray(app?.competences)
+            ? app.competences
+            : [];
+
+    return { email, fullName, skills };
+}
+
 const StageApplicantsPage = () => {
     const { id } = useParams();
     const { user } = useAuth();
 
     const [q, setQ] = useState("");
+    const [statusFilter, setStatusFilter] = useState("ALL");
     const [applicants, setApplicants] = useState([]);
-    const [loadingApplicants, setLoadingApplicants] = useState(true);
-    const [loadingTitle, setLoadingTitle] = useState(true);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [stageTitle, setStageTitle] = useState(null);
 
@@ -23,14 +53,16 @@ const StageApplicantsPage = () => {
             user?.credentials?.username,
             user?.principal?.username,
         ];
-        return candidates.find(
-            (v) => typeof v === "string" && v.trim().length > 0
-        ) || null;
+        return (
+            candidates.find(
+                (v) => typeof v === "string" && v.trim().length > 0
+            ) || null
+        );
     }, [user]);
 
-    const loadApplicants = async () => {
+    const reload = async () => {
         try {
-            setLoadingApplicants(true);
+            setLoading(true);
             const data = await getStageApplicants(id, user.token);
             setApplicants(Array.isArray(data) ? data : []);
             setError(null);
@@ -38,14 +70,16 @@ const StageApplicantsPage = () => {
             console.debug("getStageApplicants error:", e);
             setError("Impossible de charger les candidatures.");
         } finally {
-            setLoadingApplicants(false);
+            setLoading(false);
         }
     };
 
     const loadStageTitle = async () => {
         try {
-            setLoadingTitle(true);
-            if (!safeEmail) return;
+            if (!safeEmail) {
+                setStageTitle(null);
+                return;
+            }
             const list = await getEmployeurStages(safeEmail, user?.token);
             const stages = Array.isArray(list)
                 ? list
@@ -58,56 +92,48 @@ const StageApplicantsPage = () => {
             const target = stages.find(
                 (s) => String(s?.id ?? "") === String(id ?? "")
             );
+
             setStageTitle(target?.title ?? target?.titre ?? target?.name ?? null);
         } catch (e) {
-            console.debug("loadStageTitle error", e);
-        } finally {
-            setLoadingTitle(false);
+            console.debug("loadStageTitle/getEmployeurStages error", e);
+            setStageTitle(null);
         }
     };
 
     useEffect(() => {
-        loadApplicants();
+        reload();
         loadStageTitle();
     }, [id]);
 
     const filtered = useMemo(() => {
         const base = Array.isArray(applicants) ? applicants : [];
-        const query = q.trim().toLowerCase();
+        const qn = norm(q);
+
+        if (!qn) return base;
 
         return base.filter((app) => {
-            const name =
-                app?.fullName ??
-                app?.nom ??
-                [app?.prenom, app?.nom].filter(Boolean).join(" ") ??
-                "";
-            const email = app?.email ?? "";
-            const skills = Array.isArray(app?.skills)
-                ? app.skills
-                : Array.isArray(app?.competences)
-                    ? app.competences
-                    : [];
+            const { email, fullName, skills } = buildSearchFields(app);
+            const fields = [
+                norm(fullName),
+                norm(email),
+                ...skills.map(norm),
+            ];
 
-            const matchesQuery =
-                !query ||
-                name.toLowerCase().includes(query) ||
-                email.toLowerCase().includes(query) ||
-                skills.some((c) => c?.toLowerCase?.().includes(query));
+            const matchesSearch = fields.some((f) => f.includes(qn));
+            const status = (app?.status ?? app?.statut ?? "").toUpperCase();
+            const matchesStatus = statusFilter === "ALL" || status === statusFilter;
 
-            return matchesQuery;
+            return matchesSearch && matchesStatus;
         });
-    }, [applicants, q]);
+    }, [applicants, q, statusFilter]);
 
     return (
         <div className="p-4 md:p-6 flex flex-col items-center">
+            {/* Header */}
             <div className="flex flex-col items-center text-center mb-6">
                 <h1 className="text-2xl font-bold">
                     Candidature(s) pour le stage{" "}
-                    {loadingTitle
-                        ? "(chargement...)"
-                        : stageTitle
-                            ? `"${stageTitle}"`
-                            : `#${id}`}
+                    {stageTitle ? `"${stageTitle}"` : `#${id}`}
                 </h1>
                 <p className="text-sm text-gray-500 mt-1">
                     {filtered.length} candidature{filtered.length > 1 ? "s" : ""}
@@ -117,7 +143,7 @@ const StageApplicantsPage = () => {
             <div className="w-full max-w-xl mb-8">
                 <div className="relative">
                     <input
-                        placeholder="Recherche (nom, email)"
+                        placeholder="Recherche (nom, email, compétence)"
                         className="w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition"
                         value={q}
                         onChange={(e) => setQ(e.target.value)}
@@ -140,9 +166,7 @@ const StageApplicantsPage = () => {
                     <table className="min-w-full text-sm">
                         <thead>
                         <tr className="bg-gray-50 text-left border-b">
-                            <th className="py-3 px-4 font-medium text-gray-600">
-                                Candidat
-                            </th>
+                            <th className="py-3 px-4 font-medium text-gray-600">Candidat</th>
                             <th className="py-3 px-4 font-medium text-gray-600">
                                 Cv de l'étudiant
                             </th>
@@ -152,21 +176,15 @@ const StageApplicantsPage = () => {
                         </tr>
                         </thead>
                         <tbody>
-                        {loadingApplicants ? (
+                        {loading ? (
                             <tr>
-                                <td
-                                    className="py-8 px-4 text-gray-500 text-center"
-                                    colSpan={4}
-                                >
-                                    Chargement des candidatures…
+                                <td className="py-8 px-4 text-gray-500 text-center" colSpan={4}>
+                                    Chargement…
                                 </td>
                             </tr>
                         ) : filtered.length === 0 ? (
                             <tr>
-                                <td
-                                    className="py-8 px-4 text-gray-500 text-center"
-                                    colSpan={4}
-                                >
+                                <td className="py-8 px-4 text-gray-500 text-center" colSpan={4}>
                                     Aucune candidature trouvée.
                                 </td>
                             </tr>
