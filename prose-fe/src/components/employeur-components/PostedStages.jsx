@@ -21,7 +21,7 @@ export default function PostedStages() {
     const [compensationFilter, setCompensationFilter] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
 
-    // ---------- FETCH STAGES ----------
+
     useEffect(() => {
         async function fetchAllStages() {
             try {
@@ -41,7 +41,6 @@ export default function PostedStages() {
         fetchAllStages();
     }, [user.email, user.token]);
 
-    // ---------- FILTER ----------
     const filteredStages = useMemo(() => {
         return stages.filter((stage) => {
             const matchesSearch =

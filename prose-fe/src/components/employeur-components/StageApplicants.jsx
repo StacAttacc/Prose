@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { NavLink, useParams } from "react-router-dom";
 import ApplicantRow from "../display-components/ApplicantRow";
 import { useAuth } from "../../context/AuthContext.jsx";
-import { getStageApplicants } from "../../services/ApplicationService.js";
+import { getStageApplicants } from "../../services/EmployeurService.js";
 import { getEmployeurStages } from "../../services/StageService.js";
 
 const StageApplicantsPage = () => {
@@ -16,7 +16,6 @@ const StageApplicantsPage = () => {
     const [error, setError] = useState(null);
     const [stageTitle, setStageTitle] = useState(null);
 
-    // ✅ sécurise l’email utilisateur
     const safeEmail = useMemo(() => {
         const candidates = [
             user?.email,
@@ -29,7 +28,6 @@ const StageApplicantsPage = () => {
         ) || null;
     }, [user]);
 
-    // ✅ charge les candidatures uniquement
     const loadApplicants = async () => {
         try {
             setLoadingApplicants(true);
@@ -44,7 +42,6 @@ const StageApplicantsPage = () => {
         }
     };
 
-    // ✅ charge seulement le titre du stage
     const loadStageTitle = async () => {
         try {
             setLoadingTitle(true);
@@ -69,13 +66,11 @@ const StageApplicantsPage = () => {
         }
     };
 
-    // 🔹 On charge séparément les deux (en parallèle)
     useEffect(() => {
         loadApplicants();
         loadStageTitle();
     }, [id]);
 
-    // ✅ filtrage local
     const filtered = useMemo(() => {
         const base = Array.isArray(applicants) ? applicants : [];
         const query = q.trim().toLowerCase();
@@ -105,7 +100,6 @@ const StageApplicantsPage = () => {
 
     return (
         <div className="p-4 md:p-6 flex flex-col items-center">
-            {/* Header */}
             <div className="flex flex-col items-center text-center mb-6">
                 <h1 className="text-2xl font-bold">
                     Candidature(s) pour le stage{" "}
@@ -120,7 +114,6 @@ const StageApplicantsPage = () => {
                 </p>
             </div>
 
-            {/* Recherche centrée */}
             <div className="w-full max-w-xl mb-8">
                 <div className="relative">
                     <input
@@ -136,7 +129,6 @@ const StageApplicantsPage = () => {
                 </div>
             </div>
 
-            {/* Tableau des candidatures */}
             <div className="w-full max-w-5xl bg-white rounded-2xl border border-gray-100 shadow-md overflow-hidden">
                 {error && (
                     <div className="px-4 py-3 bg-rose-50 text-rose-700 text-sm border-b border-rose-200">
