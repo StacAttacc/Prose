@@ -3,6 +3,7 @@ package com.AL565.prose.service;
 import com.AL565.prose.model.Employeur;
 import com.AL565.prose.model.Etudiant;
 import com.AL565.prose.model.OfferStatus;
+import com.AL565.prose.model.Stage;
 import com.AL565.prose.repository.EmployeurRepository;
 import com.AL565.prose.model.CV;
 import com.AL565.prose.model.CvStatus;
@@ -15,13 +16,17 @@ import com.AL565.prose.repository.StageRepository;
 import com.AL565.prose.service.dto.EtudiantPasswordDTO;
 import com.AL565.prose.service.dto.CandidatureDTO;
 import com.AL565.prose.service.dto.StageDTO;
+import com.AL565.prose.service.dto.EtudiantCandidatureDTO;
+import com.AL565.prose.security.JwtTokenProvider;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.AL565.prose.security.exceptions.CvExceptions;
 import com.AL565.prose.service.dto.EtudiantCvDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -34,31 +39,17 @@ import java.util.Optional;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class EtudiantService {
 
     private final EtudiantRepository etudiantRepository;
     private final ProseUserRepository proseUserRepository;
+    private final JwtTokenProvider jwtTokenProvider;
     private final CvRepository cvRepository;
     private final PasswordEncoder passwordEncoder;
     private final StageRepository stageRepository;
     private final EmployeurRepository employeurRepository;
     private final CandidatureRepository candidatureRepository;
-
-    public EtudiantService(EtudiantRepository etudiantRepository,
-                           ProseUserRepository proseUserRepository,
-                           PasswordEncoder passwordEncoder,
-                           StageRepository stageRepository,
-                           EmployeurRepository employeurRepository,
-                           CvRepository cvRepository,
-                           CandidatureRepository candidatureRepository) {
-        this.cvRepository = cvRepository;
-        this.etudiantRepository = etudiantRepository;
-        this.proseUserRepository = proseUserRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.employeurRepository = employeurRepository;
-        this.stageRepository = stageRepository;
-        this.candidatureRepository = candidatureRepository;
-    }
 
     public void inscrireEtudiant(EtudiantPasswordDTO dto) {
         if (proseUserRepository.findByCredentials_Username(dto.getEmail()).isPresent()) {
@@ -73,13 +64,29 @@ public class EtudiantService {
     }
 
     public List<StageDTO> getEtudiantStages(String token) {
-        return stageRepository.findByStatus(OfferStatus.APPROUVEE)
+
+        String cleanToken = token.replace("Bearer ", "");
+        String etudiantEmail = jwtTokenProvider.getEmailFromJWT(cleanToken);
+
+        // Récupérer tous les stages approuvés
+        List<Stage> stagesApprouves = stageRepository.findByStatus(OfferStatus.APPROUVEE);
+        
+        // Récupérer les IDs des stages auxquels l'étudiant a déjà postulé
+        Set<Long> stageIdsPostules = candidatureRepository
+                .findByEtudiant_Credentials_Username(etudiantEmail)
                 .stream()
+                .map(candidature -> candidature.getStage().getId())
+                .collect(Collectors.toSet());
+        
+        // Filtrer pour ne garder que les stages non postulés
+        return stagesApprouves.stream()
+                .filter(stage -> !stageIdsPostules.contains(stage.getId()))
                 .map(stage -> {
                     Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(stage.getEmployeurEmail());
                     return StageDTO.fromModel(stage, employeur);
                 })
                 .collect(Collectors.toList());
+
     }
   
     public void saveCv(MultipartFile cv, String email, String lastModified) throws Exception {
@@ -191,5 +198,17 @@ public class EtudiantService {
 
     public boolean hasAlreadyApplied(String email, Long stageId) {
         return candidatureRepository.existsByEtudiant_Credentials_UsernameAndStage_Id(email, stageId);
+    }
+
+    public List<EtudiantCandidatureDTO> getMesCandidatures(String email) {
+        List<Candidature> candidatures = candidatureRepository.findByEtudiant_Credentials_Username(email);
+
+        return candidatures.stream()
+                .map(candidature -> {
+                    String employeurEmail = candidature.getStage().getEmployeurEmail();
+                    Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(employeurEmail);
+                    return EtudiantCandidatureDTO.toDTO(candidature, employeur);
+                })
+                .collect(Collectors.toList());
     }
 }

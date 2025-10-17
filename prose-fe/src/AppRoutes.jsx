@@ -1,12 +1,13 @@
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, Navigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import PageAuthentification from "./pages/PageAuthentification.jsx";
 import StageCreation from "./components/employeur-components/StageCreation.jsx";
 import PostedStages from "./components/employeur-components/PostedStages.jsx";
-import StageApproving from "./components/gestionnaire-components/StageApproving.jsx";
 import StageListings from "./components/etudiant-components/StageListings.jsx";
+import Stages from "./components/etudiant-components/Stages.jsx";
+import MesCandidature from "./components/etudiant-components/MesCandidature.jsx";
 import {useEffect, useState} from "react";
 import GestionCV from "./components/gestionnaire-components/GestionCV.jsx";
 import {telechargerCv} from "./services/EtudiantService.js";
@@ -17,17 +18,24 @@ export default function AppRoutes() {
     const { user, loading } = useAuth();
     const [hasCv, setHasCv] = useState(null);
 
+    async function getCV() {
+        const data = await telechargerCv(user.email, user);
+        if (data) {
+            setHasCv(true);
+        } else {
+            setHasCv(false);
+        }
+    }
+
     useEffect(() => {
         if (user?.role === "ETUDIANT") {
-            telechargerCv(user.email, user)
-                .then(() => setHasCv(true))
-                .catch(() => setHasCv(false));
+            getCV();
         }
     }, [user]);
 
     const defaultPathStudent = () => {
         return hasCv === null ? <div>Loading...</div> :
-            hasCv ? <StageListings /> :
+            hasCv ? <Navigate to="/etudiant/stages/disponibles" replace /> :
                 <MonCV />;
     }
 
@@ -46,10 +54,13 @@ export default function AppRoutes() {
                     <Route index element={loading ? <div>Loading...</div> : defaultElement} />
                     <Route path="employeur/creation-stage" element={<StageCreation />} />
                     <Route path="etudiant/mon-cv" element={<MonCV />} />
-                    <Route path="etudiant/stage-listings" element={<StageListings />} />
+                    <Route path="etudiant/stages" element={<Stages />}>
+                        <Route index element={<StageListings />} />
+                        <Route path="disponibles" element={<StageListings />} />
+                        <Route path="candidatures" element={<MesCandidature />} />
+                    </Route>
                     <Route path="gestionnaire/gestion-cv" element={<GestionCV />}/>
                     <Route path="gestionnaire/list-stages" element={<GestRechercheStages />}/>
-                    <Route path="gestionnaire/stage-approval" element={<StageApproving />} />
                 </Route>
             </Route>
         </Routes>

@@ -1,8 +1,8 @@
-// src/components/gestionnaire-components/RechercheStages.jsx
 import React, { useState, useEffect, useMemo } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { getAllStages } from "../../services/GestionnaireService";
+import {getAllStages, submitStageDecision} from "../../services/GestionnaireService";
 import StageDetailsModal from "../display-components/StageDetailsModal";
+import ErrorBanner from "../display-components/ErrorBanner.jsx";
 
 export default function GestRechercheStages() {
   const { user } = useAuth();
@@ -11,8 +11,7 @@ export default function GestRechercheStages() {
   const [error, setError] = useState(null);
   const [selectedStage, setSelectedStage] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
-  // États pour la recherche et les filtres
+
   const [searchTerm, setSearchTerm] = useState("");
   const [locationFilter, setLocationFilter] = useState("");
   const [compensationFilter, setCompensationFilter] = useState("");
@@ -32,7 +31,6 @@ export default function GestRechercheStages() {
     fetchAllStages();
   }, [user.token]);
 
-  // Filtrage des stages basé sur les critères de recherche
   const filteredStages = useMemo(() => {
     return stages.filter(stage => {
       const matchesSearch = stage.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -71,7 +69,6 @@ export default function GestRechercheStages() {
     setStatusFilter("");
   };
 
-  // Fonction pour obtenir la couleur du badge selon le statut
   const getStatusColor = (status) => {
     switch (status) {
       case 'SOUMISE':
@@ -87,7 +84,6 @@ export default function GestRechercheStages() {
     }
   };
 
-  // Fonction pour obtenir le texte du statut en français
   const getStatusText = (status) => {
     switch (status) {
       case 'SOUMISE':
@@ -104,16 +100,14 @@ export default function GestRechercheStages() {
   };
 
   if (loading) return <p className="text-center mt-10">Chargement des stages...</p>;
-  if (error) return <p className="text-center mt-10 text-red-500">Erreur: {error}</p>;
+  if (error) return <ErrorBanner message={error} />;
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6 text-center">Recherche de Stages</h1>
-      
-      {/* Barre de recherche et filtres */}
+      <h1 className="text-2xl font-bold mb-6 text-center">Recherche/Approbation de Stages</h1>
+
       <div className="mb-8 bg-white rounded-lg shadow-md border border-gray-200 p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
-          {/* Recherche générale */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Recherche
@@ -127,7 +121,6 @@ export default function GestRechercheStages() {
             />
           </div>
 
-          {/* Filtre par lieu */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Lieu
@@ -141,7 +134,6 @@ export default function GestRechercheStages() {
             />
           </div>
 
-          {/* Filtre par compensation */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Compensation
@@ -155,7 +147,6 @@ export default function GestRechercheStages() {
             />
           </div>
 
-          {/* Filtre par statut */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Statut
@@ -172,7 +163,6 @@ export default function GestRechercheStages() {
             </select>
           </div>
 
-          {/* Bouton pour effacer les filtres */}
           <div className="flex items-end">
             <button
               onClick={clearFilters}
@@ -183,13 +173,11 @@ export default function GestRechercheStages() {
           </div>
         </div>
 
-        {/* Affichage du nombre de résultats */}
         <div className="text-sm text-gray-600">
           {filteredStages.length} stage(s) trouvé(s) sur {stages.length} au total
         </div>
       </div>
-      
-      {/* Liste des stages filtrés */}
+
       {filteredStages.length === 0 ? (
         <div className="text-center py-8">
           <p className="text-gray-500 text-lg">
@@ -247,12 +235,11 @@ export default function GestRechercheStages() {
         </div>
       )}
 
-      {/* Modal pour afficher les détails */}
       <StageDetailsModal
         stage={selectedStage}
         isOpen={isModalOpen}
         onClose={closeModal}
-        showManagementButtons={false}
+        showManagementButtons={true}
       />
     </div>
   );

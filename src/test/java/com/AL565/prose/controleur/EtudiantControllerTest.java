@@ -2,15 +2,14 @@ package com.AL565.prose.controleur;
 
 import com.AL565.prose.controller.EtudiantController;
 import com.AL565.prose.model.Discipline;
+import com.AL565.prose.model.Employeur;
 import com.AL565.prose.repository.EtudiantRepository;
 import com.AL565.prose.repository.ProseUserRepository;
 import com.AL565.prose.security.JwtTokenProvider;
 import com.AL565.prose.service.EmployeurService;
 import com.AL565.prose.service.EtudiantService;
 import com.AL565.prose.service.GestionnaireService;
-import com.AL565.prose.service.dto.EtudiantCvDTO;
-import com.AL565.prose.service.dto.EtudiantPasswordDTO;
-import com.AL565.prose.service.dto.StageDTO;
+import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.assertj.core.api.Assertions;
@@ -354,6 +353,26 @@ class EtudiantControllerTest {
                 .andExpect(status().isInternalServerError());
     }
 
+    @Test
+    void getMesCandidatures_success() throws Exception {
+        List<EtudiantCandidatureDTO> candidatures = createTestCandidatures();
+
+        when(jwtTokenProvider.getEmailFromJWT(anyString())).thenReturn("test@test.com");
+        when(etudiantService.getMesCandidatures("test@test.com")).thenReturn(candidatures);
+
+        mockMvc.perform(get("/etudiant/candidatures")
+                .header("Authorization", "Bearer token123")
+                .with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Candidatures récupérées avec succès"))
+                .andExpect(jsonPath("$.data").isArray())
+                .andExpect(jsonPath("$.data[0].status").value("SOUMISE"))
+                .andExpect(jsonPath("$.data[0].stage.title").value("Développeur Full Stack"))
+                .andExpect(jsonPath("$.data[0].stage.employeur.company").value("Tech Solutions Inc."));
+
+        verify(etudiantService, times(1)).getMesCandidatures("test@test.com");
+    }
+
     // Méthode utilitaire
     private EtudiantPasswordDTO createTestEtudiantDTO() {
         EtudiantPasswordDTO etudiant = new EtudiantPasswordDTO();
@@ -363,5 +382,33 @@ class EtudiantControllerTest {
         etudiant.setPassword("motdepasse");
         etudiant.setDiscipline(String.valueOf(Discipline.INFORMATIQUE));
         return etudiant;
+    }
+
+    private List<EtudiantCandidatureDTO> createTestCandidatures() {
+        List<EtudiantCandidatureDTO> candidatures = new ArrayList<>();
+
+        EmployeurDTO employeur = EmployeurDTO.toDTOTokenless(new Employeur("Jean", "Dupont", "Tech Solutions Inc.", "jean@dupont.com", "1234567890"));
+
+        StageSimpleDTO stage = StageSimpleDTO.builder()
+                .title("Développeur Full Stack")
+                .description("Développement d'applications web modernes")
+                .location("Montréal, QC")
+                .compensation("25$/h")
+                .startDate("2025-05-01")
+                .endDate("2025-08-31")
+                .skills(Arrays.asList("React", "Node.js", "MongoDB"))
+                .employeur(employeur)
+                .build();
+
+        EtudiantCandidatureDTO candidature = EtudiantCandidatureDTO.builder()
+                .stage(stage)
+                .status("SOUMISE")
+                .datePostulation(java.time.LocalDateTime.of(2025, 10, 10, 10, 30))
+                .decision(null)
+                .dateDecision(null)
+                .build();
+
+        candidatures.add(candidature);
+        return candidatures;
     }
 }
