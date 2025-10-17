@@ -10,8 +10,7 @@ export default function StageDetailsModal({
   onApprove, 
   onReject,
   showManagementButtons = false,
-  showPostulerButton = true,
-  onCandidatureSuccess
+  showPostulerButton = false
 }) {
   const { user } = useAuth();
   const [rejectionReason, setRejectionReason] = useState("");

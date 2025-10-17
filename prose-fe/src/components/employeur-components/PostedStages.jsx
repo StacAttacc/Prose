@@ -246,7 +246,6 @@ export default function PostedStages() {
                 stage={selectedStage}
                 isOpen={isModalOpen}
                 onClose={closeModal}
-                showManagementButtons={false}
             />
         </div>
     );

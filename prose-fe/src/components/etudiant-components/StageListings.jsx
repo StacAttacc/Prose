@@ -192,7 +192,7 @@ export default function StageListings() {
         stage={selectedStage}
         isOpen={isModalOpen}
         onClose={closeModal}
-        showManagementButtons={false}
+        showPostulerButton={true}
         onCandidatureSuccess={handleCandidatureSuccess}
       />
     </div>
