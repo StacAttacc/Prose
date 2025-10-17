@@ -125,7 +125,7 @@ public class GestionnaireService {
     public StageNotificationDTO getStageNotifications() throws Exception {
         try {
             List<Notification> notifications = notificationRepository
-                    .findNotificationsByType(NotificationType.STAGE_NOTIFICATION);
+                    .findNotificationsByTypeAndReadAt(NotificationType.STAGE_NOTIFICATION, null);
             return new StageNotificationDTO(notifications, notifications.size());
         } catch (Exception e) {
             throw new NotificationFetchException();

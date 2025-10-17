@@ -4,8 +4,10 @@ import com.AL565.prose.model.notifications.Notification;
 import com.AL565.prose.model.notifications.NotificationType;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
     List<Notification> findNotificationsByType(NotificationType type);
+    List<Notification> findNotificationsByTypeAndReadAt(NotificationType type, LocalDateTime readAt);
 }

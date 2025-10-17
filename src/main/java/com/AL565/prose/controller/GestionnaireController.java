@@ -1,6 +1,5 @@
 package com.AL565.prose.controller;
 
-import com.AL565.prose.security.exceptions.CvExceptions;
 import com.AL565.prose.service.GestionnaireService;
 import com.AL565.prose.service.dto.*;
 import lombok.RequiredArgsConstructor;
@@ -39,7 +38,7 @@ public class GestionnaireController {
     }
 
     @PutMapping("/stages/{id}/approuver")
-    public ResponseEntity<ReturnEntityDTO<StageDTO>> approuverStage(@PathVariable Long id) throws CvExceptions.FailedToChangeCvStatusException {
+    public ResponseEntity<ReturnEntityDTO<StageDTO>> approuverStage(@PathVariable Long id) {
         try {
             StageDTO stage = gestionnaireService.approuverStage(id);
             return ResponseEntity.ok(new ReturnEntityDTO<>("Stage approuvé avec succès", stage));
@@ -88,7 +87,7 @@ public class GestionnaireController {
         }
     }
 
-    @GetMapping("notifications/read/{id}")
+    @PutMapping("notifications/read/{id}")
     public ResponseEntity<ReturnEntityDTO<Void>> markNotificationAsRead(@PathVariable Long id) {
         try {
             gestionnaireService.markNotificationAsRead(id);
