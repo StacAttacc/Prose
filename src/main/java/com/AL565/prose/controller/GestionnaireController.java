@@ -1,6 +1,5 @@
 package com.AL565.prose.controller;
 
-import com.AL565.prose.model.notifications.Notification;
 import com.AL565.prose.security.exceptions.CvExceptions;
 import com.AL565.prose.service.GestionnaireService;
 import com.AL565.prose.service.dto.*;
@@ -62,7 +61,7 @@ public class GestionnaireController {
     }
 
     @PostMapping("/cv/change-status")
-    public ResponseEntity<ReturnEntityDTO<Void>> changeCvStatus(@RequestBody CvDecisionDTO cvDecision) throws Exception {
+    public ResponseEntity<ReturnEntityDTO<Void>> changeCvStatus(@RequestBody CvDecisionDTO cvDecision) {
         try {
             gestionnaireService.changeCvStatus(cvDecision.id, cvDecision.status, cvDecision.comment);
             return ResponseEntity.ok().build();
@@ -86,6 +85,17 @@ public class GestionnaireController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ReturnEntityDTO<>("Erreur lors de la récupération des notifications", null));
+        }
+    }
+
+    @GetMapping("notifications/read/{id}")
+    public ResponseEntity<ReturnEntityDTO<Void>> markNotificationAsRead(@PathVariable Long id) {
+        try {
+            gestionnaireService.markNotificationAsRead(id);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ReturnEntityDTO<>("Erreur lors du marquage de la notification comme lue", null));
         }
     }
 }

@@ -9,12 +9,14 @@ import com.AL565.prose.service.dto.StageNotificationDTO;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -67,5 +69,43 @@ class NotificationsServiceLayerTest {
 
         verify(notificationRepository, times(1))
                 .findNotificationsByType(NotificationType.STAGE_NOTIFICATION);
+    }
+
+    @Test
+    void markNotificationAsRead_success() throws Exception {
+        Notification notification = new StageNotification();
+        notification.setId(1L);
+        notification.setReadAt(null);
+
+        when(notificationRepository.findById(1L)).thenReturn(Optional.of(notification));
+        when(notificationRepository.save(any(Notification.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        gestionnaireService.markNotificationAsRead(1L);
+
+        ArgumentCaptor<Notification> captor = ArgumentCaptor.forClass(Notification.class);
+        verify(notificationRepository).save(captor.capture());
+        assertThat(captor.getValue().getReadAt()).isNotNull();
+    }
+
+    @Test
+    void markNotificationAsRead_notFound_throwsNotificationFetchException() {
+        when(notificationRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> gestionnaireService.markNotificationAsRead(1L))
+                .isInstanceOf(NotificationFetchException.class);
+
+        verify(notificationRepository, never()).save(any());
+    }
+
+    @Test
+    void markNotificationAsRead_saveThrows_wrappsToNotificationFetchException() {
+        Notification notification = new StageNotification();
+        notification.setId(1L);
+
+        when(notificationRepository.findById(1L)).thenReturn(Optional.of(notification));
+        doThrow(new RuntimeException("DB")).when(notificationRepository).save(any(Notification.class));
+
+        assertThatThrownBy(() -> gestionnaireService.markNotificationAsRead(1L))
+                .isInstanceOf(NotificationFetchException.class);
     }
 }

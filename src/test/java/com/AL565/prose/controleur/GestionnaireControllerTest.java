@@ -251,4 +251,21 @@ class GestionnaireControllerTest {
                 .andExpect(status().isInternalServerError());
     }
 
+    @Test
+    void markNotificationAsRead_success_returnsOk() throws Exception {
+        mockMvc.perform(get("/gestionnaire/notifications/read/1").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void markNotificationAsRead_whenServiceThrows_returns500WithMessage() throws Exception {
+        doThrow(new Exception("boom")).when(gestionnaireService).markNotificationAsRead(anyLong());
+
+        mockMvc.perform(get("/gestionnaire/notifications/read/1").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.message", is("Erreur lors du marquage de la notification comme lue")))
+                .andExpect(jsonPath("$.data").doesNotExist());
+    }
+
 }
