@@ -11,6 +11,7 @@ export default function GestRechercheStages() {
   const [error, setError] = useState(null);
   const [selectedStage, setSelectedStage] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const[isProcessing, setIsProcessing] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [locationFilter, setLocationFilter] = useState("");
@@ -57,6 +58,36 @@ export default function GestRechercheStages() {
     setIsModalOpen(true);
   };
 
+  const handleApproveStage = async (stage) => {
+    setIsProcessing(true);
+    try {
+      await submitStageDecision(stage.id, { approved: true }, user.token);
+      setStages(stages.map(s => s.id === stage.id ? { ...s, status: "APPROUVEE" } : s));
+      closeModal();
+    } catch (error) {
+      console.error("Erreur lors de l'approbation:", error);
+      setError("Erreur lors de l'approbation du stage");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleRejectStage = async (stage, rejectionReason) => {
+    setIsProcessing(true);
+    try {
+      await submitStageDecision(stage.id, {
+        approved: false,
+        reason: rejectionReason
+      }, user.token);
+      setStages(stages.map(s => s.id === stage.id ? { ...s, status: "REJETEE" } : s));
+      closeModal();
+    } catch (error) {
+      console.error("Erreur lors du rejet:", error);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedStage(null);
@@ -77,8 +108,6 @@ export default function GestRechercheStages() {
         return 'bg-green-100 text-green-800';
       case 'REJETEE':
         return 'bg-red-100 text-red-800';
-      case 'PUBLIEE':
-        return 'bg-blue-100 text-blue-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -92,8 +121,6 @@ export default function GestRechercheStages() {
         return 'Approuvée';
       case 'REJETEE':
         return 'Rejetée';
-      case 'PUBLIEE':
-        return 'Publiée';
       default:
         return status;
     }
@@ -238,6 +265,8 @@ export default function GestRechercheStages() {
       <StageDetailsModal
         stage={selectedStage}
         isOpen={isModalOpen}
+        onApprove={handleApproveStage}
+        onReject={handleRejectStage}
         onClose={closeModal}
         showManagementButtons={true}
       />

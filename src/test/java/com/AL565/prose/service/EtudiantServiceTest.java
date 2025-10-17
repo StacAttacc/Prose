@@ -108,7 +108,6 @@ class EtudiantServiceTest {
         Long stageId = 1L;
 
         CandidatureDTO candidatureDTO = CandidatureDTO.builder()
-                .etudiantEmail(email)
                 .stageId(stageId)
                 .motivationLetterData("Test motivation letter".getBytes())
                 .motivationLetterContentType("application/pdf")
@@ -138,7 +137,6 @@ class EtudiantServiceTest {
         Long stageId = 1L;
 
         CandidatureDTO candidatureDTO = CandidatureDTO.builder()
-                .etudiantEmail(email)
                 .stageId(stageId)
                 .build();
 
@@ -159,7 +157,6 @@ class EtudiantServiceTest {
         Long stageId = 1L;
 
         CandidatureDTO candidatureDTO = CandidatureDTO.builder()
-                .etudiantEmail(email)
                 .stageId(stageId)
                 .build();
 
@@ -196,7 +193,6 @@ class EtudiantServiceTest {
         Long stageId = 1L;
 
         CandidatureDTO candidatureDTO = CandidatureDTO.builder()
-                .etudiantEmail(email)
                 .stageId(stageId)
                 .motivationLetterData("Test".getBytes())
                 .motivationLetterContentType("text/plain")

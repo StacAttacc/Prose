@@ -18,15 +18,15 @@ import com.AL565.prose.service.dto.CandidatureDTO;
 import com.AL565.prose.service.dto.StageDTO;
 import com.AL565.prose.service.dto.EtudiantCandidatureDTO;
 import com.AL565.prose.security.JwtTokenProvider;
+import com.AL565.prose.service.dto.*;
 
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.AL565.prose.security.exceptions.CvExceptions;
-import com.AL565.prose.service.dto.EtudiantCvDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -39,7 +39,7 @@ import java.util.Optional;
 
 @Service
 @Transactional
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class EtudiantService {
 
     private final EtudiantRepository etudiantRepository;
@@ -63,6 +63,10 @@ public class EtudiantService {
         etudiantRepository.save(etudiant);
     }
 
+    public EtudiantDTO getByEmail(String email) {
+        return EtudiantDTO.toDTOTokenless(etudiantRepository.findEtudiantByCredentials_Username(email).get());
+    }
+
     public List<StageDTO> getEtudiantStages(String token) {
 
         String cleanToken = token.replace("Bearer ", "");
@@ -70,14 +74,14 @@ public class EtudiantService {
 
         // Récupérer tous les stages approuvés
         List<Stage> stagesApprouves = stageRepository.findByStatus(OfferStatus.APPROUVEE);
-        
+
         // Récupérer les IDs des stages auxquels l'étudiant a déjà postulé
         Set<Long> stageIdsPostules = candidatureRepository
                 .findByEtudiant_Credentials_Username(etudiantEmail)
                 .stream()
                 .map(candidature -> candidature.getStage().getId())
                 .collect(Collectors.toSet());
-        
+
         // Filtrer pour ne garder que les stages non postulés
         return stagesApprouves.stream()
                 .filter(stage -> !stageIdsPostules.contains(stage.getId()))
@@ -86,7 +90,6 @@ public class EtudiantService {
                     return StageDTO.fromModel(stage, employeur);
                 })
                 .collect(Collectors.toList());
-
     }
   
     public void saveCv(MultipartFile cv, String email, String lastModified) throws Exception {
@@ -135,7 +138,7 @@ public class EtudiantService {
                 .orElseGet(() -> cvRepository.save(newCv));
     }
 
-    public Optional<EtudiantCvDTO> getByEmail(String username) {
+    public Optional<EtudiantCvDTO> getCvByEmail(String username) {
         return cvRepository.findByEtudiant_Credentials_Username(username)
                 .map(EtudiantCvDTO::toDto);
     }

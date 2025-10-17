@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext.jsx';
 import { checkCvStatus, checkIfAlreadyApplied, submitCandidature, getCvInfo } from '../../services/EtudiantService.js';
 
 export default function CandidatureForm({ stage, onClose, onSuccess }) {
-  const { user } = useAuth();
   const [motivationLetterFile, setMotivationLetterFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);

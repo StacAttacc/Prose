@@ -138,13 +138,13 @@ class EtudiantControllerTest {
         cvDTO.setName("cv.pdf");
         cvDTO.setType("application/pdf");
 
-        when(etudiantService.getByEmail("test@test.com")).thenReturn(Optional.of(cvDTO));
+        when(etudiantService.getCvByEmail("test@test.com")).thenReturn(Optional.of(cvDTO));
 
         mockMvc.perform(get("/etudiant/telecharger-cv/test@test.com")
                 .with(csrf()))
                 .andExpect(status().isOk());
 
-        verify(etudiantService, times(1)).getByEmail("test@test.com");
+        verify(etudiantService, times(1)).getCvByEmail("test@test.com");
     }
 
     // Tests pour /stages/approuves
@@ -271,7 +271,6 @@ class EtudiantControllerTest {
                 .andExpect(jsonPath("$.hasApplied").value(false));
     }
 
-    // Tests pour /cv/status
     @Test
     void checkCvStatus_cvApproved() throws Exception {
         when(jwtTokenProvider.getEmailFromJWT(anyString())).thenReturn("test@test.com");
@@ -311,7 +310,6 @@ class EtudiantControllerTest {
                 .andExpect(jsonPath("$.available").value(false));
     }
 
-    // Tests pour /cv/info
     @Test
     void getCvInfo_cvExists() throws Exception {
         EtudiantCvDTO cvDTO = new EtudiantCvDTO();
@@ -319,7 +317,7 @@ class EtudiantControllerTest {
         cvDTO.setType("application/pdf");
 
         when(jwtTokenProvider.getEmailFromJWT(anyString())).thenReturn("test@test.com");
-        when(etudiantService.getByEmail("test@test.com")).thenReturn(Optional.of(cvDTO));
+        when(etudiantService.getCvByEmail("test@test.com")).thenReturn(Optional.of(cvDTO));
 
         mockMvc.perform(get("/etudiant/cv/info")
                 .header("Authorization", "Bearer token123")
@@ -327,20 +325,20 @@ class EtudiantControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("cv.pdf"));
 
-        verify(etudiantService, times(1)).getByEmail("test@test.com");
+        verify(etudiantService, times(1)).getCvByEmail("test@test.com");
     }
 
     @Test
     void getCvInfo_cvNotFound() throws Exception {
         when(jwtTokenProvider.getEmailFromJWT(anyString())).thenReturn("test@test.com");
-        when(etudiantService.getByEmail("test@test.com")).thenReturn(Optional.empty());
+        when(etudiantService.getCvByEmail("test@test.com")).thenReturn(Optional.empty());
 
         mockMvc.perform(get("/etudiant/cv/info")
                 .header("Authorization", "Bearer token123")
                 .with(csrf()))
                 .andExpect(status().isNotFound());
 
-        verify(etudiantService, times(1)).getByEmail("test@test.com");
+        verify(etudiantService, times(1)).getCvByEmail("test@test.com");
     }
 
     @Test

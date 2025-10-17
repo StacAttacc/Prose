@@ -24,8 +24,6 @@ export default function StageDetailsModal({
 
   const shouldShowManagementButtons = showManagementButtons && user?.role === 'GESTIONNAIRE';
 
-  const shouldShowPostulerButton = showPostulerButton && user?.role === 'ETUDIANT' && stage?.status === 'APPROUVEE' && !showCandidatureForm && !candidatureSuccess;
-
   const handleApprove = async () => {
     if (!onApprove) return;
     
@@ -79,10 +77,6 @@ export default function StageDetailsModal({
     const handleCandidatureSuccess = () => {
         setShowCandidatureForm(false);
         setCandidatureSuccess(true);
-        // Notifier le parent que la candidature a été envoyée
-        if (onCandidatureSuccess) {
-            onCandidatureSuccess(stage);
-        }
     };
 
   if (!isOpen || !stage) return null;
@@ -115,7 +109,7 @@ export default function StageDetailsModal({
                 <p className="text-sm mt-1">L'employeur sera notifié de votre intérêt pour ce stage.</p>
             </div>
         )}
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <h3 className="text-lg font-semibold mb-2">Informations générales</h3>
@@ -210,14 +204,6 @@ export default function StageDetailsModal({
                 </div>
             )}
             <div className="flex justify-end space-x-4">
-              {shouldShowPostulerButton && (
-                <button
-                    onClick={handlePostuler}
-                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                >
-                    Postuler
-                </button>
-              )}
               <button
                   onClick={handleClose}
                   className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 disabled:opacity-50"
@@ -225,6 +211,14 @@ export default function StageDetailsModal({
               >
                 Fermer
               </button>
+              {showPostulerButton && (
+                  <button
+                      onClick={handlePostuler}
+                      className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 ml-2"
+                  >
+                    Postuler
+                  </button>
+              )}
             </div>
           </div>
         </div>
