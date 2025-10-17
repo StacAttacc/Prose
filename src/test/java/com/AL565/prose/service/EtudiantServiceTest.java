@@ -18,7 +18,7 @@ import com.AL565.prose.repository.StageRepository;
 import com.AL565.prose.repository.ProseUserRepository;
 import com.AL565.prose.service.dto.CandidatureDTO;
 import com.AL565.prose.service.dto.EtudiantPasswordDTO;
-import com.AL565.prose.service.dto.MesCandidaturesDTO;
+import com.AL565.prose.service.dto.EtudiantCandidatureDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -292,13 +292,13 @@ class EtudiantServiceTest {
                 .thenReturn(employeur);
 
         // Appeler la méthode
-        List<MesCandidaturesDTO> result = etudiantService.getMesCandidatures(email);
+        List<EtudiantCandidatureDTO> result = etudiantService.getMesCandidatures(email);
 
         // Vérifications
         assertNotNull(result);
         assertEquals(1, result.size());
 
-        MesCandidaturesDTO dto = result.get(0);
+        EtudiantCandidatureDTO dto = result.get(0);
         assertEquals("SOUMISE", dto.getStatus());
         assertEquals("Développeur Java", dto.getStage().getTitle());
         assertEquals("Stage en développement Java", dto.getStage().getDescription());

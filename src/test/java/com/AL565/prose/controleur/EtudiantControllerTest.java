@@ -2,16 +2,14 @@ package com.AL565.prose.controleur;
 
 import com.AL565.prose.controller.EtudiantController;
 import com.AL565.prose.model.Discipline;
+import com.AL565.prose.model.Employeur;
 import com.AL565.prose.repository.EtudiantRepository;
 import com.AL565.prose.repository.ProseUserRepository;
 import com.AL565.prose.security.JwtTokenProvider;
 import com.AL565.prose.service.EmployeurService;
 import com.AL565.prose.service.EtudiantService;
 import com.AL565.prose.service.GestionnaireService;
-import com.AL565.prose.service.dto.EtudiantCvDTO;
-import com.AL565.prose.service.dto.EtudiantPasswordDTO;
-import com.AL565.prose.service.dto.StageDTO;
-import com.AL565.prose.service.dto.MesCandidaturesDTO;
+import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.assertj.core.api.Assertions;
@@ -357,7 +355,7 @@ class EtudiantControllerTest {
 
     @Test
     void getMesCandidatures_success() throws Exception {
-        List<MesCandidaturesDTO> candidatures = createTestCandidatures();
+        List<EtudiantCandidatureDTO> candidatures = createTestCandidatures();
 
         when(jwtTokenProvider.getEmailFromJWT(anyString())).thenReturn("test@test.com");
         when(etudiantService.getMesCandidatures("test@test.com")).thenReturn(candidatures);
@@ -386,16 +384,12 @@ class EtudiantControllerTest {
         return etudiant;
     }
 
-    private List<MesCandidaturesDTO> createTestCandidatures() {
-        List<MesCandidaturesDTO> candidatures = new ArrayList<>();
+    private List<EtudiantCandidatureDTO> createTestCandidatures() {
+        List<EtudiantCandidatureDTO> candidatures = new ArrayList<>();
 
-        MesCandidaturesDTO.EmployeurInfoDTO employeur = MesCandidaturesDTO.EmployeurInfoDTO.builder()
-                .company("Tech Solutions Inc.")
-                .firstName("Jean")
-                .lastName("Dupont")
-                .build();
+        EmployeurDTO employeur = EmployeurDTO.toDTOTokenless(new Employeur("Jean", "Dupont", "Tech Solutions Inc.", "jean@dupont.com", "1234567890"));
 
-        MesCandidaturesDTO.StageInfoDTO stage = MesCandidaturesDTO.StageInfoDTO.builder()
+        StageSimpleDTO stage = StageSimpleDTO.builder()
                 .title("Développeur Full Stack")
                 .description("Développement d'applications web modernes")
                 .location("Montréal, QC")
@@ -406,7 +400,7 @@ class EtudiantControllerTest {
                 .employeur(employeur)
                 .build();
 
-        MesCandidaturesDTO candidature = MesCandidaturesDTO.builder()
+        EtudiantCandidatureDTO candidature = EtudiantCandidatureDTO.builder()
                 .stage(stage)
                 .status("SOUMISE")
                 .datePostulation(java.time.LocalDateTime.of(2025, 10, 10, 10, 30))

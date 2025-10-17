@@ -8,10 +8,8 @@ import com.AL565.prose.security.exceptions.CvExceptions;
 import com.AL565.prose.service.dto.EtudiantPasswordDTO;
 import com.AL565.prose.service.dto.ReturnEntityDTO;
 import com.AL565.prose.service.dto.StageDTO;
-import com.AL565.prose.service.dto.MesCandidaturesDTO;
+import com.AL565.prose.service.dto.EtudiantCandidatureDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
-
-import jakarta.validation.Valid;
 
 import java.util.HashMap;
 import java.util.List;
@@ -168,12 +166,12 @@ public class EtudiantController {
     }
 
     @GetMapping("/candidatures")
-    public ResponseEntity<ReturnEntityDTO<List<MesCandidaturesDTO>>> getMesCandidatures(@RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<ReturnEntityDTO<List<EtudiantCandidatureDTO>>> getMesCandidatures(@RequestHeader("Authorization") String authHeader) {
         try {
             String token = authHeader.replace("Bearer ", "");
             String email = jwtTokenProvider.getEmailFromJWT(token);
 
-            List<MesCandidaturesDTO> candidatures = etudiantService.getMesCandidatures(email);
+            List<EtudiantCandidatureDTO> candidatures = etudiantService.getMesCandidatures(email);
 
             return ResponseEntity.ok(new ReturnEntityDTO<>("Candidatures récupérées avec succès", candidatures));
         } catch (Exception e) {
