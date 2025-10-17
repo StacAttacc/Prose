@@ -19,7 +19,6 @@ import java.time.LocalDateTime;
 public class CandidatureDTO {
     private Long id;
     private Long stageId;
-    private String etudiantEmail;
     private byte[] motivationLetterData;
     private String motivationLetterFileName;
     private String motivationLetterContentType;
@@ -43,9 +42,12 @@ public class CandidatureDTO {
         return CandidatureDTO.builder()
                 .id(candidature.getId())
                 .stageId(candidature.getStage().getId())
-                .etudiantEmail(candidature.getEtudiant().getEmail())
                 .etudiant(EtudiantDTO.toDTO(etu, null))
                 .motivationLetterData(candidature.getMotivationLetter())
                 .build();
+    }
+
+    public String getEtudiantEmail(){
+        return etudiant.getEmail();
     }
 }

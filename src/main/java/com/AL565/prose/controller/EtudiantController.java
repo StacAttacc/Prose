@@ -88,8 +88,7 @@ public class EtudiantController {
 
             // Construire le DTO avec ou sans lettre de motivation
             CandidatureDTO.CandidatureDTOBuilder builder = CandidatureDTO.builder()
-                    .stageId(stageId)
-                    .etudiantEmail(email);
+                    .stageId(stageId);
 
             // Ajouter la lettre de motivation si elle est fournie
             if (motivationLetter != null && !motivationLetter.isEmpty()) {
