@@ -22,6 +22,7 @@ const GestionCV = () => {
     const [isProcessing, setIsProcessing] = useState(false);
     const [rejectionReason, setRejectionReason] = useState("");
     const [isRejecting, setIsRejecting] = useState(false);
+    const [searchTerm, setSearchTerm] = useState("");
 
     useEffect(() => {
         if (token) loadAllCvs();
@@ -32,9 +33,19 @@ const GestionCV = () => {
         setAllCvs(cvs || []);
     };
 
-    const pendingCvs = allCvs.filter(cv => cv.status === "PENDING");
-    const approvedCvs = allCvs.filter(cv => cv.status === "APPROVED");
-    const rejectedCvs = allCvs.filter(cv => cv.status === "REJECTED");
+    // Fonction de filtrage par nom
+    const filterByName = (cvs) => {
+        if (!searchTerm.trim()) return cvs;
+        const term = searchTerm.toLowerCase();
+        return cvs.filter(cv => {
+            const fullName = `${cv.etudiantPrenom} ${cv.etudiantNom}`.toLowerCase();
+            return fullName.includes(term);
+        });
+    };
+
+    const pendingCvs = filterByName(allCvs.filter(cv => cv.status === "PENDING"));
+    const approvedCvs = filterByName(allCvs.filter(cv => cv.status === "APPROVED"));
+    const rejectedCvs = filterByName(allCvs.filter(cv => cv.status === "REJECTED"));
 
     function openModal(cv) {
         setSelectedCv(cv);
@@ -97,6 +108,40 @@ const GestionCV = () => {
 
     return (
         <div className="p-8">
+            {/* Barre de recherche */}
+            <div className="max-w-md mx-auto mb-6">
+                <div className="relative">
+                    <input
+                        type="text"
+                        placeholder="Rechercher par nom d'étudiant..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                    <svg
+                        className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                        />
+                    </svg>
+                    {searchTerm && (
+                        <button
+                            onClick={() => setSearchTerm("")}
+                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        >
+                            ✕
+                        </button>
+                    )}
+                </div>
+            </div>
+
             {/* Sub-tabs */}
             <div className="flex gap-2 mb-6 justify-center">
                 <button
