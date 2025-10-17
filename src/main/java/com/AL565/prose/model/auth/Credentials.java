@@ -13,6 +13,8 @@ import java.util.Collection;
 import java.util.Collections;
 
 @Embeddable
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -42,14 +44,6 @@ public final class Credentials implements UserDetails {
     @Override
     public String getUsername() {
         return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public Role getRole() {
-        return role;
     }
 
     @Override

@@ -64,9 +64,6 @@ export default function StageListings() {
     setCompensationFilter("");
   };
 
-  if (loading) return <p className="text-center mt-10">Chargement des stages...</p>;
-  if (error) return <ErrorBanner message={error}/>;
-
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6 text-center">Stages Disponibles</h1>
@@ -126,8 +123,17 @@ export default function StageListings() {
           {filteredStages.length} stage(s) trouvé(s) sur {stages.length} au total
         </div>
       </div>
-
-      {filteredStages.length === 0 ? (
+      
+      {/* Affichage du contenu selon l'état */}
+      {loading ? (
+        <div className="text-center py-12">
+          <p className="text-gray-600 text-lg">Chargement des stages...</p>
+        </div>
+      ) : error ? (
+        <div className="text-center py-12">
+          <ErrorBanner message={error}/>
+        </div>
+      ) : filteredStages.length === 0 ? (
         <div className="text-center py-8">
           <p className="text-gray-500 text-lg">
             {stages.length === 0 
@@ -168,10 +174,7 @@ export default function StageListings() {
                 </p>
               </div>
               
-              <div className="flex justify-between items-center">
-                <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">
-                  Approuvé
-                </span>
+              <div className="flex justify-end items-center">
                 <button className="text-teal-600 hover:text-teal-800 font-medium">
                   Voir détails →
                 </button>
