@@ -287,7 +287,6 @@ function FilterSelect({ label, value, onChange }) {
                 <option value="SOUMISE">Soumise</option>
                 <option value="APPROUVEE">Approuvée</option>
                 <option value="REJETEE">Rejetée</option>
-                <option value="PUBLIEE">Publiée</option>
             </select>
         </div>
     );
