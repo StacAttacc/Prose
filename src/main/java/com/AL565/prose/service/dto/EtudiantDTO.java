@@ -1,6 +1,7 @@
 package com.AL565.prose.service.dto;
 
 import com.AL565.prose.model.Discipline;
+import com.AL565.prose.model.Employeur;
 import com.AL565.prose.model.Etudiant;
 import com.AL565.prose.model.auth.Credentials;
 
@@ -21,6 +22,10 @@ public class EtudiantDTO extends ProseUserDTO {
 
     public static EtudiantDTO toDTO(Etudiant model, String token) {
         return new EtudiantDTO(model, token);
+    }
+
+    public static EtudiantDTO toDTOTokenless(Etudiant employeur) {
+        return new EtudiantDTO(employeur, null);
     }
 
     public static Etudiant toModel(EtudiantDTO dto) {

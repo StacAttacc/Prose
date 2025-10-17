@@ -89,7 +89,7 @@ class EtudiantCvControllerTest {
                 .lastModifiedDate(java.time.Instant.now())
                 .build();
 
-        when(etudiantService.getByEmail("email@email.email")).thenReturn(
+        when(etudiantService.getCvByEmail("email@email.email")).thenReturn(
                 Optional.of(new EtudiantCvDTO() {{
                     setName(cv.getName());
                     setType(cv.getType());

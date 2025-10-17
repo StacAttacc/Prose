@@ -138,7 +138,7 @@ class EmployeurControllerTest {
         );
 
         CandidatureDTO candidatureDTO = new CandidatureDTO(
-                stage.getId(), 1L, null, null, null, 0L, new EtudiantDTO()
+                1L, stage.getId(), null, null, null, 0L, new EtudiantDTO()
         );
 
         when(employeurService.getStageCandidatures(any(Long.class)))
@@ -153,7 +153,8 @@ class EmployeurControllerTest {
         ReturnEntityDTO<List<CandidatureDTO>> candidatures =
                 objectMapper.readValue(
                         result.getResponse().getContentAsString(),
-                        new TypeReference<ReturnEntityDTO<List<CandidatureDTO>>>() {}
+                        new TypeReference<ReturnEntityDTO<List<CandidatureDTO>>>() {
+                        }
                 );
 
         assertThat(candidatures.getData().size()).isEqualTo(1);

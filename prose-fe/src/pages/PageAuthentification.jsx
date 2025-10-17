@@ -1,4 +1,3 @@
-// src/pages/PageAuthentification.jsx
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 import Login from "../components/Login";
@@ -7,7 +6,6 @@ import SignUp from "../components/SignUp";
 export default function PageAuthentification() {
     const location = useLocation();
 
-    // Détermine l’écran initial à partir de l’URL (/signup -> signup, sinon login)
     const initialMode = useMemo(() => {
         const path = location.pathname.toLowerCase();
         return path.includes("signup") ? "signup" : "login";

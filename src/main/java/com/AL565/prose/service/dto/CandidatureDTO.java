@@ -47,7 +47,7 @@ public class CandidatureDTO {
                 .build();
     }
 
-    public String getEtudiantEmail(){
+    public String getEtudiantEmail() {
         return etudiant.getEmail();
     }
 }

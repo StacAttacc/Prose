@@ -12,15 +12,14 @@ import com.AL565.prose.repository.EtudiantRepository;
 import com.AL565.prose.repository.CandidatureRepository;
 import com.AL565.prose.repository.ProseUserRepository;
 import com.AL565.prose.repository.StageRepository;
-import com.AL565.prose.service.dto.EtudiantPasswordDTO;
-import com.AL565.prose.service.dto.CandidatureDTO;
-import com.AL565.prose.service.dto.StageDTO;
+import com.AL565.prose.security.exceptions.UserNotFoundException;
+import com.AL565.prose.service.dto.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 import com.AL565.prose.security.exceptions.CvExceptions;
-import com.AL565.prose.service.dto.EtudiantCvDTO;
+import com.AL565.prose.service.exceptions.AlreadyAppliedToStageException;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
@@ -56,6 +55,10 @@ public class EtudiantService {
         Etudiant etudiant = EtudiantPasswordDTO.toModel(dto);
 
         etudiantRepository.save(etudiant);
+    }
+
+    public EtudiantDTO getByEmail(String email) {
+        return EtudiantDTO.toDTOTokenless(etudiantRepository.findEtudiantByCredentials_Username(email).get());
     }
 
     public List<StageDTO> getEtudiantStages(String token) {
@@ -114,7 +117,7 @@ public class EtudiantService {
                 .orElseGet(() -> cvRepository.save(newCv));
     }
 
-    public Optional<EtudiantCvDTO> getByEmail(String username) {
+    public Optional<EtudiantCvDTO> getCvByEmail(String username) {
         return cvRepository.findByEtudiant_Credentials_Username(username)
                 .map(EtudiantCvDTO::toDto);
     }
@@ -141,7 +144,7 @@ public class EtudiantService {
 
         if (candidatureRepository.existsByEtudiant_Credentials_UsernameAndStage_Id(
                 candidatureDTO.getEtudiantEmail(), candidatureDTO.getStageId())) {
-            throw new Exception("Vous avez déjà postulé à ce stage");
+            throw new AlreadyAppliedToStageException("Vous avez déjà postulé à ce stage");
         }
 
         if (candidatureDTO.getMotivationLetterData() != null && candidatureDTO.getMotivationLetterData().length > 0) {
