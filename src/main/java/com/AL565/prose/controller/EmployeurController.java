@@ -32,7 +32,7 @@ public class EmployeurController {
             employeurService.enregistrer(employeurPasswordDTO);
             return new ResponseEntity<>("Created", HttpStatus.CREATED);
         } catch (EmailAlreadyExistsException e) {
-            return new ResponseEntity<>("Le email est déja en cours d'utilisation.", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("Le email est déja en cours d'utilisation.", HttpStatus.CONFLICT);
         } catch (Exception e) {
             return new ResponseEntity<>("Service temporairement indisponible.", HttpStatus.INTERNAL_SERVER_ERROR);
         }

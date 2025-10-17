@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import ErrorBanner from "./display-components/ErrorBanner.jsx";
 
 export default function SignUp({ onSwitchToLogin }) {
     const { registerEmployeur, registerEtudiant } = useAuth();
@@ -24,7 +25,6 @@ export default function SignUp({ onSwitchToLogin }) {
     const [pwd, setPwd] = useState("");
     const [showPwd, setShowPwd] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [success, setSuccess] = useState("");
     const [errorMsg, setErrorMsg] = useState("");
 
     const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -39,7 +39,6 @@ export default function SignUp({ onSwitchToLogin }) {
 
     const onSubmit = async (e) => {
         e.preventDefault();
-        setSuccess("");
         setErrorMsg("");
         if (!canSubmit) return;
 
@@ -60,7 +59,6 @@ export default function SignUp({ onSwitchToLogin }) {
                 await registerEtudiant(payload);
             }
             //await login(email,pwd); au cas si le backend renvoie pas de token
-            setSuccess("Compte créé avec succès !");
             navigate("/");
         } catch (err) {
             console.error(err);
@@ -89,8 +87,8 @@ export default function SignUp({ onSwitchToLogin }) {
                     type="button"
                     onClick={() => setAccountType("employer")}
                     className={`px-4 py-2 rounded-lg font-medium transition ${accountType === "employer"
-                            ? "bg-teal-600 text-black"
-                            : "bg-slate-300 text-gray-400 hover:bg-slate-600"
+                            ? "text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+                            : "bg-slate-300 text-gray-400 hover:bg-slate-600 text-sm px-5 py-2.5 font-medium rounded-lg text-center"
                         }`}
                 >
                     Employeur
@@ -99,24 +97,16 @@ export default function SignUp({ onSwitchToLogin }) {
                     type="button"
                     onClick={() => setAccountType("student")}
                     className={`px-4 py-2 rounded-lg font-medium transition ${accountType === "student"
-                            ? "bg-teal-600 text-black"
-                            : "bg-slate-300 text-gray-400 hover:bg-slate-600"
+                            ? "text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+                            : "bg-slate-300 text-gray-400 hover:bg-slate-600 text-sm px-5 py-2.5 font-medium rounded-lg text-center"
                         }`}
                 >
                     Étudiant
                 </button>
             </div>
 
-            {/* Alertes */}
-            {success && (
-                <div className="mb-4 rounded-lg border border-emerald-600 bg-emerald-900/30 p-3 text-emerald-300">
-                    {success}
-                </div>
-            )}
             {errorMsg && (
-                <div className="mb-4 rounded-lg border border-rose-600 bg-rose-900/30 p-3 text-rose-900">
-                    {errorMsg}
-                </div>
+                <ErrorBanner message={errorMsg} />
             )}
 
             {/* FORM */}
@@ -226,10 +216,7 @@ export default function SignUp({ onSwitchToLogin }) {
                 <button
                     type="submit"
                     disabled={!canSubmit || loading}
-                    className={`w-full py-3 rounded-xl font-bold transition disabled:opacity-60 ${canSubmit
-                            ? "bg-black text-white shadow-lg hover:bg-gray-200"
-                            : "bg-gradient-to-r from-teal-500 to-slate-500 text-white hover:from-teal-400 hover:to-gray-400"
-                        }`}
+                    className="w-full transition disabled:opacity-60 text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
                 >
                     {loading ? "Création..." : "Souscrire"}
                 </button>
