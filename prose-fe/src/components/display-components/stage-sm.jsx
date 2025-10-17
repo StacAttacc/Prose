@@ -20,7 +20,6 @@ export default function StageSmall({ stage }) {
                     <span className="font-medium text-teal-600">Statut:</span> {stage.status}
                 </p>
             </div>
-
             <div className="mt-4 w-full border-t border-gray-200" />
         </div>
     );

@@ -12,7 +12,7 @@ function firstNonEmpty(...vals) {
     return "";
 }
 
-const ApplicantRow = ({applicant}) => {
+export default function ApplicantRow({applicant}) {
     const {user} = useAuth();
 
     const [loadingCv, setLoadingCv] = useState(false);
@@ -278,4 +278,3 @@ const ApplicantRow = ({applicant}) => {
     );
 };
 
-export default ApplicantRow;
