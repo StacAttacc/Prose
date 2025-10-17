@@ -1,7 +1,6 @@
 // services/ApplicationService.js
 const API = import.meta?.env?.VITE_API_URL || "http://localhost:8080";
 
-// Utilitaires sûrs (pas de ?? / ||)
 function firstNonEmpty(...vals) {
     for (const v of vals) {
         if (v === null || v === undefined) continue;
@@ -28,7 +27,6 @@ async function parseJsonOrThrow(res) {
 function extractList(payload) {
     if (Array.isArray(payload)) return payload;
 
-    // essaie différents wrappers sans || ; renvoie dès qu'on trouve un tableau
     const candidates = [
         payload && payload.entity,
         payload && payload.data,
