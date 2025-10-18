@@ -76,13 +76,17 @@ export async function getAllStages(token) {
 
 export async function getStageApplicantsManager(stageId, token) {
     try {
-        const res = await fetch(`${API}/gestionnaire/stages/${stageId}/applications`, {
+        const url = stageId
+            ? `${API}/gestionnaire/stages/${stageId}/applications`
+            : `${API}/gestionnaire/stages/applications`;
+        const res = await fetch(url, {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`,
-                "Accept": "application/json"
+                "Accept": "application/json",
             },
         });
+
         if (!res.ok) {
             return [
                 {
@@ -94,11 +98,6 @@ export async function getStageApplicantsManager(stageId, token) {
                     status: "EN_ATTENTE",
                     motivationLetter: "Je suis motivée par...",
                     stageTitle: "Développeur Java Backend",
-                    etudiant: {
-                        email: "alice@school.com",
-                        firstName: "Alice",
-                        lastName: "Bernard",
-                    }
                 },
                 {
                     id: 102,
@@ -106,19 +105,19 @@ export async function getStageApplicantsManager(stageId, token) {
                     firstName: "Marc",
                     lastName: "Lavoie",
                     fullName: "Marc Lavoie",
-                    status: "ACCEPTEE",
+                    status: "APPROUVEE", // ⚠️ anciennement 'ACCEPTEE' → on met le bon libellé
                     motivationLetter: "Je possède 2 stages précédents...",
                     stageTitle: "Frontend React",
-                    etudiant: {
-                        email: "marc@school.com",
-                        firstName: "Marc",
-                        lastName: "Lavoie",
-                    }
-                }
+                },
             ];
         }
+
         const data = await res.json().catch(() => null);
-        return Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : []);
+        return Array.isArray(data)
+            ? data
+            : Array.isArray(data?.data)
+                ? data.data
+                : [];
     } catch (e) {
         console.debug("getStageApplicantsManager error:", e);
         return [];

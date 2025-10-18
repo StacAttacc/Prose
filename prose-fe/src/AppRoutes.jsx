@@ -15,7 +15,6 @@ import MonCV from "./components/etudiant-components/MonCV.jsx";
 import GestRechercheStages from "./components/gestionnaire-components/RechercheStages.jsx";
 import StageApplicants from "./components/employeur-components/StageApplicants.jsx";
 
-import StageApplicantsGestionnaire from "./components/gestionnaire-components/StageApplicantsGestionnaire.jsx";
 import GestionnaireEtuCandidature from "./components/gestionnaire-components/GestionnaireEtuCandidature.jsx";
 
 export default function AppRoutes() {
@@ -55,7 +54,7 @@ export default function AppRoutes() {
                 : user?.role === "PROFESSEUR"
                     ? <div>Bienvenue Professeur</div>
                     : user?.role === "GESTIONNAIRE"
-                        ? <GestionCV/>
+                        ? <GestionnaireEtuCandidature/>
                         : <div>Rôle inconnu</div>;
 
     return (
@@ -79,7 +78,7 @@ export default function AppRoutes() {
 
                     <Route path="gestionnaire/gestion-cv" element={<GestionCV/>}/>
                     <Route path="gestionnaire/list-stages" element={<GestRechercheStages/>}/>
-                    <Route path="gestionnaire/stages" element={<GestionnaireEtuCandidature/>}/>
+                    < Route path="gestionnaire/candidatures" element={<GestionnaireEtuCandidature/>}/>
                 </Route>
             </Route>
         </Routes>
