@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { telechargerCv } from "../../services/EtudiantService.js";
-import { Worker, Viewer } from "@react-pdf-viewer/core";
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import PdfModal from "./PdfModal.jsx";
 

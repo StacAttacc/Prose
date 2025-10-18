@@ -125,12 +125,10 @@ export default function PostedStages() {
         return <p className="text-center mt-10">Chargement des stages...</p>;
     if (error) return <ErrorBanner message={error} />;
 
-    // ---------- RENDER ----------
     return (
         <div className="p-6">
             <h1 className="text-2xl font-bold mb-6 text-center">Mes Stages</h1>
 
-            {/* Filtres */}
             <div className="mb-8 bg-white rounded-lg shadow-md border border-gray-200 p-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
                     <FilterInput
@@ -172,7 +170,6 @@ export default function PostedStages() {
                 </div>
             </div>
 
-            {/* Cartes des stages */}
             {filteredStages.length === 0 ? (
                 <EmptyState stages={stages} onClear={clearFilters} />
             ) : (
@@ -222,7 +219,6 @@ export default function PostedStages() {
                                     </button>
                                 </div>
 
-                                {/* Bouton et hr uniquement si APPROUVÉE ou PUBLIÉE */}
                                 {showButton && (
                                     <>
                                         <hr className="my-3" />
@@ -251,7 +247,6 @@ export default function PostedStages() {
     );
 }
 
-/* ---------- Sous-composants ---------- */
 
 function FilterInput({ label, value, onChange, placeholder }) {
     return (
