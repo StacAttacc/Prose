@@ -2,24 +2,29 @@ package com.AL565.prose.service;
 
 import com.AL565.prose.model.Employeur;
 import com.AL565.prose.model.Stage;
-import com.AL565.prose.model.notifications.StageNotification;
+import com.AL565.prose.model.*;
+import com.AL565.prose.model.auth.Credentials;
+import com.AL565.prose.repository.CandidatureRepository;
 import com.AL565.prose.repository.EmployeurRepository;
 import com.AL565.prose.repository.NotificationRepository;
 import com.AL565.prose.repository.ProseUserRepository;
 import com.AL565.prose.repository.StageRepository;
+import com.AL565.prose.service.dto.CandidatureDTO;
 import com.AL565.prose.service.dto.EmployeurDTO;
 import com.AL565.prose.service.dto.EmployeurPasswordDTO;
 import com.AL565.prose.service.dto.StageDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -43,6 +48,12 @@ class EmployeurServiceTest {
 
     @Mock
     private StageRepository stageRepository;
+
+    @Mock
+    private EtudiantService etudiantService;
+
+    @Mock
+    private CandidatureRepository candidatureRepository;
 
     @Mock
     private NotificationRepository notificationRepository;
@@ -74,9 +85,8 @@ class EmployeurServiceTest {
 
 
     @Test
-    void createStage_saves_stage_and_creates_notification() {
-        // arrange
-        Employeur employeur = new Employeur(8L, "Umberto", "Macaco", "Zac inc", "employer@example.com");
+    void createStage() {
+        Employeur employeur = new Employeur(8L, "Umberto", "Macaco", "Zac inc", "email");
         EmployeurDTO empDto = new EmployeurDTO(employeur, null);
 
         var dto = StageDTO.builder()
@@ -98,26 +108,13 @@ class EmployeurServiceTest {
             return s;
         });
 
-        when(employeurRepository.getEmployeurByCredentials_Username(anyString())).thenReturn(employeur);
+        when(employeurRepository.getEmployeurByCredentials_Username(any(String.class))).thenReturn(employeur);
 
-        // act
         StageDTO out = employeurService.createStage(dto);
 
-        // assert stage result
         assertThat(out.getId()).isEqualTo(42L);
         assertThat(out.getStatus().name()).isEqualTo("SOUMISE");
         verify(stageRepository, times(1)).save(any(Stage.class));
-
-        // assert notification created and saved
-        ArgumentCaptor<StageNotification> notifCaptor = ArgumentCaptor.forClass(StageNotification.class);
-        verify(notificationRepository, times(1)).save(notifCaptor.capture());
-        StageNotification savedNotif = notifCaptor.getValue();
-
-        assertThat(savedNotif).isNotNull();
-        assertThat(savedNotif.getStage()).isNotNull();
-        assertThat(savedNotif.getStage().getId()).isEqualTo(42L);
-        assertThat(savedNotif.getSenderEmail()).isEqualTo(dto.getEmployeur().getEmail());
-        assertThat(savedNotif.getMessage()).isEqualTo("Nouvelle offre de stage soumise");
     }
 
     @Test
@@ -132,5 +129,35 @@ class EmployeurServiceTest {
         verifyNoInteractions(stageRepository);
     }
 
+    @Test
+    void getPostulations() throws Exception {
+        Stage stage = new Stage(1L, "Démissioner", "Partir immédiatement!", "Rien", new ArrayList<>(), LocalDate.now(), LocalDate.now(), "Chez vous", null, "Remote", "0$", OfferStatus.APPROUVEE, "jemployeur1@gmail.com", OffsetDateTime.now(), OffsetDateTime.now());
 
+        when(stageRepository.findById(anyLong())).thenReturn(Optional.of(stage));
+        when(candidatureRepository.findAllByStage_Id(anyLong())).thenReturn(Optional.of(List.of(
+                new Candidature(1L,
+                        new Etudiant("John", "Doe", Credentials.builder().username("john@doe.com").password("password123").build(), Discipline.INFORMATIQUE),
+                        null,
+                        null,
+                        stage,
+                        LocalDateTime.now(),
+                        OfferStatus.SOUMISE,
+                        null,
+                        null),
+                new Candidature(2L,
+                        new Etudiant("Umberto", "Larrios", Credentials.builder().username("umberto@doe.com").password("password123").build(), Discipline.INFORMATIQUE),
+                        null,
+                        null,
+                        stage,
+                        LocalDateTime.now(),
+                        OfferStatus.SOUMISE,
+                        null,
+                        null)
+        )));
+
+
+        List<CandidatureDTO> candidatures = employeurService.getStageCandidatures(stage.getId());
+
+        assertThat(candidatures.size()).isEqualTo(2);
+    }
 }

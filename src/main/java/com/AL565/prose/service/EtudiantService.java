@@ -3,6 +3,7 @@ package com.AL565.prose.service;
 import com.AL565.prose.model.Employeur;
 import com.AL565.prose.model.Etudiant;
 import com.AL565.prose.model.OfferStatus;
+import com.AL565.prose.model.Stage;
 import com.AL565.prose.repository.EmployeurRepository;
 import com.AL565.prose.model.CV;
 import com.AL565.prose.model.CvStatus;
@@ -15,14 +16,17 @@ import com.AL565.prose.repository.StageRepository;
 import com.AL565.prose.service.dto.EtudiantPasswordDTO;
 import com.AL565.prose.service.dto.CandidatureDTO;
 import com.AL565.prose.service.dto.StageDTO;
+import com.AL565.prose.service.dto.EtudiantCandidatureDTO;
+import com.AL565.prose.security.JwtTokenProvider;
+import com.AL565.prose.service.dto.*;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.AL565.prose.security.exceptions.CvExceptions;
-import com.AL565.prose.service.dto.EtudiantCvDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -34,11 +38,12 @@ import java.time.Instant;
 
 @Service
 @Transactional
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class EtudiantService {
 
     private final EtudiantRepository etudiantRepository;
     private final ProseUserRepository proseUserRepository;
+    private final JwtTokenProvider jwtTokenProvider;
     private final CvRepository cvRepository;
     private final PasswordEncoder passwordEncoder;
     private final StageRepository stageRepository;
@@ -57,9 +62,25 @@ public class EtudiantService {
         etudiantRepository.save(etudiant);
     }
 
+    public EtudiantDTO getByEmail(String email) {
+        return EtudiantDTO.toDTOTokenless(etudiantRepository.findEtudiantByCredentials_Username(email).get());
+    }
+
     public List<StageDTO> getEtudiantStages(String token) {
-        return stageRepository.findByStatus(OfferStatus.APPROUVEE)
+
+        String cleanToken = token.replace("Bearer ", "");
+        String etudiantEmail = jwtTokenProvider.getEmailFromJWT(cleanToken);
+
+        List<Stage> stagesApprouves = stageRepository.findByStatus(OfferStatus.APPROUVEE);
+
+        Set<Long> stageIdsPostules = candidatureRepository
+                .findByEtudiant_Credentials_Username(etudiantEmail)
                 .stream()
+                .map(candidature -> candidature.getStage().getId())
+                .collect(Collectors.toSet());
+
+        return stagesApprouves.stream()
+                .filter(stage -> !stageIdsPostules.contains(stage.getId()))
                 .map(stage -> {
                     Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(stage.getEmployeurEmail());
                     return StageDTO.fromModel(stage, employeur);
@@ -113,11 +134,12 @@ public class EtudiantService {
                 .orElseGet(() -> cvRepository.save(newCv));
     }
 
-    public EtudiantCvDTO getByEmail(String username) {
+    public EtudiantCvDTO getCvByEmail(String username) {
         return cvRepository.findByEtudiant_Credentials_Username(username)
                 .map(EtudiantCvDTO::toDto)
                 .orElse(null);
     }
+
 
     public boolean hasApprovedCv(String email) {
         return cvRepository.findByEtudiant_Credentials_Username(email)
@@ -126,6 +148,7 @@ public class EtudiantService {
     }
 
     public void createCandidature(CandidatureDTO candidatureDTO) throws Exception {
+        // Validation du DTO
         if (candidatureDTO == null) {
             throw new IllegalArgumentException("Les données de candidature sont requises");
         }
@@ -170,5 +193,17 @@ public class EtudiantService {
 
     public boolean hasAlreadyApplied(String email, Long stageId) {
         return candidatureRepository.existsByEtudiant_Credentials_UsernameAndStage_Id(email, stageId);
+    }
+
+    public List<EtudiantCandidatureDTO> getMesCandidatures(String email) {
+        List<Candidature> candidatures = candidatureRepository.findByEtudiant_Credentials_Username(email);
+
+        return candidatures.stream()
+                .map(candidature -> {
+                    String employeurEmail = candidature.getStage().getEmployeurEmail();
+                    Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(employeurEmail);
+                    return EtudiantCandidatureDTO.toDTO(candidature, employeur);
+                })
+                .collect(Collectors.toList());
     }
 }

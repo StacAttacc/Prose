@@ -23,6 +23,10 @@ public class EtudiantDTO extends ProseUserDTO {
         return new EtudiantDTO(model, token);
     }
 
+    public static EtudiantDTO toDTOTokenless(Etudiant employeur) {
+        return new EtudiantDTO(employeur, null);
+    }
+
     public static Etudiant toModel(EtudiantDTO dto) {
         Credentials credentials = new Credentials();
         credentials.setUsername(dto.getEmail());

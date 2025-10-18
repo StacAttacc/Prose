@@ -2,6 +2,7 @@ package com.AL565.prose.service;
 
 import com.AL565.prose.model.Discipline;
 import com.AL565.prose.model.Etudiant;
+import com.AL565.prose.model.Employeur;
 import com.AL565.prose.model.OfferStatus;
 import com.AL565.prose.model.Candidature;
 import com.AL565.prose.model.CV;
@@ -10,13 +11,17 @@ import com.AL565.prose.model.Stage;
 import com.AL565.prose.model.auth.Credentials;
 import com.AL565.prose.model.auth.Role;
 import com.AL565.prose.repository.EtudiantRepository;
+import com.AL565.prose.repository.EmployeurRepository;
 import com.AL565.prose.repository.CandidatureRepository;
 import com.AL565.prose.repository.CvRepository;
 import com.AL565.prose.repository.StageRepository;
 import com.AL565.prose.repository.ProseUserRepository;
 import com.AL565.prose.service.dto.CandidatureDTO;
 import com.AL565.prose.service.dto.EtudiantPasswordDTO;
+import com.AL565.prose.service.dto.EtudiantCandidatureDTO;
+import com.AL565.prose.service.dto.StageDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
+import com.AL565.prose.security.JwtTokenProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -24,6 +29,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -44,6 +53,9 @@ class EtudiantServiceTest {
     private CandidatureRepository candidatureRepository;
 
     @Mock
+    private EmployeurRepository employeurRepository;
+
+    @Mock
     private CvRepository cvRepository;
 
     @Mock
@@ -51,6 +63,9 @@ class EtudiantServiceTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private JwtTokenProvider jwtTokenProvider;
 
     @InjectMocks
     private EtudiantService etudiantService;
@@ -93,7 +108,6 @@ class EtudiantServiceTest {
         Long stageId = 1L;
 
         CandidatureDTO candidatureDTO = CandidatureDTO.builder()
-                .etudiantEmail(email)
                 .stageId(stageId)
                 .motivationLetterData("Test motivation letter".getBytes())
                 .motivationLetterContentType("application/pdf")
@@ -123,7 +137,6 @@ class EtudiantServiceTest {
         Long stageId = 1L;
 
         CandidatureDTO candidatureDTO = CandidatureDTO.builder()
-                .etudiantEmail(email)
                 .stageId(stageId)
                 .build();
 
@@ -144,7 +157,6 @@ class EtudiantServiceTest {
         Long stageId = 1L;
 
         CandidatureDTO candidatureDTO = CandidatureDTO.builder()
-                .etudiantEmail(email)
                 .stageId(stageId)
                 .build();
 
@@ -181,7 +193,6 @@ class EtudiantServiceTest {
         Long stageId = 1L;
 
         CandidatureDTO candidatureDTO = CandidatureDTO.builder()
-                .etudiantEmail(email)
                 .stageId(stageId)
                 .motivationLetterData("Test".getBytes())
                 .motivationLetterContentType("text/plain")
@@ -264,6 +275,39 @@ class EtudiantServiceTest {
         assertFalse(result);
     }
 
+    @Test
+    void getMesCandidatures_success() {
+        String email = "jean.dupont@etudiant.ca";
+
+        Etudiant etudiant = createMockEtudiant(email);
+        Employeur employeur = createMockEmployeur("employer@company.com");
+        Stage stage = createMockStageWithDetails(1L, "employer@company.com");
+        Candidature candidature = createMockCandidature(etudiant, stage, OfferStatus.SOUMISE);
+
+        List<Candidature> candidatures = Arrays.asList(candidature);
+
+        when(candidatureRepository.findByEtudiant_Credentials_Username(email))
+                .thenReturn(candidatures);
+        when(employeurRepository.getEmployeurByCredentials_Username("employer@company.com"))
+                .thenReturn(employeur);
+
+        List<EtudiantCandidatureDTO> result = etudiantService.getMesCandidatures(email);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+
+        EtudiantCandidatureDTO dto = result.get(0);
+        assertEquals("SOUMISE", dto.getStatus());
+        assertEquals("Développeur Java", dto.getStage().getTitle());
+        assertEquals("Stage en développement Java", dto.getStage().getDescription());
+        assertEquals("Tech Solutions Inc.", dto.getStage().getEmployeur().getCompany());
+        assertEquals("Jean", dto.getStage().getEmployeur().getFirstName());
+        assertEquals("Dupont", dto.getStage().getEmployeur().getLastName());
+
+        verify(candidatureRepository, times(1)).findByEtudiant_Credentials_Username(email);
+        verify(employeurRepository, times(1)).getEmployeurByCredentials_Username("employer@company.com");
+    }
+
     private Etudiant createMockEtudiant(String email) {
         Etudiant etudiant = new Etudiant();
         etudiant.setId(1L);
@@ -301,5 +345,164 @@ class EtudiantServiceTest {
         stage.setStatus(OfferStatus.APPROUVEE);
         stage.setEmployeurEmail("employer@company.com");
         return stage;
+    }
+
+    private Employeur createMockEmployeur(String email) {
+        Employeur employeur = new Employeur();
+        employeur.setId(1L);
+        employeur.setFirstName("Jean");
+        employeur.setLastName("Dupont");
+        employeur.setCompany("Tech Solutions Inc.");
+
+        Credentials credentials = new Credentials();
+        credentials.setUsername(email);
+        credentials.setPassword("encodedPassword");
+        credentials.setRole(Role.EMPLOYEUR);
+        employeur.setCredentials(credentials);
+
+        return employeur;
+    }
+
+    private Stage createMockStageWithDetails(Long stageId, String employeurEmail) {
+        Stage stage = new Stage();
+        stage.setId(stageId);
+        stage.setTitle("Développeur Java");
+        stage.setDescription("Stage en développement Java");
+        stage.setLocation("Montréal, QC");
+        stage.setCompensation("25$/h");
+        stage.setStartDate(LocalDate.of(2025, 5, 1));
+        stage.setEndDate(LocalDate.of(2025, 8, 31));
+        stage.setSkills(Arrays.asList("Java", "Spring", "SQL"));
+        stage.setStatus(OfferStatus.APPROUVEE);
+        stage.setEmployeurEmail(employeurEmail);
+        return stage;
+    }
+
+    private Candidature createMockCandidature(Etudiant etudiant, Stage stage, OfferStatus status) {
+        Candidature candidature = new Candidature();
+        candidature.setId(1L);
+        candidature.setEtudiant(etudiant);
+        candidature.setStage(stage);
+        candidature.setStatus(status);
+        candidature.setDateCandidature(LocalDateTime.of(2025, 10, 10, 10, 30));
+        candidature.setDecision(null);
+        candidature.setDateDecision(null);
+        return candidature;
+    }
+
+    @Test
+    void getEtudiantStages_withoutApplications_returnsAllApprovedStages() {
+        // Arrange
+        String token = "Bearer validToken";
+        String etudiantEmail = "etudiant@test.com";
+        
+        // Créer des stages approuvés
+        Stage stage1 = createMockStageWithDetails(1L, "employeur1@test.com");
+        Stage stage2 = createMockStageWithDetails(2L, "employeur2@test.com");
+        
+        // Créer des employeurs
+        Employeur employeur1 = createMockEmployeur("employeur1@test.com");
+        Employeur employeur2 = createMockEmployeur("employeur2@test.com");
+        
+        // Mock le comportement
+        when(jwtTokenProvider.getEmailFromJWT("validToken")).thenReturn(etudiantEmail);
+        when(stageRepository.findByStatus(OfferStatus.APPROUVEE))
+                .thenReturn(Arrays.asList(stage1, stage2));
+        when(candidatureRepository.findByEtudiant_Credentials_Username(etudiantEmail))
+                .thenReturn(Arrays.asList()); // Aucune candidature
+        when(employeurRepository.getEmployeurByCredentials_Username("employeur1@test.com"))
+                .thenReturn(employeur1);
+        when(employeurRepository.getEmployeurByCredentials_Username("employeur2@test.com"))
+                .thenReturn(employeur2);
+        
+        // Act
+        List<StageDTO> result = etudiantService.getEtudiantStages(token);
+        
+        // Assert
+        assertEquals(2, result.size());
+        assertEquals("Développeur Java", result.get(0).getTitle());
+        assertEquals("Développeur Java", result.get(1).getTitle());
+        verify(jwtTokenProvider).getEmailFromJWT("validToken");
+        verify(stageRepository).findByStatus(OfferStatus.APPROUVEE);
+        verify(candidatureRepository).findByEtudiant_Credentials_Username(etudiantEmail);
+    }
+
+    @Test
+    void getEtudiantStages_withExistingApplications_returnsOnlyNonAppliedStages() {
+        // Arrange
+        String token = "Bearer validToken";
+        String etudiantEmail = "etudiant@test.com";
+        
+        // Créer des stages approuvés
+        Stage stage1 = createMockStageWithDetails(1L, "employeur1@test.com");
+        Stage stage2 = createMockStageWithDetails(2L, "employeur2@test.com");
+        Stage stage3 = createMockStageWithDetails(3L, "employeur3@test.com");
+        
+        // Créer un étudiant
+        Etudiant etudiant = createMockEtudiant(etudiantEmail);
+        
+        // Créer une candidature pour stage1
+        Candidature candidature1 = createMockCandidature(etudiant, stage1, OfferStatus.SOUMISE);
+        
+        // Créer des employeurs
+        Employeur employeur2 = createMockEmployeur("employeur2@test.com");
+        Employeur employeur3 = createMockEmployeur("employeur3@test.com");
+        
+        // Mock le comportement
+        when(jwtTokenProvider.getEmailFromJWT("validToken")).thenReturn(etudiantEmail);
+        when(stageRepository.findByStatus(OfferStatus.APPROUVEE))
+                .thenReturn(Arrays.asList(stage1, stage2, stage3));
+        when(candidatureRepository.findByEtudiant_Credentials_Username(etudiantEmail))
+                .thenReturn(Arrays.asList(candidature1)); // Candidature pour stage1
+        when(employeurRepository.getEmployeurByCredentials_Username("employeur2@test.com"))
+                .thenReturn(employeur2);
+        when(employeurRepository.getEmployeurByCredentials_Username("employeur3@test.com"))
+                .thenReturn(employeur3);
+        
+        // Act
+        List<StageDTO> result = etudiantService.getEtudiantStages(token);
+        
+        // Assert
+        assertEquals(2, result.size()); // Seulement stage2 et stage3
+        assertTrue(result.stream().noneMatch(stage -> stage.getId().equals(1L)));
+        assertTrue(result.stream().anyMatch(stage -> stage.getId().equals(2L)));
+        assertTrue(result.stream().anyMatch(stage -> stage.getId().equals(3L)));
+        verify(jwtTokenProvider).getEmailFromJWT("validToken");
+        verify(stageRepository).findByStatus(OfferStatus.APPROUVEE);
+        verify(candidatureRepository).findByEtudiant_Credentials_Username(etudiantEmail);
+    }
+
+    @Test
+    void getEtudiantStages_allStagesApplied_returnsEmptyList() {
+        // Arrange
+        String token = "Bearer validToken";
+        String etudiantEmail = "etudiant@test.com";
+        
+        // Créer des stages approuvés
+        Stage stage1 = createMockStageWithDetails(1L, "employeur1@test.com");
+        Stage stage2 = createMockStageWithDetails(2L, "employeur2@test.com");
+        
+        // Créer un étudiant
+        Etudiant etudiant = createMockEtudiant(etudiantEmail);
+        
+        // Créer des candidatures pour tous les stages
+        Candidature candidature1 = createMockCandidature(etudiant, stage1, OfferStatus.SOUMISE);
+        Candidature candidature2 = createMockCandidature(etudiant, stage2, OfferStatus.SOUMISE);
+        
+        // Mock le comportement
+        when(jwtTokenProvider.getEmailFromJWT("validToken")).thenReturn(etudiantEmail);
+        when(stageRepository.findByStatus(OfferStatus.APPROUVEE))
+                .thenReturn(Arrays.asList(stage1, stage2));
+        when(candidatureRepository.findByEtudiant_Credentials_Username(etudiantEmail))
+                .thenReturn(Arrays.asList(candidature1, candidature2));
+        
+        // Act
+        List<StageDTO> result = etudiantService.getEtudiantStages(token);
+        
+        // Assert
+        assertEquals(0, result.size());
+        verify(jwtTokenProvider).getEmailFromJWT("validToken");
+        verify(stageRepository).findByStatus(OfferStatus.APPROUVEE);
+        verify(candidatureRepository).findByEtudiant_Credentials_Username(etudiantEmail);
     }
 }

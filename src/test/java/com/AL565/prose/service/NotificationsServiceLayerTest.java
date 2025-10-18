@@ -43,7 +43,7 @@ class NotificationsServiceLayerTest {
         n2.setMessage("Stage updated");
         n2.setCreatedAt(LocalDateTime.now());
 
-        when(notificationRepository.findNotificationsByType(NotificationType.STAGE_NOTIFICATION))
+        when(notificationRepository.findNotificationsByTypeAndReadAt(NotificationType.STAGE_NOTIFICATION, null))
                 .thenReturn(List.of(n1, n2));
 
         StageNotificationDTO result = gestionnaireService.getStageNotifications();
@@ -54,21 +54,21 @@ class NotificationsServiceLayerTest {
         assertThat(result.getStageNotifications().getFirst().getMessage()).isEqualTo("Stage submitted");
 
         verify(notificationRepository, times(1))
-                .findNotificationsByType(NotificationType.STAGE_NOTIFICATION);
+                .findNotificationsByTypeAndReadAt(NotificationType.STAGE_NOTIFICATION, null);
         verifyNoMoreInteractions(notificationRepository);
     }
 
     @Test
     @DisplayName("getNotifications() wraps repository failures into NotificationFetchException")
     void getNotifications_wrapsIntoNotificationFetchException() {
-        when(notificationRepository.findNotificationsByType(any()))
+        when(notificationRepository.findNotificationsByTypeAndReadAt(any(), any()))
                 .thenThrow(new RuntimeException("DB down"));
 
         assertThatThrownBy(() -> gestionnaireService.getStageNotifications())
                 .isInstanceOf(NotificationFetchException.class);
 
         verify(notificationRepository, times(1))
-                .findNotificationsByType(NotificationType.STAGE_NOTIFICATION);
+                .findNotificationsByTypeAndReadAt(NotificationType.STAGE_NOTIFICATION, null);
     }
 
     @Test

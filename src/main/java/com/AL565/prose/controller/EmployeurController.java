@@ -2,11 +2,13 @@ package com.AL565.prose.controller;
 
 
 import com.AL565.prose.security.exceptions.UserNotFoundException;
+import com.AL565.prose.service.dto.CandidatureDTO;
 import com.AL565.prose.service.dto.EmployeurPasswordDTO;
 import com.AL565.prose.service.EmployeurService;
 import com.AL565.prose.service.dto.ReturnEntityDTO;
 import com.AL565.prose.service.dto.StageDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
+import com.AL565.prose.service.exceptions.StageNotFoundException;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -66,14 +68,26 @@ public class EmployeurController {
     }
 
     @PutMapping("/stages/{id}")
-    public ResponseEntity<ReturnEntityDTO<Object>> updateStage(@PathVariable("id") Long id, @Valid @RequestBody StageDTO stageDTO) {
+    public ResponseEntity<ReturnEntityDTO<StageDTO>> updateStage(@PathVariable("id") Long id, @Valid @RequestBody StageDTO stageDTO) {
         try {
             StageDTO updatedStage = employeurService.updateStage(id, stageDTO);
             return ResponseEntity.ok(new ReturnEntityDTO<>("Stage mis à jour avec succès", updatedStage));
+        } catch (StageNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ReturnEntityDTO<>("Stage non trouvé", null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ReturnEntityDTO<>("Erreur lors de la mise à jour du stage", null));
+        }
+    }
+
+    @GetMapping("/stages/{id}/applications")
+    public ResponseEntity<ReturnEntityDTO<List<CandidatureDTO>>> getStageCandidatures(@PathVariable long id) {
+        try {
+            List<CandidatureDTO> candidatures = employeurService.getStageCandidatures(id);
+            return ResponseEntity.ok(new ReturnEntityDTO<>("Candidatures trouvées", candidatures));
         } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ReturnEntityDTO<>("Stage non trouvé", e.getMessage()));
-        }catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ReturnEntityDTO<>("Erreur lors de la mise à jour du stage", e.getMessage()));
+            return ResponseEntity.ok(new ReturnEntityDTO<>("Aucune candidature trouvee", new ArrayList<>()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ReturnEntityDTO<>("Erreur interne du serveur", null));
         }
     }
 }

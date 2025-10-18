@@ -58,14 +58,15 @@ export default function StageListings() {
     setSelectedStage(null);
   };
 
+  const handleCandidatureSuccess = (stage) => {
+    setStages(prevStages => prevStages.filter(s => s.id !== stage.id));
+  };
+
   const clearFilters = () => {
     setSearchTerm("");
     setLocationFilter("");
     setCompensationFilter("");
   };
-
-  if (loading) return <p className="text-center mt-10">Chargement des stages...</p>;
-  if (error) return <ErrorBanner message={error}/>;
 
   return (
     <div className="p-6">
@@ -126,8 +127,17 @@ export default function StageListings() {
           {filteredStages.length} stage(s) trouvé(s) sur {stages.length} au total
         </div>
       </div>
-
-      {filteredStages.length === 0 ? (
+      
+      {/* Affichage du contenu selon l'état */}
+      {loading ? (
+        <div className="text-center py-12">
+          <p className="text-gray-600 text-lg">Chargement des stages...</p>
+        </div>
+      ) : error ? (
+        <div className="text-center py-12">
+          <ErrorBanner message={error}/>
+        </div>
+      ) : filteredStages.length === 0 ? (
         <div className="text-center py-8">
           <p className="text-gray-500 text-lg">
             {stages.length === 0 
@@ -182,7 +192,8 @@ export default function StageListings() {
         stage={selectedStage}
         isOpen={isModalOpen}
         onClose={closeModal}
-        showManagementButtons={false}
+        showPostulerButton={true}
+        onCandidatureSuccess={handleCandidatureSuccess}
       />
     </div>
   );
