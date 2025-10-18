@@ -44,6 +44,11 @@ class NotificationsServiceLayerTest {
     private StageRepository stageRepository;
     @Mock
     private CandidatureRepository candidatureRepository;
+    @Mock
+    private PostulationNotificationRepository postulationNotificationRepository;
+    @Mock
+    private NotificationsHelper notificationsHelper;
+
     @InjectMocks
     private EmployeurService employeurService;
 
@@ -235,5 +240,75 @@ class NotificationsServiceLayerTest {
 
         assertThatThrownBy(() -> gestionnaireService.markNotificationAsRead(1L))
                 .isInstanceOf(NotificationExceptions.NotificationFetchException.class);
+    }
+
+    @Test
+    @DisplayName("getPostulationNotifications() returns postulation notifications and count")
+    void getPostulationNotifications_returnsPostulationNotificationsDTO() throws Exception {
+        String employeurEmail = "employer@company.com";
+
+        PostulationNotification pn = new PostulationNotification();
+        pn.setId(1L);
+        Candidature cand = new Candidature();
+        Stage stage = new Stage();
+        stage.setId(5L);
+        stage.setEmployeurEmail(employeurEmail);
+        cand.setStage(stage);
+        pn.setCandidature(cand);
+        pn.setSenderEmail("jean.dupont@etudiant.ca");
+        pn.setType(NotificationType.STAGE_NOTIFICATION);
+        pn.setMessage("Candidature");
+        pn.setCreatedAt(LocalDateTime.now());
+
+        when(postulationNotificationRepository
+                .findByReadAtAndCandidature_StageEmployeurEmail(null, employeurEmail))
+                .thenReturn(List.of(pn));
+
+        com.AL565.prose.service.dto.PostulationNotificationDTO result =
+                employeurService.getPostulationNotifications(employeurEmail);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getCount()).isEqualTo(1);
+        assertThat(result.getPostulationNotifications()).hasSize(1);
+        assertThat(result.getPostulationNotifications().get(0).getSenderEmail())
+                .isEqualTo("jean.dupont@etudiant.ca");
+
+        verify(postulationNotificationRepository, times(1))
+                .findByReadAtAndCandidature_StageEmployeurEmail(null, employeurEmail);
+    }
+
+    @Test
+    @DisplayName("getPostulationNotifications() wraps repository failures into Exception")
+    void getPostulationNotifications_wrapsException() {
+        when(postulationNotificationRepository.findByReadAtAndCandidature_StageEmployeurEmail(any(), any()))
+                .thenThrow(new RuntimeException("DB down"));
+
+        assertThatThrownBy(() -> employeurService.getPostulationNotifications("employer@company.com"))
+                .isInstanceOf(Exception.class)
+                .hasMessageContaining("Erreur lors de la récupération des notifications de postulation");
+    }
+
+    @Test
+    @DisplayName("markNotificationAsRead() delegates to NotificationsHelper")
+    void markNotificationAsRead_delegatesToHelper_success() throws Exception {
+        ReflectionTestUtils.setField(employeurService, "notificationsHelper", notificationsHelper);
+        doNothing().when(notificationsHelper).markNotificationAsRead(1L);
+
+        employeurService.markNotificationAsRead(1L);
+
+        verify(notificationsHelper, times(1)).markNotificationAsRead(1L);
+    }
+
+    @Test
+    @DisplayName("markNotificationAsRead() propagates helper exception")
+    void markNotificationAsRead_helperThrows_propagatesException() throws Exception {
+        ReflectionTestUtils.setField(employeurService, "notificationsHelper", notificationsHelper);
+        doThrow(new Exception("boom")).when(notificationsHelper).markNotificationAsRead(1L);
+
+        assertThatThrownBy(() -> employeurService.markNotificationAsRead(1L))
+                .isInstanceOf(Exception.class)
+                .hasMessageContaining("boom");
+
+        verify(notificationsHelper, times(1)).markNotificationAsRead(1L);
     }
 }

@@ -5,18 +5,12 @@ import com.AL565.prose.model.Employeur;
 import com.AL565.prose.model.OfferStatus;
 import com.AL565.prose.model.Stage;
 import com.AL565.prose.model.notifications.NotificationType;
+import com.AL565.prose.model.notifications.PostulationNotification;
 import com.AL565.prose.model.notifications.StageNotification;
-import com.AL565.prose.repository.CandidatureRepository;
-import com.AL565.prose.repository.EmployeurRepository;
-import com.AL565.prose.repository.NotificationRepository;
-import com.AL565.prose.repository.ProseUserRepository;
-import com.AL565.prose.repository.StageRepository;
+import com.AL565.prose.repository.*;
 import com.AL565.prose.security.exceptions.NotificationExceptions.*;
 import com.AL565.prose.security.exceptions.UserNotFoundException;
-import com.AL565.prose.service.dto.CandidatureDTO;
-import com.AL565.prose.service.dto.EmployeurDTO;
-import com.AL565.prose.service.dto.EmployeurPasswordDTO;
-import com.AL565.prose.service.dto.StageDTO;
+import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import com.AL565.prose.service.exceptions.StageNotFoundException;
 import jakarta.transaction.Transactional;
@@ -38,6 +32,7 @@ public class EmployeurService {
     private NotificationRepository notificationRepository;
     private CandidatureRepository candidatureRepository;
     private NotificationsHelper notificationsHelper;
+    private PostulationNotificationRepository postulationNotificationRepository;
 
     public void enregistrer(EmployeurPasswordDTO employeurDTO) throws EmailAlreadyExistsException {
         if (proseUserRepository.findByCredentials_Username(employeurDTO.getEmail()).isPresent()) {
@@ -117,6 +112,16 @@ public class EmployeurService {
         List<Candidature> candidatures = candidatureRepository.findAllByStage_Id(stageId).orElse(new ArrayList<>());
 
         return candidatures.stream().map((CandidatureDTO::toDTO)).toList();
+    }
+
+    public PostulationNotificationDTO getPostulationNotifications(String employeurEmail) throws Exception {
+        try {
+            List<PostulationNotification> notifications = postulationNotificationRepository
+                    .findByReadAtAndCandidature_StageEmployeurEmail(null, employeurEmail);
+            return new PostulationNotificationDTO(notifications, notifications.size());
+        } catch (Exception e) {
+            throw new Exception("Erreur lors de la récupération des notifications de postulation", e);
+        }
     }
 
     public void markNotificationAsRead(Long notificationId) throws Exception {

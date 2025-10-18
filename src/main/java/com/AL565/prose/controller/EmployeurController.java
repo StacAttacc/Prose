@@ -2,11 +2,8 @@ package com.AL565.prose.controller;
 
 
 import com.AL565.prose.security.exceptions.UserNotFoundException;
-import com.AL565.prose.service.dto.CandidatureDTO;
-import com.AL565.prose.service.dto.EmployeurPasswordDTO;
+import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.EmployeurService;
-import com.AL565.prose.service.dto.ReturnEntityDTO;
-import com.AL565.prose.service.dto.StageDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import com.AL565.prose.service.exceptions.StageNotFoundException;
 import jakarta.validation.Valid;
@@ -88,6 +85,17 @@ public class EmployeurController {
             return ResponseEntity.ok(new ReturnEntityDTO<>("Aucune candidature trouvee", new ArrayList<>()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ReturnEntityDTO<>("Erreur interne du serveur", null));
+        }
+    }
+
+    @GetMapping("/notifications/postulations/{email}")
+    public ResponseEntity<ReturnEntityDTO<PostulationNotificationDTO>> getPostulationNotifications(@PathVariable String email) {
+        try {
+            PostulationNotificationDTO notifications = employeurService.getPostulationNotifications(email);
+            return ResponseEntity.ok(new ReturnEntityDTO<>("Notifications: ", notifications));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ReturnEntityDTO<>("Erreur lors de la récupération des notifications de postulation", null));
         }
     }
 

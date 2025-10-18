@@ -4,6 +4,7 @@ import com.AL565.prose.controller.EmployeurController;
 import com.AL565.prose.model.Employeur;
 import com.AL565.prose.model.OfferStatus;
 import com.AL565.prose.model.Stage;
+import com.AL565.prose.model.notifications.PostulationNotification;
 import com.AL565.prose.repository.EmployeurRepository;
 import com.AL565.prose.repository.EtudiantRepository;
 import com.AL565.prose.repository.ProseUserRepository;
@@ -28,6 +29,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -177,6 +179,53 @@ class EmployeurControllerTest {
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.message", is("Erreur lors du marquage de la notification comme lue")))
                 .andExpect(jsonPath("$.data").doesNotExist());
+    }
+
+    @Test
+    void getPostulationNotifications_success_returnsDTO() throws Exception {
+        String email = "employer@company.com";
+
+        PostulationNotification pn = new PostulationNotification();
+        pn.setId(1L);
+        pn.setSenderEmail("jean.dupont@etudiant.ca");
+        pn.setCreatedAt(LocalDateTime.now());
+
+        PostulationNotificationDTO dto = new PostulationNotificationDTO(List.of(pn), 1);
+
+        when(employeurService.getPostulationNotifications(email)).thenReturn(dto);
+
+        MvcResult result = mockMvc.perform(get("/employeur/notifications/postulations/" + email)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        ReturnEntityDTO<PostulationNotificationDTO> response = objectMapper.readValue(
+                result.getResponse().getContentAsString(),
+                new TypeReference<ReturnEntityDTO<PostulationNotificationDTO>>() { }
+        );
+
+        assertThat(response.getMessage()).isEqualTo("Notifications: ");
+        assertThat(response.getData()).isNotNull();
+        assertThat(response.getData().getCount()).isEqualTo(1);
+        assertThat(response.getData().getPostulationNotifications()).hasSize(1);
+        assertThat(response.getData().getPostulationNotifications().get(0).getSenderEmail())
+                .isEqualTo("jean.dupont@etudiant.ca");
+
+        verify(employeurService, times(1)).getPostulationNotifications(email);
+    }
+
+    @Test
+    void getPostulationNotifications_whenServiceThrows_returns500WithMessage() throws Exception {
+        doThrow(new Exception("boom")).when(employeurService).getPostulationNotifications(anyString());
+
+        mockMvc.perform(get("/employeur/notifications/postulations/employer@company.com")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.message", is("Erreur lors de la récupération des notifications de postulation")))
+                .andExpect(jsonPath("$.data").doesNotExist());
+
+        verify(employeurService, times(1)).getPostulationNotifications(anyString());
     }
 
 }
