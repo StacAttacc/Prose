@@ -90,4 +90,15 @@ public class EmployeurController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ReturnEntityDTO<>("Erreur interne du serveur", null));
         }
     }
+
+    @PutMapping("/notifications/read/{id}")
+    public ResponseEntity<ReturnEntityDTO<Void>> markNotificationAsRead(@PathVariable Long id) {
+        try {
+            employeurService.markNotificationAsRead(id);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ReturnEntityDTO<>("Erreur lors du marquage de la notification comme lue", null));
+        }
+    }
 }
