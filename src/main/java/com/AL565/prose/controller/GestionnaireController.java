@@ -87,7 +87,7 @@ public class GestionnaireController {
         }
     }
 
-    @PutMapping("notifications/read/{id}")
+    @PutMapping("/notifications/read/{id}")
     public ResponseEntity<ReturnEntityDTO<Void>> markNotificationAsRead(@PathVariable Long id) {
         try {
             gestionnaireService.markNotificationAsRead(id);

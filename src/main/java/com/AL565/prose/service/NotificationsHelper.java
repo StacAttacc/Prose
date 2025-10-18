@@ -4,16 +4,16 @@ import com.AL565.prose.model.notifications.Notification;
 import com.AL565.prose.repository.NotificationRepository;
 import com.AL565.prose.security.exceptions.NotificationExceptions;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-@Service
-@Transactional
+@Component
 @RequiredArgsConstructor
 public class NotificationsHelper {
 
     private final NotificationRepository notificationRepository;
 
+    @Transactional
     public void markNotificationAsRead(Long notificationId) throws Exception {
         try {
             Notification notification = notificationRepository.findById(notificationId)
