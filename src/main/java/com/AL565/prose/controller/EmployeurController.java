@@ -4,6 +4,7 @@ package com.AL565.prose.controller;
 import com.AL565.prose.security.exceptions.UserNotFoundException;
 import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.EmployeurService;
+import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import com.AL565.prose.service.exceptions.StageNotFoundException;
 import jakarta.validation.Valid;
@@ -89,9 +90,9 @@ public class EmployeurController {
     }
 
     @GetMapping("/notifications/postulations/{email}")
-    public ResponseEntity<ReturnEntityDTO<PostulationNotificationDTO>> getPostulationNotifications(@PathVariable String email) {
+    public ResponseEntity<ReturnEntityDTO<NotificationsResponseDTO>> getPostulationNotifications(@PathVariable String email) {
         try {
-            PostulationNotificationDTO notifications = employeurService.getPostulationNotifications(email);
+            NotificationsResponseDTO notifications = employeurService.getPostulationNotifications(email);
             return ResponseEntity.ok(new ReturnEntityDTO<>("Notifications: ", notifications));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

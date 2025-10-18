@@ -7,13 +7,16 @@ import com.AL565.prose.model.CV;
 import com.AL565.prose.model.CvStatus;
 import com.AL565.prose.model.notifications.Notification;
 import com.AL565.prose.model.notifications.NotificationType;
+import com.AL565.prose.model.notifications.StageNotification;
 import com.AL565.prose.security.exceptions.NotificationExceptions.*;
 import com.AL565.prose.repository.*;
 import com.AL565.prose.security.exceptions.CvExceptions.*;
 import com.AL565.prose.service.dto.GestionnaireCvDTO;
 import com.AL565.prose.service.dto.GestionnairePasswordDTO;
 import com.AL565.prose.service.dto.StageDTO;
-import com.AL565.prose.service.dto.StageNotificationDTO;
+import com.AL565.prose.service.dto.notifications.NotificationGroupDTO;
+import com.AL565.prose.service.dto.notifications.NotificationSummaryDTO;
+import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import com.AL565.prose.service.exceptions.FailedToRetrieveStagesException;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +24,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -123,14 +127,47 @@ public class GestionnaireService {
         }
     }
 
-    public StageNotificationDTO getStageNotifications() throws Exception {
+    public NotificationsResponseDTO getStageNotifications() throws Exception {
         try {
-            List<Notification> notifications = notificationRepository
-                    .findNotificationsByTypeAndReadAt(NotificationType.STAGE_NOTIFICATION, null);
-            return new StageNotificationDTO(notifications, notifications.size());
+            List<NotificationGroupDTO> groups = new ArrayList<>();
+            int total = 0;
+            for (NotificationType t : NotificationType.values()) {
+                List<Notification> list = notificationRepository.findNotificationsByTypeAndReadAt(t, null);
+                if (list != null && !list.isEmpty()) {
+                    List<NotificationSummaryDTO> items = list.stream()
+                            .map(this::toSummary)
+                            .collect(Collectors.toList());
+                    groups.add(new NotificationGroupDTO(t.getDisplayName(), items, items.size()));
+                    total += items.size();
+                }
+            }
+            return new NotificationsResponseDTO(groups, total);
         } catch (Exception e) {
             throw new NotificationFetchException();
         }
+    }
+
+    private NotificationSummaryDTO toSummary(Notification n) {
+        Long stageId = null;
+        Long candidatureId = null;
+        if (n instanceof StageNotification) {
+            if (((StageNotification) n).getStage() != null) {
+                stageId = ((StageNotification) n).getStage().getId();
+            }
+        } else {
+            // other notification subclass handling can be added here if needed
+        }
+
+        return NotificationSummaryDTO.builder()
+                .id(n.getId())
+                .type(n.getType() != null ? n.getType().getDisplayName() : null)
+                .message(n.getMessage())
+                .senderEmail(n.getSenderEmail())
+                .createdAt(n.getCreatedAt())
+                .readAt(n.getReadAt())
+                .stageId(stageId)
+                .candidatureId(candidatureId)
+                .build();
     }
 
     public void markNotificationAsRead(Long notificationId) throws Exception {

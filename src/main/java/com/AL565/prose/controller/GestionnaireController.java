@@ -2,6 +2,7 @@ package com.AL565.prose.controller;
 
 import com.AL565.prose.service.GestionnaireService;
 import com.AL565.prose.service.dto.*;
+import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -77,9 +78,9 @@ public class GestionnaireController {
     }
 
     @GetMapping("/notifications/all")
-    public ResponseEntity<ReturnEntityDTO<StageNotificationDTO>> getAllNotifications() {
+    public ResponseEntity<ReturnEntityDTO<NotificationsResponseDTO>> getAllNotifications() {
         try {
-            StageNotificationDTO notifications = gestionnaireService.getStageNotifications();
+            NotificationsResponseDTO notifications = gestionnaireService.getStageNotifications();
             return ResponseEntity.ok(new ReturnEntityDTO<>("notifications: ", notifications));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

@@ -11,6 +11,9 @@ import com.AL565.prose.repository.*;
 import com.AL565.prose.security.exceptions.NotificationExceptions.*;
 import com.AL565.prose.security.exceptions.UserNotFoundException;
 import com.AL565.prose.service.dto.*;
+import com.AL565.prose.service.dto.notifications.NotificationGroupDTO;
+import com.AL565.prose.service.dto.notifications.NotificationSummaryDTO;
+import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import com.AL565.prose.service.exceptions.StageNotFoundException;
 import jakarta.transaction.Transactional;
@@ -21,6 +24,7 @@ import org.springframework.stereotype.Service;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -114,11 +118,28 @@ public class EmployeurService {
         return candidatures.stream().map((CandidatureDTO::toDTO)).toList();
     }
 
-    public PostulationNotificationDTO getPostulationNotifications(String employeurEmail) throws Exception {
+    public NotificationsResponseDTO getPostulationNotifications(String employeurEmail) throws Exception {
         try {
             List<PostulationNotification> notifications = postulationNotificationRepository
                     .findByReadAtAndCandidature_StageEmployeurEmail(null, employeurEmail);
-            return new PostulationNotificationDTO(notifications, notifications.size());
+
+            List<NotificationSummaryDTO> items = (notifications == null ? new ArrayList<>() :
+                    notifications.stream().map(n ->
+                            NotificationSummaryDTO.builder()
+                                    .id(n.getId())
+                                    .type(n.getType() != null ? n.getType().getDisplayName() : "postulation")
+                                    .message(n.getMessage())
+                                    .senderEmail(n.getSenderEmail())
+                                    .createdAt(n.getCreatedAt())
+                                    .readAt(n.getReadAt())
+                                    .candidatureId(n.getCandidature() != null ? n.getCandidature().getId() : null)
+                                    .stageId(n.getCandidature() != null && n.getCandidature().getStage() != null ? n.getCandidature().getStage().getId() : null)
+                                    .build()
+                    ).collect(Collectors.toList())
+            );
+
+            NotificationGroupDTO group = new NotificationGroupDTO("postulation", items, items.size());
+            return new NotificationsResponseDTO(List.of(group), items.size());
         } catch (Exception e) {
             throw new Exception("Erreur lors de la récupération des notifications de postulation", e);
         }

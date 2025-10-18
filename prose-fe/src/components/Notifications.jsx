@@ -1,289 +1,260 @@
-import {useEffect, useState, useRef, useCallback} from "react";
-import {useNavigate} from "react-router-dom";
-import {useAuth} from "../context/AuthContext.jsx";
+// javascript
+import { useEffect, useState, useRef, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext.jsx";
 import {
     getGestionnaireNotifications,
-    markNotificationRead,
-    markNotificationsRead
+    markNotificationRead as markNotificationReadGestionnaire,
+    markNotificationsRead as markNotificationsReadGestionnaire
 } from "../services/GestionnaireService.js";
+import {
+    getCandidatureNotifications,
+    markNotificationRead as markNotificationReadEmployeur,
+    markNotificationsRead as markNotificationsReadEmployeur
+} from "../services/EmployeurService.js";
 
 export default function Notifications() {
-    const {user} = useAuth();
-    const [notifications, setNotifications] = useState([]);
-    const [error, setError] = useState(null);
+    const { user } = useAuth();
+    const [notificationsByType, setNotificationsByType] = useState({});
     const [loading, setLoading] = useState(true);
-    const [open, setOpen] = useState(false);
-    const [readNotifications, setReadNotifications] = useState(0);
-    const navigate = useNavigate();
-    const dropdownRef = useRef(null);
+    const [error, setError] = useState(null);
+    const [openType, setOpenType] = useState(null);
+    const [readCounter, setReadCounter] = useState(0);
     const mountedRef = useRef(true);
-    const dropdownId = "notif-dropdown";
+    const dropdownRef = useRef(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
         mountedRef.current = true;
         return () => { mountedRef.current = false; };
     }, []);
 
-    useEffect(() => {
+    function normalizeListToTypes(list = [], fallbackKey = "default") {
+        const map = {};
+        list.forEach(n => {
+            const key = (n?.type && n.type.toLowerCase?.()) || n?.notificationType?.toLowerCase?.() || fallbackKey;
+            if (!map[key]) map[key] = [];
+            map[key].push(n);
+        });
+        return map;
+    }
+
+    function buildFromGroups(groups = []) {
+        const map = {};
+        groups.forEach(g => {
+            const key = (g?.typeKey || g?.type || "default").toLowerCase();
+            map[key] = Array.isArray(g.items) ? g.items : [];
+        });
+        return map;
+    }
+
+    async function fetchAndNormalize() {
         if (!user?.token) {
-            setNotifications([]);
-            setError(null);
+            setNotificationsByType({});
             setLoading(false);
+            setError(null);
             return;
         }
 
-        let cancelled = false;
-        async function fetchAllGestionnaireNotifications() {
-            setLoading(true);
-            setError(null);
-            try {
-                setNotifications([]);
-                const response = await getGestionnaireNotifications(user.token);
-                if (cancelled || !mountedRef.current) return;
-                const data = response?.data?.stageNotifications || response?.data || [];
-                setNotifications(Array.isArray(data) ? data : []);
-            } catch (err) {
-                if (cancelled || !mountedRef.current) return;
-                console.error("Failed to load notifications:", err);
-                setError(err?.message || "Failed to load notifications");
-                setNotifications([]);
-            } finally {
-                if (!cancelled && mountedRef.current) setLoading(false);
-            }
-        }
+        setLoading(true);
+        setError(null);
 
-        fetchAllGestionnaireNotifications();
-        return () => { cancelled = true; };
-    }, [user?.token, readNotifications]);
+        try {
+            let raw;
+            if (user.role === "GESTIONNAIRE") {
+                raw = await getGestionnaireNotifications(user.token);
+            } else if (user.role === "EMPLOYEUR") {
+                raw = await getCandidatureNotifications(user.email, user.token);
+            } else {
+                raw = null;
+            }
+
+            // raw may already be parsed; unwrap common wrapper { message, data }
+            const payload = raw?.data || raw || null;
+
+            let byType = {};
+
+            if (payload?.groups && Array.isArray(payload.groups)) {
+                byType = buildFromGroups(payload.groups);
+            } else if (Array.isArray(payload)) {
+                byType = normalizeListToTypes(payload);
+            } else if (payload?.postulationNotifications) {
+                byType = normalizeListToTypes(payload.postulationNotifications, "postulation");
+            } else if (payload?.stageNotifications) {
+                byType = normalizeListToTypes(payload.stageNotifications, "stage");
+            } else if (payload?.items && Array.isArray(payload.items)) {
+                byType = normalizeListToTypes(payload.items);
+            } else if (payload?.data && Array.isArray(payload.data)) {
+                byType = normalizeListToTypes(payload.data);
+            } else {
+                byType = {};
+            }
+
+            if (mountedRef.current) setNotificationsByType(byType);
+        } catch (err) {
+            console.error("Failed to load notifications:", err);
+            if (mountedRef.current) {
+                setError(err?.message || "Failed to load notifications");
+                setNotificationsByType({});
+            }
+        } finally {
+            if (mountedRef.current) setLoading(false);
+        }
+    }
+
+    useEffect(() => {
+        fetchAndNormalize();
+        // refresh when readCounter changes (after marking read)
+    }, [user?.token, user?.role, user?.email, readCounter]);
 
     useEffect(() => {
         function onClickOutside(e) {
             if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-                setOpen(false);
+                setOpenType(null);
             }
         }
         document.addEventListener("click", onClickOutside);
         return () => document.removeEventListener("click", onClickOutside);
     }, []);
 
-    const count = notifications.length;
-
-    const handleCardClick = useCallback(async () => {
-        await markNotificationsRead((notifications || []).map(n => n.id), user.token);
-        setReadNotifications(prev => prev + readNotifications +1);
-        navigate("/gestionnaire/list-stages");
-    }, [navigate]);
-
-    const handleCloseCardClick = useCallback(async (e) => {
-        e?.stopPropagation();
-        e?.preventDefault();
-        if (!user?.token) return;
-        const ids = (notifications || []).map(n => n.id).filter(Boolean);
-        if (ids.length === 0) return;
-        try {
-            await markNotificationsRead(ids, user.token);
-            setReadNotifications(prev => prev + ids.length);
-        } catch (err) {
-            console.error("Failed to mark notifications as read:", err);
+    async function markSingleNotification(id) {
+        if (!id) return;
+        if (user.role === "GESTIONNAIRE") {
+            await markNotificationReadGestionnaire(id, user.token);
+        } else if (user.role === "EMPLOYEUR") {
+            await markNotificationReadEmployeur(id, user.token);
+        } else {
+            await markNotificationReadGestionnaire(id, user.token);
         }
-    }, [notifications, user?.token]);
-
-    const handleCardKeyDown = useCallback((e) => {
-        if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            handleCardClick();
-        }
-    }, [handleCardClick]);
-
-    const handleToggle = useCallback((e) => {
-        e.stopPropagation();
-        setOpen((v) => !v);
-    }, []);
-
-    const handleItemClick = useCallback(async (e, notification) => {
-        e.stopPropagation();
-        setOpen(false);
-        const stageId = notification?.stage?.id || notification?.stageId;
-        try {
-            if (stageId) {
-                await markNotificationRead(notification.id, user.token);
-                setReadNotifications(prev => prev + 1);
-                navigate("/gestionnaire/list-stages", { state: { openStageId: stageId } });
-            } else {
-                navigate("/gestionnaire/list-stages");
-            }
-        } catch (err) {
-            console.error("Failed to mark notifications as read:", err);
-            navigate("/gestionnaire/list-stages", stageId ? { state: { openStageId: stageId } } : undefined);
-        }
-    }, [navigate, notifications, user?.token]);
-
-    const handleItemCloseClick = useCallback(async (e, notification) => {
-        e.stopPropagation();
-        setOpen(false);
-        const stageId = notification?.stage?.id || notification?.stageId;
-        try {
-            if (stageId) {
-                await markNotificationRead(notification.id, user.token);
-                setReadNotifications(prev => prev + 1);
-            }
-        } catch (err) {
-            console.error("Failed to mark notifications as read:", err);
-        }
-    }, [navigate, notifications, user?.token]);
-
-    function shortText(text, max = 80) {
-        if (!text) return "";
-        return text.length > max ? `${text.slice(0, max - 1)}…` : text;
     }
 
-    return (!loading && error ? (
-                <div className="mt-3 text-sm text-red-600">{error}</div>)
-        : (count === 0 ? (<></>)
-            : (
-                <div className="relative inline-block text-left" ref={dropdownRef}>
-                    <div
-                        className="w-full bg-white border border-gray-200 rounded-lg shadow-sm cursor-pointer hover:shadow-md transition p-4 flex items-center justify-between"
-                        role="button"
-                        tabIndex={0}
-                        onClick={handleCardClick}
-                        onKeyDown={handleCardKeyDown}
-                        aria-label="Open notifications page"
-                    >
-                        <div className="flex items-start gap-3 flex-1">
-                            <div>
-                                <div className="text-xs text-gray-500" aria-live="polite">
-                                    {count} nouvelle(s) offre(s) de stage à approuver
-                                </div>
+    async function markManyNotifications(ids = []) {
+        if (!Array.isArray(ids) || ids.length === 0) return;
+        if (user.role === "GESTIONNAIRE") {
+            await markNotificationsReadGestionnaire(ids, user.token);
+        } else if (user.role === "EMPLOYEUR") {
+            await markNotificationsReadEmployeur(ids, user.token);
+        } else {
+            await markNotificationsReadGestionnaire(ids, user.token);
+        }
+    }
 
-                                {count <= 3 ? (
-                                        <ul className="mt-3 space-y-2">
-                                            {notifications.map((n) => (
-                                                <li key={n.id} className="flex inline-flex justify-between w-full">
-                                                    <button
-                                                        type="button"
-                                                        onClick={(e) => handleItemClick(e, n)}
-                                                        className="w-full text-left flex items-center gap-3 px-3 py-2 bg-gray-50 rounded-md hover:bg-gray-100"
-                                                        title={n.message || ""}
-                                                    >
-                                                        <div
-                                                            className="w-7 h-7 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 text-xs">
-                                                            !
-                                                        </div>
-                                                        <div className="min-w-0">
-                                                            <div className="text-sm font-medium text-gray-900 truncate">
-                                                                {shortText(n.message || "No message", 80)}
-                                                            </div>
-                                                            <div className="text-xs text-gray-500">
-                                                                {n.createdAt ? new Date(n.createdAt).toLocaleString() : n.createdAtString || "Unknown time"}
-                                                            </div>
-                                                        </div>
-                                                    </button>
-                                                    <button
-                                                        className="inline-flex items-center ml-2 py-1 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200 "
-                                                        onClick={(e) => handleItemCloseClick(e, n)}
-                                                    >
-                                                        <svg className={`m-2 w-4 h-4`} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" role="img" aria-hidden>
-                                                            <line x1="4" y1="4" x2="20" y2="20" stroke="#ff0000" strokeWidth="2.5" strokeLinecap="round"/>
-                                                            <line x1="20" y1="4" x2="4" y2="20" stroke="#ff0000" strokeWidth="2.5" strokeLinecap="round"/>
-                                                        </svg>
-                                                    </button>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    ) : null
-                                }
+    function defaultNavigatePath(typeKey) {
+        if (user.role === "GESTIONNAIRE") return "/gestionnaire/list-stages";
+        if (user.role === "EMPLOYEUR") return `/employeur/${encodeURIComponent(user.email)}/stages`;
+        return "/";
+    }
+
+    const handleCardClick = useCallback(async (typeKey, list) => {
+        const ids = (list || []).map(n => n.id).filter(Boolean);
+        try {
+            await markManyNotifications(ids);
+            setReadCounter(c => c + ids.length);
+            navigate(defaultNavigatePath(typeKey));
+        } catch (err) {
+            console.error("Failed to mark card notifications as read:", err);
+            navigate(defaultNavigatePath(typeKey));
+        }
+    }, [navigate, user?.role, user?.token, user?.email]);
+
+    const handleItemClick = useCallback(async (e, notification, typeKey) => {
+        e?.stopPropagation?.();
+        setOpenType(null);
+        const stageId = notification?.stage?.id || notification?.stageId || notification?.candidature?.stage?.id || notification?.candidatureId;
+        try {
+            await markSingleNotification(notification.id);
+            setReadCounter(c => c + 1);
+            if (stageId) {
+                navigate(defaultNavigatePath(typeKey), { state: { openStageId: stageId } });
+            } else {
+                navigate(defaultNavigatePath(typeKey));
+            }
+        } catch (err) {
+            console.error("Failed to mark notification as read:", err);
+            navigate(defaultNavigatePath(typeKey));
+        }
+    }, [navigate, user?.role, user?.token, user?.email]);
+
+    const handleCloseType = useCallback(async (e, typeKey, list) => {
+        e?.stopPropagation?.();
+        const ids = (list || []).map(n => n.id).filter(Boolean);
+        try {
+            await markManyNotifications(ids);
+            setReadCounter(c => c + ids.length);
+            setOpenType(null);
+        } catch (err) {
+            console.error("Failed to mark notifications as read (close type):", err);
+        }
+    }, [user?.role, user?.token, user?.email]);
+
+    const totalCount = Object.values(notificationsByType).reduce((acc, arr) => acc + (Array.isArray(arr) ? arr.length : 0), 0);
+
+    if (!loading && error) {
+        return <div className="mt-3 text-sm text-red-600">{error}</div>;
+    }
+
+    if (totalCount === 0) return null;
+
+    return (
+        <div ref={dropdownRef} className="space-y-3">
+            {Object.entries(notificationsByType).map(([typeKey, list]) => {
+                const count = (list || []).length;
+                if (count === 0) return null;
+                const showGrouped = count >= 4;
+                return (
+                    <div key={typeKey} className="relative inline-block text-left">
+                        <div
+                            className="w-full bg-white border border-gray-200 rounded-lg shadow-sm cursor-pointer hover:shadow-md transition p-3 flex items-center justify-between"
+                            role="button"
+                            tabIndex={0}
+                            onClick={() => handleCardClick(typeKey, list)}
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className="font-semibold capitalize">{typeKey}</div>
+                                <div className="text-sm text-gray-500">{count} new</div>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                {showGrouped ? (
+                                    <button onClick={(e) => { e.stopPropagation(); setOpenType(openType === typeKey ? null : typeKey); }}
+                                            className="text-sm text-blue-600 underline">
+                                        View
+                                    </button>
+                                ) : null}
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-2">
-                            {count >= 4 && (
-                                <>
-                                    <button
-                                        type="button"
-                                        onClick={handleToggle}
-                                        className="inline-flex items-center ml-2 py-1 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200 "
-                                        aria-haspopup="true"
-                                        aria-expanded={open}
-                                        aria-controls={dropdownId}
-                                        aria-label="Toggle notifications dropdown"
-                                    >
-                                        <svg className={`m-2 w-4 h-4 transition-transform ${open ? "transform rotate-180" : ""}`}
-                                             viewBox="0 0 20 20" fill="currentColor" aria-hidden>
-                                            <path fillRule="evenodd"
-                                                  d="M5.23 7.21a.75.75 0 011.06.02L10 11.584l3.71-4.354a.75.75 0 111.14.976l-4.25 5a.75.75 0 01-1.14 0l-4.25-5a.75.75 0 01.02-1.06z"
-                                                  clipRule="evenodd"/>
-                                        </svg>
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={handleCloseCardClick}
-                                        className="inline-flex items-center mr-2 py-1 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200 "
-                                        aria-label="Mark all notifications as read"
-                                        title="Mark all as read"
-                                    >
-                                        <svg className={`m-2 w-4 h-4`} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" role="img" aria-hidden>
-                                            <line x1="4" y1="4" x2="20" y2="20" stroke="#ff0000" strokeWidth="2.5" strokeLinecap="round"/>
-                                            <line x1="20" y1="4" x2="4" y2="20" stroke="#ff0000" strokeWidth="2.5" strokeLinecap="round"/>
-                                        </svg>
-                                    </button>
-                                </>
-                            )}
-                        </div>
-                    </div>
-
-                    {count >= 4 && (
-                        <>
-                        <div id={dropdownId}
-                             className={`origin-top-right absolute right-0 mt-2 w-full z-50 ${open ? "block" : "hidden"}`}
-                             role="menu" aria-hidden={!open}>
-                            <div className="bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
-                                <div className="px-4 py-3 border-b border-gray-100">
-                                    <div className="text-sm font-semibold text-gray-800">Nouvelles offres de stage</div>
-                                </div>
-
-                                <div>
-                                    {loading ? (
-                                        <div className="p-4 flex items-center justify-center">
-                                            <svg className="animate-spin h-5 w-5 text-blue-600" viewBox="0 0 24 24">
-                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                                        strokeWidth="4" fill="none"></circle>
-                                                <path className="opacity-75" fill="currentColor"
-                                                      d="M4 12a8 8 0 018-8v8z"></path>
-                                            </svg>
+                        {showGrouped && openType === typeKey && (
+                            <div className="origin-top-right absolute right-0 mt-2 w-80 z-50" role="menu">
+                                <div className="bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
+                                    <div className="p-2">
+                                        {(list || []).slice(0, 10).map(item => (
+                                            <div key={item.id} className="flex justify-between items-start p-2 hover:bg-gray-50 cursor-pointer"
+                                                 onClick={(e) => handleItemClick(e, item, typeKey)}>
+                                                <div>
+                                                    <div className="text-sm font-medium">{item.message || item.senderEmail}</div>
+                                                    <div className="text-xs text-gray-500">{item.senderEmail}</div>
+                                                </div>
+                                                <div className="flex flex-col items-end gap-1">
+                                                    <button onClick={(e) => { e.stopPropagation(); handleItemClick(e, item, typeKey); }}
+                                                            className="text-xs text-blue-600">Open</button>
+                                                    <button onClick={(e) => { e.stopPropagation(); handleCloseType(e, typeKey, [item]); }}
+                                                            className="text-xs text-gray-500">Mark read</button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                        <div className="p-2 text-right">
+                                            <button onClick={(e) => handleCloseType(e, typeKey, list)} className="text-sm text-red-600">
+                                                Mark all read
+                                            </button>
                                         </div>
-                                    ) : error ? (
-                                        <div className="p-4 text-sm text-red-600">{error}</div>
-                                    ) : (
-                                        <ul className="max-h-64 overflow-auto divide-y divide-gray-100">
-                                            {notifications.map((n) => (
-                                                <li key={n.id}>
-                                                    <button
-                                                        type="button"
-                                                        onClick={(e) => handleItemClick(e, n)}
-                                                        className="w-full text-left px-4 py-3 hover:bg-gray-50 cursor-pointer flex items-start gap-3"
-                                                    >
-                                                        <div className="flex-1 min-w-0">
-                                                            <div className="text-sm font-medium text-gray-900 truncate"
-                                                                 title={n.message || ""}>
-                                                                {shortText(n.message || "No message", 120)}
-                                                            </div>
-                                                            <div className="text-xs text-gray-500 mt-1">
-                                                                {n.createdAt ? new Date(n.createdAt).toLocaleString() : n.createdAtString || "Unknown time"}
-                                                            </div>
-                                                        </div>
-                                                    </button>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    )}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        </>
-                    )}
-                </div>
-            )
-        )
+                        )}
+                    </div>
+                );
+            })}
+        </div>
     );
 }
