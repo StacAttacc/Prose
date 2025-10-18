@@ -8,11 +8,11 @@ import com.AL565.prose.model.notifications.NotificationType;
 import com.AL565.prose.model.notifications.PostulationNotification;
 import com.AL565.prose.model.notifications.StageNotification;
 import com.AL565.prose.repository.*;
-import com.AL565.prose.security.JwtTokenProvider;
 import com.AL565.prose.security.exceptions.NotificationExceptions;
 import com.AL565.prose.service.dto.CandidatureDTO;
 import com.AL565.prose.service.dto.EtudiantDTO;
 import com.AL565.prose.service.dto.StageNotificationDTO;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,11 +21,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.lang.reflect.Method;
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,20 +39,11 @@ class NotificationsServiceLayerTest {
     @Mock
     private EtudiantRepository etudiantRepository;
     @Mock
-    private ProseUserRepository proseUserRepository;
-    @Mock
-    private JwtTokenProvider jwtTokenProvider;
-    @Mock
     private CvRepository cvRepository;
     @Mock
     private StageRepository stageRepository;
     @Mock
     private CandidatureRepository candidatureRepository;
-    @Mock
-    private EmployeurRepository employeurRepository;
-    @Mock
-    private PasswordEncoder passwordEncoder;
-
     @InjectMocks
     private EmployeurService employeurService;
 
@@ -62,6 +52,12 @@ class NotificationsServiceLayerTest {
 
     @InjectMocks
     private EtudiantService etudiantService;
+
+    @BeforeEach
+    void setUpNotificationsHelper() {
+        NotificationsHelper realHelper = new NotificationsHelper(notificationRepository);
+        ReflectionTestUtils.setField(gestionnaireService, "notificationsHelper", realHelper);
+    }
 
     @Test
     @DisplayName("createCandidature() saves a PostulationNotification")

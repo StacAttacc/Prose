@@ -34,31 +34,22 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class EtudiantServiceTest {
-
     @Mock
     private ProseUserRepository proseUserRepository;
-
     @Mock
     private EtudiantRepository etudiantRepository;
-
     @Mock
     private CandidatureRepository candidatureRepository;
-
     @Mock
     private EmployeurRepository employeurRepository;
-
     @Mock
     private CvRepository cvRepository;
-
     @Mock
     private StageRepository stageRepository;
-
     @Mock
     private NotificationRepository notificationRepository;
-
     @Mock
     private PasswordEncoder passwordEncoder;
-
     @Mock
     private JwtTokenProvider jwtTokenProvider;
 

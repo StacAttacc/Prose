@@ -33,13 +33,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 @WebMvcTest(EmployeurController.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -158,6 +160,23 @@ class EmployeurControllerTest {
                 );
 
         assertThat(candidatures.getData().size()).isEqualTo(1);
+    }
+
+    @Test
+    void markNotificationAsRead_success_returnsOk() throws Exception {
+        mockMvc.perform(put("/employeur/notifications/read/1").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void markNotificationAsRead_whenServiceThrows_returns500WithMessage() throws Exception {
+        doThrow(new Exception("boom")).when(employeurService).markNotificationAsRead(anyLong());
+
+        mockMvc.perform(put("/employeur/notifications/read/1").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.message", is("Erreur lors du marquage de la notification comme lue")))
+                .andExpect(jsonPath("$.data").doesNotExist());
     }
 
 }
