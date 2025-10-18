@@ -290,7 +290,6 @@ class EtudiantServiceTest {
     void getMesCandidatures_success() {
         String email = "jean.dupont@etudiant.ca";
 
-        // Créer les données de test
         Etudiant etudiant = createMockEtudiant(email);
         Employeur employeur = createMockEmployeur("employer@company.com");
         Stage stage = createMockStageWithDetails(1L, "employer@company.com");
@@ -303,10 +302,8 @@ class EtudiantServiceTest {
         when(employeurRepository.getEmployeurByCredentials_Username("employer@company.com"))
                 .thenReturn(employeur);
 
-        // Appeler la méthode
         List<EtudiantCandidatureDTO> result = etudiantService.getMesCandidatures(email);
 
-        // Vérifications
         assertNotNull(result);
         assertEquals(1, result.size());
 
@@ -322,7 +319,6 @@ class EtudiantServiceTest {
         verify(employeurRepository, times(1)).getEmployeurByCredentials_Username("employer@company.com");
     }
 
-    // Méthodes utilitaires pour créer des objets mock
     private Etudiant createMockEtudiant(String email) {
         Etudiant etudiant = new Etudiant();
         etudiant.setId(1L);

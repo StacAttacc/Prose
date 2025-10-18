@@ -2,7 +2,6 @@ package com.AL565.prose.controleur;
 
 import com.AL565.prose.controller.EmployeurController;
 import com.AL565.prose.model.Employeur;
-import com.AL565.prose.model.Etudiant;
 import com.AL565.prose.model.OfferStatus;
 import com.AL565.prose.model.Stage;
 import com.AL565.prose.repository.EmployeurRepository;
@@ -12,6 +11,7 @@ import com.AL565.prose.repository.StageRepository;
 import com.AL565.prose.service.EtudiantService;
 import com.AL565.prose.service.GestionnaireService;
 import com.AL565.prose.service.dto.*;
+import com.AL565.prose.service.dto.EmployeurPasswordDTO;
 import com.AL565.prose.service.EmployeurService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;

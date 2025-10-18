@@ -1,9 +1,12 @@
 package com.AL565.prose.service;
 
+import com.AL565.prose.model.Employeur;
+import com.AL565.prose.model.Stage;
 import com.AL565.prose.model.*;
 import com.AL565.prose.model.auth.Credentials;
 import com.AL565.prose.repository.CandidatureRepository;
 import com.AL565.prose.repository.EmployeurRepository;
+import com.AL565.prose.repository.NotificationRepository;
 import com.AL565.prose.repository.ProseUserRepository;
 import com.AL565.prose.repository.StageRepository;
 import com.AL565.prose.service.dto.CandidatureDTO;
@@ -52,6 +55,9 @@ class EmployeurServiceTest {
     @Mock
     private CandidatureRepository candidatureRepository;
 
+    @Mock
+    private NotificationRepository notificationRepository;
+
     @InjectMocks
     private EmployeurService employeurService;
 
@@ -82,7 +88,6 @@ class EmployeurServiceTest {
     void createStage() {
         Employeur employeur = new Employeur(8L, "Umberto", "Macaco", "Zac inc", "email");
         EmployeurDTO empDto = new EmployeurDTO(employeur, null);
-
 
         var dto = StageDTO.builder()
                 .title("Stagiaire Java")
@@ -119,7 +124,7 @@ class EmployeurServiceTest {
 
         assertThatThrownBy(() -> employeurService.createStage(null))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("dto");
+                .hasMessageContaining("stage must not be null");
 
         verifyNoInteractions(stageRepository);
     }

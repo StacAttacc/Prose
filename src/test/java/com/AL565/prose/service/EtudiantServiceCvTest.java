@@ -93,14 +93,14 @@ class EtudiantServiceCvTest {
 
 
     @Test
-    void getCvByEmail_shouldReturnCv() throws CvExceptions.StudentNotFoundException {
+    void getCvByEmail_shouldReturnCv() {
         CV cv = CV.builder()
                 .name("cv.pdf")
                 .data(new byte[]{1, 2, 3})
                 .status(CvStatus.PENDING)
                 .build();
         when(cvRepository.findByEtudiant_Credentials_Username("email@email.email")).thenReturn(Optional.of(cv));
-        Optional<EtudiantCvDTO> result = etudiantService.getCvByEmail("email@email.email");
-        assertEquals("cv.pdf", result.get().getName());
+        EtudiantCvDTO result = etudiantService.getCvByEmail("email@email.email");
+        assertEquals("cv.pdf", result.getName());
     }
 }

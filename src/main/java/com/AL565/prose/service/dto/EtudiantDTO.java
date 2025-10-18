@@ -1,7 +1,6 @@
 package com.AL565.prose.service.dto;
 
 import com.AL565.prose.model.Discipline;
-import com.AL565.prose.model.Employeur;
 import com.AL565.prose.model.Etudiant;
 import com.AL565.prose.model.auth.Credentials;
 

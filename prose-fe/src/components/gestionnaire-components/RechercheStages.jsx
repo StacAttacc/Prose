@@ -3,9 +3,12 @@ import { useAuth } from "../../context/AuthContext";
 import {getAllStages, submitStageDecision} from "../../services/GestionnaireService";
 import StageDetailsModal from "../display-components/StageDetailsModal";
 import ErrorBanner from "../display-components/ErrorBanner.jsx";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export default function GestRechercheStages() {
   const { user } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [stages, setStages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -32,7 +35,19 @@ export default function GestRechercheStages() {
     fetchAllStages();
   }, [user.token]);
 
-  const filteredStages = useMemo(() => {
+    useEffect(() => {
+        const openStageId = location?.state?.openStageId;
+        if (!openStageId || stages.length === 0) return;
+
+        const found = stages.find(s => String(s.id) === String(openStageId));
+        if (found) {
+            setSelectedStage(found);
+            setIsModalOpen(true);
+            navigate(location.pathname, { replace: true, state: {} });
+        }
+    }, [location?.state?.openStageId, stages, navigate, location?.pathname]);
+
+    const filteredStages = useMemo(() => {
     return stages.filter(stage => {
       const matchesSearch = stage.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           stage.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||

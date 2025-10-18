@@ -63,8 +63,36 @@ export const rejectCv = async (cvId, comment, token) => {
     }
 };
 
+export async function markNotificationRead(notificationId, token) {
+    return await axios.put(
+        `${BASE_URL_GESTIONNAIRE}/notifications/read/${notificationId}`,
+        {notificationId},
+        {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
+        }
+    );
+}
+
+export const markNotificationsRead = (notificationIds = [], token) => {
+    if (!Array.isArray(notificationIds) || notificationIds.length === 0) {
+        return Promise.resolve();
+    }
+    return Promise.all(notificationIds.map(id => markNotificationRead(id, token)));
+};
+
 export async function getAllStages(token) {
     const { data } = await axios.get(`${BASE_URL_GESTIONNAIRE}/stages`, {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    });
+    return data;
+}
+
+export async function getGestionnaireNotifications(token) {
+    const { data } = await axios.get(`${BASE_URL_GESTIONNAIRE}/notifications/all`, {
         headers: {
             'Authorization': `Bearer ${token}`
         }

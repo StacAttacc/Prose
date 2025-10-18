@@ -7,32 +7,22 @@ import { getEmployeurStages } from "../../services/StageService.js";
 
 const txt = (v) => (v == null ? "" : String(v));
 const norm = (s) =>
-    txt(s)
-        .normalize("NFD")
-        .replace(/\p{Diacritic}/gu, "")
-        .toLowerCase()
-        .trim();
+    txt(s).normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase().trim();
+
+const unwrapArray = (res) => {
+    if (Array.isArray(res)) return res;
+    if (Array.isArray(res?.data)) return res.data;
+    return [];
+};
 
 function buildSearchFields(app) {
-    const email =
-        app?.email ??
-        app?.etudiant?.email ??
-        "";
-
+    const email = app?.email ?? app?.etudiant?.email ?? "";
     const fullName =
         app?.fullName ??
-        app?.etudiant?.fullName ??
-        [app?.firstName, app?.lastName].filter(Boolean).join(" ") ??
-        [app?.etudiant?.firstName, app?.etudiant?.lastName].filter(Boolean).join(" ") ??
+        [app?.firstName, app?.lastName].filter(Boolean).join(" ").trim() ??
+        [app?.etudiant?.firstName, app?.etudiant?.lastName].filter(Boolean).join(" ").trim() ??
         "";
-
-    const skills = Array.isArray(app?.skills)
-        ? app.skills
-        : Array.isArray(app?.competences)
-            ? app.competences
-            : [];
-
-    return { email, fullName, skills };
+    return { email, fullName };
 }
 
 const StageApplicantsPage = () => {
@@ -40,35 +30,24 @@ const StageApplicantsPage = () => {
     const { user } = useAuth();
 
     const [q, setQ] = useState("");
-    const [statusFilter, setStatusFilter] = useState("ALL");
     const [applicants, setApplicants] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [stageTitle, setStageTitle] = useState(null);
 
-    const safeEmail = useMemo(() => {
-        const candidates = [
-            user?.email,
-            user?.username,
-            user?.credentials?.username,
-            user?.principal?.username,
-        ];
-        return (
-            candidates.find(
-                (v) => typeof v === "string" && v.trim().length > 0
-            ) || null
-        );
-    }, [user]);
+    const email = user?.email || null;
+    const token = user?.token || null;
 
-    const reload = async () => {
+    const reloadApplicants = async () => {
         try {
             setLoading(true);
-            const data = await getStageApplicants(id, user.token);
-            setApplicants(Array.isArray(data) ? data : []);
+            const res = await getStageApplicants(id, token);
+            setApplicants(unwrapArray(res));
             setError(null);
         } catch (e) {
             console.debug("getStageApplicants error:", e);
             setError("Impossible de charger les candidatures.");
+            setApplicants([]);
         } finally {
             setLoading(false);
         }
@@ -76,64 +55,40 @@ const StageApplicantsPage = () => {
 
     const loadStageTitle = async () => {
         try {
-            if (!safeEmail) {
+            if (!email) {
                 setStageTitle(null);
                 return;
             }
-            const list = await getEmployeurStages(safeEmail, user?.token);
-            const stages = Array.isArray(list)
-                ? list
-                : Array.isArray(list?.content)
-                    ? list.content
-                    : Array.isArray(list?.data)
-                        ? list.data
-                        : [];
-
-            const target = stages.find(
-                (s) => String(s?.id ?? "") === String(id ?? "")
-            );
-
-            setStageTitle(target?.title ?? target?.titre ?? target?.name ?? null);
+            const list = await getEmployeurStages(email, token);
+            const stages = unwrapArray(list);
+            const target = stages.find((s) => String(s?.id ?? "") === String(id ?? ""));
+            setStageTitle(target?.title ?? null);
         } catch (e) {
-            console.debug("loadStageTitle/getEmployeurStages error", e);
+            console.debug("getEmployeurStages error:", e);
             setStageTitle(null);
         }
     };
 
     useEffect(() => {
-        reload();
+        reloadApplicants();
         loadStageTitle();
-    }, [id]);
+    }, [id, email, token]);
 
     const filtered = useMemo(() => {
-        const base = Array.isArray(applicants) ? applicants : [];
         const qn = norm(q);
+        if (!qn) return applicants;
 
-        if (!qn) return base;
-
-        return base.filter((app) => {
-            const { email, fullName, skills } = buildSearchFields(app);
-            const fields = [
-                norm(fullName),
-                norm(email),
-                ...skills.map(norm),
-            ];
-
-            const matchesSearch = fields.some((f) => f.includes(qn));
-            const status = (app?.status ?? app?.statut ?? "").toUpperCase();
-            const matchesStatus = statusFilter === "ALL" || status === statusFilter;
-
-            return matchesSearch && matchesStatus;
+        return applicants.filter((app) => {
+            const { email, fullName } = buildSearchFields(app);
+            return norm(fullName).includes(qn) || norm(email).includes(qn);
         });
-    }, [applicants, q, statusFilter]);
+    }, [applicants, q]);
 
     return (
         <div className="p-4 md:p-6 flex flex-col items-center">
-            {/* Header */}
             <div className="flex flex-col items-center text-center mb-6">
                 <h1 className="text-2xl font-bold">
-                    Candidature(s) pour le stage{" "}
-                    {stageTitle ? `"${stageTitle}"` : `#${id}`}
+                    Candidature(s) pour le stage {stageTitle ? `"${stageTitle}"` : `#${id}`}
                 </h1>
                 <p className="text-sm text-gray-500 mt-1">
                     {filtered.length} candidature{filtered.length > 1 ? "s" : ""}
@@ -143,7 +98,7 @@ const StageApplicantsPage = () => {
             <div className="w-full max-w-xl mb-8">
                 <div className="relative">
                     <input
-                        placeholder="Recherche (nom, email, compétence)"
+                        placeholder="Recherche (nom, email)"
                         className="w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition"
                         value={q}
                         onChange={(e) => setQ(e.target.value)}
@@ -167,38 +122,31 @@ const StageApplicantsPage = () => {
                         <thead>
                         <tr className="bg-gray-50 text-left border-b">
                             <th className="py-3 px-4 font-medium text-gray-600">Candidat</th>
-                            <th className="py-3 px-4 font-medium text-gray-600">
-                                Cv de l'étudiant
-                            </th>
-                            <th className="py-3 px-4 font-medium text-gray-600">
-                                Lettre de motivation
-                            </th>
+                            <th className="py-3 px-4 font-medium text-gray-600">CV</th>
+                            <th className="py-3 px-4 font-medium text-gray-600">Lettre de motivation</th>
                         </tr>
                         </thead>
                         <tbody>
                         {loading ? (
                             <tr>
-                                <td className="py-8 px-4 text-gray-500 text-center" colSpan={4}>
+                                <td className="py-8 px-4 text-gray-500 text-center" colSpan={3}>
                                     Chargement…
                                 </td>
                             </tr>
                         ) : filtered.length === 0 ? (
                             <tr>
-                                <td className="py-8 px-4 text-gray-500 text-center" colSpan={4}>
+                                <td className="py-8 px-4 text-gray-500 text-center" colSpan={3}>
                                     Aucune candidature trouvée.
                                 </td>
                             </tr>
                         ) : (
-                            filtered.map((app) => (
-                                <ApplicantRow key={app.id} applicant={app} />
-                            ))
+                            filtered.map((app) => <ApplicantRow key={app.id} applicant={app} />)
                         )}
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            {/* Bouton retour */}
             <div className="mt-6">
                 <NavLink
                     to="/employeur/posted-stages"

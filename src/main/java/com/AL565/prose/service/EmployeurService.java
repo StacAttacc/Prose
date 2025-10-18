@@ -4,10 +4,14 @@ import com.AL565.prose.model.Candidature;
 import com.AL565.prose.model.Employeur;
 import com.AL565.prose.model.OfferStatus;
 import com.AL565.prose.model.Stage;
+import com.AL565.prose.model.notifications.NotificationType;
+import com.AL565.prose.model.notifications.StageNotification;
 import com.AL565.prose.repository.CandidatureRepository;
 import com.AL565.prose.repository.EmployeurRepository;
+import com.AL565.prose.repository.NotificationRepository;
 import com.AL565.prose.repository.ProseUserRepository;
 import com.AL565.prose.repository.StageRepository;
+import com.AL565.prose.security.exceptions.NotificationExceptions.*;
 import com.AL565.prose.security.exceptions.UserNotFoundException;
 import com.AL565.prose.service.dto.CandidatureDTO;
 import com.AL565.prose.service.dto.EmployeurDTO;
@@ -31,6 +35,7 @@ public class EmployeurService {
     private EmployeurRepository employeurRepository;
     private PasswordEncoder passwordEncoder;
     private StageRepository stageRepository;
+    private NotificationRepository notificationRepository;
     private CandidatureRepository candidatureRepository;
 
     public void enregistrer(EmployeurPasswordDTO employeurDTO) throws EmailAlreadyExistsException {
@@ -49,16 +54,30 @@ public class EmployeurService {
 
     @Transactional
     public StageDTO createStage(StageDTO dto) {
-
         if (dto == null) {
-            throw new IllegalArgumentException("dto must not be null");
+            throw new IllegalArgumentException("stage must not be null");
         }
 
         Stage saved = stageRepository.save(StageDTO.toModel(dto));
         Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(saved.getEmployeurEmail());
+        createNotificationForNewStage(saved);
+
         return StageDTO.fromModel(saved, employeur);
     }
 
+    private void createNotificationForNewStage(Stage stage) {
+        if (stage == null) {
+            throw new IllegalArgumentException("stage must not be null");
+        }
+        StageNotification notification = new StageNotification();
+        notification.setReadAt(null);
+        notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
+        notification.setStage(stage);
+        notification.setSenderEmail(stage.getEmployeurEmail());
+        notification.setType(NotificationType.STAGE_NOTIFICATION);
+        notification.setMessage(stage.getTitle());
+        notificationRepository.save(notification);
+    }
 
     @Transactional
     public List<StageDTO> listStagesFor(String email) {

@@ -35,7 +35,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.util.Optional;
 
 @Service
 @Transactional
@@ -72,17 +71,14 @@ public class EtudiantService {
         String cleanToken = token.replace("Bearer ", "");
         String etudiantEmail = jwtTokenProvider.getEmailFromJWT(cleanToken);
 
-        // Récupérer tous les stages approuvés
         List<Stage> stagesApprouves = stageRepository.findByStatus(OfferStatus.APPROUVEE);
 
-        // Récupérer les IDs des stages auxquels l'étudiant a déjà postulé
         Set<Long> stageIdsPostules = candidatureRepository
                 .findByEtudiant_Credentials_Username(etudiantEmail)
                 .stream()
                 .map(candidature -> candidature.getStage().getId())
                 .collect(Collectors.toSet());
 
-        // Filtrer pour ne garder que les stages non postulés
         return stagesApprouves.stream()
                 .filter(stage -> !stageIdsPostules.contains(stage.getId()))
                 .map(stage -> {
@@ -138,9 +134,10 @@ public class EtudiantService {
                 .orElseGet(() -> cvRepository.save(newCv));
     }
 
-    public Optional<EtudiantCvDTO> getCvByEmail(String username) {
+    public EtudiantCvDTO getCvByEmail(String username) {
         return cvRepository.findByEtudiant_Credentials_Username(username)
-                .map(EtudiantCvDTO::toDto);
+                .map(EtudiantCvDTO::toDto)
+                .orElse(null);
     }
 
 
@@ -164,13 +161,11 @@ public class EtudiantService {
             throw new IllegalArgumentException("L'email de l'étudiant est requis");
         }
 
-        // Vérifier si l'étudiant a déjà postulé à ce stage
         if (candidatureRepository.existsByEtudiant_Credentials_UsernameAndStage_Id(
                 candidatureDTO.getEtudiantEmail(), candidatureDTO.getStageId())) {
             throw new Exception("Vous avez déjà postulé à ce stage");
         }
 
-        // Vérifier le fichier de lettre de motivation (optionnel, mais si fourni doit être PDF)
         if (candidatureDTO.getMotivationLetterData() != null && candidatureDTO.getMotivationLetterData().length > 0) {
             if (candidatureDTO.getMotivationLetterContentType() == null ||
                 !MediaType.APPLICATION_PDF_VALUE.equalsIgnoreCase(candidatureDTO.getMotivationLetterContentType())) {
@@ -178,11 +173,9 @@ public class EtudiantService {
             }
         }
 
-        // Récupérer l'étudiant
         Etudiant etudiant = etudiantRepository.findEtudiantByCredentials_Username(candidatureDTO.getEtudiantEmail())
                 .orElseThrow(() -> new Exception("Étudiant non trouvé"));
 
-        // Récupérer le CV approuvé
         CV cv = cvRepository.findByEtudiant_Credentials_Username(candidatureDTO.getEtudiantEmail())
                 .orElseThrow(() -> new Exception("CV non trouvé"));
 
@@ -190,7 +183,6 @@ public class EtudiantService {
             throw new Exception("Le CV n'est pas approuvé");
         }
 
-        // Récupérer le stage
         var stage = stageRepository.findById(candidatureDTO.getStageId())
                 .orElseThrow(() -> new Exception("Stage non trouvé"));
 

@@ -21,8 +21,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Optional;
-
 @RestController
 @RequestMapping("/etudiant")
 public class EtudiantController {
@@ -62,8 +60,8 @@ public class EtudiantController {
 
     @GetMapping("/telecharger-cv/{email}")
     public ResponseEntity<EtudiantCvDTO> telecharger(@PathVariable String email) {
-        Optional<EtudiantCvDTO> cv = etudiantService.getCvByEmail(email);
-        return ResponseEntity.ok(Optional.of(cv).get().orElse(null));
+        EtudiantCvDTO cv = etudiantService.getCvByEmail(email);
+        return ResponseEntity.ok(cv);
     }
 
     @GetMapping("/stages/approuves")
@@ -154,14 +152,10 @@ public class EtudiantController {
             String token = authHeader.replace("Bearer ", "");
             String email = jwtTokenProvider.getEmailFromJWT(token);
 
-            Optional<EtudiantCvDTO> cvInfo = etudiantService.getCvByEmail(email);
+            EtudiantCvDTO cvInfo = etudiantService.getCvByEmail(email);
 
-            if (cvInfo.isPresent()) {
-                return ResponseEntity.ok(cvInfo.get());
-            } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-            }
-        } catch (Exception e) {
+            return ResponseEntity.ok(cvInfo);
+        } catch (InternalError err) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }

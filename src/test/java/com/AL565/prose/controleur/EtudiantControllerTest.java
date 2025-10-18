@@ -59,7 +59,6 @@ class EtudiantControllerTest {
     @MockitoBean
     private JwtTokenProvider jwtTokenProvider;
 
-    // Tests pour /register
     @Test
     void inscrireEtudiant_success() throws Exception {
         EtudiantPasswordDTO etudiant = createTestEtudiantDTO();
@@ -108,7 +107,6 @@ class EtudiantControllerTest {
         Assertions.assertThat(result.getResponse().getContentAsString()).isEqualTo("Erreur lors de l'inscription");
     }
 
-    // Tests pour /televerser-cv
     @Test
     void televerserCv_success() throws Exception {
         MockMultipartFile cvFile = new MockMultipartFile(
@@ -131,14 +129,13 @@ class EtudiantControllerTest {
         verify(etudiantService, times(1)).saveCv(any(), eq("test@test.com"), eq("2024-01-01"));
     }
 
-    // Tests pour /telecharger-cv/{email}
     @Test
     void telechargerCv_success() throws Exception {
         EtudiantCvDTO cvDTO = new EtudiantCvDTO();
         cvDTO.setName("cv.pdf");
         cvDTO.setType("application/pdf");
 
-        when(etudiantService.getCvByEmail("test@test.com")).thenReturn(Optional.of(cvDTO));
+        when(etudiantService.getCvByEmail("test@test.com")).thenReturn(null);
 
         mockMvc.perform(get("/etudiant/telecharger-cv/test@test.com")
                 .with(csrf()))
@@ -147,7 +144,6 @@ class EtudiantControllerTest {
         verify(etudiantService, times(1)).getCvByEmail("test@test.com");
     }
 
-    // Tests pour /stages/approuves
     @Test
     void getEtudiantStages_success() throws Exception {
         List<StageDTO> stages = new ArrayList<>();
@@ -179,7 +175,6 @@ class EtudiantControllerTest {
                 .andExpect(jsonPath("$.message").value("Erreur lors de la récupération des stages approuvés"));
     }
 
-    // Tests pour /candidature
     @Test
     void soumettreCandidat_success() throws Exception {
         when(jwtTokenProvider.getEmailFromJWT(anyString())).thenReturn("test@test.com");
@@ -234,7 +229,6 @@ class EtudiantControllerTest {
                 .andExpect(content().string("Erreur interne du serveur."));
     }
 
-    // Tests pour /candidature/check/{stageId}
     @Test
     void checkIfAlreadyApplied_returnsTrue() throws Exception {
         when(jwtTokenProvider.getEmailFromJWT(anyString())).thenReturn("test@test.com");
@@ -320,7 +314,7 @@ class EtudiantControllerTest {
         cvDTO.setType("application/pdf");
 
         when(jwtTokenProvider.getEmailFromJWT(anyString())).thenReturn("test@test.com");
-        when(etudiantService.getCvByEmail("test@test.com")).thenReturn(Optional.of(cvDTO));
+        when(etudiantService.getCvByEmail("test@test.com")).thenReturn(cvDTO);
 
         mockMvc.perform(get("/etudiant/cv/info")
                 .header("Authorization", "Bearer token123")
@@ -334,19 +328,20 @@ class EtudiantControllerTest {
     @Test
     void getCvInfo_cvNotFound() throws Exception {
         when(jwtTokenProvider.getEmailFromJWT(anyString())).thenReturn("test@test.com");
-        when(etudiantService.getCvByEmail("test@test.com")).thenReturn(Optional.empty());
+        when(etudiantService.getCvByEmail("test@test.com")).thenReturn(null);
 
         mockMvc.perform(get("/etudiant/cv/info")
-                .header("Authorization", "Bearer token123")
-                .with(csrf()))
-                .andExpect(status().isNotFound());
+                        .header("Authorization", "Bearer token123")
+                        .with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(content().string(""));
 
         verify(etudiantService, times(1)).getCvByEmail("test@test.com");
     }
 
     @Test
     void getCvInfo_error() throws Exception {
-        when(jwtTokenProvider.getEmailFromJWT(anyString())).thenThrow(new RuntimeException("Erreur JWT"));
+        when(jwtTokenProvider.getEmailFromJWT(anyString())).thenThrow(new InternalError("Erreur JWT"));
 
         mockMvc.perform(get("/etudiant/cv/info")
                 .header("Authorization", "Bearer token123")

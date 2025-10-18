@@ -4,6 +4,7 @@ import {Outlet} from "react-router";
 import {useAuth} from "../context/AuthContext.jsx";
 import {useEffect, useState} from "react";
 import {telechargerCv} from "../services/EtudiantService.js";
+import Notifications from "../components/Notifications.jsx";
 
 export default function Dashboard() {
     const { user } = useAuth();
@@ -106,9 +107,11 @@ export default function Dashboard() {
             <div className="mx-auto">
                 <Outlet/>
             </div>
-            <div className="ml-4 mr-6">
-                {/*Notifications*/}
-            </div>
+            {user.role === "GESTIONNAIRE" && (
+                <div className="px-1 sm:px-1 lg:px-2">
+                    <Notifications/>
+                </div>)
+            }
         </main>
     </>
     )
