@@ -4,15 +4,12 @@ import com.AL565.prose.model.Employeur;
 import com.AL565.prose.model.Etudiant;
 import com.AL565.prose.model.OfferStatus;
 import com.AL565.prose.model.Stage;
-import com.AL565.prose.repository.EmployeurRepository;
+import com.AL565.prose.model.notifications.NotificationType;
+import com.AL565.prose.model.notifications.PostulationNotification;
+import com.AL565.prose.repository.*;
 import com.AL565.prose.model.CV;
 import com.AL565.prose.model.CvStatus;
 import com.AL565.prose.model.Candidature;
-import com.AL565.prose.repository.CvRepository;
-import com.AL565.prose.repository.EtudiantRepository;
-import com.AL565.prose.repository.CandidatureRepository;
-import com.AL565.prose.repository.ProseUserRepository;
-import com.AL565.prose.repository.StageRepository;
 import com.AL565.prose.service.dto.EtudiantPasswordDTO;
 import com.AL565.prose.service.dto.CandidatureDTO;
 import com.AL565.prose.service.dto.StageDTO;
@@ -20,6 +17,7 @@ import com.AL565.prose.service.dto.EtudiantCandidatureDTO;
 import com.AL565.prose.security.JwtTokenProvider;
 import com.AL565.prose.service.dto.*;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -49,6 +47,7 @@ public class EtudiantService {
     private final StageRepository stageRepository;
     private final EmployeurRepository employeurRepository;
     private final CandidatureRepository candidatureRepository;
+    private final NotificationRepository notificationRepository;
 
     public void inscrireEtudiant(EtudiantPasswordDTO dto) {
         if (proseUserRepository.findByCredentials_Username(dto.getEmail()).isPresent()) {
@@ -148,7 +147,6 @@ public class EtudiantService {
     }
 
     public void createCandidature(CandidatureDTO candidatureDTO) throws Exception {
-        // Validation du DTO
         if (candidatureDTO == null) {
             throw new IllegalArgumentException("Les données de candidature sont requises");
         }
@@ -188,7 +186,22 @@ public class EtudiantService {
 
         Candidature candidature = candidatureDTO.toModel(etudiant, cv, stage);
 
-        candidatureRepository.save(candidature);
+        Candidature savedCandidature = candidatureRepository.save(candidature);
+        createNotificationForNewCandidature(savedCandidature);
+    }
+
+    private void createNotificationForNewCandidature(Candidature candidature) {
+        if (candidature == null) {
+            throw new IllegalArgumentException("Candidature exister");
+        }
+        PostulationNotification notification = new PostulationNotification();
+        notification.setReadAt(null);
+        notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
+        notification.setCandidature(candidature);
+        notification.setSenderEmail(candidature.getEtudiant().getEmail());
+        notification.setType(NotificationType.STAGE_NOTIFICATION);
+        notification.setMessage("Candidature: " + candidature.getStage().getTitle());
+        notificationRepository.save(notification);
     }
 
     public boolean hasAlreadyApplied(String email, Long stageId) {
