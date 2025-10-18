@@ -17,6 +17,7 @@ import com.AL565.prose.repository.CvRepository;
 import com.AL565.prose.repository.StageRepository;
 import com.AL565.prose.repository.ProseUserRepository;
 import com.AL565.prose.service.dto.CandidatureDTO;
+import com.AL565.prose.service.dto.EtudiantDTO;
 import com.AL565.prose.service.dto.EtudiantPasswordDTO;
 import com.AL565.prose.service.dto.EtudiantCandidatureDTO;
 import com.AL565.prose.service.dto.StageDTO;
@@ -107,13 +108,15 @@ class EtudiantServiceTest {
         String email = "jean.dupont@etudiant.ca";
         Long stageId = 1L;
 
+        Etudiant etudiant = createMockEtudiant(email);
+
         CandidatureDTO candidatureDTO = CandidatureDTO.builder()
                 .stageId(stageId)
+                .etudiant(EtudiantDTO.toDTOTokenless(etudiant))
                 .motivationLetterData("Test motivation letter".getBytes())
                 .motivationLetterContentType("application/pdf")
                 .build();
 
-        Etudiant etudiant = createMockEtudiant(email);
         CV cv = createMockCV(etudiant, CvStatus.APPROVED);
         Stage stage = createMockStage(stageId);
 
@@ -136,8 +139,11 @@ class EtudiantServiceTest {
         String email = "jean.dupont@etudiant.ca";
         Long stageId = 1L;
 
+        Etudiant etudiant = createMockEtudiant(email);
+
         CandidatureDTO candidatureDTO = CandidatureDTO.builder()
                 .stageId(stageId)
+                .etudiant(EtudiantDTO.toDTOTokenless(etudiant))
                 .build();
 
         when(candidatureRepository.existsByEtudiant_Credentials_UsernameAndStage_Id(email, stageId))
@@ -156,11 +162,13 @@ class EtudiantServiceTest {
         String email = "jean.dupont@etudiant.ca";
         Long stageId = 1L;
 
+        Etudiant etudiant = createMockEtudiant(email);
+
         CandidatureDTO candidatureDTO = CandidatureDTO.builder()
                 .stageId(stageId)
+                .etudiant(EtudiantDTO.toDTOTokenless(etudiant))
                 .build();
 
-        Etudiant etudiant = createMockEtudiant(email);
         CV cv = createMockCV(etudiant, CvStatus.PENDING);
 
         when(candidatureRepository.existsByEtudiant_Credentials_UsernameAndStage_Id(email, stageId))
@@ -192,8 +200,11 @@ class EtudiantServiceTest {
         String email = "jean.dupont@etudiant.ca";
         Long stageId = 1L;
 
+        Etudiant etudiant = createMockEtudiant(email);
+
         CandidatureDTO candidatureDTO = CandidatureDTO.builder()
                 .stageId(stageId)
+                .etudiant(EtudiantDTO.toDTOTokenless(etudiant))
                 .motivationLetterData("Test".getBytes())
                 .motivationLetterContentType("text/plain")
                 .build();
