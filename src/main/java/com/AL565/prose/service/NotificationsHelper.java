@@ -1,0 +1,27 @@
+package com.AL565.prose.service;
+
+import com.AL565.prose.model.notifications.Notification;
+import com.AL565.prose.repository.NotificationRepository;
+import com.AL565.prose.security.exceptions.NotificationExceptions;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@Transactional
+@RequiredArgsConstructor
+public class NotificationsHelper {
+
+    private final NotificationRepository notificationRepository;
+
+    public void markNotificationAsRead(Long notificationId) throws Exception {
+        try {
+            Notification notification = notificationRepository.findById(notificationId)
+                    .orElseThrow(NotificationExceptions.NotificationFetchException::new);
+            notification.setReadAt(java.time.OffsetDateTime.now().toLocalDateTime());
+            notificationRepository.save(notification);
+        } catch (Exception e) {
+            throw new NotificationExceptions.NotificationFetchException();
+        }
+    }
+}

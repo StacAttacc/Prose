@@ -36,6 +36,7 @@ public class GestionnaireService {
     private final EmployeurRepository employeurRepository;
     private final PasswordEncoder passwordEncoder;
     private final NotificationRepository notificationRepository;
+    private final NotificationsHelper notificationsHelper;
 
     public void saveGestionnaire(GestionnairePasswordDTO dto) {
         if (gestionnaireRepository.findByCredentials_Username(dto.getEmail()).isPresent()) {
@@ -133,13 +134,6 @@ public class GestionnaireService {
     }
 
     public void markNotificationAsRead(Long notificationId) throws Exception {
-        try {
-            Notification notification = notificationRepository.findById(notificationId)
-                    .orElseThrow(NotificationFetchException::new);
-            notification.setReadAt(java.time.OffsetDateTime.now().toLocalDateTime());
-            notificationRepository.save(notification);
-        } catch (Exception e) {
-            throw new NotificationFetchException();
-        }
+        notificationsHelper.markNotificationAsRead(notificationId);
     }
 }

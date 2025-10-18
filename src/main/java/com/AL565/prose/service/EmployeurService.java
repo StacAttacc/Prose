@@ -37,6 +37,7 @@ public class EmployeurService {
     private StageRepository stageRepository;
     private NotificationRepository notificationRepository;
     private CandidatureRepository candidatureRepository;
+    private NotificationsHelper notificationsHelper;
 
     public void enregistrer(EmployeurPasswordDTO employeurDTO) throws EmailAlreadyExistsException {
         if (proseUserRepository.findByCredentials_Username(employeurDTO.getEmail()).isPresent()) {
@@ -50,7 +51,6 @@ public class EmployeurService {
     public EmployeurDTO getEmployeur(String email) {
         return EmployeurDTO.toDTOTokenless((Employeur) proseUserRepository.findByCredentials_Username(email).orElseThrow((UserNotFoundException::new)));
     }
-
 
     @Transactional
     public StageDTO createStage(StageDTO dto) {
@@ -117,5 +117,9 @@ public class EmployeurService {
         List<Candidature> candidatures = candidatureRepository.findAllByStage_Id(stageId).orElse(new ArrayList<>());
 
         return candidatures.stream().map((CandidatureDTO::toDTO)).toList();
+    }
+
+    public void markNotificationAsRead(Long notificationId) throws Exception {
+        notificationsHelper.markNotificationAsRead(notificationId);
     }
 }
