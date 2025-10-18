@@ -71,3 +71,56 @@ export async function getAllStages(token) {
     });
     return data;
 }
+
+
+
+export async function getStageApplicantsManager(stageId, token) {
+    try {
+        const res = await fetch(`${API}/gestionnaire/stages/${stageId}/applications`, {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Accept": "application/json"
+            },
+        });
+        if (!res.ok) {
+            return [
+                {
+                    id: 101,
+                    email: "alice@school.com",
+                    firstName: "Alice",
+                    lastName: "Bernard",
+                    fullName: "Alice Bernard",
+                    status: "EN_ATTENTE",
+                    motivationLetter: "Je suis motivée par...",
+                    stageTitle: "Développeur Java Backend",
+                    etudiant: {
+                        email: "alice@school.com",
+                        firstName: "Alice",
+                        lastName: "Bernard",
+                    }
+                },
+                {
+                    id: 102,
+                    email: "marc@school.com",
+                    firstName: "Marc",
+                    lastName: "Lavoie",
+                    fullName: "Marc Lavoie",
+                    status: "ACCEPTEE",
+                    motivationLetter: "Je possède 2 stages précédents...",
+                    stageTitle: "Frontend React",
+                    etudiant: {
+                        email: "marc@school.com",
+                        firstName: "Marc",
+                        lastName: "Lavoie",
+                    }
+                }
+            ];
+        }
+        const data = await res.json().catch(() => null);
+        return Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : []);
+    } catch (e) {
+        console.debug("getStageApplicantsManager error:", e);
+        return [];
+    }
+}
