@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
+import { Eye, EyeOff } from "lucide-react";
 import {
     getGestionnaireNotifications,
     markNotificationRead as markNotificationReadGestionnaire,
@@ -28,10 +29,23 @@ export default function Notifications() {
         return () => { mountedRef.current = false; };
     }, []);
 
+    function makeKeyForItem(item = {}, groupKey) {
+        if (item?.candidatureId) return "postulation";
+        if (item?.stageId) return "stage";
+        if (groupKey && typeof groupKey === "string" && !/\s/.test(groupKey)) return groupKey.toLowerCase();
+        if (item?.type) {
+            return String(item.type)
+                .toLowerCase()
+                .replace(/\s+/g, "-")
+                .replace(/[^a-z0-9\-]/g, "");
+        }
+        return "default";
+    }
+
     function normalizeListToTypes(list = [], fallbackKey = "default") {
         const map = {};
         list.forEach(n => {
-            const key = (n?.type && n.type.toLowerCase?.()) || n?.notificationType?.toLowerCase?.() || fallbackKey;
+            const key = makeKeyForItem(n, fallbackKey || undefined) || fallbackKey;
             if (!map[key]) map[key] = [];
             map[key].push(n);
         });
@@ -41,8 +55,13 @@ export default function Notifications() {
     function buildFromGroups(groups = []) {
         const map = {};
         groups.forEach(g => {
-            const key = (g?.typeKey || g?.type || "default").toLowerCase();
-            map[key] = Array.isArray(g.items) ? g.items : [];
+            const items = Array.isArray(g.items) ? g.items : [];
+            const groupKey = g?.typeKey || g?.type || undefined;
+            items.forEach(item => {
+                const key = makeKeyForItem(item, groupKey);
+                if (!map[key]) map[key] = [];
+                map[key].push(item);
+            });
         });
         return map;
     }
@@ -69,7 +88,7 @@ export default function Notifications() {
             }
 
             const payload = raw?.data || raw || null;
-            let byType = {};
+            let byType;
 
             if (payload?.groups && Array.isArray(payload.groups)) {
                 byType = buildFromGroups(payload.groups);
@@ -166,21 +185,49 @@ export default function Notifications() {
 
         try {
             await markSingleNotification(notification.id);
+            // remove locally to reflect immediate UI change
+            setNotificationsByType(prev => {
+                const next = { ...prev };
+                const arr = (next[typeKey] || []).filter(n => n.id !== notification.id);
+                if (arr.length) next[typeKey] = arr;
+                else delete next[typeKey];
+                return next;
+            });
             setReadCounter(c => c + 1);
+
             if (user.role === "EMPLOYEUR" && isCandidature && stageId) {
                 navigate(`/employeur/stages/${stageId}/candidatures`);
                 return;
             }
             if (stageId) {
-                navigate(defaultNavigatePath(typeKey), { state: { openStageId: stageId } });
+                navigate(defaultNavigatePath(), { state: { openStageId: stageId } });
                 return;
             }
-            navigate(defaultNavigatePath(typeKey));
+            navigate(defaultNavigatePath());
         } catch (err) {
             console.error("Failed to mark notification as read:", err);
-            navigate(defaultNavigatePath(typeKey));
+            navigate(defaultNavigatePath());
         }
     }, [navigate, user?.role, user?.token, user?.email]);
+
+    // New helper: mark a single notification (X button) and update local state
+    const handleMarkSingleClick = async (e, notification, typeKey) => {
+        e?.stopPropagation?.();
+        if (!notification?.id) return;
+        try {
+            await markSingleNotification(notification.id);
+            setNotificationsByType(prev => {
+                const next = { ...prev };
+                const arr = (next[typeKey] || []).filter(n => n.id !== notification.id);
+                if (arr.length) next[typeKey] = arr;
+                else delete next[typeKey];
+                return next;
+            });
+            setReadCounter(c => c + 1);
+        } catch (err) {
+            console.error("Failed to mark single notification as read:", err);
+        }
+    };
 
     const handleCloseType = useCallback(async (e, typeKey, list) => {
         e?.stopPropagation?.();
@@ -205,6 +252,12 @@ export default function Notifications() {
     function shortText(text, max = 80) {
         if (!text) return "";
         return text.length > max ? text.slice(0, max - 3) + "..." : text;
+    }
+
+    function labelForKey(key) {
+        if (key === "stage") return `Offre(s) de stage à approuver`;
+        if (key === "postulation") return `candidature(s) reçue(s)`;
+        return `${key} notification(s)`;
     }
 
     return (
@@ -235,7 +288,7 @@ export default function Notifications() {
                 }
 
                 return (
-                    <div key={typeKey} className="relative inline-block text-left">
+                    <div key={typeKey} className="relative w-full text-left flex justify-center">
                         <div
                             className="w-80 bg-white border border-gray-200 rounded-lg shadow-sm cursor-pointer hover:shadow-md transition p-3 flex items-center justify-between"
                             role="button"
@@ -245,32 +298,36 @@ export default function Notifications() {
                             <div className="flex items-start gap-3 flex-1">
                                 <div className="flex-1">
                                     <div className="text-xs text-gray-500" aria-live="polite">
-                                        {count} nouvelle(s) {typeKey === "stage" ? "offre(s) de stage à approuver" : `notification(s) ${typeKey}`}
+                                        {count} nouvelle(s) {labelForKey(typeKey)}
                                     </div>
 
                                     {count <= 3 ? (
                                         <ul className="mt-3 space-y-2">
                                             {(list || []).map((n) => (
-                                                <li key={n.id} className="flex inline-flex justify-between w-full">
-                                                    <button
-                                                        type="button"
+                                                <li key={n.id} className="flex items-center gap-3 p-2 hover:bg-gray-100 rounded">
+                                                    <div
+                                                        className="flex items-start gap-3 flex-1"
                                                         onClick={(e) => handleItemClick(e, n, typeKey)}
-                                                        className="w-full text-left flex items-center gap-3 px-3 py-2 bg-gray-50 rounded-md hover:bg-gray-100"
-                                                        title={n.message || ""}
                                                     >
                                                         {renderCompactItem(n)}
-                                                    </button>
+                                                    </div>
 
-                                                    <button
-                                                        className="inline-flex items-center ml-2 py-1 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200"
-                                                        onClick={(e) => { e.stopPropagation(); handleCloseType(e, typeKey, [n]); }}
-                                                        aria-label="mark single notification as read"
-                                                    >
-                                                        <svg className="m-2 w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" role="img" aria-hidden>
-                                                            <line x1="4" y1="4" x2="20" y2="20" stroke="#ff0000" strokeWidth="2.5" strokeLinecap="round"/>
-                                                            <line x1="20" y1="4" x2="4" y2="20" stroke="#ff0000" strokeWidth="2.5" strokeLinecap="round"/>
-                                                        </svg>
-                                                    </button>
+                                                    <div className="flex items-center gap-2">
+                                                        {count <= 3 && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={(e) => handleMarkSingleClick(e, n, typeKey)}
+                                                                className="inline-flex items-center ml-2 py-1 px-2 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200"
+                                                                aria-label="Mark this notification as read"
+                                                                title="Mark this notification as read"
+                                                            >
+                                                                <svg className="m-0 w-4 h-4" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" role="img" aria-hidden>
+                                                                    <line x1="4" y1="4" x2="20" y2="20" stroke="#ff0000" strokeWidth="2.5" strokeLinecap="round"/>
+                                                                    <line x1="20" y1="4" x2="4" y2="20" stroke="#ff0000" strokeWidth="2.5" strokeLinecap="round"/>
+                                                                </svg>
+                                                            </button>
+                                                        )}
+                                                    </div>
                                                 </li>
                                             ))}
                                         </ul>
@@ -278,34 +335,31 @@ export default function Notifications() {
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-2">
+                            <div className="flex flex-row items-center gap-2">
                                 {count >= 4 && (
                                     <>
                                         <button
                                             type="button"
                                             onClick={(e) => { e.stopPropagation(); setOpenType(open ? null : typeKey); }}
-                                            className="inline-flex items-center ml-2 py-1 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200"
+                                            className="inline-flex items-center justify-center py-1 px-2 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200"
                                             aria-haspopup="true"
                                             aria-expanded={open}
                                             aria-controls={dropdownId}
                                             aria-label="Toggle notifications dropdown"
+                                            aria-pressed={open}
+                                            title={open ? "Close notifications" : "Open notifications"}
                                         >
-                                            <svg className={`m-2 w-4 h-4 transition-transform ${open ? "transform rotate-180" : ""}`}
-                                                 viewBox="0 0 20 20" fill="currentColor" aria-hidden>
-                                                <path fillRule="evenodd"
-                                                      d="M5.23 7.21a.75.75 0 011.06.02L10 11.584l3.71-4.354a.75.75 0 111.14.976l-4.25 5a.75.75 0 01-1.14 0l-4.25-5a.75.75 0 01.02-1.06z"
-                                                      clipRule="evenodd"/>
-                                            </svg>
+                                            {open ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                                         </button>
 
                                         <button
                                             type="button"
                                             onClick={(e) => { e.stopPropagation(); handleCloseType(e, typeKey, list); }}
-                                            className="inline-flex items-center mr-2 py-1 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200"
+                                            className="inline-flex items-center py-1 px-2 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200"
                                             aria-label={`Mark all ${count} ${typeKey} notifications as read`}
                                             title="Mark all as read"
                                         >
-                                            <svg className="m-2 w-4 h-4" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" role="img" aria-hidden>
+                                            <svg className="m-0 w-4 h-4" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" role="img" aria-hidden>
                                                 <line x1="4" y1="4" x2="20" y2="20" stroke="#ff0000" strokeWidth="2.5" strokeLinecap="round"/>
                                                 <line x1="20" y1="4" x2="4" y2="20" stroke="#ff0000" strokeWidth="2.5" strokeLinecap="round"/>
                                             </svg>
@@ -316,34 +370,52 @@ export default function Notifications() {
                         </div>
 
                         {showGrouped && openType === typeKey && (
-                            <div id={dropdownId} className="origin-top-right absolute right-0 mt-2 w-80 z-50" role="menu">
+                            <div id={dropdownId} className="origin-top absolute left-1/2 transform -translate-x-1/2 mt-2 w-80 z-50" role="menu">
                                 <div className="bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
-                                    <div className="p-2">
-                                        <ul className="space-y-2">
-                                            {(list || []).slice(0, 10).map((n) => (
-                                                <li key={n.id} className="flex inline-flex justify-between w-full">
-                                                    <button
-                                                        type="button"
-                                                        onClick={(e) => handleItemClick(e, n, typeKey)}
-                                                        className="w-full text-left flex items-center gap-3 px-3 py-2 bg-gray-50 rounded-md hover:bg-gray-100"
-                                                        title={n.message || ""}
-                                                    >
+                                    <div className="p-2 flex flex-col">
+                                        <div className="px-3 py-2 border-b flex items-center justify-between">
+                                            <div className="text-sm font-semibold text-gray-800">
+                                                {labelForKey(typeKey)}
+                                            </div>
+                                        </div>
+                                        <ul className="space-y-2 overflow-y-auto max-h-64">
+                                            {(list || []).slice(0, 20).map((n) => (
+                                                <li key={n.id} className="flex items-center gap-3 p-2 hover:bg-gray-100 rounded">
+                                                    <div className="flex items-start gap-3 flex-1" onClick={(e) => handleItemClick(e, n, typeKey)}>
                                                         {renderCompactItem(n)}
-                                                    </button>
-
-                                                    <button
-                                                        className="inline-flex items-center ml-2 py-1 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200"
-                                                        onClick={(e) => { e.stopPropagation(); handleCloseType(e, typeKey, [n]); }}
-                                                        aria-label="mark single notification as read"
-                                                    >
-                                                        <svg className="m-2 w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" role="img" aria-hidden>
-                                                            <line x1="4" y1="4" x2="20" y2="20" stroke="#ff0000" strokeWidth="2.5" strokeLinecap="round"/>
-                                                            <line x1="20" y1="4" x2="4" y2="20" stroke="#ff0000" strokeWidth="2.5" strokeLinecap="round"/>
-                                                        </svg>
-                                                    </button>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        {count >= 4 && (
+                                                            <>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={(e) => { e.stopPropagation(); handleMarkSingleClick(e, n, typeKey); }}
+                                                                    className="inline-flex items-center ml-2 py-1 px-2 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200"
+                                                                    aria-label="Mark this notification as read"
+                                                                    title="Mark this notification as read"
+                                                                >
+                                                                    <svg className="m-0 w-4 h-4" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" role="img" aria-hidden>
+                                                                        <line x1="4" y1="4" x2="20" y2="20" stroke="#ff0000" strokeWidth="2.5" strokeLinecap="round"/>
+                                                                        <line x1="20" y1="4" x2="4" y2="20" stroke="#ff0000" strokeWidth="2.5" strokeLinecap="round"/>
+                                                                    </svg>
+                                                                </button>
+                                                            </>
+                                                        )}
+                                                    </div>
                                                 </li>
                                             ))}
                                         </ul>
+
+                                        <div className="pt-2 mt-2 border-t flex justify-center">
+                                            <button
+                                                type="button"
+                                                onClick={(e) => { e.stopPropagation(); setOpenType(null); }}
+                                                className="inline-flex items-center py-1 px-3 text-sm font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200"
+                                                aria-label="Close notifications dropdown"
+                                            >
+                                                Fermer
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
