@@ -24,8 +24,8 @@ public class EtudiantDTO extends ProseUserDTO {
         return new EtudiantDTO(model, token);
     }
 
-    public static EtudiantDTO toDTOTokenless(Etudiant employeur) {
-        return new EtudiantDTO(employeur, null);
+    public static EtudiantDTO toDTOTokenless(Etudiant etudiant) {
+        return new EtudiantDTO(etudiant, null);
     }
 
     public static Etudiant toModel(EtudiantDTO dto) {

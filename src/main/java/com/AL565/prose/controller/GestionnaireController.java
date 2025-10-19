@@ -1,13 +1,10 @@
 package com.AL565.prose.controller;
 
+import com.AL565.prose.service.EtudiantService;
 import com.AL565.prose.service.GestionnaireService;
-import com.AL565.prose.service.dto.ReturnEntityDTO;
-import com.AL565.prose.service.dto.RejectionRequestDTO;
-import com.AL565.prose.service.dto.StageDTO;
+import com.AL565.prose.service.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import com.AL565.prose.service.dto.CvDecisionDTO;
-import com.AL565.prose.service.dto.GestionnaireCvDTO;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,6 +16,7 @@ import java.util.List;
 public class GestionnaireController {
 
     private final GestionnaireService gestionnaireService;
+    private final EtudiantService etudiantService;
 
     @GetMapping("/stages")
     public ResponseEntity<ReturnEntityDTO<List<StageDTO>>> getAllStages() {
@@ -73,5 +71,15 @@ public class GestionnaireController {
     public ResponseEntity<List<GestionnaireCvDTO>> getAllCvs() throws Exception {
         List<GestionnaireCvDTO> cvs = gestionnaireService.getAllCvs();
         return ResponseEntity.ok(cvs);
+    }
+
+    @GetMapping
+    public ResponseEntity<ReturnEntityDTO<List<EtudiantCandidaturesDTO>>> getAllEtudiantsCandidatures() {
+        try {
+            List<EtudiantCandidaturesDTO> etudiants = gestionnaireService.getAllEtudiantsCandidatures();
+            return ResponseEntity.ok(new ReturnEntityDTO<>("Trouvés", etudiants));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ReturnEntityDTO<>("Erreur interne du serveur", null));
+        }
     }
 }
