@@ -195,6 +195,11 @@ export default function Notifications() {
 
     if (totalCount === 0) return null;
 
+    function shortText(text, max = 80) {
+        if (!text) return "";
+        return text.length > max ? text.slice(0, max - 3) + "..." : text;
+    }
+
     return (
         <div ref={dropdownRef} className="space-y-3">
             {Object.entries(notificationsByType).map(([typeKey, list]) => {
@@ -204,21 +209,66 @@ export default function Notifications() {
                 return (
                     <div key={typeKey} className="relative inline-block text-left">
                         <div
-                            className="w-full bg-white border border-gray-200 rounded-lg shadow-sm cursor-pointer hover:shadow-md transition p-3 flex items-center justify-between"
+                            className="w-80 bg-white border border-gray-200 rounded-lg shadow-sm cursor-pointer hover:shadow-md transition p-3 flex items-center justify-between"
                             role="button"
                             tabIndex={0}
                             onClick={() => handleCardClick(typeKey, list)}
                         >
-                            <div className="flex items-center gap-3">
-                                <div className="font-semibold capitalize">{typeKey}</div>
-                                <div className="text-sm text-gray-500">{count} new</div>
+                            <div className="flex items-start gap-3 flex-1">
+                                <div className="flex-1">
+                                    <div className="text-xs text-gray-500" aria-live="polite">
+                                        {count} nouvelle(s) {typeKey === "stage" ? "offre(s) de stage à approuver" : `notification(s) ${typeKey}`}
+                                    </div>
+
+                                    {count <= 3 ? (
+                                        <ul className="mt-3 space-y-2">
+                                            {(list || []).map((n) => (
+                                                <li key={n.id} className="flex inline-flex justify-between w-full">
+                                                    <button
+                                                        type="button"
+                                                        onClick={(e) => handleItemClick(e, n, typeKey)}
+                                                        className="w-full text-left flex items-center gap-3 px-3 py-2 bg-gray-50 rounded-md hover:bg-gray-100"
+                                                        title={n.message || ""}
+                                                    >
+                                                        <div className="w-7 h-7 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 text-xs">
+                                                            !
+                                                        </div>
+                                                        <div className="min-w-0">
+                                                            <div className="text-sm font-medium text-gray-900 truncate">
+                                                                {shortText(n.message || n.senderEmail || "No message", 80)}
+                                                            </div>
+                                                            <div className="text-xs text-gray-500">
+                                                                {n.createdAt ? new Date(n.createdAt).toLocaleString() : n.createdAtString || "Unknown time"}
+                                                            </div>
+                                                        </div>
+                                                    </button>
+
+                                                    <button
+                                                        className="inline-flex items-center ml-2 py-1 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200"
+                                                        onClick={(e) => { e.stopPropagation(); handleCloseType(e, typeKey, [n]); }}
+                                                        aria-label="mark single notification as read"
+                                                    >
+                                                        <svg className="m-2 w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" role="img" aria-hidden>
+                                                            <line x1="4" y1="4" x2="20" y2="20" stroke="#ff0000" strokeWidth="2.5" strokeLinecap="round"/>
+                                                            <line x1="20" y1="4" x2="4" y2="20" stroke="#ff0000" strokeWidth="2.5" strokeLinecap="round"/>
+                                                        </svg>
+                                                    </button>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        null
+                                    )}
+                                </div>
                             </div>
 
                             <div className="flex items-center gap-2">
-                                {showGrouped ? (
-                                    <button onClick={(e) => { e.stopPropagation(); setOpenType(openType === typeKey ? null : typeKey); }}
-                                            className="text-sm text-blue-600 underline">
-                                        View
+                                {count >= 4 ? (
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); setOpenType(openType === typeKey ? null : typeKey); }}
+                                        className="text-sm text-blue-600 underline"
+                                    >
+                                        Voir
                                     </button>
                                 ) : null}
                             </div>
@@ -228,24 +278,45 @@ export default function Notifications() {
                             <div className="origin-top-right absolute right-0 mt-2 w-80 z-50" role="menu">
                                 <div className="bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
                                     <div className="p-2">
-                                        {(list || []).slice(0, 10).map(item => (
-                                            <div key={item.id} className="flex justify-between items-start p-2 hover:bg-gray-50 cursor-pointer"
-                                                 onClick={(e) => handleItemClick(e, item, typeKey)}>
-                                                <div>
-                                                    <div className="text-sm font-medium">{item.message || item.senderEmail}</div>
-                                                    <div className="text-xs text-gray-500">{item.senderEmail}</div>
-                                                </div>
-                                                <div className="flex flex-col items-end gap-1">
-                                                    <button onClick={(e) => { e.stopPropagation(); handleItemClick(e, item, typeKey); }}
-                                                            className="text-xs text-blue-600">Open</button>
-                                                    <button onClick={(e) => { e.stopPropagation(); handleCloseType(e, typeKey, [item]); }}
-                                                            className="text-xs text-gray-500">Mark read</button>
-                                                </div>
-                                            </div>
-                                        ))}
+                                        <ul className="space-y-2">
+                                            {(list || []).slice(0, 10).map((n) => (
+                                                <li key={n.id} className="flex inline-flex justify-between w-full">
+                                                    <button
+                                                        type="button"
+                                                        onClick={(e) => handleItemClick(e, n, typeKey)}
+                                                        className="w-full text-left flex items-center gap-3 px-3 py-2 bg-gray-50 rounded-md hover:bg-gray-100"
+                                                        title={n.message || ""}
+                                                    >
+                                                        <div className="w-7 h-7 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 text-xs">
+                                                            !
+                                                        </div>
+                                                        <div className="min-w-0">
+                                                            <div className="text-sm font-medium text-gray-900 truncate">
+                                                                {shortText(n.message || n.senderEmail || "No message", 80)}
+                                                            </div>
+                                                            <div className="text-xs text-gray-500">
+                                                                {n.createdAt ? new Date(n.createdAt).toLocaleString() : n.createdAtString || "Unknown time"}
+                                                            </div>
+                                                        </div>
+                                                    </button>
+
+                                                    <button
+                                                        className="inline-flex items-center ml-2 py-1 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200"
+                                                        onClick={(e) => { e.stopPropagation(); handleCloseType(e, typeKey, [n]); }}
+                                                        aria-label="mark single notification as read"
+                                                    >
+                                                        <svg className="m-2 w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" role="img" aria-hidden>
+                                                            <line x1="4" y1="4" x2="20" y2="20" stroke="#ff0000" strokeWidth="2.5" strokeLinecap="round"/>
+                                                            <line x1="20" y1="4" x2="4" y2="20" stroke="#ff0000" strokeWidth="2.5" strokeLinecap="round"/>
+                                                        </svg>
+                                                    </button>
+                                                </li>
+                                            ))}
+                                        </ul>
+
                                         <div className="p-2 text-right">
-                                            <button onClick={(e) => handleCloseType(e, typeKey, list)} className="text-sm text-red-600">
-                                                Mark all read
+                                            <button onClick={(e) => { e.stopPropagation(); handleCloseType(e, typeKey, list); }} className="text-sm text-red-600">
+                                                Marquer ces notifications comme vu
                                             </button>
                                         </div>
                                     </div>
