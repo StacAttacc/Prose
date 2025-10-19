@@ -1,86 +1,161 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../context/AuthContext.jsx";
 import ErrorBanner from "../display-components/ErrorBanner.jsx";
-import ApplicantRow from "../display-components/ApplicantRow.jsx";
-import { getStageApplicantsManager } from "../../services/GestionnaireService.js";
 
-const MOCK_APPLICANTS = [
+// ───────────────────────────────────────────────────────────────────────────────
+// MOCK DEMO (remplace ça par la réponse BE quand dispo)
+// accepted === true  -> Approuvées (a trouvé un stage)
+// applications.length === 0 -> 0 Postes
+// sinon -> En attente
+// ───────────────────────────────────────────────────────────────────────────────
+const MOCK_STUDENTS = [
     {
         id: 1,
         fullName: "Alice Bernard",
         email: "alice@school.com",
-        status: "EN_ATTENTE",
-        motivationLetter: { data: "JVBERi0xLjQK", contentType: "application/pdf" },
+        accepted: false,
+        applications: [
+            { id: 101, title: "Développeur Java Backend", company: "TechnoPlus" },
+            { id: 102, title: "QA Analyst", company: "QualiSoft" },
+        ],
     },
     {
         id: 2,
         fullName: "Marc Lavoie",
         email: "marc@school.com",
-        status: "APPROUVEE",
-        motivationLetter: { data: "JVBERi0xLjQK", contentType: "application/pdf" },
+        accepted: true,
+        applications: [
+            { id: 103, title: "Frontend React", company: "PixelWorks" },
+        ],
     },
     {
         id: 3,
         fullName: "Sophie Tremblay",
         email: "sophie@school.com",
-        status: "REJETEE",
-        motivationLetter: { data: "JVBERi0xLjQK", contentType: "application/pdf" },
+        accepted: false,
+        applications: [],
+    },
+    {
+        id: 4,
+        fullName: "Nadia Roy",
+        email: "nadia@school.com",
+        accepted: false,
+        applications: [
+            { id: 104, title: "Data Analyst (SQL/Python)", company: "Datinov" },
+        ],
+    },
+    {
+        id: 5,
+        fullName: "Yanis Gagnon",
+        email: "yanis@school.com",
+        accepted: true,
+        applications: [
+            { id: 105, title: "Sysadmin junior", company: "InfraX" },
+            { id: 106, title: "DevOps Stagiaire", company: "CloudLine" },
+        ],
     },
 ];
 
-const statusLabel = (s) =>
-    s === "EN_ATTENTE" ? "En attente" : s === "APPROUVEE" ? "Approuvée" : "Rejetée";
+function ApplicationsModal({ student, onClose }) {
+    if (!student) return null;
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+            <div className="w-full max-w-lg rounded-xl bg-white shadow-lg ring-1 ring-gray-200">
+                <div className="px-5 py-4 border-b">
+                    <h3 className="text-lg font-semibold text-gray-800">
+                        Candidatures de {student.fullName}
+                    </h3>
+                </div>
+                <div className="p-5">
+                    {student.applications?.length ? (
+                        <ul className="space-y-3">
+                            {student.applications.map((ap) => (
+                                <li key={ap.id} className="flex items-center justify-between">
+                                    <div>
+                                        <div className="font-medium text-gray-800">{ap.title}</div>
+                                        <div className="text-sm text-gray-500">{ap.company}</div>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        className="text-blue-600 hover:underline"
+                                        onClick={() => {}}
+                                        title="Ouvrir la fiche du stage"
+                                    >
+                                        Voir le stage
+                                    </button>
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <div className="text-center text-gray-600">
+                            Aucune candidature pour cet étudiant.
+                        </div>
+                    )}
+                </div>
+                <div className="px-5 py-4 border-t flex justify-end">
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="px-4 py-2 rounded-md border border-gray-300 text-gray-700 hover:border-teal-600 hover:text-teal-700"
+                    >
+                        Fermer
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
 
 export default function GestionnaireEtuCandidature() {
     const { user } = useAuth();
 
-    const [items, setItems] = useState([]);
+    const [students, setStudents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [note, setNote] = useState("");
-    const [filter, setFilter] = useState("ALL");
+    const [tab, setTab] = useState("ZERO"); // ZERO | APPLIED | APPROVED
+    const [modalStudent, setModalStudent] = useState(null);
 
+    // Charge les données (mock pour l’instant)
     useEffect(() => {
         let mounted = true;
         (async () => {
             try {
                 setLoading(true);
-                let data = [];
-                try {
-                    data = await getStageApplicantsManager(null, user?.token);
-                } catch {
-                    console.debug("Erreur ou endpoint absent → mock utilisé");
-                    setNote("Le point d’accès backend n’est pas encore disponible. Affichage de données fictives.");
-                    data = MOCK_APPLICANTS;
-                }
+                // TODO: Remplacer par l'appel BE quand il existe, ex:
 
-                if (!Array.isArray(data) || data.length === 0) {
-                    setNote("Aucune donnée reçue. Affichage de données fictives.");
-                    data = MOCK_APPLICANTS;
-                }
-
-                if (mounted) setItems(data);
+                const data = MOCK_STUDENTS;
+                if (mounted) setStudents(data);
+            } catch {
+                setNote("Aucune donnée reçue. Affichage de données fictives.");
+                if (mounted) setStudents(MOCK_STUDENTS);
             } finally {
                 if (mounted) setLoading(false);
             }
         })();
-        return () => {
-            mounted = false;
-        };
+        return () => (mounted = false);
     }, [user?.token]);
 
-    const counts = useMemo(() => {
-        const c = { ALL: items.length, EN_ATTENTE: 0, APPROUVEE: 0, REJETEE: 0 };
-        for (const it of items) {
-            const s = (it?.status || "").toUpperCase();
-            if (c[s] !== undefined) c[s]++;
+    const partition = useMemo(() => {
+        const zero = [], applied = [], approved = [];
+        for (const s of students) {
+            if (s.accepted) {
+                approved.push(s);
+            } else if (Array.isArray(s.applications) && s.applications.length > 0) {
+                applied.push(s);
+            } else {
+                zero.push(s);
+            }
         }
-        return c;
-    }, [items]);
+        return { zero, applied, approved };
+    }, [students]);
 
-    const filtered = useMemo(() => {
-        if (filter === "ALL") return items;
-        return items.filter((i) => (i?.status || "").toUpperCase() === filter);
-    }, [items, filter]);
+    const counts = {
+        ZERO: partition.zero.length,
+        APPLIED: partition.applied.length,
+        APPROVED: partition.approved.length,
+    };
+
+    const list = tab === "ZERO" ? partition.zero : tab === "APPLIED" ? partition.applied : partition.approved;
 
     return (
         <div className="min-h-screen bg-white">
@@ -91,40 +166,36 @@ export default function GestionnaireEtuCandidature() {
 
                 <div className="mt-6 grid grid-cols-3 gap-4 items-center">
                     <button
-                        onClick={() => setFilter("ALL")}
+                        onClick={() => setTab("ZERO")}
                         className={`justify-self-start rounded-md px-4 py-2 text-sm font-medium border
-              ${
-                            filter === "ALL"
-                                ? "bg-white text-teal-700 border-teal-600"
-                                : "bg-white text-gray-700 border-gray-300 hover:border-teal-600 hover:text-teal-700"
+              ${tab === "ZERO"
+                            ? "bg-white text-teal-700 border-teal-600"
+                            : "bg-white text-gray-700 border-gray-300 hover:border-teal-600 hover:text-teal-700"
                         }`}
-                        title="Toutes les candidatures"
                     >
-                        {counts.ALL ?? 0} Postes
+                        Aucune Candidature
                     </button>
 
                     <button
-                        onClick={() => setFilter("EN_ATTENTE")}
+                        onClick={() => setTab("APPLIED")}
                         className={`justify-self-center rounded-md px-4 py-2 text-sm font-medium border
-              ${
-                            filter === "EN_ATTENTE"
-                                ? "bg-white text-teal-700 border-teal-600"
-                                : "bg-white text-gray-700 border-gray-300 hover:border-teal-600 hover:text-teal-700"
+              ${tab === "APPLIED"
+                            ? "bg-white text-teal-700 border-teal-600"
+                            : "bg-white text-gray-700 border-gray-300 hover:border-teal-600 hover:text-teal-700"
                         }`}
                     >
-                        En attente ({counts.EN_ATTENTE ?? 0})
+                        Candidature Soumise ({counts.APPLIED})
                     </button>
 
                     <button
-                        onClick={() => setFilter("APPROUVEE")}
+                        onClick={() => setTab("APPROVED")}
                         className={`justify-self-end rounded-md px-4 py-2 text-sm font-medium border
-              ${
-                            filter === "APPROUVEE"
-                                ? "bg-white text-teal-700 border-teal-600"
-                                : "bg-white text-gray-700 border-gray-300 hover:border-teal-600 hover:text-teal-700"
+              ${tab === "APPROVED"
+                            ? "bg-white text-teal-700 border-teal-600"
+                            : "bg-white text-gray-700 border-gray-300 hover:border-teal-600 hover:text-teal-700"
                         }`}
                     >
-                        Approuvées ({counts.APPROUVEE ?? 0})
+                        Stage Trouver ({counts.APPROVED})
                     </button>
                 </div>
 
@@ -134,10 +205,11 @@ export default function GestionnaireEtuCandidature() {
                     </div>
                 )}
 
+                {/* Tableau */}
                 <div className="mt-8 rounded-xl bg-white ring-1 ring-gray-200 shadow-sm overflow-hidden">
                     {loading ? (
                         <div className="py-10 text-center text-gray-700">Chargement…</div>
-                    ) : filtered.length === 0 ? (
+                    ) : list.length === 0 ? (
                         <div className="py-10 text-center text-gray-700">Aucun étudiant.</div>
                     ) : (
                         <div className="w-full overflow-x-auto">
@@ -145,24 +217,53 @@ export default function GestionnaireEtuCandidature() {
                                 <thead className="bg-gray-50">
                                 <tr>
                                     <th className="text-left text-gray-800 font-semibold py-3 px-4">Étudiant</th>
-                                    <th className="text-left text-gray-800 font-semibold py-3 px-4">CV</th>
-                                    <th className="text-left text-gray-800 font-semibold py-3 px-4">Lettre</th>
+                                    <th className="text-left text-gray-800 font-semibold py-3 px-4">Email</th>
+                                    <th className="text-left text-gray-800 font-semibold py-3 px-4">
+                                        {tab === "APPLIED" ? "Candidatures" : "Statut"}
+                                    </th>
+                                    <th className="text-left text-gray-800 font-semibold py-3 px-4">Action</th>
                                 </tr>
                                 </thead>
-                                <tbody className="bg-white">
-                                {filtered.map((a) => (
-                                    <ApplicantRow
-                                        key={a.id}
-                                        applicant={{
-                                            id: a.id,
-                                            email: a.email,
-                                            fullName: a.fullName,
-                                            firstName: a.firstName,
-                                            lastName: a.lastName,
-                                            status: a.status,
-                                            motivationLetter: a.motivationLetter,
-                                        }}
-                                    />
+                                <tbody>
+                                {list.map((s, idx) => (
+                                    <tr
+                                        key={s.id}
+                                        className={`${idx % 2 === 0 ? "bg-white" : "bg-teal-50"} hover:bg-teal-100 transition`}
+                                    >
+                                        <td className="py-3 px-4 align-top">
+                                            <div className="font-medium text-gray-800">{s.fullName}</div>
+                                        </td>
+                                        <td className="py-3 px-4 align-top text-gray-700">
+                                            {s.email}
+                                        </td>
+                                        <td className="py-3 px-4 align-top">
+                                            {tab === "APPLIED" ? (
+                                                <span className="text-gray-700">
+                            {s.applications.length} candidature(s)
+                          </span>
+                                            ) : tab === "APPROVED" ? (
+                                                <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold bg-teal-100 text-teal-700">
+                            Stage trouvé
+                          </span>
+                                            ) : (
+                                                <span className="text-gray-500">Aucune candidature</span>
+                                            )}
+                                        </td>
+                                        <td className="py-3 px-4 align-top">
+                                            {tab === "APPLIED" ? (
+                                                <button
+                                                    type="button"
+                                                    className="text-blue-600 hover:underline"
+                                                    title="Voir les stages postulés"
+                                                    onClick={() => setModalStudent(s)}
+                                                >
+                                                    Voir ses candidatures
+                                                </button>
+                                            ) : (
+                                                <span className="text-gray-400">—</span>
+                                            )}
+                                        </td>
+                                    </tr>
                                 ))}
                                 </tbody>
                             </table>
@@ -170,6 +271,13 @@ export default function GestionnaireEtuCandidature() {
                     )}
                 </div>
             </div>
+
+            {modalStudent && (
+                <ApplicationsModal
+                    student={modalStudent}
+                    onClose={() => setModalStudent(null)}
+                />
+            )}
         </div>
     );
 }

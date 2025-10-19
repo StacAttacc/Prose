@@ -56,7 +56,6 @@ export default function AppRoutes() {
                     : user?.role === "GESTIONNAIRE"
                         ? <GestionnaireEtuCandidature/>
                         : <div>Rôle inconnu</div>;
-
     return (
         <Routes>
             <Route path="/login" element={<PageAuthentification/>}/>
