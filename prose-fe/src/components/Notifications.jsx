@@ -1,4 +1,3 @@
-// javascript
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
@@ -69,9 +68,7 @@ export default function Notifications() {
                 raw = null;
             }
 
-            // raw may already be parsed; unwrap common wrapper { message, data }
             const payload = raw?.data || raw || null;
-
             let byType = {};
 
             if (payload?.groups && Array.isArray(payload.groups)) {
@@ -104,7 +101,6 @@ export default function Notifications() {
 
     useEffect(() => {
         fetchAndNormalize();
-        // refresh when readCounter changes (after marking read)
     }, [user?.token, user?.role, user?.email, readCounter]);
 
     useEffect(() => {
@@ -139,36 +135,47 @@ export default function Notifications() {
         }
     }
 
-    function defaultNavigatePath(typeKey) {
+    function defaultNavigatePath() {
         if (user.role === "GESTIONNAIRE") return "/gestionnaire/list-stages";
-        if (user.role === "EMPLOYEUR") return `/employeur/${encodeURIComponent(user.email)}/stages`;
+        if (user.role === "EMPLOYEUR") return `/employeur/stages`;
         return "/";
     }
 
-    const handleCardClick = useCallback(async (typeKey, list) => {
+    const handleGroupClick = useCallback(async (typeKey, list) => {
         const ids = (list || []).map(n => n.id).filter(Boolean);
         try {
             await markManyNotifications(ids);
             setReadCounter(c => c + ids.length);
-            navigate(defaultNavigatePath(typeKey));
+            navigate(defaultNavigatePath());
         } catch (err) {
             console.error("Failed to mark card notifications as read:", err);
-            navigate(defaultNavigatePath(typeKey));
+            navigate(defaultNavigatePath());
         }
     }, [navigate, user?.role, user?.token, user?.email]);
 
     const handleItemClick = useCallback(async (e, notification, typeKey) => {
         e?.stopPropagation?.();
         setOpenType(null);
-        const stageId = notification?.stage?.id || notification?.stageId || notification?.candidature?.stage?.id || notification?.candidatureId;
+
+        const stageId = notification?.stage?.id
+            || notification?.stageId
+            || notification?.candidature?.stage?.id
+            || notification?.candidatureId;
+
+        const isCandidature = Boolean(notification?.candidature || notification?.candidatureId);
+
         try {
             await markSingleNotification(notification.id);
             setReadCounter(c => c + 1);
+            if (user.role === "EMPLOYEUR" && isCandidature && stageId) {
+                navigate(`/employeur/stages/${stageId}/candidatures`);
+                return;
+            }
             if (stageId) {
                 navigate(defaultNavigatePath(typeKey), { state: { openStageId: stageId } });
-            } else {
-                navigate(defaultNavigatePath(typeKey));
+                return;
             }
+            navigate(defaultNavigatePath(typeKey));
         } catch (err) {
             console.error("Failed to mark notification as read:", err);
             navigate(defaultNavigatePath(typeKey));
@@ -206,13 +213,34 @@ export default function Notifications() {
                 const count = (list || []).length;
                 if (count === 0) return null;
                 const showGrouped = count >= 4;
+                const dropdownId = `notif-dropdown-${typeKey}`;
+                const open = openType === typeKey;
+
+                function renderCompactItem(n) {
+                    return (
+                        <>
+                            <div className="w-7 h-7 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 text-xs">
+                                !
+                            </div>
+                            <div className="min-w-0">
+                                <div className="text-sm font-medium text-gray-900 truncate">
+                                    {shortText(n.message || n.senderEmail || "No message", 80)}
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                    {n.createdAt ? new Date(n.createdAt).toLocaleString() : n.createdAtString || "Unknown time"}
+                                </div>
+                            </div>
+                        </>
+                    );
+                }
+
                 return (
                     <div key={typeKey} className="relative inline-block text-left">
                         <div
                             className="w-80 bg-white border border-gray-200 rounded-lg shadow-sm cursor-pointer hover:shadow-md transition p-3 flex items-center justify-between"
                             role="button"
                             tabIndex={0}
-                            onClick={() => handleCardClick(typeKey, list)}
+                            onClick={() => handleGroupClick(typeKey, list)}
                         >
                             <div className="flex items-start gap-3 flex-1">
                                 <div className="flex-1">
@@ -230,17 +258,7 @@ export default function Notifications() {
                                                         className="w-full text-left flex items-center gap-3 px-3 py-2 bg-gray-50 rounded-md hover:bg-gray-100"
                                                         title={n.message || ""}
                                                     >
-                                                        <div className="w-7 h-7 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 text-xs">
-                                                            !
-                                                        </div>
-                                                        <div className="min-w-0">
-                                                            <div className="text-sm font-medium text-gray-900 truncate">
-                                                                {shortText(n.message || n.senderEmail || "No message", 80)}
-                                                            </div>
-                                                            <div className="text-xs text-gray-500">
-                                                                {n.createdAt ? new Date(n.createdAt).toLocaleString() : n.createdAtString || "Unknown time"}
-                                                            </div>
-                                                        </div>
+                                                        {renderCompactItem(n)}
                                                     </button>
 
                                                     <button
@@ -256,26 +274,49 @@ export default function Notifications() {
                                                 </li>
                                             ))}
                                         </ul>
-                                    ) : (
-                                        null
-                                    )}
+                                    ) : null}
                                 </div>
                             </div>
 
                             <div className="flex items-center gap-2">
-                                {count >= 4 ? (
-                                    <button
-                                        onClick={(e) => { e.stopPropagation(); setOpenType(openType === typeKey ? null : typeKey); }}
-                                        className="text-sm text-blue-600 underline"
-                                    >
-                                        Voir
-                                    </button>
-                                ) : null}
+                                {count >= 4 && (
+                                    <>
+                                        <button
+                                            type="button"
+                                            onClick={(e) => { e.stopPropagation(); setOpenType(open ? null : typeKey); }}
+                                            className="inline-flex items-center ml-2 py-1 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200"
+                                            aria-haspopup="true"
+                                            aria-expanded={open}
+                                            aria-controls={dropdownId}
+                                            aria-label="Toggle notifications dropdown"
+                                        >
+                                            <svg className={`m-2 w-4 h-4 transition-transform ${open ? "transform rotate-180" : ""}`}
+                                                 viewBox="0 0 20 20" fill="currentColor" aria-hidden>
+                                                <path fillRule="evenodd"
+                                                      d="M5.23 7.21a.75.75 0 011.06.02L10 11.584l3.71-4.354a.75.75 0 111.14.976l-4.25 5a.75.75 0 01-1.14 0l-4.25-5a.75.75 0 01.02-1.06z"
+                                                      clipRule="evenodd"/>
+                                            </svg>
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            onClick={(e) => { e.stopPropagation(); handleCloseType(e, typeKey, list); }}
+                                            className="inline-flex items-center mr-2 py-1 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200"
+                                            aria-label={`Mark all ${count} ${typeKey} notifications as read`}
+                                            title="Mark all as read"
+                                        >
+                                            <svg className="m-2 w-4 h-4" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" role="img" aria-hidden>
+                                                <line x1="4" y1="4" x2="20" y2="20" stroke="#ff0000" strokeWidth="2.5" strokeLinecap="round"/>
+                                                <line x1="20" y1="4" x2="4" y2="20" stroke="#ff0000" strokeWidth="2.5" strokeLinecap="round"/>
+                                            </svg>
+                                        </button>
+                                    </>
+                                )}
                             </div>
                         </div>
 
                         {showGrouped && openType === typeKey && (
-                            <div className="origin-top-right absolute right-0 mt-2 w-80 z-50" role="menu">
+                            <div id={dropdownId} className="origin-top-right absolute right-0 mt-2 w-80 z-50" role="menu">
                                 <div className="bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
                                     <div className="p-2">
                                         <ul className="space-y-2">
@@ -287,17 +328,7 @@ export default function Notifications() {
                                                         className="w-full text-left flex items-center gap-3 px-3 py-2 bg-gray-50 rounded-md hover:bg-gray-100"
                                                         title={n.message || ""}
                                                     >
-                                                        <div className="w-7 h-7 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 text-xs">
-                                                            !
-                                                        </div>
-                                                        <div className="min-w-0">
-                                                            <div className="text-sm font-medium text-gray-900 truncate">
-                                                                {shortText(n.message || n.senderEmail || "No message", 80)}
-                                                            </div>
-                                                            <div className="text-xs text-gray-500">
-                                                                {n.createdAt ? new Date(n.createdAt).toLocaleString() : n.createdAtString || "Unknown time"}
-                                                            </div>
-                                                        </div>
+                                                        {renderCompactItem(n)}
                                                     </button>
 
                                                     <button
@@ -313,12 +344,6 @@ export default function Notifications() {
                                                 </li>
                                             ))}
                                         </ul>
-
-                                        <div className="p-2 text-right">
-                                            <button onClick={(e) => { e.stopPropagation(); handleCloseType(e, typeKey, list); }} className="text-sm text-red-600">
-                                                Marquer ces notifications comme vu
-                                            </button>
-                                        </div>
                                     </div>
                                 </div>
                             </div>
