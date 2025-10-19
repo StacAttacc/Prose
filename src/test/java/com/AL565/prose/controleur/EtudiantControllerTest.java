@@ -178,6 +178,7 @@ class EtudiantControllerTest {
     @Test
     void soumettreCandidat_success() throws Exception {
         when(jwtTokenProvider.getEmailFromJWT(anyString())).thenReturn("test@test.com");
+        when(etudiantService.getByEmail("test@test.com")).thenReturn(createTestEtudiantDTOForCandidature());
         doNothing().when(etudiantService).createCandidature(any());
 
         mockMvc.perform(multipart("/etudiant/candidature")
@@ -200,6 +201,7 @@ class EtudiantControllerTest {
         );
 
         when(jwtTokenProvider.getEmailFromJWT(anyString())).thenReturn("test@test.com");
+        when(etudiantService.getByEmail("test@test.com")).thenReturn(createTestEtudiantDTOForCandidature());
         doNothing().when(etudiantService).createCandidature(any());
 
         mockMvc.perform(multipart("/etudiant/candidature")
@@ -216,14 +218,15 @@ class EtudiantControllerTest {
     @Test
     void soumettreCandidat_error() throws Exception {
         when(jwtTokenProvider.getEmailFromJWT(anyString())).thenReturn("test@test.com");
+        when(etudiantService.getByEmail("test@test.com")).thenReturn(createTestEtudiantDTOForCandidature());
         doThrow(new Exception("Erreur de candidature")).when(etudiantService).createCandidature(any());
 
         mockMvc.perform(multipart("/etudiant/candidature")
                 .param("stageId", "1")
                 .header("Authorization", "Bearer token123")
                 .with(csrf()))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().string("Erreur lors de la soumission de la candidature: Erreur de candidature"));
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().string("Erreur interne du serveur."));
     }
 
     @Test
@@ -403,5 +406,15 @@ class EtudiantControllerTest {
 
         candidatures.add(candidature);
         return candidatures;
+    }
+
+    private EtudiantDTO createTestEtudiantDTOForCandidature() {
+        EtudiantDTO etudiant = new EtudiantDTO();
+        etudiant.setId(1L);
+        etudiant.setFirstName("Jean");
+        etudiant.setLastName("Dupont");
+        etudiant.setEmail("test@test.com");
+        etudiant.setDiscipline(Discipline.INFORMATIQUE);
+        return etudiant;
     }
 }
