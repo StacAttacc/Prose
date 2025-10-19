@@ -8,11 +8,12 @@ import com.AL565.prose.model.notifications.NotificationType;
 import com.AL565.prose.model.notifications.StageNotification;
 import com.AL565.prose.repository.CvRepository;
 import com.AL565.prose.security.JwtTokenProvider;
-import com.AL565.prose.security.exceptions.NotificationExceptions;
 import com.AL565.prose.service.EmployeurService;
 import com.AL565.prose.service.EtudiantService;
 import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.GestionnaireService;
+import com.AL565.prose.service.dto.notifications.NotificationGroupDTO;
+import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -30,6 +31,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -219,33 +221,39 @@ class GestionnaireControllerTest {
     }
 
     @Test
-    @DisplayName("GET /gestionnaire/notifications/all -> 200 + list of notifications")
+    @DisplayName("GET /gestionnaire/notifications/all -> 200 + list of notifications (updated DTO)")
     void getStageNotifications_returnsOkWithList() throws Exception {
         StageNotification n1 = new StageNotification();
         n1.setType(NotificationType.STAGE_NOTIFICATION);
         n1.setMessage("Stage submitted");
         n1.setCreatedAt(LocalDateTime.now());
         n1.setSenderEmail("employer1@example.com");
-        n1.setStage(null);
 
         StageNotification n2 = new StageNotification();
         n2.setType(NotificationType.STAGE_NOTIFICATION);
         n2.setMessage("Stage updated");
         n2.setCreatedAt(LocalDateTime.now());
         n2.setSenderEmail("employer2@example.com");
-        n2.setStage(null);
 
-        when(gestionnaireService.getStageNotifications()).thenReturn(StageNotificationDTO.builder().stageNotifications(List.of(n1, n2)).count(2).build());
+        NotificationGroupDTO group = NotificationGroupDTO.toDTO(NotificationType.STAGE_NOTIFICATION.getDisplayName(), List.of(n1, n2));
+        NotificationsResponseDTO response = NotificationsResponseDTO.toDTO(List.of(group));
 
-        mockMvc.perform(get("/gestionnaire/notifications/all").accept(MediaType.APPLICATION_JSON))
+        when(gestionnaireService.getStageNotifications()).thenReturn(response);
+
+        var mvc = mockMvc.perform(get("/gestionnaire/notifications/all").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
+                .andReturn();
+
+        String content = mvc.getResponse().getContentAsString();
+        assertThat(content).contains("notifications: ");
+        assertThat(content).contains("Stage submitted");
+        assertThat(content).contains("employer1@example.com");
     }
 
     @Test
     @DisplayName("GET /gestionnaire/notifications/all -> 500 when service throws")
     void getAllNotifications_whenServiceThrows_returns500() throws Exception {
-        when(gestionnaireService.getStageNotifications()).thenThrow(new NotificationExceptions.NotificationFetchException());
+        when(gestionnaireService.getStageNotifications()).thenThrow(new com.AL565.prose.security.exceptions.NotificationExceptions.NotificationFetchException());
 
         mockMvc.perform(get("/gestionnaire/notifications/all").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isInternalServerError());

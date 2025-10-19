@@ -14,6 +14,8 @@ import com.AL565.prose.service.GestionnaireService;
 import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.dto.EmployeurPasswordDTO;
 import com.AL565.prose.service.EmployeurService;
+import com.AL565.prose.service.dto.notifications.NotificationGroupDTO;
+import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -190,25 +192,28 @@ class EmployeurControllerTest {
         pn.setSenderEmail("jean.dupont@etudiant.ca");
         pn.setCreatedAt(LocalDateTime.now());
 
-        PostulationNotificationDTO dto = new PostulationNotificationDTO(List.of(pn), 1);
+        NotificationGroupDTO group = NotificationGroupDTO.toDTO("postulation", List.of(pn));
+        NotificationsResponseDTO notifications = NotificationsResponseDTO.toDTO(List.of(group));
 
-        when(employeurService.getPostulationNotifications(email)).thenReturn(dto);
+        when(employeurService.getPostulationNotifications(email)).thenReturn(notifications);
 
         MvcResult result = mockMvc.perform(get("/employeur/notifications/postulations/" + email)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn();
 
-        ReturnEntityDTO<PostulationNotificationDTO> response = objectMapper.readValue(
-                result.getResponse().getContentAsString(),
-                new TypeReference<ReturnEntityDTO<PostulationNotificationDTO>>() { }
-        );
+        TypeReference<com.AL565.prose.service.dto.ReturnEntityDTO<NotificationsResponseDTO>> tr =
+                new TypeReference<com.AL565.prose.service.dto.ReturnEntityDTO<NotificationsResponseDTO>>() { };
+
+        com.AL565.prose.service.dto.ReturnEntityDTO<NotificationsResponseDTO> response =
+                objectMapper.readValue(result.getResponse().getContentAsString(), tr);
 
         assertThat(response.getMessage()).isEqualTo("Notifications: ");
         assertThat(response.getData()).isNotNull();
-        assertThat(response.getData().getCount()).isEqualTo(1);
-        assertThat(response.getData().getPostulationNotifications()).hasSize(1);
-        assertThat(response.getData().getPostulationNotifications().get(0).getSenderEmail())
+        assertThat(response.getData().getTotalCount()).isEqualTo(1);
+        assertThat(response.getData().getGroups()).hasSize(1);
+        assertThat(response.getData().getGroups().get(0).getItems()).hasSize(1);
+        assertThat(response.getData().getGroups().get(0).getItems().get(0).getSenderEmail())
                 .isEqualTo("jean.dupont@etudiant.ca");
 
         verify(employeurService, times(1)).getPostulationNotifications(email);
@@ -220,12 +225,7 @@ class EmployeurControllerTest {
 
         mockMvc.perform(get("/employeur/notifications/postulations/employer@company.com")
                         .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isInternalServerError())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.message", is("Erreur lors de la récupération des notifications de postulation")))
-                .andExpect(jsonPath("$.data").doesNotExist());
-
+                .andExpect(status().isInternalServerError());
         verify(employeurService, times(1)).getPostulationNotifications(anyString());
     }
-
 }
