@@ -13,7 +13,7 @@ export default function GestionnaireEtuCandidature() {
     const [students, setStudents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [note, setNote] = useState("");
-    const [tab, setTab] = useState("ZERO"); // ZERO | APPLIED | APPROVED
+    const [tab, setTab] = useState("APPLIED"); // ZERO | APPLIED | APPROVED
     const [modalStudent, setModalStudent] = useState(null);
 
     const [selectedStage, setSelectedStage] = useState(null);
@@ -98,6 +98,8 @@ export default function GestionnaireEtuCandidature() {
 
     const list = tab === "ZERO" ? partition.zero : tab === "APPLIED" ? partition.applied : partition.approved;
 
+    const showAction = tab !== "ZERO";
+
     return (
         <div className="min-h-screen bg-white">
             <div className="mx-auto max-w-5xl px-4 pt-6 pb-16">
@@ -136,7 +138,6 @@ export default function GestionnaireEtuCandidature() {
 
                 {note && (<div className="mt-4"><ErrorBanner message={note}/></div>)}
 
-                {/* Tableau */}
                 <div className="mt-8 rounded-xl bg-white ring-1 ring-gray-200 shadow-sm overflow-hidden">
                     {loading ? (
                         <div className="py-10 text-center text-gray-700">Chargement…</div>
@@ -152,7 +153,9 @@ export default function GestionnaireEtuCandidature() {
                                     <th className="text-left text-gray-800 font-semibold py-3 px-4">
                                         {tab === "APPLIED" ? "Candidatures" : "Statut"}
                                     </th>
-                                    <th className="text-left text-gray-800 font-semibold py-3 px-4">Action</th>
+                                    {showAction && (
+                                        <th className="text-left text-gray-800 font-semibold py-3 px-4">Action</th>
+                                    )}
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -172,26 +175,33 @@ export default function GestionnaireEtuCandidature() {
                                             ) : tab === "APPROVED" ? (
                                                 <span
                                                     className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold bg-teal-100 text-teal-700">
-                            Stage trouvé
-                          </span>
+                          Stage trouvé
+                        </span>
                                             ) : (
                                                 <span className="text-gray-500">Aucune candidature</span>
                                             )}
                                         </td>
-                                        <td className="py-3 px-4 align-top">
-                                            {tab === "APPLIED" ? (
-                                                <button
-                                                    type="button"
-                                                    className="text-blue-600 hover:underline"
-                                                    title="Voir les stages postulés"
-                                                    onClick={() => setModalStudent(s)}
-                                                >
-                                                    Voir ses candidatures
-                                                </button>
-                                            ) : (
-                                                <span className="text-gray-400">—</span>
-                                            )}
-                                        </td>
+
+                                        {showAction && (
+                                            <td className="py-3 px-4 align-top">
+                                                {tab === "APPLIED" ? (
+                                                    <button
+                                                        type="button"
+                                                        className="text-blue-600 hover:underline"
+                                                        title="Voir les stages postulés"
+                                                        onClick={() => {
+                                                            setModalStudent(s)
+                                                        }
+                                                        }
+
+                                                    >
+                                                        Voir ses candidatures
+                                                    </button>
+                                                ) : (
+                                                    <span className="text-gray-400">—</span>
+                                                )}
+                                            </td>
+                                        )}
                                     </tr>
                                 ))}
                                 </tbody>
