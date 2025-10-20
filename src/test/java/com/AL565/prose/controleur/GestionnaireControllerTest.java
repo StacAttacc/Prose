@@ -1,27 +1,23 @@
 package com.AL565.prose.controleur;
 
 import com.AL565.prose.controller.GestionnaireController;
-import com.AL565.prose.model.Employeur;
-import com.AL565.prose.model.OfferStatus;
-import com.AL565.prose.model.CvStatus;
+import com.AL565.prose.model.*;
+import com.AL565.prose.model.auth.Credentials;
 import com.AL565.prose.repository.CvRepository;
 import com.AL565.prose.security.exceptions.CvExceptions;
 import com.AL565.prose.service.EmployeurService;
 import com.AL565.prose.service.EtudiantService;
-import com.AL565.prose.service.dto.GestionnaireCvDTO;
+import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.GestionnaireService;
-import com.AL565.prose.service.dto.EmployeurDTO;
-import com.AL565.prose.service.dto.RejectionRequestDTO;
-import com.AL565.prose.service.dto.StageDTO;
-import com.AL565.prose.service.exceptions.FailedToRetrieveStagesException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
@@ -29,8 +25,10 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -93,11 +91,11 @@ class GestionnaireControllerTest {
         MvcResult result = mockMvc.perform(get("/gestionnaire/stages/status/SOUMISE").with(csrf()))
                 .andReturn();
 
-        Assertions.assertThat(result.getResponse().getStatus()).isEqualTo(200);
+        assertThat(result.getResponse().getStatus()).isEqualTo(200);
         String content = result.getResponse().getContentAsString();
-        Assertions.assertThat(content).contains("Liste des stages SOUMISE");
-        Assertions.assertThat(content).contains("Stage Java");
-        Assertions.assertThat(content).contains("Stage Python");
+        assertThat(content).contains("Liste des stages SOUMISE");
+        assertThat(content).contains("Stage Java");
+        assertThat(content).contains("Stage Python");
     }
 
     @Test
@@ -118,10 +116,10 @@ class GestionnaireControllerTest {
         MvcResult result = mockMvc.perform(put("/gestionnaire/stages/1/approuver").with(csrf()))
                 .andReturn();
 
-        Assertions.assertThat(result.getResponse().getStatus()).isEqualTo(200);
+        assertThat(result.getResponse().getStatus()).isEqualTo(200);
         String content = result.getResponse().getContentAsString();
-        Assertions.assertThat(content).contains("Stage approuvé avec succès");
-        Assertions.assertThat(content).contains("APPROUVEE");
+        assertThat(content).contains("Stage approuvé avec succès");
+        assertThat(content).contains("APPROUVEE");
     }
 
     @Test
@@ -147,10 +145,10 @@ class GestionnaireControllerTest {
                         .content(objectMapper.writeValueAsString(rejectionRequest)))
                 .andReturn();
 
-        Assertions.assertThat(result.getResponse().getStatus()).isEqualTo(200);
+        assertThat(result.getResponse().getStatus()).isEqualTo(200);
         String content = result.getResponse().getContentAsString();
-        Assertions.assertThat(content).contains("Stage rejeté avec succès");
-        Assertions.assertThat(content).contains("REJETEE");
+        assertThat(content).contains("Stage rejeté avec succès");
+        assertThat(content).contains("REJETEE");
     }
 
     @Test
@@ -165,7 +163,7 @@ class GestionnaireControllerTest {
                         .content(objectMapper.writeValueAsString(emptyRequest)))
                 .andReturn();
 
-        Assertions.assertThat(result.getResponse().getStatus()).isEqualTo(400);
+        assertThat(result.getResponse().getStatus()).isEqualTo(400);
     }
 
     @Test
@@ -214,4 +212,62 @@ class GestionnaireControllerTest {
                 .andExpect(jsonPath("$.data", hasSize(2)));
     }
 
+    @Test
+    void getCandidatures() throws Exception {
+        EtudiantDTO john = EtudiantDTO.toDTOTokenless(
+                new Etudiant("John", "Doe", Credentials.builder().username("email@email.com").password("1234567890").build(), Discipline.INFORMATIQUE)
+        );
+        EtudiantDTO umberto = EtudiantDTO.toDTOTokenless(
+                new Etudiant("Umberto", "Larrios", Credentials.builder().username("email2@email.com").password("1234567890").build(), Discipline.INFORMATIQUE)
+        );
+
+        Employeur jean = new Employeur("Jean", "Employeur", "JeanEmployeurs", "jemployeur@gmail.com", "1234567890");
+
+        Stage stage = new Stage();
+        stage.setId(1L);
+        stage.setTitle("Stage Test");
+        stage.setStatus(OfferStatus.SOUMISE);
+
+        Stage stage2 = new Stage();
+        stage2.setId(2L);
+        stage2.setTitle("Stage Test 2");
+        stage2.setStatus(OfferStatus.SOUMISE);
+
+        EtudiantCandidaturesDTO candidatureJohn = EtudiantCandidaturesDTO.builder()
+                .etudiant(john)
+                .candidatures(List.of(
+                        EtudiantCandidatureDTO.builder()
+                                .stage(StageSimpleDTO.toDTOfromStageDTO(StageDTO.fromModel(stage, jean)))
+                                .dateDecision(LocalDateTime.now())
+                                .datePostulation(LocalDateTime.now())
+                                .status("En Attente")
+                                .build()
+                )).build();
+        EtudiantCandidaturesDTO candidaturesUmberto = EtudiantCandidaturesDTO.builder()
+                .etudiant(umberto)
+                .candidatures(List.of(
+                        EtudiantCandidatureDTO.builder()
+                                .stage(StageSimpleDTO.toDTOfromStageDTO(StageDTO.fromModel(stage, jean)))
+                                .dateDecision(LocalDateTime.now())
+                                .datePostulation(LocalDateTime.now())
+                                .status("En Attente")
+                                .build(),
+                        EtudiantCandidatureDTO.builder()
+                                .stage(StageSimpleDTO.toDTOfromStageDTO(StageDTO.fromModel(stage2, jean)))
+                                .dateDecision(LocalDateTime.now())
+                                .datePostulation(LocalDateTime.now())
+                                .status("En Attente")
+                                .build()
+                )).build();
+        when(gestionnaireService.getAllEtudiantsCandidatures()).thenReturn(List.of(candidatureJohn, candidaturesUmberto));
+
+        MvcResult result = mockMvc.perform(get("/gestionnaire/getCandidatures"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        ReturnEntityDTO<List<EtudiantCandidaturesDTO>> candidatures = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
+        });
+
+        assertThat(candidatures.getData().size()).isEqualTo(2);
+    }
 }
