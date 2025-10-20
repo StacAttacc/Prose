@@ -73,7 +73,7 @@ public class GestionnaireController {
         return ResponseEntity.ok(cvs);
     }
 
-    @GetMapping
+    @GetMapping("/getCandidatures")
     public ResponseEntity<ReturnEntityDTO<List<EtudiantCandidaturesDTO>>> getAllEtudiantsCandidatures() {
         try {
             List<EtudiantCandidaturesDTO> etudiants = gestionnaireService.getAllEtudiantsCandidatures();
