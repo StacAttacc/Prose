@@ -47,7 +47,7 @@ export default function GestionnaireEtuCandidature() {
                             title: stg?.title || "Stage",
                             company: emp?.company || emp?.nomEntreprise || "",
                             stageId: stg?.id ?? null,
-                            stage: stg, // déjà assez complet pour StageDetailsModal
+                            stage: stg,
                             status,
                             decision,
                             datePostulation: c?.datePostulation ?? null,
