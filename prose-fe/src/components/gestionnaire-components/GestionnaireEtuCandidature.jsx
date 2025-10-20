@@ -5,8 +5,6 @@ import {getStageApplicantsManager} from "../../services/GestionnaireService.js";
 import StageDetailsModal from "../display-components/StageDetailsModal.jsx";
 import ApplicationsModal from "../display-components/ApplicationsModal.jsx";
 
-const ACCEPTED_STATUSES = ["APPROUVEE"];
-
 export default function GestionnaireEtuCandidature() {
     const {user} = useAuth();
 
@@ -27,48 +25,50 @@ export default function GestionnaireEtuCandidature() {
         setIsStageModalOpen(false);
     };
 
-    const normalizeApplication = (c, stuId, idx) => ({
-        id: c?.id ?? c?.candidatureId ?? `${stuId || "stu"}-${idx}`,
-        title: c?.stage?.title ?? "Stage",
-        company:
-            c?.stage?.employeur?.company ??
-            c?.stage?.employeur?.nomEntreprise ??
-            "",
-        stageId: c?.stage?.id ?? null,
-        stage: c?.stage ?? null,
-        status: (c?.status || "").toUpperCase(),
-        decision: (c?.decision || "").toUpperCase(),
-        datePostulation: c?.datePostulation ?? null,
-    });
-
-    const normalizeStudent = (dto) => {
-        const stu = dto?.etudiant || {};
-        const fullName = `${stu.firstName ?? ""} ${stu.lastName ?? ""}`.trim();
-        const rawCands = Array.isArray(dto?.candidatures) ? dto.candidatures : [];
-        const apps = rawCands.map((c, i) => normalizeApplication(c, stu.id, i));
-
-        const hasAccepted = apps.some(
-            (a) => ACCEPTED_STATUSES.includes(a.status) || ACCEPTED_STATUSES.includes(a.decision)
-        );
-
-        return {
-            id: stu.id ?? null,
-            fullName: fullName || "(Nom manquant)",
-            email: stu.email ?? "",
-            accepted: hasAccepted,
-            applications: apps,
-        };
-    };
-
     useEffect(() => {
         let mounted = true;
         (async () => {
             try {
                 setLoading(true);
                 const data = await getStageApplicantsManager(user?.token);
-                const arr = Array.isArray(data) ? data.map(normalizeStudent) : [];
+
+                const arr = (Array.isArray(data) ? data : []).map((dto) => {
+                    const stu = dto?.etudiant || {};
+                    const candidatures = Array.isArray(dto?.candidatures) ? dto.candidatures : [];
+
+                    const applications = candidatures.map((c, i) => {
+                        const stg = c?.stage || {};
+                        const emp = stg?.employeur || {};
+                        const status = (c?.status || "").toUpperCase();
+                        const decision = (c?.decision || "").toUpperCase();
+
+                        return {
+                            id: c?.id ?? `${stu.id || "stu"}-${i}`,
+                            title: stg?.title || "Stage",
+                            company: emp?.company || emp?.nomEntreprise || "",
+                            stageId: stg?.id ?? null,
+                            stage: stg, // déjà assez complet pour StageDetailsModal
+                            status,
+                            decision,
+                            datePostulation: c?.datePostulation ?? null,
+                        };
+                    });
+
+                    const accepted = applications.some(
+                        (a) => a.status === "APPROUVEE" || a.decision === "APPROUVEE"
+                    );
+
+                    return {
+                        id: stu?.id ?? null,
+                        fullName: `${stu?.firstName || ""} ${stu?.lastName || ""}`.trim() || "(Nom manquant)",
+                        email: stu?.email || "",
+                        accepted,
+                        applications,
+                    };
+                });
+
                 if (mounted) setStudents(arr);
-                if (!arr.length) setNote("Aucune donnée reçue du serveur.");
+                if (mounted && !arr.length) setNote("Aucune donnée reçue du serveur.");
             } catch (e) {
                 console.error("Erreur chargement candidatures:", e);
                 if (mounted) setNote("Erreur lors du chargement des candidatures.");
@@ -96,7 +96,11 @@ export default function GestionnaireEtuCandidature() {
         APPROVED: partition.approved.length,
     };
 
-    const list = tab === "ZERO" ? partition.zero : tab === "APPLIED" ? partition.applied : partition.approved;
+    const list = tab === "ZERO"
+        ? partition.zero
+        : tab === "APPLIED"
+            ? partition.applied
+            : partition.approved;
 
     const showAction = tab !== "ZERO";
 
@@ -175,8 +179,8 @@ export default function GestionnaireEtuCandidature() {
                                             ) : tab === "APPROVED" ? (
                                                 <span
                                                     className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold bg-teal-100 text-teal-700">
-                          Stage trouvé
-                        </span>
+                            Stage trouvé
+                          </span>
                                             ) : (
                                                 <span className="text-gray-500">Aucune candidature</span>
                                             )}
@@ -190,10 +194,9 @@ export default function GestionnaireEtuCandidature() {
                                                         className="text-blue-600 hover:underline"
                                                         title="Voir les stages postulés"
                                                         onClick={() => {
-                                                            setModalStudent(s)
-                                                        }
-                                                        }
-
+                                                            setTab("APPLIED");
+                                                            setModalStudent(s);
+                                                        }}
                                                     >
                                                         Voir ses candidatures
                                                     </button>
