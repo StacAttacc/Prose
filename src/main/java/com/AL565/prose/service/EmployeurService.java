@@ -9,7 +9,6 @@ import com.AL565.prose.model.notifications.PostulationNotification;
 import com.AL565.prose.model.notifications.StageNotification;
 import com.AL565.prose.repository.*;
 import com.AL565.prose.security.exceptions.NotificationExceptions;
-import com.AL565.prose.security.exceptions.NotificationExceptions.*;
 import com.AL565.prose.security.exceptions.UserNotFoundException;
 import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.dto.notifications.NotificationGroupDTO;
@@ -68,7 +67,7 @@ public class EmployeurService {
             throw new IllegalArgumentException("stage must not be null");
         }
         StageNotification notification = new StageNotification();
-        notification.setReadAt(null);
+        notification.setFirstRecipientReadAt(null);
         notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
         notification.setStage(stage);
         notification.setSenderEmail(stage.getEmployeurEmail());
@@ -121,7 +120,7 @@ public class EmployeurService {
     public NotificationsResponseDTO getPostulationNotifications(String employeurEmail) throws Exception {
         try {
             List<PostulationNotification> notifications =
-                    postulationNotificationRepository.findByReadAtAndCandidature_StageEmployeurEmail(null, employeurEmail);
+                    postulationNotificationRepository.findByFirstRecipientReadAtAndCandidature_StageEmployeurEmail(null, employeurEmail);
             NotificationGroupDTO group = NotificationGroupDTO.toDTO("postulation", notifications);
             return NotificationsResponseDTO.toDTO(List.of(group));
         } catch (Exception e) {
@@ -130,6 +129,6 @@ public class EmployeurService {
     }
 
     public void markNotificationAsRead(Long notificationId) throws Exception {
-        notificationsHelper.markNotificationAsRead(notificationId);
+        notificationsHelper.markNotificationAsReadByFirstRecipient(notificationId);
     }
 }

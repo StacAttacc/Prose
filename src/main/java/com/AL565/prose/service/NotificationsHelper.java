@@ -16,11 +16,11 @@ public class NotificationsHelper {
     private final NotificationRepository notificationRepository;
 
     @Transactional
-    public void markNotificationAsRead(Long notificationId) throws Exception {
+    public void markNotificationAsReadByFirstRecipient(Long notificationId) throws Exception {
         try {
             Notification notification = notificationRepository.findById(notificationId)
                     .orElseThrow(NotificationExceptions.NotificationFetchException::new);
-            notification.setReadAt(OffsetDateTime.now().toLocalDateTime());
+            notification.setFirstRecipientReadAt(OffsetDateTime.now().toLocalDateTime());
             notificationRepository.save(notification);
         } catch (Exception e) {
             throw new NotificationExceptions.NotificationFetchException();

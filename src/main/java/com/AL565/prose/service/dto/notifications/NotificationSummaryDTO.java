@@ -48,7 +48,7 @@ public class NotificationSummaryDTO {
                 .message(n.getMessage())
                 .senderEmail(n.getSenderEmail())
                 .createdAt(n.getCreatedAt())
-                .readAt(n.getReadAt())
+                .readAt(n.getFirstRecipientReadAt())
                 .stageId(stageId)
                 .candidatureId(candidatureId)
                 .build();

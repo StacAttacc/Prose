@@ -7,8 +7,8 @@ import com.AL565.prose.model.CV;
 import com.AL565.prose.model.CvStatus;
 import com.AL565.prose.model.notifications.Notification;
 import com.AL565.prose.model.notifications.NotificationType;
+import com.AL565.prose.model.notifications.PostulationNotification;
 import com.AL565.prose.security.exceptions.NotificationExceptions;
-import com.AL565.prose.security.exceptions.NotificationExceptions.*;
 import com.AL565.prose.repository.*;
 import com.AL565.prose.security.exceptions.CvExceptions.*;
 import com.AL565.prose.service.dto.GestionnaireCvDTO;
@@ -23,6 +23,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -38,6 +39,7 @@ public class GestionnaireService {
     private final EmployeurRepository employeurRepository;
     private final PasswordEncoder passwordEncoder;
     private final NotificationRepository notificationRepository;
+    private final PostulationNotificationRepository postulastionNotificationRepository;
     private final NotificationsHelper notificationsHelper;
 
     public void saveGestionnaire(GestionnairePasswordDTO dto) {
@@ -125,19 +127,36 @@ public class GestionnaireService {
         }
     }
 
-    public NotificationsResponseDTO getStageNotifications() throws Exception {
+    public NotificationsResponseDTO getGestionnaireNotifications() throws Exception {
         try {
-                List<Notification> list = notificationRepository
-                        .findNotificationsByTypeAndReadAt(NotificationType.STAGE_NOTIFICATION, null);
-                NotificationGroupDTO group = NotificationGroupDTO
-                        .toDTO(NotificationType.STAGE_NOTIFICATION.getDisplayName(), list);
-            return NotificationsResponseDTO.toDTO(List.of(group));
+                List<Notification> stages = notificationRepository
+                        .findNotificationsByTypeAndFirstRecipientReadAt(NotificationType.STAGE_NOTIFICATION, null);
+                List<PostulationNotification> postulations = postulastionNotificationRepository
+                        .findBySecondRecipientReadAt(null);
+
+                NotificationGroupDTO stagesGroup = NotificationGroupDTO
+                        .toDTO(NotificationType.STAGE_NOTIFICATION.getDisplayName(), stages);
+                NotificationGroupDTO postulationGroup = NotificationGroupDTO
+                        .toDTO(NotificationType.POSTULATION_NOTIFICATION.getDisplayName(), postulations);
+
+            return NotificationsResponseDTO.toDTO(List.of(stagesGroup, postulationGroup));
         } catch (Exception e) {
             throw new NotificationExceptions.NotificationFetchException();
         }
     }
 
-    public void markNotificationAsRead(Long notificationId) throws Exception {
-        notificationsHelper.markNotificationAsRead(notificationId);
+    public void markNotificationAsReadByFirstRecipient(Long notificationId) throws Exception {
+        notificationsHelper.markNotificationAsReadByFirstRecipient(notificationId);
+    }
+
+    public void markPostulationAsReadBySecondRecipient(Long notificationId) throws Exception {
+        try {
+            PostulationNotification notification = postulastionNotificationRepository.findById(notificationId)
+                    .orElseThrow(NotificationExceptions.NotificationFetchException::new);
+            notification.setSecondRecipientReadAt(OffsetDateTime.now().toLocalDateTime());
+            notificationRepository.save(notification);
+        } catch (Exception e) {
+            throw new NotificationExceptions.NotificationFetchException();
+        }
     }
 }

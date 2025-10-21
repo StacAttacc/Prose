@@ -238,7 +238,7 @@ class GestionnaireControllerTest {
         NotificationGroupDTO group = NotificationGroupDTO.toDTO(NotificationType.STAGE_NOTIFICATION.getDisplayName(), List.of(n1, n2));
         NotificationsResponseDTO response = NotificationsResponseDTO.toDTO(List.of(group));
 
-        when(gestionnaireService.getStageNotifications()).thenReturn(response);
+        when(gestionnaireService.getGestionnaireNotifications()).thenReturn(response);
 
         var mvc = mockMvc.perform(get("/gestionnaire/notifications/all").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -253,21 +253,21 @@ class GestionnaireControllerTest {
     @Test
     @DisplayName("GET /gestionnaire/notifications/all -> 500 when service throws")
     void getAllNotifications_whenServiceThrows_returns500() throws Exception {
-        when(gestionnaireService.getStageNotifications()).thenThrow(new com.AL565.prose.security.exceptions.NotificationExceptions.NotificationFetchException());
+        when(gestionnaireService.getGestionnaireNotifications()).thenThrow(new com.AL565.prose.security.exceptions.NotificationExceptions.NotificationFetchException());
 
         mockMvc.perform(get("/gestionnaire/notifications/all").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isInternalServerError());
     }
 
     @Test
-    void markNotificationAsRead_success_returnsOk() throws Exception {
+    void markNotificationAsRead_ByFirstRecipient_success_returnsOk() throws Exception {
         mockMvc.perform(put("/gestionnaire/notifications/read/1").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
 
     @Test
-    void markNotificationAsRead_whenServiceThrows_returns500WithMessage() throws Exception {
-        doThrow(new Exception("boom")).when(gestionnaireService).markNotificationAsRead(anyLong());
+    void markNotificationAsRead_ByFirstRecipient_whenServiceThrows_returns500WithMessage() throws Exception {
+        doThrow(new Exception("boom")).when(gestionnaireService).markNotificationAsReadByFirstRecipient(anyLong());
 
         mockMvc.perform(put("/gestionnaire/notifications/read/1").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isInternalServerError())

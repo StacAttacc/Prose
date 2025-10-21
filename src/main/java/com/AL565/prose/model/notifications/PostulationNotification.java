@@ -10,6 +10,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @Setter
@@ -19,4 +21,5 @@ public class PostulationNotification extends Notification {
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "candidature_id")
     private Candidature candidature;
+    private LocalDateTime secondRecipientReadAt;
 }

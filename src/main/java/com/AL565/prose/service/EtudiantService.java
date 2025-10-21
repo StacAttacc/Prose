@@ -195,7 +195,7 @@ public class EtudiantService {
             throw new IllegalArgumentException("Candidature exister");
         }
         PostulationNotification notification = new PostulationNotification();
-        notification.setReadAt(null);
+        notification.setFirstRecipientReadAt(null);
         notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
         notification.setCandidature(candidature);
         notification.setSenderEmail(candidature.getEtudiant().getEmail());

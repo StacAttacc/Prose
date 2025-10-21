@@ -8,5 +8,5 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
-    List<Notification> findNotificationsByTypeAndReadAt(NotificationType type, LocalDateTime readAt);
+    List<Notification> findNotificationsByTypeAndFirstRecipientReadAt(NotificationType type, LocalDateTime readAt);
 }

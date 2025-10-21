@@ -1,6 +1,7 @@
 package com.AL565.prose.service;
 
 import com.AL565.prose.model.notifications.NotificationType;
+import com.AL565.prose.model.notifications.PostulationNotification;
 import com.AL565.prose.model.notifications.StageNotification;
 import com.AL565.prose.repository.NotificationRepository;
 import com.AL565.prose.repository.PostulationNotificationRepository;
@@ -40,7 +41,7 @@ class NotificationsServiceLayerTest {
 
     @Test
     @DisplayName("getStageNotifications() returns stage notifications from repository")
-    void getStageNotifications_returnsStageNotifications() throws Exception {
+    void getNotifications_returnsStageNotifications() throws Exception {
         StageNotification n1 = new StageNotification();
         n1.setType(NotificationType.STAGE_NOTIFICATION);
         n1.setMessage("Stage submitted");
@@ -51,31 +52,40 @@ class NotificationsServiceLayerTest {
         n2.setMessage("Stage updated");
         n2.setCreatedAt(LocalDateTime.now());
 
-        when(notificationRepository.findNotificationsByTypeAndReadAt(NotificationType.STAGE_NOTIFICATION, null))
+        PostulationNotification n3 = new PostulationNotification();
+        n3.setType(NotificationType.POSTULATION_NOTIFICATION);
+        n3.setMessage("New application");
+        n3.setCreatedAt(LocalDateTime.now());
+
+        when(notificationRepository.findNotificationsByTypeAndFirstRecipientReadAt(NotificationType.STAGE_NOTIFICATION, null))
                 .thenReturn(List.of(n1, n2));
 
-        NotificationsResponseDTO result = gestionnaireService.getStageNotifications();
+        when(postulationNotificationRepository.findBySecondRecipientReadAt(null))
+                .thenReturn(List.of(n3));
+
+        NotificationsResponseDTO result = gestionnaireService.getGestionnaireNotifications();
 
         assertThat(result).isNotNull();
-        assertThat(result.getTotalCount()).isEqualTo(2);
-        assertThat(result.getGroups()).hasSize(1);
+        assertThat(result.getTotalCount()).isEqualTo(3);
+        assertThat(result.getGroups()).hasSize(2);
         assertThat(result.getGroups().get(0).getItems()).hasSize(2);
         assertThat(result.getGroups().get(0).getItems().get(0).getMessage()).isEqualTo("Stage submitted");
+        assertThat(result.getGroups().get(1).getItems().get(0).getMessage()).isEqualTo("New application");
 
         verify(notificationRepository, times(1))
-                .findNotificationsByTypeAndReadAt(NotificationType.STAGE_NOTIFICATION, null);
+                .findNotificationsByTypeAndFirstRecipientReadAt(NotificationType.STAGE_NOTIFICATION, null);
     }
 
     @Test
     @DisplayName("getNotifications() wraps repository failures into NotificationFetchException")
     void getNotifications_wrapsIntoNotificationFetchException() {
-        when(notificationRepository.findNotificationsByTypeAndReadAt(any(), any()))
+        when(notificationRepository.findNotificationsByTypeAndFirstRecipientReadAt(any(), any()))
                 .thenThrow(new RuntimeException("DB down"));
 
-        assertThatThrownBy(() -> gestionnaireService.getStageNotifications())
+        assertThatThrownBy(() -> gestionnaireService.getGestionnaireNotifications())
                 .isInstanceOf(NotificationExceptions.NotificationFetchException.class);
 
         verify(notificationRepository, times(1))
-                .findNotificationsByTypeAndReadAt(NotificationType.STAGE_NOTIFICATION, null);
+                .findNotificationsByTypeAndFirstRecipientReadAt(NotificationType.STAGE_NOTIFICATION, null);
     }
 }
