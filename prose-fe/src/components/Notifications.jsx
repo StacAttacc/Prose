@@ -172,8 +172,9 @@ export default function Notifications() {
         e?.stopPropagation?.();
         setOpenType(null);
 
-        const stageId = notification?.stageId;
-        const candidatureId = notification?.candidatureId;
+        const stageId = notification?.stageId || null;
+        const candidatureId = notification?.candidatureId || null;
+        const etudiantId = notification?.etudiantId || null;
 
         const isCandidature = Boolean(notification?.candidature || notification?.candidatureId);
 
@@ -194,7 +195,7 @@ export default function Notifications() {
             }
 
             else if (user.role === "GESTIONNAIRE" && isCandidature && stageId) {
-                navigate(defaultNavigatePath(), { state: { openStageId: stageId } });
+                navigate(defaultNavigatePath(), { state: { openEtudiantId: etudiantId } });
                 return;
             }
 

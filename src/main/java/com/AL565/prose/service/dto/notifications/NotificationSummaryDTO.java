@@ -24,22 +24,23 @@ public class NotificationSummaryDTO {
     private LocalDateTime secondaryRecipientReadAt;
     private Long stageId;
     private Long candidatureId;
+    private Long etudiantId;
 
     public static NotificationSummaryDTO toDTO(Notification n) {
         if (n == null) return null;
 
         Long stageId = null;
         Long candidatureId = null;
+        Long etudiantId = null;
 
-        if (n instanceof StageNotification) {
-            StageNotification sn = (StageNotification) n;
+        if (n instanceof StageNotification sn) {
             if (sn.getStage() != null) stageId = sn.getStage().getId();
-        } else if (n instanceof PostulationNotification) {
-            PostulationNotification pn = (PostulationNotification) n;
+        } else if (n instanceof PostulationNotification pn) {
             Candidature c = pn.getCandidature();
             if (c != null) {
                 candidatureId = c.getId();
                 if (c.getStage() != null) stageId = c.getStage().getId();
+                if (c.getEtudiant() != null) etudiantId = c.getEtudiant().getId();
             }
         }
 
@@ -53,6 +54,7 @@ public class NotificationSummaryDTO {
                 .secondaryRecipientReadAt(n.getSecondRecipientReadAt())
                 .stageId(stageId)
                 .candidatureId(candidatureId)
+                .etudiantId(etudiantId)
                 .build();
     }
 
