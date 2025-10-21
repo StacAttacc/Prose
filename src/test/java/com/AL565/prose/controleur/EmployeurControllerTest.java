@@ -5,10 +5,7 @@ import com.AL565.prose.model.Employeur;
 import com.AL565.prose.model.OfferStatus;
 import com.AL565.prose.model.Stage;
 import com.AL565.prose.model.notifications.PostulationNotification;
-import com.AL565.prose.repository.EmployeurRepository;
-import com.AL565.prose.repository.EtudiantRepository;
-import com.AL565.prose.repository.ProseUserRepository;
-import com.AL565.prose.repository.StageRepository;
+import com.AL565.prose.repository.*;
 import com.AL565.prose.service.EtudiantService;
 import com.AL565.prose.service.GestionnaireService;
 import com.AL565.prose.service.dto.*;
@@ -75,6 +72,12 @@ class EmployeurControllerTest {
 
     @MockitoBean
     private StageRepository stageRepository;
+
+    @MockitoBean
+    private NotificationRepository notificationRepository;
+
+    @MockitoBean
+    private PostulationNotificationRepository postulationNotificationRepository;
 
     @Autowired
     ObjectMapper objectMapper;
@@ -159,7 +162,7 @@ class EmployeurControllerTest {
         ReturnEntityDTO<List<CandidatureDTO>> candidatures =
                 objectMapper.readValue(
                         result.getResponse().getContentAsString(),
-                        new TypeReference<ReturnEntityDTO<List<CandidatureDTO>>>() {
+                        new TypeReference<>() {
                         }
                 );
 
@@ -203,7 +206,7 @@ class EmployeurControllerTest {
                 .andReturn();
 
         TypeReference<com.AL565.prose.service.dto.ReturnEntityDTO<NotificationsResponseDTO>> tr =
-                new TypeReference<com.AL565.prose.service.dto.ReturnEntityDTO<NotificationsResponseDTO>>() { };
+                new TypeReference<>() { };
 
         com.AL565.prose.service.dto.ReturnEntityDTO<NotificationsResponseDTO> response =
                 objectMapper.readValue(result.getResponse().getContentAsString(), tr);
@@ -212,8 +215,8 @@ class EmployeurControllerTest {
         assertThat(response.getData()).isNotNull();
         assertThat(response.getData().getTotalCount()).isEqualTo(1);
         assertThat(response.getData().getGroups()).hasSize(1);
-        assertThat(response.getData().getGroups().get(0).getItems()).hasSize(1);
-        assertThat(response.getData().getGroups().get(0).getItems().get(0).getSenderEmail())
+        assertThat(response.getData().getGroups().getFirst().getItems()).hasSize(1);
+        assertThat(response.getData().getGroups().getFirst().getItems().getFirst().getSenderEmail())
                 .isEqualTo("jean.dupont@etudiant.ca");
 
         verify(employeurService, times(1)).getPostulationNotifications(email);
