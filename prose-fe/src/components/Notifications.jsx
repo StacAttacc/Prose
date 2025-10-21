@@ -138,8 +138,6 @@ export default function Notifications() {
             await markNotificationReadGestionnaire(id, user.token);
         } else if (user.role === "EMPLOYEUR") {
             await markNotificationReadEmployeur(id, user.token);
-        } else {
-            await markNotificationReadGestionnaire(id, user.token);
         }
     }
 
@@ -149,14 +147,12 @@ export default function Notifications() {
             await markNotificationsReadGestionnaire(ids, user.token);
         } else if (user.role === "EMPLOYEUR") {
             await markNotificationsReadEmployeur(ids, user.token);
-        } else {
-            await markNotificationsReadGestionnaire(ids, user.token);
         }
     }
 
     function defaultNavigatePath() {
-        if (user.role === "GESTIONNAIRE") return "/gestionnaire/list-stages";
-        if (user.role === "EMPLOYEUR") return `/employeur/stages`;
+        if (user.role === "GESTIONNAIRE") return "/gestionnaire/candidatures";
+        if (user.role === "EMPLOYEUR") return `/employeur/posted-stages`;
         return "/";
     }
 
@@ -178,10 +174,11 @@ export default function Notifications() {
 
         const stageId = notification?.stage?.id
             || notification?.stageId
-            || notification?.candidature?.stage?.id
-            || notification?.candidatureId;
+            || notification?.candidature?.stage?.id;
 
         const isCandidature = Boolean(notification?.candidature || notification?.candidatureId);
+
+        console.log("Notification click:", { notification, stageId, isCandidature });
 
         try {
             await markSingleNotification(notification.id);
@@ -198,10 +195,22 @@ export default function Notifications() {
                 navigate(`/employeur/stages/${stageId}/candidatures`);
                 return;
             }
-            if (stageId) {
+
+            if (user.role === "GESTIONNAIRE" && isCandidature && stageId) {
                 navigate(defaultNavigatePath(), { state: { openStageId: stageId } });
                 return;
             }
+
+            if (user.role === "EMPLOYEUR" && stageId) {
+                navigate(defaultNavigatePath(), { state: { openStageId: stageId } });
+                return;
+            }
+
+            if (user.role === "GESTIONNAIRE" && !isCandidature && stageId) {
+                navigate("/gestionnaire/list-stages", { state: { openStageId: stageId } });
+                return;
+            }
+
             navigate(defaultNavigatePath());
         } catch (err) {
             console.error("Failed to mark notification as read:", err);
