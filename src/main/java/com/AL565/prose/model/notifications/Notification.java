@@ -17,6 +17,7 @@ public abstract class Notification {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private LocalDateTime firstRecipientReadAt;
+    private LocalDateTime secondRecipientReadAt;
     private LocalDateTime createdAt;
     private String senderEmail;
     private String message;

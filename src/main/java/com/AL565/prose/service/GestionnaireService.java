@@ -131,8 +131,8 @@ public class GestionnaireService {
         try {
                 List<Notification> stages = notificationRepository
                         .findNotificationsByTypeAndFirstRecipientReadAt(NotificationType.STAGE_NOTIFICATION, null);
-                List<PostulationNotification> postulations = postulastionNotificationRepository
-                        .findBySecondRecipientReadAt(null);
+                List<Notification> postulations = notificationRepository
+                        .findNotificationsByTypeAndSecondRecipientReadAt(NotificationType.POSTULATION_NOTIFICATION, null);
 
                 NotificationGroupDTO stagesGroup = NotificationGroupDTO
                         .toDTO(NotificationType.STAGE_NOTIFICATION.getDisplayName(), stages);
@@ -145,10 +145,17 @@ public class GestionnaireService {
         }
     }
 
-    public void markNotificationAsReadByFirstRecipient(Long notificationId) throws Exception {
-        notificationsHelper.markNotificationAsReadByFirstRecipient(notificationId);
+    public void markNotificationAsRead(Long notificationId) throws Exception {
+        Notification notification = notificationRepository.findById(notificationId)
+                .orElseThrow(NotificationExceptions.NotificationFetchException::new);
+        if (notification.getType() == NotificationType.POSTULATION_NOTIFICATION) {
+            markPostulationAsReadBySecondRecipient(notificationId);
+        } else {
+            notificationsHelper.markNotificationAsReadByFirstRecipient(notificationId);
+        }
     }
 
+    @Transactional
     public void markPostulationAsReadBySecondRecipient(Long notificationId) throws Exception {
         try {
             PostulationNotification notification = postulastionNotificationRepository.findById(notificationId)

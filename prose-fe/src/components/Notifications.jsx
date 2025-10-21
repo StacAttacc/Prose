@@ -185,7 +185,6 @@ export default function Notifications() {
 
         try {
             await markSingleNotification(notification.id);
-            // remove locally to reflect immediate UI change
             setNotificationsByType(prev => {
                 const next = { ...prev };
                 const arr = (next[typeKey] || []).filter(n => n.id !== notification.id);
@@ -210,7 +209,6 @@ export default function Notifications() {
         }
     }, [navigate, user?.role, user?.token, user?.email]);
 
-    // New helper: mark a single notification (X button) and update local state
     const handleMarkSingleClick = async (e, notification, typeKey) => {
         e?.stopPropagation?.();
         if (!notification?.id) return;

@@ -89,20 +89,9 @@ public class GestionnaireController {
     }
 
     @PutMapping("/notifications/read/{id}")
-    public ResponseEntity<ReturnEntityDTO<Void>> markNotificationAsReadByFirstRecipient(@PathVariable Long id) {
+    public ResponseEntity<ReturnEntityDTO<Void>> markNotificationAsRead(@PathVariable Long id) {
         try {
-            gestionnaireService.markNotificationAsReadByFirstRecipient(id);
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ReturnEntityDTO<>("Erreur lors du marquage de la notification comme lue", null));
-        }
-    }
-
-    @PutMapping("/notifications/read-second/{id}")
-    public ResponseEntity<ReturnEntityDTO<Void>> markNotificationAsReadBySecondRecipient(@PathVariable Long id) {
-        try {
-            gestionnaireService.markPostulationAsReadBySecondRecipient(id);
+            gestionnaireService.markNotificationAsRead(id);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

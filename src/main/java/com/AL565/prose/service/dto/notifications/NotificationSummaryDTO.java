@@ -21,6 +21,7 @@ public class NotificationSummaryDTO {
     private String senderEmail;
     private LocalDateTime createdAt;
     private LocalDateTime readAt;
+    private LocalDateTime secondaryRecipientReadAt;
     private Long stageId;
     private Long candidatureId;
 
@@ -49,6 +50,7 @@ public class NotificationSummaryDTO {
                 .senderEmail(n.getSenderEmail())
                 .createdAt(n.getCreatedAt())
                 .readAt(n.getFirstRecipientReadAt())
+                .secondaryRecipientReadAt(n.getSecondRecipientReadAt())
                 .stageId(stageId)
                 .candidatureId(candidatureId)
                 .build();

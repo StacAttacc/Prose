@@ -60,7 +60,7 @@ class NotificationsServiceLayerTest {
         when(notificationRepository.findNotificationsByTypeAndFirstRecipientReadAt(NotificationType.STAGE_NOTIFICATION, null))
                 .thenReturn(List.of(n1, n2));
 
-        when(postulationNotificationRepository.findBySecondRecipientReadAt(null))
+        when(notificationRepository.findNotificationsByTypeAndSecondRecipientReadAt(NotificationType.POSTULATION_NOTIFICATION, null))
                 .thenReturn(List.of(n3));
 
         NotificationsResponseDTO result = gestionnaireService.getGestionnaireNotifications();
@@ -69,8 +69,8 @@ class NotificationsServiceLayerTest {
         assertThat(result.getTotalCount()).isEqualTo(3);
         assertThat(result.getGroups()).hasSize(2);
         assertThat(result.getGroups().get(0).getItems()).hasSize(2);
-        assertThat(result.getGroups().get(0).getItems().get(0).getMessage()).isEqualTo("Stage submitted");
-        assertThat(result.getGroups().get(1).getItems().get(0).getMessage()).isEqualTo("New application");
+        assertThat(result.getGroups().get(0).getItems().getFirst().getMessage()).isEqualTo("Stage submitted");
+        assertThat(result.getGroups().get(1).getItems().getFirst().getMessage()).isEqualTo("New application");
 
         verify(notificationRepository, times(1))
                 .findNotificationsByTypeAndFirstRecipientReadAt(NotificationType.STAGE_NOTIFICATION, null);
