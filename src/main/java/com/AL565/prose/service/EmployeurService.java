@@ -57,22 +57,23 @@ public class EmployeurService {
 
         Stage saved = stageRepository.save(StageDTO.toModel(dto));
         Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(saved.getEmployeurEmail());
-        createNotificationForNewStage(saved);
+        createNotificationForNewStage(saved, employeur);
 
         return StageDTO.fromModel(saved, employeur);
     }
 
-    private void createNotificationForNewStage(Stage stage) {
+    private void createNotificationForNewStage(Stage stage, Employeur employeur) {
         if (stage == null) {
             throw new IllegalArgumentException("stage must not be null");
         }
+        String employeurName = employeur.getFirstName() + " " + employeur.getLastName();
         StageNotification notification = new StageNotification();
         notification.setFirstRecipientReadAt(null);
         notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
         notification.setStage(stage);
         notification.setSenderEmail(stage.getEmployeurEmail());
         notification.setType(NotificationType.STAGE_NOTIFICATION);
-        notification.setMessage(stage.getTitle());
+        notification.setMessage(employeurName + " a créé le stage " +stage.getTitle());
         notificationRepository.save(notification);
     }
 

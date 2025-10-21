@@ -194,13 +194,15 @@ public class EtudiantService {
         if (candidature == null) {
             throw new IllegalArgumentException("Candidature exister");
         }
+        String studentName = candidature.getEtudiant().getFirstName() + " " + candidature.getEtudiant().getLastName();
+        String companyName = candidature.getStage().getTitle();
         PostulationNotification notification = new PostulationNotification();
         notification.setFirstRecipientReadAt(null);
         notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
         notification.setCandidature(candidature);
         notification.setSenderEmail(candidature.getEtudiant().getEmail());
-        notification.setType(NotificationType.STAGE_NOTIFICATION);
-        notification.setMessage("Candidature: " + candidature.getStage().getTitle());
+        notification.setType(NotificationType.POSTULATION_NOTIFICATION);
+        notification.setMessage(studentName + " a postulé pour le stage " + companyName);
         notificationRepository.save(notification);
     }
 
