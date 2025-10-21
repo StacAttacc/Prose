@@ -11,7 +11,7 @@ export default function ApplicationsModal({ student, onClose, onSeeStage }) {
                     </h3>
                 </div>
 
-                <div className="p-5">
+                <div className="p-5 max-h-[60vh] overflow-y-auto">
                     {student.applications?.length ? (
                         <ul className="space-y-3">
                             {student.applications.map((ap, i) => (
