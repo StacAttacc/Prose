@@ -276,4 +276,21 @@ class GestionnaireControllerTest {
                 .andExpect(jsonPath("$.data").doesNotExist());
     }
 
+    @Test
+    void markNotificationAsRead_BySecondRecipient_success_returnsOk() throws Exception {
+        mockMvc.perform(put("/gestionnaire/notifications/read-second/1").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void markNotificationAsRead_BySecondRecipient_whenServiceThrows_returns500WithMessage() throws Exception {
+        doThrow(new Exception("boom")).when(gestionnaireService).markPostulationAsReadBySecondRecipient(anyLong());
+
+        mockMvc.perform(put("/gestionnaire/notifications/read-second/1").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.message", is("Erreur lors du marquage de la notification comme lue")))
+                .andExpect(jsonPath("$.data").doesNotExist());
+    }
+
 }

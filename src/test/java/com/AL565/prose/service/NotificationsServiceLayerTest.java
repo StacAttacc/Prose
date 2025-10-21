@@ -88,4 +88,46 @@ class NotificationsServiceLayerTest {
         verify(notificationRepository, times(1))
                 .findNotificationsByTypeAndFirstRecipientReadAt(NotificationType.STAGE_NOTIFICATION, null);
     }
+
+    @Test
+    @DisplayName("markPostulationAsReadBySecondRecipient() sets secondRecipientReadAt and saves")
+    void markPostulationAsReadBySecondRecipient_setsReadAtAndSaves() throws Exception {
+        PostulationNotification notification = new PostulationNotification();
+        notification.setId(1L);
+
+        when(postulationNotificationRepository.findById(1L)).thenReturn(java.util.Optional.of(notification));
+
+        gestionnaireService.markPostulationAsReadBySecondRecipient(1L);
+
+        assertThat(notification.getSecondRecipientReadAt()).isNotNull();
+        verify(postulationNotificationRepository, times(1)).findById(1L);
+        verify(notificationRepository, times(1)).save(notification);
+    }
+
+    @Test
+    @DisplayName("markPostulationAsReadBySecondRecipient() throws NotificationFetchException when not found")
+    void markPostulationAsReadBySecondRecipient_notFound_throws() {
+        when(postulationNotificationRepository.findById(1L)).thenReturn(java.util.Optional.empty());
+
+        assertThatThrownBy(() -> gestionnaireService.markPostulationAsReadBySecondRecipient(1L))
+                .isInstanceOf(NotificationExceptions.NotificationFetchException.class);
+
+        verify(notificationRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("markPostulationAsReadBySecondRecipient() wraps save failures into NotificationFetchException")
+    void markPostulationAsReadBySecondRecipient_saveThrows_wrapsException() {
+        PostulationNotification notification = new PostulationNotification();
+        notification.setId(1L);
+
+        when(postulationNotificationRepository.findById(1L)).thenReturn(java.util.Optional.of(notification));
+        doThrow(new RuntimeException("DB error")).when(notificationRepository).save(any());
+
+        assertThatThrownBy(() -> gestionnaireService.markPostulationAsReadBySecondRecipient(1L))
+                .isInstanceOf(NotificationExceptions.NotificationFetchException.class);
+
+        verify(postulationNotificationRepository, times(1)).findById(1L);
+        verify(notificationRepository, times(1)).save(any());
+    }
 }
