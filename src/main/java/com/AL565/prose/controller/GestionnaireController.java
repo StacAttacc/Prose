@@ -76,6 +76,16 @@ public class GestionnaireController {
         return ResponseEntity.ok(cvs);
     }
 
+    @GetMapping("/getCandidatures")
+    public ResponseEntity<ReturnEntityDTO<List<EtudiantCandidaturesDTO>>> getAllEtudiantsCandidatures() {
+        try {
+            List<EtudiantCandidaturesDTO> etudiants = gestionnaireService.getAllEtudiantsCandidatures();
+            return ResponseEntity.ok(new ReturnEntityDTO<>("Trouvés", etudiants));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ReturnEntityDTO<>("Erreur interne du serveur", null));
+        }
+    }
+
     @GetMapping("/notifications/all")
     public ResponseEntity<ReturnEntityDTO<StageNotificationDTO>> getAllNotifications() {
         try {

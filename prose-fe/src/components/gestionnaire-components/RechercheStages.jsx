@@ -5,6 +5,7 @@ import StageDetailsModal from "../display-components/StageDetailsModal";
 import ErrorBanner from "../display-components/ErrorBanner.jsx";
 import { useLocation, useNavigate } from "react-router-dom";
 
+
 export default function GestRechercheStages() {
   const { user } = useAuth();
   const location = useLocation();
@@ -268,9 +269,6 @@ export default function GestRechercheStages() {
                 <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getStatusColor(stage.status)}`}>
                   {getStatusText(stage.status)}
                 </span>
-                <button className="text-teal-600 hover:text-teal-800 font-medium">
-                  Voir détails →
-                </button>
               </div>
             </div>
           ))}

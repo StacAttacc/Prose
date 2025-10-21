@@ -24,6 +24,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
+import java.time.LocalDate;
 import java.util.*;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -390,8 +391,8 @@ class EtudiantControllerTest {
                 .description("Développement d'applications web modernes")
                 .location("Montréal, QC")
                 .compensation("25$/h")
-                .startDate("2025-05-01")
-                .endDate("2025-08-31")
+                .startDate(LocalDate.now())
+                .endDate(LocalDate.now())
                 .skills(Arrays.asList("React", "Node.js", "MongoDB"))
                 .employeur(employeur)
                 .build();
