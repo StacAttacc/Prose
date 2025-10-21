@@ -2,17 +2,17 @@ import axios from "axios";
 
 const BASE_URL_GESTIONNAIRE = "http://localhost:8080/gestionnaire";
 
-export async function submitStageDecision(id, { approved, reason }, token) {
-  const endpoint = approved ? `${BASE_URL_GESTIONNAIRE}/stages/${id}/approuver` : `${BASE_URL_GESTIONNAIRE}/stages/${id}/rejeter`;
-  const body = approved ? {} : { reason };
-  
-  const res = await axios.put(endpoint, body, {
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    }
-  });
-  return res.data;
+export async function submitStageDecision(id, {approved, reason}, token) {
+    const endpoint = approved ? `${BASE_URL_GESTIONNAIRE}/stages/${id}/approuver` : `${BASE_URL_GESTIONNAIRE}/stages/${id}/rejeter`;
+    const body = approved ? {} : {reason};
+
+    const res = await axios.put(endpoint, body, {
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    });
+    return res.data;
 }
 
 export const fetchAllCVs = async (token) => {
@@ -35,7 +35,7 @@ export const approveCv = async (cvId, comment, token) => {
     try {
         await axios.post(
             `${BASE_URL_GESTIONNAIRE}/cv/change-status`,
-            { id: cvId, status: "Approved", comment: comment },
+            {id: cvId, status: "Approved", comment: comment},
             {
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -51,7 +51,7 @@ export const rejectCv = async (cvId, comment, token) => {
     try {
         await axios.post(
             `${BASE_URL_GESTIONNAIRE}/cv/change-status`,
-            { id: cvId, status: "Rejected", comment: comment },
+            {id: cvId, status: "Rejected", comment: comment},
             {
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -83,7 +83,7 @@ export const markNotificationsRead = (notificationIds = [], token) => {
 };
 
 export async function getAllStages(token) {
-    const { data } = await axios.get(`${BASE_URL_GESTIONNAIRE}/stages`, {
+    const {data} = await axios.get(`${BASE_URL_GESTIONNAIRE}/stages`, {
         headers: {
             'Authorization': `Bearer ${token}`
         }
@@ -98,4 +98,66 @@ export async function getGestionnaireNotifications(token) {
         }
     });
     return data;
+}
+
+
+export async function getStageDetailsByApplication(applicationId, token) {
+    const res = await fetch(`${BASE_URL_GESTIONNAIRE}/applications/${applicationId}/stage`, {
+        method: "GET",
+        headers: {
+            Accept: "application/json",
+            ...(token ? {Authorization: `Bearer ${token}`} : {}),
+        },
+    });
+
+    if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        throw new Error(text || `HTTP ${res.status}`);
+    }
+    return res.json();
+}
+
+/**
+ * Fallback si on reçoit un stageId directement.
+ * Endpoint BE attendu: GET /gestionnaire/stages/{stageId}
+ */
+export async function getStageDetails(stageId, token) {
+    const res = await fetch(`${BASE_URL_GESTIONNAIRE}/stages/${stageId}`, {
+        method: "GET",
+        headers: {
+            Accept: "application/json",
+            ...(token ? {Authorization: `Bearer ${token}`} : {}),
+        },
+    });
+
+    if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        throw new Error(text || `HTTP ${res.status}`);
+    }
+    return res.json();
+}
+
+// ------------------ CANDIDATURES ------------------
+
+/**
+ * Récupère toutes les candidatures étudiantes pour le gestionnaire.
+ * Endpoint: GET /gestionnaire/getCandidatures
+ */
+export async function getStageApplicantsManager(token) {
+    try {
+        const res = await axios.get(`${BASE_URL_GESTIONNAIRE}/getCandidatures`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                Accept: "application/json",
+            },
+        });
+
+        // Ton backend retourne ReturnEntityDTO<List<EtudiantCandidaturesDTO>>
+        // donc on va extraire le champ `data`
+        const data = res.data?.data;
+        return Array.isArray(data) ? data : [];
+    } catch (e) {
+        console.error("Erreur getStageApplicantsManager:", e);
+        return [];
+    }
 }

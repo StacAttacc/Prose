@@ -121,7 +121,8 @@ public class EmployeurService {
     public NotificationsResponseDTO getPostulationNotifications(String employeurEmail) throws Exception {
         try {
             List<PostulationNotification> notifications =
-                    postulationNotificationRepository.findByFirstRecipientReadAtAndCandidature_StageEmployeurEmail(null, employeurEmail);
+                    postulationNotificationRepository
+                            .findByFirstRecipientReadAtAndCandidature_StageEmployeurEmail(null, employeurEmail);
             NotificationGroupDTO group = NotificationGroupDTO.toDTO("postulation", notifications);
             return NotificationsResponseDTO.toDTO(List.of(group));
         } catch (Exception e) {
