@@ -36,8 +36,6 @@ export default function GestionnaireEtuCandidature() {
                 setLoading(true);
                 const data = await getStageApplicantsManager(user?.token);
 
-                console.log("Candidatures reçues:", data);
-
                 const arr = (Array.isArray(data) ? data : []).map((dto) => {
                     const stu = dto?.etudiant || {};
                     const candidatures = Array.isArray(dto?.candidatures) ? dto.candidatures : [];

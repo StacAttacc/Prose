@@ -199,11 +199,6 @@ export default function Notifications() {
                 return;
             }
 
-            if (user.role === "EMPLOYEUR" && stageId) {
-                navigate(defaultNavigatePath(), { state: { openStageId: stageId } });
-                return;
-            }
-
             if (user.role === "GESTIONNAIRE" && !isCandidature && stageId) {
                 navigate("/gestionnaire/list-stages", { state: { openStageId: stageId } });
                 return;
