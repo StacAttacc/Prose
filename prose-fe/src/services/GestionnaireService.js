@@ -89,27 +89,6 @@ export async function getStageDetailsByApplication(applicationId, token) {
     return res.json();
 }
 
-/**
- * Fallback si on reçoit un stageId directement.
- * Endpoint BE attendu: GET /gestionnaire/stages/{stageId}
- */
-export async function getStageDetails(stageId, token) {
-    const res = await fetch(`${BASE_URL_GESTIONNAIRE}/stages/${stageId}`, {
-        method: "GET",
-        headers: {
-            Accept: "application/json",
-            ...(token ? {Authorization: `Bearer ${token}`} : {}),
-        },
-    });
-
-    if (!res.ok) {
-        const text = await res.text().catch(() => "");
-        throw new Error(text || `HTTP ${res.status}`);
-    }
-    return res.json();
-}
-
-
 export async function getStageApplicantsManager(token) {
     try {
         const res = await axios.get(`${BASE_URL_GESTIONNAIRE}/getCandidatures`, {
