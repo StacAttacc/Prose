@@ -172,13 +172,10 @@ export default function Notifications() {
         e?.stopPropagation?.();
         setOpenType(null);
 
-        const stageId = notification?.stage?.id
-            || notification?.stageId
-            || notification?.candidature?.stage?.id;
+        const stageId = notification?.stageId;
+        const candidatureId = notification?.candidatureId;
 
         const isCandidature = Boolean(notification?.candidature || notification?.candidatureId);
-
-        console.log("Notification click:", { notification, stageId, isCandidature });
 
         try {
             await markSingleNotification(notification.id);
@@ -192,11 +189,11 @@ export default function Notifications() {
             setReadCounter(c => c + 1);
 
             if (user.role === "EMPLOYEUR" && isCandidature && stageId) {
-                navigate(`/employeur/stages/${stageId}/candidatures`);
+                navigate(`/employeur/stages/${stageId}/candidatures`, { state: { openCandidatureId: candidatureId } });
                 return;
             }
 
-            if (user.role === "GESTIONNAIRE" && isCandidature && stageId) {
+            else if (user.role === "GESTIONNAIRE" && isCandidature && stageId) {
                 navigate(defaultNavigatePath(), { state: { openStageId: stageId } });
                 return;
             }
