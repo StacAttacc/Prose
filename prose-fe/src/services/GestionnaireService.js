@@ -109,12 +109,7 @@ export async function getStageDetails(stageId, token) {
     return res.json();
 }
 
-// ------------------ CANDIDATURES ------------------
 
-/**
- * Récupère toutes les candidatures étudiantes pour le gestionnaire.
- * Endpoint: GET /gestionnaire/getCandidatures
- */
 export async function getStageApplicantsManager(token) {
     try {
         const res = await axios.get(`${BASE_URL_GESTIONNAIRE}/getCandidatures`, {
@@ -124,8 +119,7 @@ export async function getStageApplicantsManager(token) {
             },
         });
 
-        // Ton backend retourne ReturnEntityDTO<List<EtudiantCandidaturesDTO>>
-        // donc on va extraire le champ `data`
+
         const data = res.data?.data;
         return Array.isArray(data) ? data : [];
     } catch (e) {

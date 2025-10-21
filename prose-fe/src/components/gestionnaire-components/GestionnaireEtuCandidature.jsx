@@ -40,7 +40,6 @@ export default function GestionnaireEtuCandidature() {
                         const stg = c?.stage || {};
                         const emp = stg?.employeur || {};
                         const status = (c?.status || "").toUpperCase();
-                        const decision = (c?.decision || "").toUpperCase();
 
                         return {
                             id: c?.id ?? `${stu.id || "stu"}-${i}`,
@@ -49,13 +48,12 @@ export default function GestionnaireEtuCandidature() {
                             stageId: stg?.id ?? null,
                             stage: stg,
                             status,
-                            decision,
                             datePostulation: c?.datePostulation ?? null,
                         };
                     });
 
                     const accepted = applications.some(
-                        (a) => a.status === "APPROUVEE" || a.decision === "APPROUVEE"
+                        (a) => a.status === "APPROUVEE"
                     );
 
                     return {

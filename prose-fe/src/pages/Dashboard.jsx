@@ -47,7 +47,6 @@ export default function Dashboard() {
                                             className="size-11 rounded-full outline -outline-offset-1 outline-white/10 h-19 w-10"/>
                                     </button>
                                     <p className="text-white pl-4 text-2xl">Prose</p>
-                                    <h1></h1>
                                 </div>
                             </div>
                             <div className="ml-auto">
