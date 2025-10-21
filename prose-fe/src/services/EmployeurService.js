@@ -30,7 +30,7 @@ export async function getStageApplicants(stageId, token) {
     );
 }
 
-export async function getCandidatureNotifications(employeurEmail, token) {
+export async function getEmployeurCandidatureNotifications(employeurEmail, token) {
     const res = await fetch(`${API}/employeur/notifications/postulations/${encodeURIComponent(employeurEmail)}`, {
         method: "GET",
         headers: {

@@ -8,7 +8,7 @@ import {
     markNotificationsRead as markNotificationsReadGestionnaire
 } from "../services/GestionnaireService.js";
 import {
-    getCandidatureNotifications,
+    getEmployeurCandidatureNotifications,
     markNotificationRead as markNotificationReadEmployeur,
     markNotificationsRead as markNotificationsReadEmployeur
 } from "../services/EmployeurService.js";
@@ -82,7 +82,7 @@ export default function Notifications() {
             if (user.role === "GESTIONNAIRE") {
                 raw = await getGestionnaireNotifications(user.token);
             } else if (user.role === "EMPLOYEUR") {
-                raw = await getCandidatureNotifications(user.email, user.token);
+                raw = await getEmployeurCandidatureNotifications(user.email, user.token);
             } else {
                 raw = null;
             }
