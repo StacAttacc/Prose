@@ -253,7 +253,7 @@ export default function Notifications() {
     }
 
     function labelForKey(key) {
-        if (key === "stage") return `Offre(s) de stage à approuver`;
+        if (key === "stage") return `offre(s) de stage à approuver`;
         if (key === "postulation") return `candidature(s) reçue(s)`;
         return `${key} notification(s)`;
     }
@@ -274,8 +274,8 @@ export default function Notifications() {
                                 !
                             </div>
                             <div className="min-w-0">
-                                <div className="text-sm font-medium text-gray-900 truncate">
-                                    {shortText(n.message || n.senderEmail || "No message", 80)}
+                                <div className="text-sm font-medium text-gray-900 whitespace-normal break-words overflow-hidden line-clamp-2">
+                                    {shortText(n.message || n.senderEmail || "No message", 200)}
                                 </div>
                                 <div className="text-xs text-gray-500">
                                     {n.createdAt ? new Date(n.createdAt).toLocaleString() : n.createdAtString || "Unknown time"}
