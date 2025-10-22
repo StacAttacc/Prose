@@ -16,14 +16,28 @@ const unwrapArray = (res) => {
 };
 
 function buildSearchFields(app) {
-    const email = app?.email ?? app?.etudiant?.email ?? "";
-    const fullName =
-        app?.fullName ??
-        [app?.firstName, app?.lastName].filter(Boolean).join(" ").trim() ??
-        [app?.etudiant?.firstName, app?.etudiant?.lastName].filter(Boolean).join(" ").trim() ??
+    const email =
+        app?.email ??
+        app?.etudiant?.email ??
+        app?.contactEmail ??
         "";
+
+    const nameCandidates = [
+        app?.fullName,
+        [app?.firstName, app?.lastName].filter(Boolean).join(" ").trim(),
+        app?.etudiant?.fullName,
+        [app?.etudiant?.firstName, app?.etudiant?.lastName].filter(Boolean).join(" ").trim(),
+        app?.name,
+        app?.etudiant?.name,
+    ]
+        .map((s) => (s == null ? "" : String(s).trim()))
+        .filter((s) => s.length > 0);
+
+    const fullName = nameCandidates[0] || "";
+
     return { email, fullName };
 }
+
 
 const StageApplicantsPage = () => {
     const { id } = useParams();

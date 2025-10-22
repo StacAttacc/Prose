@@ -8,6 +8,7 @@ import com.AL565.prose.model.notifications.StageNotification;
 import com.AL565.prose.repository.CvRepository;
 import com.AL565.prose.repository.NotificationRepository;
 import com.AL565.prose.repository.PostulationNotificationRepository;
+import com.AL565.prose.security.JwtTokenProvider;
 import com.AL565.prose.service.EmployeurService;
 import com.AL565.prose.service.EtudiantService;
 import com.AL565.prose.service.dto.*;
@@ -67,6 +68,9 @@ class GestionnaireControllerTest {
 
     @MockitoBean
     private CvRepository cvRepository;
+
+    @MockitoBean
+    private JwtTokenProvider jwtTokenProvider;
 
     @Autowired
     ObjectMapper objectMapper;
