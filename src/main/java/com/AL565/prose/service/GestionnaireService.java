@@ -3,10 +3,13 @@ package com.AL565.prose.service;
 import com.AL565.prose.model.*;
 import com.AL565.prose.model.notifications.Notification;
 import com.AL565.prose.model.notifications.NotificationType;
+import com.AL565.prose.model.notifications.PostulationNotification;
 import com.AL565.prose.repository.*;
 import com.AL565.prose.security.exceptions.CvExceptions.*;
 import com.AL565.prose.security.exceptions.NotificationExceptions;
 import com.AL565.prose.service.dto.*;
+import com.AL565.prose.service.dto.notifications.NotificationGroupDTO;
+import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import com.AL565.prose.service.exceptions.FailedToRetrieveStagesException;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -32,6 +36,8 @@ public class GestionnaireService {
     private final PasswordEncoder passwordEncoder;
     private final CandidatureRepository candidatureRepository;
     private final NotificationRepository notificationRepository;
+    private final PostulationNotificationRepository postulastionNotificationRepository;
+    private final NotificationsHelper notificationsHelper;
 
     public void saveGestionnaire(GestionnairePasswordDTO dto) {
         if (gestionnaireRepository.findByCredentials_Username(dto.getEmail()).isPresent()) {
@@ -150,21 +156,40 @@ public class GestionnaireService {
         return etudiantCandidaturesDTO;
     }
 
-    public StageNotificationDTO getStageNotifications() throws Exception {
+    public NotificationsResponseDTO getGestionnaireNotifications() throws Exception {
         try {
-            List<Notification> notifications = notificationRepository
-                    .findNotificationsByTypeAndReadAt(NotificationType.STAGE_NOTIFICATION, null);
-            return new StageNotificationDTO(notifications, notifications.size());
+                List<Notification> stages = notificationRepository
+                        .findNotificationsByTypeAndFirstRecipientReadAt(NotificationType.STAGE_NOTIFICATION, null);
+                List<Notification> postulations = notificationRepository
+                        .findNotificationsByTypeAndSecondRecipientReadAt(NotificationType.POSTULATION_NOTIFICATION, null);
+
+                NotificationGroupDTO stagesGroup = NotificationGroupDTO
+                        .toDTO(NotificationType.STAGE_NOTIFICATION.getDisplayName(), stages);
+                NotificationGroupDTO postulationGroup = NotificationGroupDTO
+                        .toDTO(NotificationType.POSTULATION_NOTIFICATION.getDisplayName(), postulations);
+
+            return NotificationsResponseDTO.toDTO(List.of(stagesGroup, postulationGroup));
         } catch (Exception e) {
             throw new NotificationExceptions.NotificationFetchException();
         }
     }
 
     public void markNotificationAsRead(Long notificationId) throws Exception {
+        Notification notification = notificationRepository.findById(notificationId)
+                .orElseThrow(NotificationExceptions.NotificationFetchException::new);
+        if (notification.getType() == NotificationType.POSTULATION_NOTIFICATION) {
+            markPostulationAsReadBySecondRecipient(notificationId);
+        } else {
+            notificationsHelper.markNotificationAsReadByFirstRecipient(notificationId);
+        }
+    }
+
+    @Transactional
+    public void markPostulationAsReadBySecondRecipient(Long notificationId) throws Exception {
         try {
-            Notification notification = notificationRepository.findById(notificationId)
+            PostulationNotification notification = postulastionNotificationRepository.findById(notificationId)
                     .orElseThrow(NotificationExceptions.NotificationFetchException::new);
-            notification.setReadAt(java.time.OffsetDateTime.now().toLocalDateTime());
+            notification.setSecondRecipientReadAt(OffsetDateTime.now().toLocalDateTime());
             notificationRepository.save(notification);
         } catch (Exception e) {
             throw new NotificationExceptions.NotificationFetchException();

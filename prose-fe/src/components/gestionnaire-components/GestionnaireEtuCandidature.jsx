@@ -4,9 +4,12 @@ import ErrorBanner from "../display-components/ErrorBanner.jsx";
 import {getStageApplicantsManager} from "../../services/GestionnaireService.js";
 import StageDetailsModal from "../display-components/StageDetailsModal.jsx";
 import ApplicationsModal from "../display-components/ApplicationsModal.jsx";
+import {useLocation, useNavigate} from "react-router-dom";
 
 export default function GestionnaireEtuCandidature() {
     const {user} = useAuth();
+    const location = useLocation();
+    const navigate = useNavigate();
 
     const [students, setStudents] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -20,6 +23,7 @@ export default function GestionnaireEtuCandidature() {
         setSelectedStage(stage);
         setIsStageModalOpen(true);
     };
+
     const closeStageModal = () => {
         setSelectedStage(null);
         setIsStageModalOpen(false);
@@ -76,6 +80,33 @@ export default function GestionnaireEtuCandidature() {
         })();
         return () => (mounted = false);
     }, [user?.token]);
+
+    useEffect(() => {
+        if (loading || modalStudent) return;
+
+        const raw =
+            location?.state?.openEtudiantId ??
+            location?.state?.openStudentId;
+        if (!raw) return;
+
+        const id = String(raw);
+        const student = (students || []).find((s) => String(s.id) === id);
+        if (student) {
+            if (tab !== "APPLIED") setTab("APPLIED");
+            setModalStudent(student);
+        }
+
+        navigate(location.pathname, { replace: true, state: {} });
+    }, [
+        loading,
+        students,
+        modalStudent,
+        tab,
+        location?.state?.openEtudiantId,
+        location?.state?.openStudentId,
+        navigate,
+        location.pathname,
+    ]);
 
     const partition = useMemo(() => {
         const zero = [], applied = [], approved = [];
