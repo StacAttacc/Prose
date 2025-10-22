@@ -3,14 +3,19 @@ import { useAuth } from "../../context/AuthContext";
 import {getAllStages, submitStageDecision} from "../../services/GestionnaireService";
 import StageDetailsModal from "../display-components/StageDetailsModal";
 import ErrorBanner from "../display-components/ErrorBanner.jsx";
+import { useLocation, useNavigate } from "react-router-dom";
+
 
 export default function GestRechercheStages() {
   const { user } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [stages, setStages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedStage, setSelectedStage] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const[isProcessing, setIsProcessing] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [locationFilter, setLocationFilter] = useState("");
@@ -31,7 +36,19 @@ export default function GestRechercheStages() {
     fetchAllStages();
   }, [user.token]);
 
-  const filteredStages = useMemo(() => {
+    useEffect(() => {
+        const openStageId = location?.state?.openStageId;
+        if (!openStageId || stages.length === 0) return;
+
+        const found = stages.find(s => String(s.id) === String(openStageId));
+        if (found) {
+            setSelectedStage(found);
+            setIsModalOpen(true);
+            navigate(location.pathname, { replace: true, state: {} });
+        }
+    }, [location?.state?.openStageId, stages, navigate, location?.pathname]);
+
+    const filteredStages = useMemo(() => {
     return stages.filter(stage => {
       const matchesSearch = stage.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           stage.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -57,6 +74,36 @@ export default function GestRechercheStages() {
     setIsModalOpen(true);
   };
 
+  const handleApproveStage = async (stage) => {
+    setIsProcessing(true);
+    try {
+      await submitStageDecision(stage.id, { approved: true }, user.token);
+      setStages(stages.map(s => s.id === stage.id ? { ...s, status: "APPROUVEE" } : s));
+      closeModal();
+    } catch (error) {
+      console.error("Erreur lors de l'approbation:", error);
+      setError("Erreur lors de l'approbation du stage");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleRejectStage = async (stage, rejectionReason) => {
+    setIsProcessing(true);
+    try {
+      await submitStageDecision(stage.id, {
+        approved: false,
+        reason: rejectionReason
+      }, user.token);
+      setStages(stages.map(s => s.id === stage.id ? { ...s, status: "REJETEE" } : s));
+      closeModal();
+    } catch (error) {
+      console.error("Erreur lors du rejet:", error);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedStage(null);
@@ -77,8 +124,6 @@ export default function GestRechercheStages() {
         return 'bg-green-100 text-green-800';
       case 'REJETEE':
         return 'bg-red-100 text-red-800';
-      case 'PUBLIEE':
-        return 'bg-blue-100 text-blue-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -92,8 +137,6 @@ export default function GestRechercheStages() {
         return 'Approuvée';
       case 'REJETEE':
         return 'Rejetée';
-      case 'PUBLIEE':
-        return 'Publiée';
       default:
         return status;
     }
@@ -226,9 +269,6 @@ export default function GestRechercheStages() {
                 <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getStatusColor(stage.status)}`}>
                   {getStatusText(stage.status)}
                 </span>
-                <button className="text-teal-600 hover:text-teal-800 font-medium">
-                  Voir détails →
-                </button>
               </div>
             </div>
           ))}
@@ -238,6 +278,8 @@ export default function GestRechercheStages() {
       <StageDetailsModal
         stage={selectedStage}
         isOpen={isModalOpen}
+        onApprove={handleApproveStage}
+        onReject={handleRejectStage}
         onClose={closeModal}
         showManagementButtons={true}
       />

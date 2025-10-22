@@ -2,9 +2,10 @@ package com.AL565.prose.controller;
 
 import com.AL565.prose.security.JwtTokenProvider;
 import com.AL565.prose.service.EtudiantService;
+import com.AL565.prose.service.dto.*;
+import com.AL565.prose.service.exceptions.AlreadyAppliedToStageException;
 import com.AL565.prose.service.dto.CandidatureDTO;
 import com.AL565.prose.service.dto.EtudiantCvDTO;
-import com.AL565.prose.security.exceptions.CvExceptions;
 import com.AL565.prose.service.dto.EtudiantPasswordDTO;
 import com.AL565.prose.service.dto.ReturnEntityDTO;
 import com.AL565.prose.service.dto.StageDTO;
@@ -19,8 +20,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/etudiant")
@@ -61,8 +60,8 @@ public class EtudiantController {
 
     @GetMapping("/telecharger-cv/{email}")
     public ResponseEntity<EtudiantCvDTO> telecharger(@PathVariable String email) {
-        Optional<EtudiantCvDTO> cv = etudiantService.getByEmail(email);
-        return ResponseEntity.ok(Optional.of(cv).get().orElse(null));
+        EtudiantCvDTO cv = etudiantService.getCvByEmail(email);
+        return ResponseEntity.ok(cv);
     }
 
     @GetMapping("/stages/approuves")
@@ -84,12 +83,12 @@ public class EtudiantController {
             String token = authHeader.replace("Bearer ", "");
             String email = jwtTokenProvider.getEmailFromJWT(token);
 
-            // Construire le DTO avec ou sans lettre de motivation
+            EtudiantDTO etudiantDTO = etudiantService.getByEmail(email);
+
             CandidatureDTO.CandidatureDTOBuilder builder = CandidatureDTO.builder()
                     .stageId(stageId)
-                    .etudiantEmail(email);
+                    .etudiant(etudiantDTO);
 
-            // Ajouter la lettre de motivation si elle est fournie
             if (motivationLetter != null && !motivationLetter.isEmpty()) {
                 builder.motivationLetterData(motivationLetter.getBytes())
                        .motivationLetterFileName(motivationLetter.getOriginalFilename())
@@ -101,9 +100,10 @@ public class EtudiantController {
 
             etudiantService.createCandidature(candidatureDTO);
             return ResponseEntity.status(HttpStatus.CREATED).body("Candidature soumise avec succès");
+        } catch (AlreadyAppliedToStageException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Erreur lors de la soumission de la candidature: ");
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Erreur lors de la soumission de la candidature: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erreur interne du serveur.");
         }
     }
 
@@ -152,14 +152,10 @@ public class EtudiantController {
             String token = authHeader.replace("Bearer ", "");
             String email = jwtTokenProvider.getEmailFromJWT(token);
 
-            Optional<EtudiantCvDTO> cvInfo = etudiantService.getByEmail(email);
+            EtudiantCvDTO cvInfo = etudiantService.getCvByEmail(email);
 
-            if (cvInfo.isPresent()) {
-                return ResponseEntity.ok(cvInfo.get());
-            } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-            }
-        } catch (Exception e) {
+            return ResponseEntity.ok(cvInfo);
+        } catch (InternalError err) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }

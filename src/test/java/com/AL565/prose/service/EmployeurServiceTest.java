@@ -2,9 +2,10 @@ package com.AL565.prose.service;
 
 import com.AL565.prose.model.Employeur;
 import com.AL565.prose.model.Stage;
-import com.AL565.prose.repository.EmployeurRepository;
-import com.AL565.prose.repository.ProseUserRepository;
-import com.AL565.prose.repository.StageRepository;
+import com.AL565.prose.model.*;
+import com.AL565.prose.model.auth.Credentials;
+import com.AL565.prose.repository.*;
+import com.AL565.prose.service.dto.CandidatureDTO;
 import com.AL565.prose.service.dto.EmployeurDTO;
 import com.AL565.prose.service.dto.EmployeurPasswordDTO;
 import com.AL565.prose.service.dto.StageDTO;
@@ -17,6 +18,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,18 +32,18 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class EmployeurServiceTest {
-
     @Mock
     private ProseUserRepository proseUserRepository;
-
     @Mock
     private EmployeurRepository employeurRepository;
-
-    @Mock
-    private PasswordEncoder passwordEncoder;
-
     @Mock
     private StageRepository stageRepository;
+    @Mock
+    private CandidatureRepository candidatureRepository;
+    @Mock
+    private PasswordEncoder passwordEncoder;
+    @Mock
+    private NotificationRepository notificationRepository;
 
     @InjectMocks
     private EmployeurService employeurService;
@@ -71,7 +75,6 @@ class EmployeurServiceTest {
     void createStage() {
         Employeur employeur = new Employeur(8L, "Umberto", "Macaco", "Zac inc", "email");
         EmployeurDTO empDto = new EmployeurDTO(employeur, null);
-
 
         var dto = StageDTO.builder()
                 .title("Stagiaire Java")
@@ -108,10 +111,40 @@ class EmployeurServiceTest {
 
         assertThatThrownBy(() -> employeurService.createStage(null))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("dto");
+                .hasMessageContaining("stage must not be null");
 
         verifyNoInteractions(stageRepository);
     }
 
+    @Test
+    void getPostulations() throws Exception {
+        Stage stage = new Stage(1L, "Démissioner", "Partir immédiatement!", "Rien", new ArrayList<>(), LocalDate.now(), LocalDate.now(), "Chez vous", null, "Remote", "0$", OfferStatus.APPROUVEE, "jemployeur1@gmail.com", OffsetDateTime.now(), OffsetDateTime.now());
 
+        when(stageRepository.findById(anyLong())).thenReturn(Optional.of(stage));
+        when(candidatureRepository.findAllByStage_Id(anyLong())).thenReturn(Optional.of(List.of(
+                new Candidature(1L,
+                        new Etudiant("John", "Doe", Credentials.builder().username("john@doe.com").password("password123").build(), Discipline.INFORMATIQUE),
+                        null,
+                        null,
+                        stage,
+                        LocalDateTime.now(),
+                        OfferStatus.SOUMISE,
+                        null,
+                        null),
+                new Candidature(2L,
+                        new Etudiant("Umberto", "Larrios", Credentials.builder().username("umberto@doe.com").password("password123").build(), Discipline.INFORMATIQUE),
+                        null,
+                        null,
+                        stage,
+                        LocalDateTime.now(),
+                        OfferStatus.SOUMISE,
+                        null,
+                        null)
+        )));
+
+
+        List<CandidatureDTO> candidatures = employeurService.getStageCandidatures(stage.getId());
+
+        assertThat(candidatures.size()).isEqualTo(2);
+    }
 }

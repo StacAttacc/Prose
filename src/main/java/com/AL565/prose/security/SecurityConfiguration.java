@@ -5,7 +5,6 @@ import com.AL565.prose.repository.ProseUserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
@@ -29,7 +28,6 @@ import org.springframework.web.filter.CorsFilter;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.springframework.boot.autoconfigure.security.servlet.PathRequest.toH2Console;
 import static org.springframework.http.HttpMethod.*;
 
 @Configuration
@@ -64,6 +62,11 @@ public class SecurityConfiguration {
                         .requestMatchers(POST, ETUDIANT_REGISTER_PATH).permitAll()
                         .requestMatchers(POST, EMPLOYEUR_REGISTER_PATH).permitAll()
                         .requestMatchers(POST, PROFESSEUR_REGISTER_PATH).permitAll()
+
+
+                        .requestMatchers(HttpMethod.GET, "/etudiant/telecharger-cv/**")
+                        .hasAnyAuthority(Role.EMPLOYEUR.name(), Role.ETUDIANT.name())
+
 
                         // Use Role enum names for authorities
                         .requestMatchers(GET, USER_PATH).hasAnyAuthority(Role.ETUDIANT.name(), Role.EMPLOYEUR.name(), Role.GESTIONNAIRE.name())
@@ -140,12 +143,12 @@ public class SecurityConfiguration {
     @Bean
     public AuthenticationManager authenticationManager(
             AuthenticationConfiguration authenticationConfiguration
-    ) throws Exception{
+    ) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
     @Bean
-    PasswordEncoder passwordEncoder(){
+    PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 }

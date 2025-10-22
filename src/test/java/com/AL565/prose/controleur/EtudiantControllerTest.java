@@ -4,6 +4,8 @@ import com.AL565.prose.controller.EtudiantController;
 import com.AL565.prose.model.Discipline;
 import com.AL565.prose.model.Employeur;
 import com.AL565.prose.repository.EtudiantRepository;
+import com.AL565.prose.repository.NotificationRepository;
+import com.AL565.prose.repository.PostulationNotificationRepository;
 import com.AL565.prose.repository.ProseUserRepository;
 import com.AL565.prose.security.JwtTokenProvider;
 import com.AL565.prose.service.EmployeurService;
@@ -24,6 +26,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
+import java.time.LocalDate;
 import java.util.*;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -57,9 +60,14 @@ class EtudiantControllerTest {
     private ProseUserRepository proseUserRepository;
 
     @MockitoBean
+    private NotificationRepository notificationRepository;
+
+    @MockitoBean
+    private PostulationNotificationRepository postulationNotificationRepository;
+
+    @MockitoBean
     private JwtTokenProvider jwtTokenProvider;
 
-    // Tests pour /register
     @Test
     void inscrireEtudiant_success() throws Exception {
         EtudiantPasswordDTO etudiant = createTestEtudiantDTO();
@@ -108,7 +116,6 @@ class EtudiantControllerTest {
         Assertions.assertThat(result.getResponse().getContentAsString()).isEqualTo("Erreur lors de l'inscription");
     }
 
-    // Tests pour /televerser-cv
     @Test
     void televerserCv_success() throws Exception {
         MockMultipartFile cvFile = new MockMultipartFile(
@@ -131,23 +138,21 @@ class EtudiantControllerTest {
         verify(etudiantService, times(1)).saveCv(any(), eq("test@test.com"), eq("2024-01-01"));
     }
 
-    // Tests pour /telecharger-cv/{email}
     @Test
     void telechargerCv_success() throws Exception {
         EtudiantCvDTO cvDTO = new EtudiantCvDTO();
         cvDTO.setName("cv.pdf");
         cvDTO.setType("application/pdf");
 
-        when(etudiantService.getByEmail("test@test.com")).thenReturn(Optional.of(cvDTO));
+        when(etudiantService.getCvByEmail("test@test.com")).thenReturn(null);
 
         mockMvc.perform(get("/etudiant/telecharger-cv/test@test.com")
                 .with(csrf()))
                 .andExpect(status().isOk());
 
-        verify(etudiantService, times(1)).getByEmail("test@test.com");
+        verify(etudiantService, times(1)).getCvByEmail("test@test.com");
     }
 
-    // Tests pour /stages/approuves
     @Test
     void getEtudiantStages_success() throws Exception {
         List<StageDTO> stages = new ArrayList<>();
@@ -179,10 +184,10 @@ class EtudiantControllerTest {
                 .andExpect(jsonPath("$.message").value("Erreur lors de la récupération des stages approuvés"));
     }
 
-    // Tests pour /candidature
     @Test
     void soumettreCandidat_success() throws Exception {
         when(jwtTokenProvider.getEmailFromJWT(anyString())).thenReturn("test@test.com");
+        when(etudiantService.getByEmail("test@test.com")).thenReturn(createTestEtudiantDTOForCandidature());
         doNothing().when(etudiantService).createCandidature(any());
 
         mockMvc.perform(multipart("/etudiant/candidature")
@@ -205,6 +210,7 @@ class EtudiantControllerTest {
         );
 
         when(jwtTokenProvider.getEmailFromJWT(anyString())).thenReturn("test@test.com");
+        when(etudiantService.getByEmail("test@test.com")).thenReturn(createTestEtudiantDTOForCandidature());
         doNothing().when(etudiantService).createCandidature(any());
 
         mockMvc.perform(multipart("/etudiant/candidature")
@@ -221,17 +227,17 @@ class EtudiantControllerTest {
     @Test
     void soumettreCandidat_error() throws Exception {
         when(jwtTokenProvider.getEmailFromJWT(anyString())).thenReturn("test@test.com");
+        when(etudiantService.getByEmail("test@test.com")).thenReturn(createTestEtudiantDTOForCandidature());
         doThrow(new Exception("Erreur de candidature")).when(etudiantService).createCandidature(any());
 
         mockMvc.perform(multipart("/etudiant/candidature")
                 .param("stageId", "1")
                 .header("Authorization", "Bearer token123")
                 .with(csrf()))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().string("Erreur lors de la soumission de la candidature: Erreur de candidature"));
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().string("Erreur interne du serveur."));
     }
 
-    // Tests pour /candidature/check/{stageId}
     @Test
     void checkIfAlreadyApplied_returnsTrue() throws Exception {
         when(jwtTokenProvider.getEmailFromJWT(anyString())).thenReturn("test@test.com");
@@ -271,7 +277,6 @@ class EtudiantControllerTest {
                 .andExpect(jsonPath("$.hasApplied").value(false));
     }
 
-    // Tests pour /cv/status
     @Test
     void checkCvStatus_cvApproved() throws Exception {
         when(jwtTokenProvider.getEmailFromJWT(anyString())).thenReturn("test@test.com");
@@ -311,7 +316,6 @@ class EtudiantControllerTest {
                 .andExpect(jsonPath("$.available").value(false));
     }
 
-    // Tests pour /cv/info
     @Test
     void getCvInfo_cvExists() throws Exception {
         EtudiantCvDTO cvDTO = new EtudiantCvDTO();
@@ -319,7 +323,7 @@ class EtudiantControllerTest {
         cvDTO.setType("application/pdf");
 
         when(jwtTokenProvider.getEmailFromJWT(anyString())).thenReturn("test@test.com");
-        when(etudiantService.getByEmail("test@test.com")).thenReturn(Optional.of(cvDTO));
+        when(etudiantService.getCvByEmail("test@test.com")).thenReturn(cvDTO);
 
         mockMvc.perform(get("/etudiant/cv/info")
                 .header("Authorization", "Bearer token123")
@@ -327,25 +331,26 @@ class EtudiantControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("cv.pdf"));
 
-        verify(etudiantService, times(1)).getByEmail("test@test.com");
+        verify(etudiantService, times(1)).getCvByEmail("test@test.com");
     }
 
     @Test
     void getCvInfo_cvNotFound() throws Exception {
         when(jwtTokenProvider.getEmailFromJWT(anyString())).thenReturn("test@test.com");
-        when(etudiantService.getByEmail("test@test.com")).thenReturn(Optional.empty());
+        when(etudiantService.getCvByEmail("test@test.com")).thenReturn(null);
 
         mockMvc.perform(get("/etudiant/cv/info")
-                .header("Authorization", "Bearer token123")
-                .with(csrf()))
-                .andExpect(status().isNotFound());
+                        .header("Authorization", "Bearer token123")
+                        .with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(content().string(""));
 
-        verify(etudiantService, times(1)).getByEmail("test@test.com");
+        verify(etudiantService, times(1)).getCvByEmail("test@test.com");
     }
 
     @Test
     void getCvInfo_error() throws Exception {
-        when(jwtTokenProvider.getEmailFromJWT(anyString())).thenThrow(new RuntimeException("Erreur JWT"));
+        when(jwtTokenProvider.getEmailFromJWT(anyString())).thenThrow(new InternalError("Erreur JWT"));
 
         mockMvc.perform(get("/etudiant/cv/info")
                 .header("Authorization", "Bearer token123")
@@ -394,8 +399,8 @@ class EtudiantControllerTest {
                 .description("Développement d'applications web modernes")
                 .location("Montréal, QC")
                 .compensation("25$/h")
-                .startDate("2025-05-01")
-                .endDate("2025-08-31")
+                .startDate(LocalDate.now())
+                .endDate(LocalDate.now())
                 .skills(Arrays.asList("React", "Node.js", "MongoDB"))
                 .employeur(employeur)
                 .build();
@@ -410,5 +415,15 @@ class EtudiantControllerTest {
 
         candidatures.add(candidature);
         return candidatures;
+    }
+
+    private EtudiantDTO createTestEtudiantDTOForCandidature() {
+        EtudiantDTO etudiant = new EtudiantDTO();
+        etudiant.setId(1L);
+        etudiant.setFirstName("Jean");
+        etudiant.setLastName("Dupont");
+        etudiant.setEmail("test@test.com");
+        etudiant.setDiscipline(Discipline.INFORMATIQUE);
+        return etudiant;
     }
 }

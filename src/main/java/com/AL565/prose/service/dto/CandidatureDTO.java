@@ -17,14 +17,15 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class CandidatureDTO {
+    private Long id;
     private Long stageId;
-    private String etudiantEmail;
     private byte[] motivationLetterData;
     private String motivationLetterFileName;
     private String motivationLetterContentType;
     private long motivationLetterSize;
+    private EtudiantDTO etudiant;
 
-    public Candidature toModel (Etudiant etudiant, CV cv, Stage stage) {
+    public Candidature toModel(Etudiant etudiant, CV cv, Stage stage) {
         return Candidature.builder()
                 .etudiant(etudiant)
                 .cv(cv)
@@ -33,5 +34,20 @@ public class CandidatureDTO {
                 .dateCandidature(LocalDateTime.now())
                 .status(OfferStatus.SOUMISE)
                 .build();
+    }
+
+    public static CandidatureDTO toDTO(Candidature candidature) {
+        Etudiant etu = candidature.getEtudiant();
+
+        return CandidatureDTO.builder()
+                .id(candidature.getId())
+                .stageId(candidature.getStage().getId())
+                .etudiant(EtudiantDTO.toDTO(etu, null))
+                .motivationLetterData(candidature.getMotivationLetter())
+                .build();
+    }
+
+    public String getEtudiantEmail() {
+        return etudiant.getEmail();
     }
 }

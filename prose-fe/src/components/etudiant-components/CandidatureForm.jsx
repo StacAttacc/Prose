@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext.jsx';
 import { checkCvStatus, checkIfAlreadyApplied, submitCandidature, getCvInfo } from '../../services/EtudiantService.js';
 
 export default function CandidatureForm({ stage, onClose, onSuccess }) {
-  const { user } = useAuth();
   const [motivationLetterFile, setMotivationLetterFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -180,21 +178,34 @@ export default function CandidatureForm({ stage, onClose, onSuccess }) {
               )}
 
               <div className="mb-4">
-                <label htmlFor="motivationLetter" className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Lettre de motivation (PDF) - Optionnel
                 </label>
-                <input
-                  id="motivationLetter"
-                  type="file"
-                  accept=".pdf"
-                  onChange={handleFileChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-                />
-                {motivationLetterFile && (
-                  <p className="mt-2 text-sm text-green-600">
-                    ✓ Fichier sélectionné: {motivationLetterFile.name} ({(motivationLetterFile.size / 1024).toFixed(2)} KB)
-                  </p>
-                )}
+                <div className="flex items-center gap-4">
+                  <input
+                    id="motivationLetter"
+                    type="file"
+                    accept=".pdf"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                  <label
+                    htmlFor="motivationLetter"
+                    className="px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 cursor-pointer transition-colors inline-block"
+                  >
+                    Choisir un fichier
+                  </label>
+                  {motivationLetterFile && (
+                    <span className="text-sm text-green-600">
+                      ✓ {motivationLetterFile.name} ({(motivationLetterFile.size / 1024).toFixed(2)} KB)
+                    </span>
+                  )}
+                  {!motivationLetterFile && (
+                    <span className="text-sm text-gray-500">
+                      Aucun fichier choisi
+                    </span>
+                  )}
+                </div>
                 <p className="mt-2 text-xs text-gray-500">
                   Format accepté: PDF uniquement. Taille maximale: 5MB
                 </p>

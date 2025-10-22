@@ -64,4 +64,8 @@ public class Candidature {
 
     @Column(name = "decision", length = 500)
     private String decision;
+
+    public Long getStageId() {
+        return stage.getId();
+    }
 }

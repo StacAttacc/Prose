@@ -6,6 +6,8 @@ import com.AL565.prose.security.exceptions.AuthenticationException;
 import com.AL565.prose.security.exceptions.UserNotFoundException;
 import com.AL565.prose.service.AuthService;
 import com.AL565.prose.service.EmployeurService;
+import com.AL565.prose.service.EtudiantService;
+import com.AL565.prose.service.GestionnaireService;
 import com.AL565.prose.service.dto.EtudiantPasswordDTO;
 import com.AL565.prose.service.dto.LoginRequestDTO;
 import com.AL565.prose.service.dto.ProseUserDTO;
@@ -20,7 +22,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -41,6 +42,12 @@ class AuthControllerTest {
 
     @MockitoBean
     private EmployeurService employeurService;
+
+    @MockitoBean
+    private EtudiantService etudiantService;
+
+    @MockitoBean
+    private GestionnaireService gestionnaireService;
 
     @Test
     void login_success() throws Exception {

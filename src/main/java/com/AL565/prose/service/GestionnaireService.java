@@ -1,18 +1,15 @@
 package com.AL565.prose.service;
 
-import com.AL565.prose.model.Employeur;
-import com.AL565.prose.model.OfferStatus;
-import com.AL565.prose.model.Stage;
-import com.AL565.prose.model.CV;
-import com.AL565.prose.model.CvStatus;
-import com.AL565.prose.repository.EmployeurRepository;
-import com.AL565.prose.repository.CvRepository;
-import com.AL565.prose.repository.GestionnaireRepository;
-import com.AL565.prose.repository.StageRepository;
+import com.AL565.prose.model.*;
+import com.AL565.prose.model.notifications.Notification;
+import com.AL565.prose.model.notifications.NotificationType;
+import com.AL565.prose.model.notifications.PostulationNotification;
+import com.AL565.prose.repository.*;
 import com.AL565.prose.security.exceptions.CvExceptions.*;
-import com.AL565.prose.service.dto.GestionnaireCvDTO;
-import com.AL565.prose.service.dto.GestionnairePasswordDTO;
-import com.AL565.prose.service.dto.StageDTO;
+import com.AL565.prose.security.exceptions.NotificationExceptions;
+import com.AL565.prose.service.dto.*;
+import com.AL565.prose.service.dto.notifications.NotificationGroupDTO;
+import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import com.AL565.prose.service.exceptions.FailedToRetrieveStagesException;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +17,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -33,7 +32,12 @@ public class GestionnaireService {
     private final GestionnaireRepository gestionnaireRepository;
     private final StageRepository stageRepository;
     private final EmployeurRepository employeurRepository;
+    private final EtudiantRepository etudiantRepository;
     private final PasswordEncoder passwordEncoder;
+    private final CandidatureRepository candidatureRepository;
+    private final NotificationRepository notificationRepository;
+    private final PostulationNotificationRepository postulastionNotificationRepository;
+    private final NotificationsHelper notificationsHelper;
 
     public void saveGestionnaire(GestionnairePasswordDTO dto) {
         if (gestionnaireRepository.findByCredentials_Username(dto.getEmail()).isPresent()) {
@@ -117,6 +121,78 @@ public class GestionnaireService {
             }).toList();
         } catch (Exception e) {
             throw new FailedToRetrieveStagesException("Échec lors de la récupération des stages.", e);
+        }
+    }
+
+    @Transactional
+    public List<EtudiantCandidaturesDTO> getAllEtudiantsCandidatures() {
+        List<Etudiant> etudiants =  etudiantRepository.findAll();
+
+        List <EtudiantCandidaturesDTO> etudiantCandidaturesDTO = new ArrayList<>();
+
+        etudiants.forEach(etudiant -> {
+            List<Candidature> candidatures = candidatureRepository.findByEtudiant_Credentials_Username(etudiant.getEmail());
+
+            List<EtudiantCandidatureDTO> etudiantCandidature = candidatures.stream().map(candidature -> {
+                Stage stage = stageRepository.findById(candidature.getStageId()).get();
+                Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(stage.getEmployeurEmail());
+                return EtudiantCandidatureDTO.builder()
+                        .stage(StageSimpleDTO.toDTOfromStageDTO(StageDTO.fromModel(stage, employeur)))
+                        .status(candidature.getStatus().toString())
+                        .decision(candidature.getDecision())
+                        .dateDecision(candidature.getDateDecision())
+                        .datePostulation(candidature.getDateCandidature())
+                        .build();
+            }).toList();
+
+            etudiantCandidaturesDTO.add(
+                    EtudiantCandidaturesDTO.builder()
+                            .etudiant(EtudiantDTO.toDTOTokenless(etudiant))
+                            .candidatures(etudiantCandidature)
+                            .build()
+            );
+        });
+
+        return etudiantCandidaturesDTO;
+    }
+
+    public NotificationsResponseDTO getGestionnaireNotifications() throws Exception {
+        try {
+                List<Notification> stages = notificationRepository
+                        .findNotificationsByTypeAndFirstRecipientReadAt(NotificationType.STAGE_NOTIFICATION, null);
+                List<Notification> postulations = notificationRepository
+                        .findNotificationsByTypeAndSecondRecipientReadAt(NotificationType.POSTULATION_NOTIFICATION, null);
+
+                NotificationGroupDTO stagesGroup = NotificationGroupDTO
+                        .toDTO(NotificationType.STAGE_NOTIFICATION.getDisplayName(), stages);
+                NotificationGroupDTO postulationGroup = NotificationGroupDTO
+                        .toDTO(NotificationType.POSTULATION_NOTIFICATION.getDisplayName(), postulations);
+
+            return NotificationsResponseDTO.toDTO(List.of(stagesGroup, postulationGroup));
+        } catch (Exception e) {
+            throw new NotificationExceptions.NotificationFetchException();
+        }
+    }
+
+    public void markNotificationAsRead(Long notificationId) throws Exception {
+        Notification notification = notificationRepository.findById(notificationId)
+                .orElseThrow(NotificationExceptions.NotificationFetchException::new);
+        if (notification.getType() == NotificationType.POSTULATION_NOTIFICATION) {
+            markPostulationAsReadBySecondRecipient(notificationId);
+        } else {
+            notificationsHelper.markNotificationAsReadByFirstRecipient(notificationId);
+        }
+    }
+
+    @Transactional
+    public void markPostulationAsReadBySecondRecipient(Long notificationId) throws Exception {
+        try {
+            PostulationNotification notification = postulastionNotificationRepository.findById(notificationId)
+                    .orElseThrow(NotificationExceptions.NotificationFetchException::new);
+            notification.setSecondRecipientReadAt(OffsetDateTime.now().toLocalDateTime());
+            notificationRepository.save(notification);
+        } catch (Exception e) {
+            throw new NotificationExceptions.NotificationFetchException();
         }
     }
 }

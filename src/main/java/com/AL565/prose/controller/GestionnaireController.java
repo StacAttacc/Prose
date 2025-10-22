@@ -1,13 +1,11 @@
 package com.AL565.prose.controller;
 
+import com.AL565.prose.service.EtudiantService;
 import com.AL565.prose.service.GestionnaireService;
-import com.AL565.prose.service.dto.ReturnEntityDTO;
-import com.AL565.prose.service.dto.RejectionRequestDTO;
-import com.AL565.prose.service.dto.StageDTO;
+import com.AL565.prose.service.dto.*;
+import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import com.AL565.prose.service.dto.CvDecisionDTO;
-import com.AL565.prose.service.dto.GestionnaireCvDTO;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,14 +17,14 @@ import java.util.List;
 public class GestionnaireController {
 
     private final GestionnaireService gestionnaireService;
+    private final EtudiantService etudiantService;
 
     @GetMapping("/stages")
     public ResponseEntity<ReturnEntityDTO<List<StageDTO>>> getAllStages() {
         try {
             List<StageDTO> stages = gestionnaireService.getAllStages();
             return ResponseEntity.ok(new ReturnEntityDTO<>("Liste des stages", stages));
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ReturnEntityDTO<>("Erreur lors de la récupération des stages", null));
         }
     }
@@ -62,16 +60,53 @@ public class GestionnaireController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ReturnEntityDTO<>("Erreur lors du rejet du stage", null));
         }
     }
-  
+
     @PostMapping("/cv/change-status")
-    public ResponseEntity<Void> changeCvStatus(@RequestBody CvDecisionDTO cvDecision) throws Exception {
-        gestionnaireService.changeCvStatus(cvDecision.id, cvDecision.status, cvDecision.comment);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<ReturnEntityDTO<Void>> changeCvStatus(@RequestBody CvDecisionDTO cvDecision) {
+        try {
+            gestionnaireService.changeCvStatus(cvDecision.id, cvDecision.status, cvDecision.comment);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ReturnEntityDTO<>("Erreur lors de la modification du statut du CV", null));
+        }
     }
 
     @GetMapping("/cv/all")
     public ResponseEntity<List<GestionnaireCvDTO>> getAllCvs() throws Exception {
         List<GestionnaireCvDTO> cvs = gestionnaireService.getAllCvs();
         return ResponseEntity.ok(cvs);
+    }
+
+    @GetMapping("/getCandidatures")
+    public ResponseEntity<ReturnEntityDTO<List<EtudiantCandidaturesDTO>>> getAllEtudiantsCandidatures() {
+        try {
+            List<EtudiantCandidaturesDTO> etudiants = gestionnaireService.getAllEtudiantsCandidatures();
+            return ResponseEntity.ok(new ReturnEntityDTO<>("Trouvés", etudiants));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ReturnEntityDTO<>("Erreur interne du serveur", null));
+        }
+    }
+
+    @GetMapping("/notifications/all")
+    public ResponseEntity<ReturnEntityDTO<NotificationsResponseDTO>> getAllNotifications() {
+        try {
+            NotificationsResponseDTO notifications = gestionnaireService.getGestionnaireNotifications();
+            return ResponseEntity.ok(new ReturnEntityDTO<>("notifications: ", notifications));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ReturnEntityDTO<>("Erreur lors de la récupération des notifications", null));
+        }
+    }
+
+    @PutMapping("/notifications/read/{id}")
+    public ResponseEntity<ReturnEntityDTO<Void>> markNotificationAsRead(@PathVariable Long id) {
+        try {
+            gestionnaireService.markNotificationAsRead(id);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ReturnEntityDTO<>("Erreur lors du marquage de la notification comme lue", null));
+        }
     }
 }
