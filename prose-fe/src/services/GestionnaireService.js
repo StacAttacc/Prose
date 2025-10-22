@@ -83,7 +83,16 @@ export const markNotificationsRead = (notificationIds = [], token) => {
 };
 
 export async function getAllStages(token) {
-    const { data } = await axios.get(`${BASE_URL_GESTIONNAIRE}/stages`, {
+    const {data} = await axios.get(`${BASE_URL_GESTIONNAIRE}/stages`, {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    });
+    return data;
+}
+
+export async function getGestionnaireNotifications(token) {
+    const { data } = await axios.get(`${BASE_URL_GESTIONNAIRE}/notifications/all`, {
         headers: {
             'Authorization': `Bearer ${token}`
         }
@@ -124,13 +133,4 @@ export async function getStageApplicantsManager(token) {
         console.error("Erreur getStageApplicantsManager:", e);
         return [];
     }
-}
-
-export async function getGestionnaireNotifications(token) {
-    const { data } = await axios.get(`${BASE_URL_GESTIONNAIRE}/notifications/all`, {
-        headers: {
-            'Authorization': `Bearer ${token}`
-        }
-    });
-    return data;
 }

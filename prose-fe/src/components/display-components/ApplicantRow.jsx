@@ -4,6 +4,7 @@ import { useAuth } from "../../context/AuthContext.jsx";
 import { telechargerCv } from "../../services/EtudiantService.js";
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import PdfModal from "./PdfModal.jsx";
+import {useLocation, useNavigate} from "react-router-dom";
 
 const firstNonEmpty = (...vals) =>
     vals
@@ -40,6 +41,8 @@ function blobFromUnknownData(data, mime = "application/pdf") {
 
 export default function ApplicantRow({ applicant }) {
     const { user } = useAuth();
+    const location = useLocation();
+    const navigate = useNavigate();
 
     const [docState, setDocState] = useState({
         open: false,
@@ -139,6 +142,21 @@ export default function ApplicantRow({ applicant }) {
         window.addEventListener("keydown", onKey);
         return () => window.removeEventListener("keydown", onKey);
     }, [docState.open]);
+
+    useEffect(() => {
+        const targetId = location?.state?.openCandidatureId;
+        const kind = location?.state?.openDocType || "letter";
+        if (!targetId) return;
+        if (String(applicant?.id) !== String(targetId)) return;
+        if (docState.open) return;
+        (async () => {
+            try {
+                await openDocument("cv");
+            } finally {
+                navigate(location.pathname, { replace: true, state: {} });
+            }
+        })();
+    }, [location?.state, applicant?.id]);
 
     return (
         <>

@@ -2,6 +2,8 @@ package com.AL565.prose.controleur;
 
 import com.AL565.prose.controller.EtudiantController;
 import com.AL565.prose.model.CvStatus;
+import com.AL565.prose.repository.NotificationRepository;
+import com.AL565.prose.repository.PostulationNotificationRepository;
 import com.AL565.prose.security.JwtTokenProvider;
 import com.AL565.prose.service.EmployeurService;
 import com.AL565.prose.service.EtudiantService;
@@ -46,6 +48,12 @@ class EtudiantCvControllerTest {
     @MockitoBean
     private GestionnaireService gestionnaireService;
 
+    @MockitoBean
+    private NotificationRepository notificationRepository;
+
+    @MockitoBean
+    private PostulationNotificationRepository postulationNotificationRepository;
+
     @Autowired
     private EtudiantService etudiantService;
 
@@ -86,7 +94,7 @@ class EtudiantCvControllerTest {
                 .name("sample.pdf")
                 .type("application/pdf")
                 .data("%PDF-1.4\n%Mock PDF content\n".getBytes())
-                .size((long) "%PDF-1.4\n%Mock PDF content\n".getBytes().length)
+                .size("%PDF-1.4\n%Mock PDF content\n".getBytes().length)
                 .lastModified("2024-10-01T12:00:00Z")
                 .lastModifiedDate(java.time.Instant.now())
                 .status(CvStatus.PENDING)

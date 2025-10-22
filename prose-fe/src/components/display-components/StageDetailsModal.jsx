@@ -10,7 +10,8 @@ export default function StageDetailsModal({
                                               onApprove,
                                               onReject,
                                               showManagementButtons = false,
-                                              showPostulerButton = false
+                                              showPostulerButton = false,
+                                              onCandidatureSuccess,
                                           }) {
     const {user} = useAuth();
     const [rejectionReason, setRejectionReason] = useState("");
@@ -67,6 +68,9 @@ export default function StageDetailsModal({
         setShowCandidatureForm(false);
         setCandidatureSuccess(false);
         onClose();
+        if (candidatureSuccess && onCandidatureSuccess) {
+            onCandidatureSuccess(stage);
+        }
     };
 
     const handlePostuler = () => {
@@ -76,6 +80,9 @@ export default function StageDetailsModal({
     const handleCandidatureSuccess = () => {
         setShowCandidatureForm(false);
         setCandidatureSuccess(true);
+        if (onCandidatureSuccess) {
+            onCandidatureSuccess(stage);
+        }
     };
 
     if (!isOpen || !stage) return null;
@@ -210,7 +217,7 @@ export default function StageDetailsModal({
                                     >
                                         Fermer
                                     </button>
-                                    {showPostulerButton && (
+                                    {showPostulerButton && !candidatureSuccess && (
                                         <button
                                             onClick={handlePostuler}
                                             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 ml-2"
