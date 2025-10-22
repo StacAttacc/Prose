@@ -4,6 +4,8 @@ import com.AL565.prose.controller.EtudiantController;
 import com.AL565.prose.model.Discipline;
 import com.AL565.prose.model.Employeur;
 import com.AL565.prose.repository.EtudiantRepository;
+import com.AL565.prose.repository.NotificationRepository;
+import com.AL565.prose.repository.PostulationNotificationRepository;
 import com.AL565.prose.repository.ProseUserRepository;
 import com.AL565.prose.security.JwtTokenProvider;
 import com.AL565.prose.service.EmployeurService;
@@ -56,6 +58,12 @@ class EtudiantControllerTest {
 
     @MockitoBean
     private ProseUserRepository proseUserRepository;
+
+    @MockitoBean
+    private NotificationRepository notificationRepository;
+
+    @MockitoBean
+    private PostulationNotificationRepository postulationNotificationRepository;
 
     @MockitoBean
     private JwtTokenProvider jwtTokenProvider;

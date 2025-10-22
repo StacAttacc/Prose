@@ -5,18 +5,14 @@ import com.AL565.prose.model.Employeur;
 import com.AL565.prose.model.OfferStatus;
 import com.AL565.prose.model.Stage;
 import com.AL565.prose.model.notifications.NotificationType;
+import com.AL565.prose.model.notifications.PostulationNotification;
 import com.AL565.prose.model.notifications.StageNotification;
-import com.AL565.prose.repository.CandidatureRepository;
-import com.AL565.prose.repository.EmployeurRepository;
-import com.AL565.prose.repository.NotificationRepository;
-import com.AL565.prose.repository.ProseUserRepository;
-import com.AL565.prose.repository.StageRepository;
-import com.AL565.prose.security.exceptions.NotificationExceptions.*;
+import com.AL565.prose.repository.*;
+import com.AL565.prose.security.exceptions.NotificationExceptions;
 import com.AL565.prose.security.exceptions.UserNotFoundException;
-import com.AL565.prose.service.dto.CandidatureDTO;
-import com.AL565.prose.service.dto.EmployeurDTO;
-import com.AL565.prose.service.dto.EmployeurPasswordDTO;
-import com.AL565.prose.service.dto.StageDTO;
+import com.AL565.prose.service.dto.*;
+import com.AL565.prose.service.dto.notifications.NotificationGroupDTO;
+import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import com.AL565.prose.service.exceptions.StageNotFoundException;
 import jakarta.transaction.Transactional;
@@ -37,6 +33,8 @@ public class EmployeurService {
     private StageRepository stageRepository;
     private NotificationRepository notificationRepository;
     private CandidatureRepository candidatureRepository;
+    private NotificationsHelper notificationsHelper;
+    private PostulationNotificationRepository postulationNotificationRepository;
 
     public void enregistrer(EmployeurPasswordDTO employeurDTO) throws EmailAlreadyExistsException {
         if (proseUserRepository.findByCredentials_Username(employeurDTO.getEmail()).isPresent()) {
@@ -51,7 +49,6 @@ public class EmployeurService {
         return EmployeurDTO.toDTOTokenless((Employeur) proseUserRepository.findByCredentials_Username(email).orElseThrow((UserNotFoundException::new)));
     }
 
-
     @Transactional
     public StageDTO createStage(StageDTO dto) {
         if (dto == null) {
@@ -60,22 +57,23 @@ public class EmployeurService {
 
         Stage saved = stageRepository.save(StageDTO.toModel(dto));
         Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(saved.getEmployeurEmail());
-        createNotificationForNewStage(saved);
+        createNotificationForNewStage(saved, employeur);
 
         return StageDTO.fromModel(saved, employeur);
     }
 
-    private void createNotificationForNewStage(Stage stage) {
+    private void createNotificationForNewStage(Stage stage, Employeur employeur) {
         if (stage == null) {
             throw new IllegalArgumentException("stage must not be null");
         }
+        String employeurName = employeur.getFirstName() + " " + employeur.getLastName();
         StageNotification notification = new StageNotification();
-        notification.setReadAt(null);
+        notification.setFirstRecipientReadAt(null);
         notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
         notification.setStage(stage);
         notification.setSenderEmail(stage.getEmployeurEmail());
         notification.setType(NotificationType.STAGE_NOTIFICATION);
-        notification.setMessage(stage.getTitle());
+        notification.setMessage(employeurName + " a créé le stage " +stage.getTitle());
         notificationRepository.save(notification);
     }
 
@@ -117,5 +115,22 @@ public class EmployeurService {
         List<Candidature> candidatures = candidatureRepository.findAllByStage_Id(stageId).orElse(new ArrayList<>());
 
         return candidatures.stream().map((CandidatureDTO::toDTO)).toList();
+    }
+
+    @Transactional
+    public NotificationsResponseDTO getPostulationNotifications(String employeurEmail) throws Exception {
+        try {
+            List<PostulationNotification> notifications =
+                    postulationNotificationRepository
+                            .findByFirstRecipientReadAtAndCandidature_StageEmployeurEmail(null, employeurEmail);
+            NotificationGroupDTO group = NotificationGroupDTO.toDTO("postulation", notifications);
+            return NotificationsResponseDTO.toDTO(List.of(group));
+        } catch (Exception e) {
+            throw new NotificationExceptions.NotificationFetchException();
+        }
+    }
+
+    public void markNotificationAsRead(Long notificationId) throws Exception {
+        notificationsHelper.markNotificationAsReadByFirstRecipient(notificationId);
     }
 }

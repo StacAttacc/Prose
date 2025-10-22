@@ -10,17 +10,8 @@ import com.AL565.prose.model.CvStatus;
 import com.AL565.prose.model.Stage;
 import com.AL565.prose.model.auth.Credentials;
 import com.AL565.prose.model.auth.Role;
-import com.AL565.prose.repository.EtudiantRepository;
-import com.AL565.prose.repository.EmployeurRepository;
-import com.AL565.prose.repository.CandidatureRepository;
-import com.AL565.prose.repository.CvRepository;
-import com.AL565.prose.repository.StageRepository;
-import com.AL565.prose.repository.ProseUserRepository;
-import com.AL565.prose.service.dto.CandidatureDTO;
-import com.AL565.prose.service.dto.EtudiantDTO;
-import com.AL565.prose.service.dto.EtudiantPasswordDTO;
-import com.AL565.prose.service.dto.EtudiantCandidatureDTO;
-import com.AL565.prose.service.dto.StageDTO;
+import com.AL565.prose.repository.*;
+import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import com.AL565.prose.security.JwtTokenProvider;
 import org.junit.jupiter.api.Test;
@@ -43,28 +34,22 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class EtudiantServiceTest {
-
     @Mock
     private ProseUserRepository proseUserRepository;
-
     @Mock
     private EtudiantRepository etudiantRepository;
-
     @Mock
     private CandidatureRepository candidatureRepository;
-
     @Mock
     private EmployeurRepository employeurRepository;
-
     @Mock
     private CvRepository cvRepository;
-
     @Mock
     private StageRepository stageRepository;
-
+    @Mock
+    private NotificationRepository notificationRepository;
     @Mock
     private PasswordEncoder passwordEncoder;
-
     @Mock
     private JwtTokenProvider jwtTokenProvider;
 
@@ -108,17 +93,21 @@ class EtudiantServiceTest {
         String email = "jean.dupont@etudiant.ca";
         Long stageId = 1L;
 
-        Etudiant etudiant = createMockEtudiant(email);
-
         CandidatureDTO candidatureDTO = CandidatureDTO.builder()
                 .stageId(stageId)
-                .etudiant(EtudiantDTO.toDTOTokenless(etudiant))
                 .motivationLetterData("Test motivation letter".getBytes())
                 .motivationLetterContentType("application/pdf")
                 .build();
 
+        EtudiantDTO etuDto = new EtudiantDTO();
+        etuDto.setEmail(email);
+        candidatureDTO.setEtudiant(etuDto);
+
+        Etudiant etudiant = createMockEtudiant(email);
         CV cv = createMockCV(etudiant, CvStatus.APPROVED);
         Stage stage = createMockStage(stageId);
+
+        Candidature savedCandidature = createMockCandidature(etudiant, stage, OfferStatus.SOUMISE);
 
         when(candidatureRepository.existsByEtudiant_Credentials_UsernameAndStage_Id(email, stageId))
                 .thenReturn(false);
@@ -128,6 +117,10 @@ class EtudiantServiceTest {
                 .thenReturn(Optional.of(cv));
         when(stageRepository.findById(stageId))
                 .thenReturn(Optional.of(stage));
+        when(candidatureRepository.save(any(Candidature.class)))
+                .thenReturn(savedCandidature);
+        when(notificationRepository.save(any()))
+                .thenReturn(null);
 
         etudiantService.createCandidature(candidatureDTO);
 
@@ -139,12 +132,13 @@ class EtudiantServiceTest {
         String email = "jean.dupont@etudiant.ca";
         Long stageId = 1L;
 
-        Etudiant etudiant = createMockEtudiant(email);
-
         CandidatureDTO candidatureDTO = CandidatureDTO.builder()
                 .stageId(stageId)
-                .etudiant(EtudiantDTO.toDTOTokenless(etudiant))
                 .build();
+
+        EtudiantDTO etuDto = new EtudiantDTO();
+        etuDto.setEmail(email);
+        candidatureDTO.setEtudiant(etuDto);
 
         when(candidatureRepository.existsByEtudiant_Credentials_UsernameAndStage_Id(email, stageId))
                 .thenReturn(true);
@@ -162,13 +156,15 @@ class EtudiantServiceTest {
         String email = "jean.dupont@etudiant.ca";
         Long stageId = 1L;
 
-        Etudiant etudiant = createMockEtudiant(email);
-
         CandidatureDTO candidatureDTO = CandidatureDTO.builder()
                 .stageId(stageId)
-                .etudiant(EtudiantDTO.toDTOTokenless(etudiant))
                 .build();
 
+        EtudiantDTO etuDto = new EtudiantDTO();
+        etuDto.setEmail(email);
+        candidatureDTO.setEtudiant(etuDto);
+
+        Etudiant etudiant = createMockEtudiant(email);
         CV cv = createMockCV(etudiant, CvStatus.PENDING);
 
         when(candidatureRepository.existsByEtudiant_Credentials_UsernameAndStage_Id(email, stageId))
@@ -200,14 +196,15 @@ class EtudiantServiceTest {
         String email = "jean.dupont@etudiant.ca";
         Long stageId = 1L;
 
-        Etudiant etudiant = createMockEtudiant(email);
-
         CandidatureDTO candidatureDTO = CandidatureDTO.builder()
                 .stageId(stageId)
-                .etudiant(EtudiantDTO.toDTOTokenless(etudiant))
                 .motivationLetterData("Test".getBytes())
                 .motivationLetterContentType("text/plain")
                 .build();
+
+        EtudiantDTO etuDto = new EtudiantDTO();
+        etuDto.setEmail(email);
+        candidatureDTO.setEtudiant(etuDto);
 
         when(candidatureRepository.existsByEtudiant_Credentials_UsernameAndStage_Id(email, stageId))
                 .thenReturn(false);
@@ -440,19 +437,15 @@ class EtudiantServiceTest {
 
     @Test
     void getEtudiantStages_withExistingApplications_returnsOnlyNonAppliedStages() {
-        // Arrange
         String token = "Bearer validToken";
         String etudiantEmail = "etudiant@test.com";
         
-        // Créer des stages approuvés
         Stage stage1 = createMockStageWithDetails(1L, "employeur1@test.com");
         Stage stage2 = createMockStageWithDetails(2L, "employeur2@test.com");
         Stage stage3 = createMockStageWithDetails(3L, "employeur3@test.com");
         
-        // Créer un étudiant
         Etudiant etudiant = createMockEtudiant(etudiantEmail);
         
-        // Créer une candidature pour stage1
         Candidature candidature1 = createMockCandidature(etudiant, stage1, OfferStatus.SOUMISE);
         
         // Créer des employeurs

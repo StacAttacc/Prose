@@ -1,5 +1,7 @@
 package com.AL565.prose;
 
+import com.AL565.prose.repository.NotificationRepository;
+import com.AL565.prose.repository.PostulationNotificationRepository;
 import com.AL565.prose.service.EtudiantService;
 import com.AL565.prose.service.GestionnaireService;
 import com.AL565.prose.service.EmployeurService;
@@ -21,11 +23,9 @@ public class ProseApplication {
 
     private final EtudiantService etudiantService;
 
-
     public static void main(String[] args) {
         SpringApplication.run(ProseApplication.class, args);
     }
-
 
     @Bean
     @Profile({"dev", "local", "test"})

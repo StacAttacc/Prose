@@ -4,15 +4,15 @@ import com.AL565.prose.controller.EmployeurController;
 import com.AL565.prose.model.Employeur;
 import com.AL565.prose.model.OfferStatus;
 import com.AL565.prose.model.Stage;
-import com.AL565.prose.repository.EmployeurRepository;
-import com.AL565.prose.repository.EtudiantRepository;
-import com.AL565.prose.repository.ProseUserRepository;
-import com.AL565.prose.repository.StageRepository;
+import com.AL565.prose.model.notifications.PostulationNotification;
+import com.AL565.prose.repository.*;
 import com.AL565.prose.service.EtudiantService;
 import com.AL565.prose.service.GestionnaireService;
 import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.dto.EmployeurPasswordDTO;
 import com.AL565.prose.service.EmployeurService;
+import com.AL565.prose.service.dto.notifications.NotificationGroupDTO;
+import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -28,18 +28,21 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 @WebMvcTest(EmployeurController.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -69,6 +72,12 @@ class EmployeurControllerTest {
 
     @MockitoBean
     private StageRepository stageRepository;
+
+    @MockitoBean
+    private NotificationRepository notificationRepository;
+
+    @MockitoBean
+    private PostulationNotificationRepository postulationNotificationRepository;
 
     @Autowired
     ObjectMapper objectMapper;
@@ -153,11 +162,73 @@ class EmployeurControllerTest {
         ReturnEntityDTO<List<CandidatureDTO>> candidatures =
                 objectMapper.readValue(
                         result.getResponse().getContentAsString(),
-                        new TypeReference<ReturnEntityDTO<List<CandidatureDTO>>>() {
+                        new TypeReference<>() {
                         }
                 );
 
         assertThat(candidatures.getData().size()).isEqualTo(1);
     }
 
+    @Test
+    void markNotificationAsRead_success_returnsOk() throws Exception {
+        mockMvc.perform(put("/employeur/notifications/read/1").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void markNotificationAsRead_whenServiceThrows_returns500WithMessage() throws Exception {
+        doThrow(new Exception("boom")).when(employeurService).markNotificationAsRead(anyLong());
+
+        mockMvc.perform(put("/employeur/notifications/read/1").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.message", is("Erreur lors du marquage de la notification comme lue")))
+                .andExpect(jsonPath("$.data").doesNotExist());
+    }
+
+    @Test
+    void getPostulationNotifications_success_returnsDTO() throws Exception {
+        String email = "employer@company.com";
+
+        PostulationNotification pn = new PostulationNotification();
+        pn.setId(1L);
+        pn.setSenderEmail("jean.dupont@etudiant.ca");
+        pn.setCreatedAt(LocalDateTime.now());
+
+        NotificationGroupDTO group = NotificationGroupDTO.toDTO("postulation", List.of(pn));
+        NotificationsResponseDTO notifications = NotificationsResponseDTO.toDTO(List.of(group));
+
+        when(employeurService.getPostulationNotifications(email)).thenReturn(notifications);
+
+        MvcResult result = mockMvc.perform(get("/employeur/notifications/postulations/" + email)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        TypeReference<com.AL565.prose.service.dto.ReturnEntityDTO<NotificationsResponseDTO>> tr =
+                new TypeReference<>() { };
+
+        com.AL565.prose.service.dto.ReturnEntityDTO<NotificationsResponseDTO> response =
+                objectMapper.readValue(result.getResponse().getContentAsString(), tr);
+
+        assertThat(response.getMessage()).isEqualTo("Notifications: ");
+        assertThat(response.getData()).isNotNull();
+        assertThat(response.getData().getTotalCount()).isEqualTo(1);
+        assertThat(response.getData().getGroups()).hasSize(1);
+        assertThat(response.getData().getGroups().getFirst().getItems()).hasSize(1);
+        assertThat(response.getData().getGroups().getFirst().getItems().getFirst().getSenderEmail())
+                .isEqualTo("jean.dupont@etudiant.ca");
+
+        verify(employeurService, times(1)).getPostulationNotifications(email);
+    }
+
+    @Test
+    void getPostulationNotifications_whenServiceThrows_returns500WithMessage() throws Exception {
+        doThrow(new Exception("boom")).when(employeurService).getPostulationNotifications(anyString());
+
+        mockMvc.perform(get("/employeur/notifications/postulations/employer@company.com")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError());
+        verify(employeurService, times(1)).getPostulationNotifications(anyString());
+    }
 }
