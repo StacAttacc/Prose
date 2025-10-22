@@ -1,14 +1,10 @@
 package com.AL565.prose.service;
 
-import com.AL565.prose.model.Employeur;
-import com.AL565.prose.model.Gestionnaire;
-import com.AL565.prose.model.OfferStatus;
-import com.AL565.prose.model.Stage;
+import com.AL565.prose.model.*;
 import com.AL565.prose.model.auth.Credentials;
 import com.AL565.prose.model.auth.Role;
-import com.AL565.prose.repository.EmployeurRepository;
-import com.AL565.prose.repository.GestionnaireRepository;
-import com.AL565.prose.repository.StageRepository;
+import com.AL565.prose.repository.*;
+import com.AL565.prose.service.dto.EtudiantCandidaturesDTO;
 import com.AL565.prose.service.dto.GestionnairePasswordDTO;
 import com.AL565.prose.service.dto.StageDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
@@ -21,6 +17,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -46,7 +43,16 @@ class GestionnaireServiceTest {
     private EmployeurRepository employeurRepository;
 
     @Mock
+    private EtudiantRepository etudiantRepository;
+
+    @Mock
+    private CandidatureRepository candidatureRepository;
+
+    @Mock
     private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private NotificationRepository notificationRepository;
 
     @InjectMocks
     private GestionnaireService gestionnaireService;
@@ -72,7 +78,7 @@ class GestionnaireServiceTest {
         dto.setEmail("jean@example.com");
         dto.setPassword("password123");
 
-        doThrow(new RuntimeException()).when(gestionnaireRepository).save(any(Gestionnaire.class));
+        doThrow(new EmailAlreadyExistsException("existe déjà")).when(gestionnaireRepository).save(any(Gestionnaire.class));
 
         assertThatThrownBy(() -> gestionnaireService.saveGestionnaire(dto))
                 .isInstanceOf(EmailAlreadyExistsException.class)
@@ -276,6 +282,46 @@ class GestionnaireServiceTest {
 
         verify(stageRepository, times(1)).findAll();
         verifyNoInteractions(employeurRepository);
+    }
+
+    @Test
+    void getAllEtudiantsCandidatures() {
+        Etudiant john = new Etudiant("John", "Doe", Credentials.builder().username("email@email.com").password("1234567890").build(), Discipline.INFORMATIQUE);
+        Etudiant umberto = new Etudiant("Umberto", "Larrios", Credentials.builder().username("email2@email.com").password("1234567890").build(), Discipline.INFORMATIQUE);
+
+        Stage stage = new Stage();
+        stage.setId(1L);
+        stage.setTitle("Stage Test");
+        stage.setStatus(OfferStatus.SOUMISE);
+
+        Stage stage2 = new Stage();
+        stage2.setId(2L);
+        stage2.setTitle("Stage Test 2");
+        stage2.setStatus(OfferStatus.SOUMISE);
+
+        stage.setEmployeurEmail("employer@company.com");
+        when(etudiantRepository.findAll()).thenReturn(List.of(john, umberto));
+
+        when(candidatureRepository.findByEtudiant_Credentials_Username(john.getEmail())).thenReturn(List.of(
+                new Candidature(1L, john, null, null, stage, LocalDateTime.now(), OfferStatus.SOUMISE, null, "Pending")
+        ));
+
+        when(candidatureRepository.findByEtudiant_Credentials_Username(umberto.getEmail())).thenReturn(List.of(
+                new Candidature(2L, umberto, null, null, stage, LocalDateTime.now(), OfferStatus.SOUMISE, null, "Pending"),
+                new Candidature(3L, umberto, null, null, stage2, LocalDateTime.now(), OfferStatus.SOUMISE, null, "Pending")
+        ));
+
+        when(employeurRepository.getEmployeurByCredentials_Username(anyString())).thenReturn(
+                new  Employeur("Jean", "Employeur", "JeanEmployeurs", "jemployeur@gmail.com", "1234567890")
+        );
+
+        when(stageRepository.findById(anyLong())).thenReturn(Optional.of(stage));
+
+        List<EtudiantCandidaturesDTO> candidatures =  gestionnaireService.getAllEtudiantsCandidatures();
+
+        assertThat(candidatures).hasSize(2);
+        assertThat(candidatures.get(0).getCandidatures()).hasSize(1);
+        assertThat(candidatures.get(1).getCandidatures()).hasSize(2);
     }
 
 }

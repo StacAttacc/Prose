@@ -1,24 +1,21 @@
 package com.AL565.prose.controleur;
 
 import com.AL565.prose.controller.GestionnaireController;
-import com.AL565.prose.model.Employeur;
-import com.AL565.prose.model.OfferStatus;
-import com.AL565.prose.model.CvStatus;
+import com.AL565.prose.model.*;
+import com.AL565.prose.model.auth.Credentials;
+import com.AL565.prose.model.notifications.NotificationType;
+import com.AL565.prose.model.notifications.StageNotification;
 import com.AL565.prose.repository.CvRepository;
-import com.AL565.prose.security.exceptions.CvExceptions;
+import com.AL565.prose.security.JwtTokenProvider;
+import com.AL565.prose.security.exceptions.NotificationExceptions;
 import com.AL565.prose.service.EmployeurService;
 import com.AL565.prose.service.EtudiantService;
-import com.AL565.prose.service.dto.GestionnaireCvDTO;
+import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.GestionnaireService;
-import com.AL565.prose.service.dto.EmployeurDTO;
-import com.AL565.prose.service.dto.RejectionRequestDTO;
-import com.AL565.prose.service.dto.StageDTO;
-import com.AL565.prose.service.exceptions.FailedToRetrieveStagesException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -29,8 +26,10 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -61,9 +60,12 @@ class GestionnaireControllerTest {
     @MockitoBean
     private CvRepository cvRepository;
 
+    @MockitoBean
+    private JwtTokenProvider jwtTokenProvider;
+
     @Autowired
     ObjectMapper objectMapper;
-
+    private record CvDecisionStub(Long id, String status, String comment) {}
     @Test
     void getStagesSoumises_returnsStages() throws Exception {
         Employeur employeur1 = new Employeur(1L, "John", "Doe", "Entreprise Test", "john@example.com");
@@ -93,11 +95,11 @@ class GestionnaireControllerTest {
         MvcResult result = mockMvc.perform(get("/gestionnaire/stages/status/SOUMISE").with(csrf()))
                 .andReturn();
 
-        Assertions.assertThat(result.getResponse().getStatus()).isEqualTo(200);
+        assertThat(result.getResponse().getStatus()).isEqualTo(200);
         String content = result.getResponse().getContentAsString();
-        Assertions.assertThat(content).contains("Liste des stages SOUMISE");
-        Assertions.assertThat(content).contains("Stage Java");
-        Assertions.assertThat(content).contains("Stage Python");
+        assertThat(content).contains("Liste des stages SOUMISE");
+        assertThat(content).contains("Stage Java");
+        assertThat(content).contains("Stage Python");
     }
 
     @Test
@@ -118,10 +120,10 @@ class GestionnaireControllerTest {
         MvcResult result = mockMvc.perform(put("/gestionnaire/stages/1/approuver").with(csrf()))
                 .andReturn();
 
-        Assertions.assertThat(result.getResponse().getStatus()).isEqualTo(200);
+        assertThat(result.getResponse().getStatus()).isEqualTo(200);
         String content = result.getResponse().getContentAsString();
-        Assertions.assertThat(content).contains("Stage approuvé avec succès");
-        Assertions.assertThat(content).contains("APPROUVEE");
+        assertThat(content).contains("Stage approuvé avec succès");
+        assertThat(content).contains("APPROUVEE");
     }
 
     @Test
@@ -147,10 +149,10 @@ class GestionnaireControllerTest {
                         .content(objectMapper.writeValueAsString(rejectionRequest)))
                 .andReturn();
 
-        Assertions.assertThat(result.getResponse().getStatus()).isEqualTo(200);
+        assertThat(result.getResponse().getStatus()).isEqualTo(200);
         String content = result.getResponse().getContentAsString();
-        Assertions.assertThat(content).contains("Stage rejeté avec succès");
-        Assertions.assertThat(content).contains("REJETEE");
+        assertThat(content).contains("Stage rejeté avec succès");
+        assertThat(content).contains("REJETEE");
     }
 
     @Test
@@ -165,7 +167,7 @@ class GestionnaireControllerTest {
                         .content(objectMapper.writeValueAsString(emptyRequest)))
                 .andReturn();
 
-        Assertions.assertThat(result.getResponse().getStatus()).isEqualTo(400);
+        assertThat(result.getResponse().getStatus()).isEqualTo(400);
     }
 
     @Test
@@ -187,16 +189,19 @@ class GestionnaireControllerTest {
     }
 
     @Test
-    @WithMockUser(roles = {"GESTIONNAIRE"})
-    void approveCv_shouldReturnError_whenException() throws Exception {
-        doThrow(new CvExceptions.FailedToChangeCvStatusException())
-                .when(gestionnaireService).changeCvStatus(99L, "ewww", "non");
+    @DisplayName("POST /gestionnaire/cv/change-status -> 500 with error message when service throws")
+    void changeCvStatus_whenServiceThrows_returns500() throws Exception {
+        String payload = objectMapper.writeValueAsString(new CvDecisionStub(99L, "INVALID", "no"));
+        doThrow(new Exception("boom")).when(gestionnaireService).changeCvStatus(99L, "INVALID", "no");
 
         String body = "{\"id\":99,\"status\":\"ewww\",\"comment\":\"non\"}";
         mockMvc.perform(post("/gestionnaire/cv/change-status")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
-                .andExpect(status().isBadRequest());
+                        .content(payload))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.message", is("Erreur lors de la modification du statut du CV")))
+                .andExpect(jsonPath("$.data").doesNotExist());
     }
 
     @Test
@@ -212,6 +217,114 @@ class GestionnaireControllerTest {
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.message", is("Liste des stages")))
                 .andExpect(jsonPath("$.data", hasSize(2)));
+    }
+
+    @Test
+    void getCandidatures() throws Exception {
+        EtudiantDTO john = EtudiantDTO.toDTOTokenless(
+                new Etudiant("John", "Doe", Credentials.builder().username("email@email.com").password("1234567890").build(), Discipline.INFORMATIQUE)
+        );
+        EtudiantDTO umberto = EtudiantDTO.toDTOTokenless(
+                new Etudiant("Umberto", "Larrios", Credentials.builder().username("email2@email.com").password("1234567890").build(), Discipline.INFORMATIQUE)
+        );
+
+        Employeur jean = new Employeur("Jean", "Employeur", "JeanEmployeurs", "jemployeur@gmail.com", "1234567890");
+
+        Stage stage = new Stage();
+        stage.setId(1L);
+        stage.setTitle("Stage Test");
+        stage.setStatus(OfferStatus.SOUMISE);
+
+        Stage stage2 = new Stage();
+        stage2.setId(2L);
+        stage2.setTitle("Stage Test 2");
+        stage2.setStatus(OfferStatus.SOUMISE);
+
+        EtudiantCandidaturesDTO candidatureJohn = EtudiantCandidaturesDTO.builder()
+                .etudiant(john)
+                .candidatures(List.of(
+                        EtudiantCandidatureDTO.builder()
+                                .stage(StageSimpleDTO.toDTOfromStageDTO(StageDTO.fromModel(stage, jean)))
+                                .dateDecision(LocalDateTime.now())
+                                .datePostulation(LocalDateTime.now())
+                                .status("En Attente")
+                                .build()
+                )).build();
+        EtudiantCandidaturesDTO candidaturesUmberto = EtudiantCandidaturesDTO.builder()
+                .etudiant(umberto)
+                .candidatures(List.of(
+                        EtudiantCandidatureDTO.builder()
+                                .stage(StageSimpleDTO.toDTOfromStageDTO(StageDTO.fromModel(stage, jean)))
+                                .dateDecision(LocalDateTime.now())
+                                .datePostulation(LocalDateTime.now())
+                                .status("En Attente")
+                                .build(),
+                        EtudiantCandidatureDTO.builder()
+                                .stage(StageSimpleDTO.toDTOfromStageDTO(StageDTO.fromModel(stage2, jean)))
+                                .dateDecision(LocalDateTime.now())
+                                .datePostulation(LocalDateTime.now())
+                                .status("En Attente")
+                                .build()
+                )).build();
+        when(gestionnaireService.getAllEtudiantsCandidatures()).thenReturn(List.of(candidatureJohn, candidaturesUmberto));
+
+        MvcResult result = mockMvc.perform(get("/gestionnaire/getCandidatures"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        ReturnEntityDTO<List<EtudiantCandidaturesDTO>> candidatures = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
+        });
+
+        assertThat(candidatures.getData().size()).isEqualTo(2);
+    }
+    @Test
+    @DisplayName("GET /gestionnaire/notifications/all -> 200 + list of notifications")
+    void getStageNotifications_returnsOkWithList() throws Exception {
+        StageNotification n1 = new StageNotification();
+        n1.setType(NotificationType.STAGE_NOTIFICATION);
+        n1.setMessage("Stage submitted");
+        n1.setCreatedAt(LocalDateTime.now());
+        n1.setSenderEmail("employer1@example.com");
+        n1.setStage(null);
+
+        StageNotification n2 = new StageNotification();
+        n2.setType(NotificationType.STAGE_NOTIFICATION);
+        n2.setMessage("Stage updated");
+        n2.setCreatedAt(LocalDateTime.now());
+        n2.setSenderEmail("employer2@example.com");
+        n2.setStage(null);
+
+        when(gestionnaireService.getStageNotifications()).thenReturn(StageNotificationDTO.builder().stageNotifications(List.of(n1, n2)).count(2).build());
+
+        mockMvc.perform(get("/gestionnaire/notifications/all").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
+    }
+
+    @Test
+    @DisplayName("GET /gestionnaire/notifications/all -> 500 when service throws")
+    void getAllNotifications_whenServiceThrows_returns500() throws Exception {
+        when(gestionnaireService.getStageNotifications()).thenThrow(new NotificationExceptions.NotificationFetchException());
+
+        mockMvc.perform(get("/gestionnaire/notifications/all").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    void markNotificationAsRead_success_returnsOk() throws Exception {
+        mockMvc.perform(put("/gestionnaire/notifications/read/1").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void markNotificationAsRead_whenServiceThrows_returns500WithMessage() throws Exception {
+        doThrow(new Exception("boom")).when(gestionnaireService).markNotificationAsRead(anyLong());
+
+        mockMvc.perform(put("/gestionnaire/notifications/read/1").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.message", is("Erreur lors du marquage de la notification comme lue")))
+                .andExpect(jsonPath("$.data").doesNotExist());
     }
 
 }

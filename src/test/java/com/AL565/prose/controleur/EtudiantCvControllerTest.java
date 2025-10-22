@@ -1,6 +1,8 @@
 package com.AL565.prose.controleur;
 
 import com.AL565.prose.controller.EtudiantController;
+import com.AL565.prose.model.CvStatus;
+import com.AL565.prose.security.JwtTokenProvider;
 import com.AL565.prose.service.EmployeurService;
 import com.AL565.prose.service.EtudiantService;
 import com.AL565.prose.service.GestionnaireService;
@@ -17,9 +19,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.http.MediaType;
-
-import java.util.Base64;
-import java.util.Optional;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -49,6 +48,9 @@ class EtudiantCvControllerTest {
 
     @Autowired
     private EtudiantService etudiantService;
+
+    @MockitoBean
+    private JwtTokenProvider jwtTokenProvider;
 
     @Test
     @WithMockUser(username = "testuser", roles = {"ETUDIANT"})
@@ -87,18 +89,10 @@ class EtudiantCvControllerTest {
                 .size((long) "%PDF-1.4\n%Mock PDF content\n".getBytes().length)
                 .lastModified("2024-10-01T12:00:00Z")
                 .lastModifiedDate(java.time.Instant.now())
+                .status(CvStatus.PENDING)
                 .build();
 
-        when(etudiantService.getByEmail("email@email.email")).thenReturn(
-                Optional.of(new EtudiantCvDTO() {{
-                    setName(cv.getName());
-                    setType(cv.getType());
-                    setSize(cv.getSize());
-                    setData(Base64.getEncoder().encodeToString(cv.getData()));
-                    setLastModified(cv.getLastModified());
-                    setLastModifiedDate(cv.getLastModifiedDate());
-                }})
-        );
+        when(etudiantService.getCvByEmail("email@email.email")).thenReturn(EtudiantCvDTO.toDto(cv));
 
         mockMvc.perform(get("/etudiant/telecharger-cv/email@email.email")
                         .with(csrf()))

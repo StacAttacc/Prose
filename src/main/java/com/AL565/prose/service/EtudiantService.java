@@ -3,22 +3,30 @@ package com.AL565.prose.service;
 import com.AL565.prose.model.Employeur;
 import com.AL565.prose.model.Etudiant;
 import com.AL565.prose.model.OfferStatus;
+import com.AL565.prose.model.Stage;
 import com.AL565.prose.repository.EmployeurRepository;
 import com.AL565.prose.model.CV;
 import com.AL565.prose.model.CvStatus;
+import com.AL565.prose.model.Candidature;
 import com.AL565.prose.repository.CvRepository;
 import com.AL565.prose.repository.EtudiantRepository;
+import com.AL565.prose.repository.CandidatureRepository;
 import com.AL565.prose.repository.ProseUserRepository;
 import com.AL565.prose.repository.StageRepository;
 import com.AL565.prose.service.dto.EtudiantPasswordDTO;
+import com.AL565.prose.service.dto.CandidatureDTO;
 import com.AL565.prose.service.dto.StageDTO;
+import com.AL565.prose.service.dto.EtudiantCandidatureDTO;
+import com.AL565.prose.security.JwtTokenProvider;
+import com.AL565.prose.service.dto.*;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.AL565.prose.security.exceptions.CvExceptions;
-import com.AL565.prose.service.dto.EtudiantCvDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
+import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -27,32 +35,20 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.util.Optional;
 
 @Service
 @Transactional
+@AllArgsConstructor
 public class EtudiantService {
 
     private final EtudiantRepository etudiantRepository;
     private final ProseUserRepository proseUserRepository;
+    private final JwtTokenProvider jwtTokenProvider;
     private final CvRepository cvRepository;
     private final PasswordEncoder passwordEncoder;
     private final StageRepository stageRepository;
     private final EmployeurRepository employeurRepository;
-
-    public EtudiantService(EtudiantRepository etudiantRepository,
-                           ProseUserRepository proseUserRepository,
-                           PasswordEncoder passwordEncoder,
-                           StageRepository stageRepository,
-                           EmployeurRepository employeurRepository,
-                           CvRepository cvRepository) {
-        this.cvRepository = cvRepository;
-        this.etudiantRepository = etudiantRepository;
-        this.proseUserRepository = proseUserRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.employeurRepository = employeurRepository;
-        this.stageRepository = stageRepository;
-    }
+    private final CandidatureRepository candidatureRepository;
 
     public void inscrireEtudiant(EtudiantPasswordDTO dto) {
         if (proseUserRepository.findByCredentials_Username(dto.getEmail()).isPresent()) {
@@ -66,9 +62,25 @@ public class EtudiantService {
         etudiantRepository.save(etudiant);
     }
 
+    public EtudiantDTO getByEmail(String email) {
+        return EtudiantDTO.toDTOTokenless(etudiantRepository.findEtudiantByCredentials_Username(email).get());
+    }
+
     public List<StageDTO> getEtudiantStages(String token) {
-        return stageRepository.findByStatus(OfferStatus.APPROUVEE)
+
+        String cleanToken = token.replace("Bearer ", "");
+        String etudiantEmail = jwtTokenProvider.getEmailFromJWT(cleanToken);
+
+        List<Stage> stagesApprouves = stageRepository.findByStatus(OfferStatus.APPROUVEE);
+
+        Set<Long> stageIdsPostules = candidatureRepository
+                .findByEtudiant_Credentials_Username(etudiantEmail)
                 .stream()
+                .map(candidature -> candidature.getStage().getId())
+                .collect(Collectors.toSet());
+
+        return stagesApprouves.stream()
+                .filter(stage -> !stageIdsPostules.contains(stage.getId()))
                 .map(stage -> {
                     Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(stage.getEmployeurEmail());
                     return StageDTO.fromModel(stage, employeur);
@@ -122,8 +134,76 @@ public class EtudiantService {
                 .orElseGet(() -> cvRepository.save(newCv));
     }
 
-    public Optional<EtudiantCvDTO> getByEmail(String username) {
+    public EtudiantCvDTO getCvByEmail(String username) {
         return cvRepository.findByEtudiant_Credentials_Username(username)
-                .map(EtudiantCvDTO::toDto);
+                .map(EtudiantCvDTO::toDto)
+                .orElse(null);
+    }
+
+
+    public boolean hasApprovedCv(String email) {
+        return cvRepository.findByEtudiant_Credentials_Username(email)
+                .map(cv -> cv.getStatus() == CvStatus.APPROVED)
+                .orElse(false);
+    }
+
+    public void createCandidature(CandidatureDTO candidatureDTO) throws Exception {
+        // Validation du DTO
+        if (candidatureDTO == null) {
+            throw new IllegalArgumentException("Les données de candidature sont requises");
+        }
+
+        if (candidatureDTO.getStageId() == null) {
+            throw new IllegalArgumentException("L'ID du stage est requis");
+        }
+
+        if (candidatureDTO.getEtudiantEmail() == null || candidatureDTO.getEtudiantEmail().isEmpty()) {
+            throw new IllegalArgumentException("L'email de l'étudiant est requis");
+        }
+
+        if (candidatureRepository.existsByEtudiant_Credentials_UsernameAndStage_Id(
+                candidatureDTO.getEtudiantEmail(), candidatureDTO.getStageId())) {
+            throw new Exception("Vous avez déjà postulé à ce stage");
+        }
+
+        if (candidatureDTO.getMotivationLetterData() != null && candidatureDTO.getMotivationLetterData().length > 0) {
+            if (candidatureDTO.getMotivationLetterContentType() == null ||
+                !MediaType.APPLICATION_PDF_VALUE.equalsIgnoreCase(candidatureDTO.getMotivationLetterContentType())) {
+                throw new Exception("La lettre de motivation doit être au format PDF");
+            }
+        }
+
+        Etudiant etudiant = etudiantRepository.findEtudiantByCredentials_Username(candidatureDTO.getEtudiantEmail())
+                .orElseThrow(() -> new Exception("Étudiant non trouvé"));
+
+        CV cv = cvRepository.findByEtudiant_Credentials_Username(candidatureDTO.getEtudiantEmail())
+                .orElseThrow(() -> new Exception("CV non trouvé"));
+
+        if (cv.getStatus() != CvStatus.APPROVED) {
+            throw new Exception("Le CV n'est pas approuvé");
+        }
+
+        var stage = stageRepository.findById(candidatureDTO.getStageId())
+                .orElseThrow(() -> new Exception("Stage non trouvé"));
+
+        Candidature candidature = candidatureDTO.toModel(etudiant, cv, stage);
+
+        candidatureRepository.save(candidature);
+    }
+
+    public boolean hasAlreadyApplied(String email, Long stageId) {
+        return candidatureRepository.existsByEtudiant_Credentials_UsernameAndStage_Id(email, stageId);
+    }
+
+    public List<EtudiantCandidatureDTO> getMesCandidatures(String email) {
+        List<Candidature> candidatures = candidatureRepository.findByEtudiant_Credentials_Username(email);
+
+        return candidatures.stream()
+                .map(candidature -> {
+                    String employeurEmail = candidature.getStage().getEmployeurEmail();
+                    Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(employeurEmail);
+                    return EtudiantCandidatureDTO.toDTO(candidature, employeur);
+                })
+                .collect(Collectors.toList());
     }
 }

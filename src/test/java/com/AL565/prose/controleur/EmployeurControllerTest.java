@@ -2,51 +2,49 @@ package com.AL565.prose.controleur;
 
 import com.AL565.prose.controller.EmployeurController;
 import com.AL565.prose.model.Employeur;
+import com.AL565.prose.model.OfferStatus;
+import com.AL565.prose.model.Stage;
 import com.AL565.prose.repository.EmployeurRepository;
+import com.AL565.prose.repository.EtudiantRepository;
 import com.AL565.prose.repository.ProseUserRepository;
+import com.AL565.prose.repository.StageRepository;
+import com.AL565.prose.service.EtudiantService;
+import com.AL565.prose.service.GestionnaireService;
+import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.dto.EmployeurPasswordDTO;
 import com.AL565.prose.service.EmployeurService;
-import com.AL565.prose.service.dto.StageDTO;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.web.method.annotation.AuthenticationPrincipalArgumentResolver;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(EmployeurController.class)
 @AutoConfigureMockMvc(addFilters = false)
 @ActiveProfiles("test")
-@Import(EmployeurControllerTest.TestSecurityResolvers.class)
 class EmployeurControllerTest {
-
-    @TestConfiguration
-    static class TestSecurityResolvers {
-        @Bean
-        AuthenticationPrincipalArgumentResolver authenticationPrincipalArgumentResolver() {
-            return new AuthenticationPrincipalArgumentResolver();
-        }
-    }
 
     @Autowired
     private MockMvc mockMvc;
@@ -55,10 +53,22 @@ class EmployeurControllerTest {
     private EmployeurService employeurService;
 
     @MockitoBean
+    private EtudiantService etudiantService;
+
+    @MockitoBean
+    private GestionnaireService gestionnaireService;
+
+    @MockitoBean
     private EmployeurRepository employeurRepository;
 
     @MockitoBean
+    private EtudiantRepository etudiantRepository;
+
+    @MockitoBean
     private ProseUserRepository proseUserRepository;
+
+    @MockitoBean
+    private StageRepository stageRepository;
 
     @Autowired
     ObjectMapper objectMapper;
@@ -71,7 +81,7 @@ class EmployeurControllerTest {
         String content = new ObjectMapper().writeValueAsString(mark);
         MvcResult result = mockMvc.perform(post("/employeur/register").contentType(MediaType.APPLICATION_JSON).content(content).with(csrf())).andReturn();
 
-        Assertions.assertThat(result.getResponse().getStatus()).isEqualTo(201);
+        assertThat(result.getResponse().getStatus()).isEqualTo(201);
 
     }
 
@@ -109,15 +119,45 @@ class EmployeurControllerTest {
                         .content(objectMapper.writeValueAsString(dto))
         ).andReturn();
 
-        Assertions.assertThat(result.getResponse().getStatus()).isEqualTo(201);
+        assertThat(result.getResponse().getStatus()).isEqualTo(201);
 
-        Assertions.assertThat(result.getResponse().getHeader("Location")).isNull();
+        assertThat(result.getResponse().getHeader("Location")).isNull();
 
         var body = result.getResponse().getContentAsString();
-        Assertions.assertThat(body).isEqualTo("Stage créé avec succès");
+        assertThat(body).isEqualTo("Stage créé avec succès");
 
         verify(employeurService).createStage(any(StageDTO.class));
     }
 
+    @Test
+    void getCandidatures() throws Exception {
+        Stage stage = new Stage(
+                1L, "Démissioner", "Partir immédiatement!", "Rien", new ArrayList<>(),
+                LocalDate.now(), LocalDate.now(), "Chez vous", null, "Remote", "0$",
+                OfferStatus.APPROUVEE, "jemployeur1@gmail.com", OffsetDateTime.now(), OffsetDateTime.now()
+        );
+
+        CandidatureDTO candidatureDTO = new CandidatureDTO(
+                1L, stage.getId(), null, null, null, 0L, new EtudiantDTO()
+        );
+
+        when(employeurService.getStageCandidatures(any(Long.class)))
+                .thenReturn(List.of(candidatureDTO));
+
+        MvcResult result = mockMvc.perform(
+                        get("/employeur/stages/1/applications").with(csrf())
+                )
+                .andExpect(status().isOk())
+                .andReturn();
+
+        ReturnEntityDTO<List<CandidatureDTO>> candidatures =
+                objectMapper.readValue(
+                        result.getResponse().getContentAsString(),
+                        new TypeReference<ReturnEntityDTO<List<CandidatureDTO>>>() {
+                        }
+                );
+
+        assertThat(candidatures.getData().size()).isEqualTo(1);
+    }
 
 }

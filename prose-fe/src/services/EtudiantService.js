@@ -1,7 +1,7 @@
-import axios from "axios";
+import { http } from "./http.js";
 
-const CV_UPLOAD_URL = "http://localhost:8080/etudiant/televerser-cv";
-const CV_DOWNLOAD_URL = "http://localhost:8080/etudiant/telecharger-cv";
+const CV_UPLOAD_URL = "/etudiant/televerser-cv";
+const CV_DOWNLOAD_URL = "/etudiant/telecharger-cv";
 
 export const televerserCv = async (cv, user) => {
     try{
@@ -9,9 +9,9 @@ export const televerserCv = async (cv, user) => {
         dataToSend.append('cv', cv);
         dataToSend.append("email", user.email);
 
-        const { data } = await axios.post(CV_UPLOAD_URL, dataToSend, {
+        const { data } = await http.post(CV_UPLOAD_URL, dataToSend, {
             headers: {
-                'Content-Type': 'multipart/form-data', 'Authorization': `Bearer ${user.token}`
+                'Content-Type': 'multipart/form-data'
             },
         });
         return data;
@@ -29,15 +29,16 @@ export const televerserCv = async (cv, user) => {
     }
 };
 
-export const telechargerCv = async (email, user) => {
+export const telechargerCv = async (email, token) => {
     try {
-        const response = await axios.get(`${CV_DOWNLOAD_URL}/${email}`, {
-            headers: {
-                'Authorization': `Bearer ${user.token}`
-            }
-        });
+        const url = `${CV_DOWNLOAD_URL}/${encodeURIComponent(email)}`;
 
-        return response.data;
+        const config = token
+            ? { headers: { Authorization: `Bearer ${token}` } }
+            : undefined;
+
+        const { data } = await http.get(url, config);
+        return data;
     } catch (e) {
         if (e.response) {
             console.error("Erreur:", e.response.data);
@@ -52,3 +53,56 @@ export const telechargerCv = async (email, user) => {
     }
 };
 
+export const checkCvStatus = async () => {
+    try {
+        const { data } = await http.get("/etudiant/cv/status");
+        return data;
+    } catch (e) {
+        console.error("Erreur lors de la vérification du CV:", e);
+        throw e;
+    }
+};
+
+export const getCvInfo = async () => {
+    try {
+        const { data } = await http.get("/etudiant/cv/info");
+        return data;
+    } catch (e) {
+        console.error("Erreur lors de la récupération des infos du CV:", e);
+        throw e;
+    }
+};
+
+export const checkIfAlreadyApplied = async (stageId) => {
+    try {
+        const { data } = await http.get(`/etudiant/candidature/check/${stageId}`);
+        return data;
+    } catch (e) {
+        console.error("Erreur lors de la vérification de la candidature:", e);
+        throw e;
+    }
+};
+
+export const submitCandidature = async (formData) => {
+    try {
+        const { data } = await http.post("/etudiant/candidature", formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+        return data;
+    } catch (e) {
+        console.error("Erreur lors de la soumission de la candidature:", e);
+        throw e;
+    }
+};
+
+export const getMesCandidatures = async () => {
+    try {
+        const { data } = await http.get("/etudiant/candidatures");
+        return data.data;
+    } catch (e) {
+        console.error("Erreur lors de la récupération des candidatures:", e);
+        throw e;
+    }
+};

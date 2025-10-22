@@ -1,6 +1,7 @@
 import React, {useRef, useState} from 'react';
 import {televerserCv} from "../../services/EtudiantService.js";
 import {useAuth} from "../../context/AuthContext.jsx";
+import ErrorBanner from "../display-components/ErrorBanner.jsx";
 
 const TeleversementCV = ({ onUploadSuccess }) => {
     const [selectedFile, setSelectedFile] = useState(null);
@@ -115,9 +116,7 @@ const TeleversementCV = ({ onUploadSuccess }) => {
             </div>
 
             {error && (
-                <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-                    {error}
-                </div>
+                <ErrorBanner message={error} />
             )}
             {success && (
                 <div className="mb-4 p-3 bg-emerald-100 border border-emerald-400 text-emerald-700 rounded">

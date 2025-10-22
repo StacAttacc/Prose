@@ -2,6 +2,7 @@ import {useState} from "react";
 import {useNavigate} from "react-router-dom";
 import {useAuth} from "../../context/AuthContext.jsx";
 import {createStage} from "../../services/StageService.js";
+import ErrorBanner from "../display-components/ErrorBanner.jsx";
 
 export default function StageCreation() {
     const {user} = useAuth();
@@ -63,9 +64,7 @@ export default function StageCreation() {
             <h2 className="text-center text-xl font-bold">Création de stage</h2>
 
             {errorMsg && (
-                <div className="mb-4 rounded-lg border border-rose-600 bg-rose-900/30 p-3">
-                    {errorMsg}
-                </div>
+                <ErrorBanner message={errorMsg} />
             )}
 
             <form className="mt-8 mb-3" onSubmit={submit}>
@@ -117,20 +116,21 @@ export default function StageCreation() {
                                     dark:focus:ring-red-800 font-medium rounded-lg text-sm px-3 py-2.5 text-center me-2"
                             onClick={() => {setSkills(skills.slice(0, -1))}} type="button">Retirer</button>
                     {skills.map((item, index) => (
-                        <div className="relative">
-                        <input
-                        className={`w-full rounded-xl bg-transparent border px-4 py-3 outline-none my-1 focus:border-teal-500 ${!skills[index].trim() ? "border-rose-600" : "border-slate-700"
-                        }`}
-                        type="text"
-                        key={index}
-                        placeholder="assiduite"
-                        name={"skill" + index}
-                        onChange={(e) => {
-                            let skillsModified = [...skills];
-                            skillsModified[index] = e.target.value;
-                            setSkills(skillsModified);
-                        }}
-                        />
+                        <div key={index} className="relative">
+                            <input
+                                className={`w-full rounded-xl bg-transparent border px-4 py-3 outline-none my-1 focus:border-teal-500 ${
+                                    !skills[index].trim() ? "border-rose-600" : "border-slate-700"
+                                }`}
+                                type="text"
+                                placeholder="assiduite"
+                                name={"skill" + index}
+                                value={item}
+                                onChange={(e) => {
+                                    const skillsModified = [...skills];
+                                    skillsModified[index] = e.target.value;
+                                    setSkills(skillsModified);
+                                }}
+                            />
                         </div>
                     ))}
                 </label>

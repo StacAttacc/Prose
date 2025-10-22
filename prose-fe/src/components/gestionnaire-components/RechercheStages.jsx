@@ -1,18 +1,22 @@
-// src/components/gestionnaire-components/RechercheStages.jsx
 import React, { useState, useEffect, useMemo } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { getAllStages } from "../../services/GestionnaireService";
+import {getAllStages, submitStageDecision} from "../../services/GestionnaireService";
 import StageDetailsModal from "../display-components/StageDetailsModal";
+import ErrorBanner from "../display-components/ErrorBanner.jsx";
+import { useLocation, useNavigate } from "react-router-dom";
+
 
 export default function GestRechercheStages() {
   const { user } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [stages, setStages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedStage, setSelectedStage] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
-  // États pour la recherche et les filtres
+  const[isProcessing, setIsProcessing] = useState(false);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [locationFilter, setLocationFilter] = useState("");
   const [compensationFilter, setCompensationFilter] = useState("");
@@ -32,8 +36,19 @@ export default function GestRechercheStages() {
     fetchAllStages();
   }, [user.token]);
 
-  // Filtrage des stages basé sur les critères de recherche
-  const filteredStages = useMemo(() => {
+    useEffect(() => {
+        const openStageId = location?.state?.openStageId;
+        if (!openStageId || stages.length === 0) return;
+
+        const found = stages.find(s => String(s.id) === String(openStageId));
+        if (found) {
+            setSelectedStage(found);
+            setIsModalOpen(true);
+            navigate(location.pathname, { replace: true, state: {} });
+        }
+    }, [location?.state?.openStageId, stages, navigate, location?.pathname]);
+
+    const filteredStages = useMemo(() => {
     return stages.filter(stage => {
       const matchesSearch = stage.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           stage.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -59,6 +74,36 @@ export default function GestRechercheStages() {
     setIsModalOpen(true);
   };
 
+  const handleApproveStage = async (stage) => {
+    setIsProcessing(true);
+    try {
+      await submitStageDecision(stage.id, { approved: true }, user.token);
+      setStages(stages.map(s => s.id === stage.id ? { ...s, status: "APPROUVEE" } : s));
+      closeModal();
+    } catch (error) {
+      console.error("Erreur lors de l'approbation:", error);
+      setError("Erreur lors de l'approbation du stage");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleRejectStage = async (stage, rejectionReason) => {
+    setIsProcessing(true);
+    try {
+      await submitStageDecision(stage.id, {
+        approved: false,
+        reason: rejectionReason
+      }, user.token);
+      setStages(stages.map(s => s.id === stage.id ? { ...s, status: "REJETEE" } : s));
+      closeModal();
+    } catch (error) {
+      console.error("Erreur lors du rejet:", error);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedStage(null);
@@ -71,7 +116,6 @@ export default function GestRechercheStages() {
     setStatusFilter("");
   };
 
-  // Fonction pour obtenir la couleur du badge selon le statut
   const getStatusColor = (status) => {
     switch (status) {
       case 'SOUMISE':
@@ -80,14 +124,11 @@ export default function GestRechercheStages() {
         return 'bg-green-100 text-green-800';
       case 'REJETEE':
         return 'bg-red-100 text-red-800';
-      case 'PUBLIEE':
-        return 'bg-blue-100 text-blue-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
   };
 
-  // Fonction pour obtenir le texte du statut en français
   const getStatusText = (status) => {
     switch (status) {
       case 'SOUMISE':
@@ -96,24 +137,20 @@ export default function GestRechercheStages() {
         return 'Approuvée';
       case 'REJETEE':
         return 'Rejetée';
-      case 'PUBLIEE':
-        return 'Publiée';
       default:
         return status;
     }
   };
 
   if (loading) return <p className="text-center mt-10">Chargement des stages...</p>;
-  if (error) return <p className="text-center mt-10 text-red-500">Erreur: {error}</p>;
+  if (error) return <ErrorBanner message={error} />;
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6 text-center">Recherche de Stages</h1>
-      
-      {/* Barre de recherche et filtres */}
+      <h1 className="text-2xl font-bold mb-6 text-center">Recherche/Approbation de Stages</h1>
+
       <div className="mb-8 bg-white rounded-lg shadow-md border border-gray-200 p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
-          {/* Recherche générale */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Recherche
@@ -127,7 +164,6 @@ export default function GestRechercheStages() {
             />
           </div>
 
-          {/* Filtre par lieu */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Lieu
@@ -141,7 +177,6 @@ export default function GestRechercheStages() {
             />
           </div>
 
-          {/* Filtre par compensation */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Compensation
@@ -155,7 +190,6 @@ export default function GestRechercheStages() {
             />
           </div>
 
-          {/* Filtre par statut */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Statut
@@ -172,7 +206,6 @@ export default function GestRechercheStages() {
             </select>
           </div>
 
-          {/* Bouton pour effacer les filtres */}
           <div className="flex items-end">
             <button
               onClick={clearFilters}
@@ -183,13 +216,11 @@ export default function GestRechercheStages() {
           </div>
         </div>
 
-        {/* Affichage du nombre de résultats */}
         <div className="text-sm text-gray-600">
           {filteredStages.length} stage(s) trouvé(s) sur {stages.length} au total
         </div>
       </div>
-      
-      {/* Liste des stages filtrés */}
+
       {filteredStages.length === 0 ? (
         <div className="text-center py-8">
           <p className="text-gray-500 text-lg">
@@ -238,21 +269,19 @@ export default function GestRechercheStages() {
                 <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getStatusColor(stage.status)}`}>
                   {getStatusText(stage.status)}
                 </span>
-                <button className="text-teal-600 hover:text-teal-800 font-medium">
-                  Voir détails →
-                </button>
               </div>
             </div>
           ))}
         </div>
       )}
 
-      {/* Modal pour afficher les détails */}
       <StageDetailsModal
         stage={selectedStage}
         isOpen={isModalOpen}
+        onApprove={handleApproveStage}
+        onReject={handleRejectStage}
         onClose={closeModal}
-        showManagementButtons={false}
+        showManagementButtons={true}
       />
     </div>
   );
