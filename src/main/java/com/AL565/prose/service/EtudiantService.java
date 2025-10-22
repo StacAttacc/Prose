@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 import com.AL565.prose.security.exceptions.CvExceptions;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
