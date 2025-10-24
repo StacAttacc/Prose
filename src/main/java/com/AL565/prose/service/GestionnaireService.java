@@ -162,13 +162,17 @@ public class GestionnaireService {
                         .findNotificationsByTypeAndFirstRecipientReadAt(NotificationType.STAGE_NOTIFICATION, null);
                 List<Notification> postulations = notificationRepository
                         .findNotificationsByTypeAndSecondRecipientReadAt(NotificationType.POSTULATION_NOTIFICATION, null);
+                List<Notification> cvs = notificationRepository
+                        .findNotificationsByTypeAndFirstRecipientReadAt(NotificationType.GESTIONNAIRE_CV_NOTIFICATION, null);
 
                 NotificationGroupDTO stagesGroup = NotificationGroupDTO
                         .toDTO(NotificationType.STAGE_NOTIFICATION.getDisplayName(), stages);
                 NotificationGroupDTO postulationGroup = NotificationGroupDTO
                         .toDTO(NotificationType.POSTULATION_NOTIFICATION.getDisplayName(), postulations);
+                NotificationGroupDTO cvsGroup = NotificationGroupDTO
+                        .toDTO(NotificationType.GESTIONNAIRE_CV_NOTIFICATION.getDisplayName(), cvs);
 
-            return NotificationsResponseDTO.toDTO(List.of(stagesGroup, postulationGroup));
+            return NotificationsResponseDTO.toDTO(List.of(stagesGroup, postulationGroup, cvsGroup));
         } catch (Exception e) {
             throw new NotificationExceptions.NotificationFetchException();
         }
