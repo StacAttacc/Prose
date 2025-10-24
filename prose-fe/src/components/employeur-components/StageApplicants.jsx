@@ -180,7 +180,6 @@ const StageApplicantsPage = () => {
                                             try {
                                                 await rejectApplicant(a.id ?? a.candidatureId ?? a.applicationId, user.token);
                                                 alert(`Candidature de ${a.etudiant?.firstName ?? "l'étudiant"} refusée 🚫`);
-                                                // Optionnel: mise à jour optimiste
                                                 setApplicants((prev) => prev.filter(x => (x.id ?? x.candidatureId ?? x.applicationId) !== (a.id ?? a.candidatureId ?? a.applicationId)));
                                             } catch {
                                                 alert("Erreur lors du refus");
