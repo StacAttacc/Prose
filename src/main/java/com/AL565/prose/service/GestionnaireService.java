@@ -19,6 +19,7 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -183,9 +184,12 @@ public class GestionnaireService {
         if (notification.getType() == NotificationType.POSTULATION_NOTIFICATION) {
             markPostulationAsReadBySecondRecipient(notificationId);
         } else if (notification.getType() == NotificationType.GESTIONNAIRE_CV_NOTIFICATION) {
-            GestionnaireCvNotification gestionnaireCvNotification = gestionnaireCvNotificationRepository.findById(notificationId)
-                    .orElseThrow(NotificationExceptions.NotificationFetchException::new);
-            createStudentNotificationForReviewedCV(gestionnaireCvNotification.getCv());
+            Optional<GestionnaireCvNotification> n = gestionnaireCvNotificationRepository.findById(notificationId);
+            n.ifPresent(notif -> {
+                notif.setFirstRecipientReadAt(OffsetDateTime.now().toLocalDateTime());
+                gestionnaireCvNotificationRepository.save(notif);
+                createStudentNotificationForReviewedCV(notif.getCv());
+            });
         } else {
             notificationsHelper.markNotificationAsReadByFirstRecipient(notificationId);
         }
