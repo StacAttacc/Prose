@@ -118,7 +118,7 @@ const GestionCV = () => {
                 navigate(location.pathname, { replace: true, state: {} });
             }
         }
-    }, [user, location.state?.cvId, allCvs, navigate, location]);
+    }, [user, location.state?.openCvId, allCvs, navigate, location]);
 
     const decisionsDisabled = comment.trim().length === 0;
 

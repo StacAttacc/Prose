@@ -194,24 +194,29 @@ export default function Notifications() {
             });
             setReadCounter(c => c + 1);
 
-            if (user.role === "EMPLOYEUR" && isCandidature && stageId) {
-                navigate(`/employeur/stages/${stageId}/candidatures`, { state: { openCandidatureId: candidatureId } });
-                return;
+            if (user.role === "EMPLOYEUR") {
+                if (isCandidature) {
+                    if (stageId) {
+                        navigate(`/employeur/stages/${stageId}/candidatures`, { state: { openCandidatureId: candidatureId } });
+                        return;
+                    }
+                }
             }
-
-            else if (user.role === "GESTIONNAIRE" && isCandidature && stageId) {
-                navigate(defaultNavigatePath(), { state: { openEtudiantId: etudiantId } });
-                return;
-            }
-
-            if (user.role === "GESTIONNAIRE" && !isCandidature && stageId) {
-                navigate("/gestionnaire/list-stages", { state: { openStageId: stageId } });
-                return;
-            }
-
-            if (user.role === "GESTIONNAIRE" && !isCandidature && !stageId && cvId) {
-                navigate("/gestionnaire/gestion-cv", { state: { openCvId: cvId } });
-                return;
+            else if (user.role === "GESTIONNAIRE") {
+                if (isCandidature) {
+                    if (stageId) {
+                        navigate(defaultNavigatePath(), { state: { openEtudiantId: etudiantId } });
+                        return;
+                    }
+                } else {
+                    if (stageId) {
+                        navigate("/gestionnaire/list-stages", { state: { openStageId: stageId } });
+                        return;
+                    } else if (!stageId && cvId) {
+                        navigate("/gestionnaire/gestion-cv", { state: { openCvId: cvId } });
+                        return;
+                    }
+                }
             }
 
             navigate(defaultNavigatePath());
