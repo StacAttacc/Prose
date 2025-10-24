@@ -1,23 +1,18 @@
 package com.AL565.prose.service;
 
-import com.AL565.prose.model.Candidature;
-import com.AL565.prose.model.Employeur;
-import com.AL565.prose.model.OfferStatus;
-import com.AL565.prose.model.Stage;
+import com.AL565.prose.model.*;
 import com.AL565.prose.model.notifications.NotificationType;
 import com.AL565.prose.model.notifications.StageNotification;
-import com.AL565.prose.repository.CandidatureRepository;
-import com.AL565.prose.repository.EmployeurRepository;
-import com.AL565.prose.repository.NotificationRepository;
-import com.AL565.prose.repository.ProseUserRepository;
-import com.AL565.prose.repository.StageRepository;
+import com.AL565.prose.repository.*;
 import com.AL565.prose.security.exceptions.NotificationExceptions.*;
 import com.AL565.prose.security.exceptions.UserNotFoundException;
 import com.AL565.prose.service.dto.CandidatureDTO;
 import com.AL565.prose.service.dto.EmployeurDTO;
 import com.AL565.prose.service.dto.EmployeurPasswordDTO;
 import com.AL565.prose.service.dto.StageDTO;
+import com.AL565.prose.service.exceptions.CandidatureNotFoundException;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
+import com.AL565.prose.service.exceptions.InvalidCandidatureModificationException;
 import com.AL565.prose.service.exceptions.StageNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
@@ -117,5 +112,19 @@ public class EmployeurService {
         List<Candidature> candidatures = candidatureRepository.findAllByStage_Id(stageId).orElse(new ArrayList<>());
 
         return candidatures.stream().map((CandidatureDTO::toDTO)).toList();
+    }
+
+    public void updateCandidatureStatus(long candidatureId, String status) throws CandidatureNotFoundException, InvalidCandidatureModificationException {
+        CandidatureStatus candidatureStatus = CandidatureStatus.valueOf(status);
+        Candidature candidature = candidatureRepository.findById(candidatureId).orElseThrow(() -> new CandidatureNotFoundException("La candidature n'existe pas"));
+
+        candidature.setStatus(CandidatureStatus.valueOf(status));
+
+        if (candidatureStatus == CandidatureStatus.ACCEPTEE && candidature.getStatus() != CandidatureStatus.CONVOQUEE) {
+            throw new InvalidCandidatureModificationException("Il est impossible d'accepter un étudiant avant de le convoquer en entrevue.");
+        }
+
+        candidature.setStatus(candidatureStatus);
+        candidatureRepository.save(candidature);
     }
 }

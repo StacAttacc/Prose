@@ -1,10 +1,6 @@
 package com.AL565.prose.service.dto;
 
-import com.AL565.prose.model.CV;
-import com.AL565.prose.model.Etudiant;
-import com.AL565.prose.model.OfferStatus;
-import com.AL565.prose.model.Candidature;
-import com.AL565.prose.model.Stage;
+import com.AL565.prose.model.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -32,7 +28,7 @@ public class CandidatureDTO {
                 .stage(stage)
                 .motivationLetter(this.motivationLetterData)
                 .dateCandidature(LocalDateTime.now())
-                .status(OfferStatus.SOUMISE)
+                .status(CandidatureStatus.SOUMISE)
                 .build();
     }
 

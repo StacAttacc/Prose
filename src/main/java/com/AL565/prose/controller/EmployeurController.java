@@ -1,13 +1,14 @@
 package com.AL565.prose.controller;
 
-
 import com.AL565.prose.security.exceptions.UserNotFoundException;
 import com.AL565.prose.service.dto.CandidatureDTO;
 import com.AL565.prose.service.dto.EmployeurPasswordDTO;
 import com.AL565.prose.service.EmployeurService;
 import com.AL565.prose.service.dto.ReturnEntityDTO;
 import com.AL565.prose.service.dto.StageDTO;
+import com.AL565.prose.service.exceptions.CandidatureNotFoundException;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
+import com.AL565.prose.service.exceptions.InvalidCandidatureModificationException;
 import com.AL565.prose.service.exceptions.StageNotFoundException;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -88,6 +89,18 @@ public class EmployeurController {
             return ResponseEntity.ok(new ReturnEntityDTO<>("Aucune candidature trouvee", new ArrayList<>()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ReturnEntityDTO<>("Erreur interne du serveur", null));
+        }
+    }
+
+    @PutMapping("/candidatures/{id}/update")
+    public ResponseEntity<String> changeStatus(@PathVariable long id, @RequestParam String status) {
+        try {
+            employeurService.updateCandidatureStatus(id, status);
+            return ResponseEntity.ok("Candidature update avec success");
+        } catch (CandidatureNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Le candidature n'existe pas");
+        } catch (InvalidCandidatureModificationException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
         }
     }
 }

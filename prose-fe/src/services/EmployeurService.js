@@ -28,31 +28,28 @@ export async function getStageApplicants(stageId, token) {
         data?.results ||
         []
     );
+}
 
-
-    export async function approveApplicant(candidatureId, token) {
-        try {
-            const res = await http.post(`${API}/employeur/candidature/${candidatureId}/approve`, {}, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            return res.data;
-        } catch (err) {
-            console.error("Erreur lors de l'approbation :", err);
-            throw err;
-        }
+export async function approveApplicant(candidatureId, token) {
+    try {
+        const res = await http.post(`${API}/employeur/candidature/${candidatureId}/approve`, {}, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        return res.data;
+    } catch (err) {
+        console.error("Erreur lors de l'approbation :", err);
+        throw err;
     }
+}
 
-    export async function rejectApplicant(candidatureId, token) {
-        try {
-            const res = await http.post(`${API}/employeur/candidature/${candidatureId}/reject`, {}, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            return res.data;
-        } catch (err) {
-            console.error("Erreur lors du refus :", err);
-            throw err;
-        }
+export async function rejectApplicant(candidatureId, token) {
+    try {
+        const res = await http.post(`${API}/employeur/candidature/${candidatureId}/reject`, {}, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        return res.data;
+    } catch (err) {
+        console.error("Erreur lors du refus :", err);
+        throw err;
     }
-
-
 }
