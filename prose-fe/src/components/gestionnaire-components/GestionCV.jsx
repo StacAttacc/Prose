@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from "../../context/AuthContext.jsx";
 import { approveCv, fetchAllCVs, rejectCv } from "../../services/GestionnaireService.js";
 import { Worker, Viewer } from '@react-pdf-viewer/core';
+import {useLocation, useNavigate} from "react-router-dom";
 
 const statusColors = {
     APPROVED: "bg-green-100 border-green-300",
@@ -12,6 +13,8 @@ const statusColors = {
 const GestionCV = () => {
     const { user } = useAuth();
     const token = user?.token;
+    const location = useLocation();
+    const navigate = useNavigate();
 
     const [allCvs, setAllCvs] = useState([]);
     const [selectedCv, setSelectedCv] = useState(null);
@@ -103,6 +106,19 @@ const GestionCV = () => {
         setIsRejecting(false);
         setRejectionReason("");
     };
+
+    useEffect(() => {
+       const openCvId = location?.state?.openCvId;
+        if (!openCvId) return;
+
+        if (allCvs && allCvs.length > 0) {
+            const cv = allCvs.find(c => String(c.id) === String(openCvId));
+            if (cv) {
+                openModal(cv);
+                navigate(location.pathname, { replace: true, state: {} });
+            }
+        }
+    }, [user, location.state?.openCvId, allCvs, navigate, location]);
 
     const decisionsDisabled = comment.trim().length === 0;
 

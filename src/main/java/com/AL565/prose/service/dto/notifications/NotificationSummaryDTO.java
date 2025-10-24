@@ -1,9 +1,7 @@
 package com.AL565.prose.service.dto.notifications;
 
 import com.AL565.prose.model.Candidature;
-import com.AL565.prose.model.notifications.Notification;
-import com.AL565.prose.model.notifications.PostulationNotification;
-import com.AL565.prose.model.notifications.StageNotification;
+import com.AL565.prose.model.notifications.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -23,6 +21,7 @@ public class NotificationSummaryDTO {
     private LocalDateTime readAt;
     private LocalDateTime secondaryRecipientReadAt;
     private Long stageId;
+    private Long cvId;
     private Long candidatureId;
     private Long etudiantId;
 
@@ -31,6 +30,7 @@ public class NotificationSummaryDTO {
 
         Long stageId = null;
         Long candidatureId = null;
+        Long cvId = null;
         Long etudiantId = null;
 
         if (n instanceof StageNotification sn) {
@@ -41,6 +41,10 @@ public class NotificationSummaryDTO {
                 candidatureId = c.getId();
                 if (c.getStage() != null) stageId = c.getStage().getId();
                 if (c.getEtudiant() != null) etudiantId = c.getEtudiant().getId();
+            }
+        } else if (n instanceof GestionnaireCvNotification gcn) {
+            if (gcn.getCv() != null) {
+                cvId = gcn.getCv().getId();
             }
         }
 
@@ -55,6 +59,7 @@ public class NotificationSummaryDTO {
                 .stageId(stageId)
                 .candidatureId(candidatureId)
                 .etudiantId(etudiantId)
+                .cvId(cvId)
                 .build();
     }
 

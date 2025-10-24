@@ -4,6 +4,7 @@ import com.AL565.prose.model.Employeur;
 import com.AL565.prose.model.Etudiant;
 import com.AL565.prose.model.OfferStatus;
 import com.AL565.prose.model.Stage;
+import com.AL565.prose.model.notifications.GestionnaireCvNotification;
 import com.AL565.prose.model.notifications.NotificationType;
 import com.AL565.prose.model.notifications.PostulationNotification;
 import com.AL565.prose.repository.*;
@@ -49,6 +50,7 @@ public class EtudiantService {
     private final EmployeurRepository employeurRepository;
     private final CandidatureRepository candidatureRepository;
     private final NotificationRepository notificationRepository;
+    private final GestionnaireCvNotificationRepository gestionnaireCvNotificationRepository;
 
     public void inscrireEtudiant(EtudiantPasswordDTO dto) {
         if (proseUserRepository.findByCredentials_Username(dto.getEmail()).isPresent()) {
@@ -87,7 +89,7 @@ public class EtudiantService {
                 })
                 .collect(Collectors.toList());
     }
-  
+
     public void saveCv(MultipartFile cv, String email, String lastModified) throws Exception {
         if (cv == null || cv.isEmpty()) {
             throw new CvExceptions.NoFileException();
@@ -119,7 +121,7 @@ public class EtudiantService {
                 .comment(null)
                 .build();
 
-        cvRepository.findByEtudiant_Credentials_Username(email)
+        CV cvSaved = cvRepository.findByEtudiant_Credentials_Username(email)
                 .map(existingCv -> {
                     existingCv.setName(newCv.getName());
                     existingCv.setType(newCv.getType());
@@ -132,6 +134,28 @@ public class EtudiantService {
                     return cvRepository.save(existingCv);
                 })
                 .orElseGet(() -> cvRepository.save(newCv));
+
+        gestionnaireCvNotificationRepository.findByCv_Id(cvSaved.getId())
+                        .ifPresentOrElse(notification -> {
+                            notification.setFirstRecipientReadAt(null);
+                            notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
+                            notificationRepository.save(notification);
+                        }, () -> createNotificationForNewCV(etudiant, cvSaved));
+    }
+
+    private void createNotificationForNewCV(Etudiant etudiant, CV cv) {
+        if (cv == null) {
+            throw new IllegalArgumentException("Vous devez avoir un cv");
+        }
+        String etudiantName = etudiant.getFirstName() + " " + etudiant.getLastName();
+        GestionnaireCvNotification notification = new GestionnaireCvNotification();
+        notification.setCv(cv);
+        notification.setFirstRecipientReadAt(null);
+        notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
+        notification.setSenderEmail(etudiant.getEmail());
+        notification.setType(NotificationType.GESTIONNAIRE_CV_NOTIFICATION);
+        notification.setMessage(etudiantName + " a soumis un nouveau CV");
+        notificationRepository.save(notification);
     }
 
     public EtudiantCvDTO getCvByEmail(String username) {
@@ -167,7 +191,7 @@ public class EtudiantService {
 
         if (candidatureDTO.getMotivationLetterData() != null && candidatureDTO.getMotivationLetterData().length > 0) {
             if (candidatureDTO.getMotivationLetterContentType() == null ||
-                !MediaType.APPLICATION_PDF_VALUE.equalsIgnoreCase(candidatureDTO.getMotivationLetterContentType())) {
+                    !MediaType.APPLICATION_PDF_VALUE.equalsIgnoreCase(candidatureDTO.getMotivationLetterContentType())) {
                 throw new Exception("La lettre de motivation doit être au format PDF");
             }
         }

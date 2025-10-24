@@ -32,6 +32,7 @@ export default function Notifications() {
     function makeKeyForItem(item = {}, groupKey) {
         if (item?.candidatureId) return "postulation";
         if (item?.stageId) return "stage";
+        if (item?.cvId) return "gestionnaire_cv";
         if (groupKey && typeof groupKey === "string" && !/\s/.test(groupKey)) return groupKey.toLowerCase();
         if (item?.type) {
             return String(item.type)
@@ -98,7 +99,10 @@ export default function Notifications() {
                 byType = normalizeListToTypes(payload.postulationNotifications, "postulation");
             } else if (payload?.stageNotifications) {
                 byType = normalizeListToTypes(payload.stageNotifications, "stage");
-            } else if (payload?.items && Array.isArray(payload.items)) {
+            } else if (payload?.gestionnaireCvNotifications) {
+                byType = normalizeListToTypes(payload.gestionnaireCvNotifications, "gestionnaire_cv");
+            }
+            else if (payload?.items && Array.isArray(payload.items)) {
                 byType = normalizeListToTypes(payload.items);
             } else if (payload?.data && Array.isArray(payload.data)) {
                 byType = normalizeListToTypes(payload.data);
@@ -175,6 +179,7 @@ export default function Notifications() {
         const stageId = notification?.stageId || null;
         const candidatureId = notification?.candidatureId || null;
         const etudiantId = notification?.etudiantId || null;
+        const cvId = notification?.cvId || null;
 
         const isCandidature = Boolean(notification?.candidature || notification?.candidatureId);
 
@@ -189,19 +194,29 @@ export default function Notifications() {
             });
             setReadCounter(c => c + 1);
 
-            if (user.role === "EMPLOYEUR" && isCandidature && stageId) {
-                navigate(`/employeur/stages/${stageId}/candidatures`, { state: { openCandidatureId: candidatureId } });
-                return;
+            if (user.role === "EMPLOYEUR") {
+                if (isCandidature) {
+                    if (stageId) {
+                        navigate(`/employeur/stages/${stageId}/candidatures`, { state: { openCandidatureId: candidatureId } });
+                        return;
+                    }
+                }
             }
-
-            else if (user.role === "GESTIONNAIRE" && isCandidature && stageId) {
-                navigate(defaultNavigatePath(), { state: { openEtudiantId: etudiantId } });
-                return;
-            }
-
-            if (user.role === "GESTIONNAIRE" && !isCandidature && stageId) {
-                navigate("/gestionnaire/list-stages", { state: { openStageId: stageId } });
-                return;
+            else if (user.role === "GESTIONNAIRE") {
+                if (isCandidature) {
+                    if (stageId) {
+                        navigate(defaultNavigatePath(), { state: { openEtudiantId: etudiantId } });
+                        return;
+                    }
+                } else {
+                    if (stageId) {
+                        navigate("/gestionnaire/list-stages", { state: { openStageId: stageId } });
+                        return;
+                    } else if (!stageId && cvId) {
+                        navigate("/gestionnaire/gestion-cv", { state: { openCvId: cvId } });
+                        return;
+                    }
+                }
             }
 
             navigate(defaultNavigatePath());
@@ -255,8 +270,9 @@ export default function Notifications() {
     }
 
     function labelForKey(key) {
-        if (key === "stage") return `offre(s) de stage à approuver`;
-        if (key === "postulation") return `candidature(s) reçue(s)`;
+        if (key === "stage") return `nouvelles offre(s) de stage à approuver`;
+        if (key === "postulation") return `nouvelles candidature(s) reçue(s)`;
+        if (key === "gestionnaire_cv") return `nouveau(x) CV(s) à examiner`;
         return `${key} notification(s)`;
     }
 
@@ -298,7 +314,7 @@ export default function Notifications() {
                             <div className="flex items-start gap-3 flex-1">
                                 <div className="flex-1">
                                     <div className="text-xs text-gray-500" aria-live="polite">
-                                        {count} nouvelle(s) {labelForKey(typeKey)}
+                                        {count} {labelForKey(typeKey)}
                                     </div>
 
                                     {count <= 3 ? (
