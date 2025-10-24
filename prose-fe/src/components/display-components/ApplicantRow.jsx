@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { createPortal } from "react-dom";
-import { useAuth } from "../../context/AuthContext.jsx";
-import { telechargerCv } from "../../services/EtudiantService.js";
+import React, {useEffect, useMemo, useState} from "react";
+import {createPortal} from "react-dom";
+import {useAuth} from "../../context/AuthContext.jsx";
+import {telechargerCv} from "../../services/EtudiantService.js";
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import PdfModal from "./PdfModal.jsx";
 
@@ -21,7 +21,7 @@ function blobFromUnknownData(data, mime = "application/pdf") {
 
     if (Array.isArray(data)) {
         const bytes = new Uint8Array(data);
-        return new Blob([bytes], { type: mime });
+        return new Blob([bytes], {type: mime});
     }
 
     if (typeof data === "string") {
@@ -29,7 +29,7 @@ function blobFromUnknownData(data, mime = "application/pdf") {
             const bin = atob(data);
             const bytes = new Uint8Array(bin.length);
             for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-            return new Blob([bytes], { type: mime });
+            return new Blob([bytes], {type: mime});
         } catch {
             return null;
         }
@@ -38,8 +38,8 @@ function blobFromUnknownData(data, mime = "application/pdf") {
     return null;
 }
 
-export default function ApplicantRow({ applicant }) {
-    const { user } = useAuth();
+export default function ApplicantRow({applicant, showActions = false, onApprove, onReject}) {
+    const {user} = useAuth();
 
     const [docState, setDocState] = useState({
         open: false,
@@ -90,7 +90,7 @@ export default function ApplicantRow({ applicant }) {
     );
 
     async function openDocument(kind) {
-        setDocState({ open: true, kind, url: null, error: null, loading: true });
+        setDocState({open: true, kind, url: null, error: null, loading: true});
 
         try {
             if (kind === "cv") {
@@ -131,7 +131,7 @@ export default function ApplicantRow({ applicant }) {
 
     function closeModal() {
         if (docState.url) URL.revokeObjectURL(docState.url);
-        setDocState({ open: false, kind: null, url: null, error: null, loading: false });
+        setDocState({open: false, kind: null, url: null, error: null, loading: false});
     }
 
     useEffect(() => {
@@ -142,6 +142,8 @@ export default function ApplicantRow({ applicant }) {
 
     return (
         <>
+
+
             <tr className="border-b hover:bg-gray-50 transition">
                 <td className="py-3 px-4 align-top">
                     <div className="font-medium text-gray-800">{fullName}</div>
@@ -166,6 +168,8 @@ export default function ApplicantRow({ applicant }) {
                     )}
                 </td>
 
+
+
                 <td className="py-3 px-4 align-top text-gray-700">
                     {letterData ? (
                         <button
@@ -181,6 +185,31 @@ export default function ApplicantRow({ applicant }) {
                         <span className="text-gray-400">Aucune lettre de motivation</span>
                     )}
                 </td>
+
+                                <td className="py-3 px-4 align-top">
+                                    {showActions ? (
+                                        <div className="flex gap-2">
+                                                <button
+                                                    onClick={() => onApprove && onApprove(applicant)}
+                                                    className="px-3 py-1 rounded bg-green-600 text-white hover:bg-green-700 disabled:opacity-60"
+                                                    disabled={!onApprove}
+                                                    type="button"
+                                                >
+                                                    Accepter
+                                                </button>
+                                            <button
+                                                onClick={() => onReject && onReject(applicant)}
+                                                className="px-3 py-1 rounded bg-red-600 text-white hover:bg-red-700 disabled:opacity-60"
+                                                disabled={!onReject}
+                                                type="button"
+                                            >
+                                                Refuser
+                                            </button>
+                                        </div>
+                                    ) : null}
+                                </td>
+
+
             </tr>
 
             {docState.open &&

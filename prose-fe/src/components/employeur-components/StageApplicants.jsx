@@ -1,9 +1,9 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { NavLink, useParams } from "react-router-dom";
+import React, {useEffect, useMemo, useState} from "react";
+import {NavLink, useParams} from "react-router-dom";
 import ApplicantRow from "../display-components/ApplicantRow";
-import { useAuth } from "../../context/AuthContext.jsx";
-import { getStageApplicants } from "../../services/EmployeurService.js";
-import { getEmployeurStages } from "../../services/StageService.js";
+import {useAuth} from "../../context/AuthContext.jsx";
+import {getStageApplicants} from "../../services/EmployeurService.js";
+import {getEmployeurStages} from "../../services/StageService.js";
 
 const txt = (v) => (v == null ? "" : String(v));
 const norm = (s) =>
@@ -35,13 +35,13 @@ function buildSearchFields(app) {
 
     const fullName = nameCandidates[0] || "";
 
-    return { email, fullName };
+    return {email, fullName};
 }
 
 
 const StageApplicantsPage = () => {
-    const { id } = useParams();
-    const { user } = useAuth();
+    const {id} = useParams();
+    const {user} = useAuth();
 
     const [q, setQ] = useState("");
     const [applicants, setApplicants] = useState([]);
@@ -93,7 +93,7 @@ const StageApplicantsPage = () => {
         if (!qn) return applicants;
 
         return applicants.filter((app) => {
-            const { email, fullName } = buildSearchFields(app);
+            const {email, fullName} = buildSearchFields(app);
             return norm(fullName).includes(qn) || norm(email).includes(qn);
         });
     }, [applicants, q]);
@@ -118,7 +118,8 @@ const StageApplicantsPage = () => {
                         onChange={(e) => setQ(e.target.value)}
                         aria-label="Recherche"
                     />
-                    <div className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-gray-400 text-base">
+                    <div
+                        className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-gray-400 text-base">
                         ⌕
                     </div>
                 </div>
@@ -138,23 +139,27 @@ const StageApplicantsPage = () => {
                             <th className="py-3 px-4 font-medium text-gray-600">Candidat</th>
                             <th className="py-3 px-4 font-medium text-gray-600">CV</th>
                             <th className="py-3 px-4 font-medium text-gray-600">Lettre de motivation</th>
+                            <th className="py-3 px-4 font-medium text-gray-600">Actions</th>
                         </tr>
                         </thead>
                         <tbody>
                         {loading ? (
                             <tr>
-                                <td className="py-8 px-4 text-gray-500 text-center" colSpan={3}>
+                                <td className="py-8 px-4 text-gray-500 text-center" colSpan={4}>
                                     Chargement…
                                 </td>
                             </tr>
                         ) : filtered.length === 0 ? (
                             <tr>
-                                <td className="py-8 px-4 text-gray-500 text-center" colSpan={3}>
+                                <td className="py-8 px-4 text-gray-500 text-center" colSpan={4}>
                                     Aucune candidature trouvée.
                                 </td>
                             </tr>
                         ) : (
-                            filtered.map((app) => <ApplicantRow key={app.id} applicant={app} />)
+                            filtered.map((app) => <ApplicantRow key={app.id} applicant={app}
+                                                                showActions={true}
+                                                                onApprove={(a) => console.log("Approuve", a)}
+                                                                onReject={(a) => console.log("Reject", a)}/>)
                         )}
                         </tbody>
                     </table>
