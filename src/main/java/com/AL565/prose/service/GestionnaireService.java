@@ -1,9 +1,7 @@
 package com.AL565.prose.service;
 
 import com.AL565.prose.model.*;
-import com.AL565.prose.model.notifications.Notification;
-import com.AL565.prose.model.notifications.NotificationType;
-import com.AL565.prose.model.notifications.PostulationNotification;
+import com.AL565.prose.model.notifications.*;
 import com.AL565.prose.repository.*;
 import com.AL565.prose.security.exceptions.CvExceptions.*;
 import com.AL565.prose.security.exceptions.NotificationExceptions;
@@ -37,6 +35,7 @@ public class GestionnaireService {
     private final CandidatureRepository candidatureRepository;
     private final NotificationRepository notificationRepository;
     private final PostulationNotificationRepository postulastionNotificationRepository;
+    private final GestionnaireCvNotificationRepository gestionnaireCvNotificationRepository;
     private final NotificationsHelper notificationsHelper;
 
     public void saveGestionnaire(GestionnairePasswordDTO dto) {
@@ -183,9 +182,24 @@ public class GestionnaireService {
                 .orElseThrow(NotificationExceptions.NotificationFetchException::new);
         if (notification.getType() == NotificationType.POSTULATION_NOTIFICATION) {
             markPostulationAsReadBySecondRecipient(notificationId);
+        } else if (notification.getType() == NotificationType.STAGE_NOTIFICATION) {
+            GestionnaireCvNotification gestionnaireCvNotification = gestionnaireCvNotificationRepository.findById(notificationId)
+                    .orElseThrow(NotificationExceptions.NotificationFetchException::new);
+            createStudentNotificationForReviewedCV(gestionnaireCvNotification.getCv());
         } else {
             notificationsHelper.markNotificationAsReadByFirstRecipient(notificationId);
         }
+    }
+
+    @Transactional
+    public void createStudentNotificationForReviewedCV(CV cv) {
+        EtudiantCvNotification notification = new EtudiantCvNotification();
+        notification.setFirstRecipientReadAt(null);
+        notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
+        notification.setType(NotificationType.GESTIONNAIRE_CV_NOTIFICATION);
+        notification.setEtudiant(cv.getEtudiant());
+        notification.setMessage("Votre CV a été examiné. Statut: " + cv.getStatus().toString());
+        notificationRepository.save(notification);
     }
 
     @Transactional
