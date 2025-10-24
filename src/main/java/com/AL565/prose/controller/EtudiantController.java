@@ -3,6 +3,7 @@ package com.AL565.prose.controller;
 import com.AL565.prose.security.JwtTokenProvider;
 import com.AL565.prose.service.EtudiantService;
 import com.AL565.prose.service.dto.*;
+import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
 import com.AL565.prose.service.exceptions.AlreadyAppliedToStageException;
 import com.AL565.prose.service.dto.CandidatureDTO;
 import com.AL565.prose.service.dto.EtudiantCvDTO;
@@ -175,4 +176,16 @@ public class EtudiantController {
         }
     }
 
+    @GetMapping("/notifications/all")
+    public ResponseEntity<ReturnEntityDTO<NotificationsResponseDTO>> getAllNotifications(@RequestHeader("Authorization") String authHeader) {
+        try {
+            String token = authHeader.replace("Bearer ", "");
+            String email = jwtTokenProvider.getEmailFromJWT(token);
+            NotificationsResponseDTO notifications = etudiantService.getStudentsNotifications(email);
+            return ResponseEntity.ok(new ReturnEntityDTO<>("notifications: ", notifications));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ReturnEntityDTO<>("Erreur lors de la récupération des notifications", null));
+        }
+    }
 }

@@ -4,6 +4,7 @@ import com.AL565.prose.model.Employeur;
 import com.AL565.prose.model.Etudiant;
 import com.AL565.prose.model.OfferStatus;
 import com.AL565.prose.model.Stage;
+import com.AL565.prose.model.notifications.EtudiantCvNotification;
 import com.AL565.prose.model.notifications.GestionnaireCvNotification;
 import com.AL565.prose.model.notifications.NotificationType;
 import com.AL565.prose.model.notifications.PostulationNotification;
@@ -11,6 +12,7 @@ import com.AL565.prose.repository.*;
 import com.AL565.prose.model.CV;
 import com.AL565.prose.model.CvStatus;
 import com.AL565.prose.model.Candidature;
+import com.AL565.prose.security.exceptions.NotificationExceptions;
 import com.AL565.prose.service.dto.EtudiantPasswordDTO;
 import com.AL565.prose.service.dto.CandidatureDTO;
 import com.AL565.prose.service.dto.StageDTO;
@@ -24,6 +26,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.AL565.prose.security.exceptions.CvExceptions;
+import com.AL565.prose.service.dto.notifications.NotificationGroupDTO;
+import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
@@ -50,6 +54,7 @@ public class EtudiantService {
     private final CandidatureRepository candidatureRepository;
     private final NotificationRepository notificationRepository;
     private final GestionnaireCvNotificationRepository gestionnaireCvNotificationRepository;
+    private final EtudiantCvNotificationRepository etudiantCvNotificationRepository;
 
     public void inscrireEtudiant(EtudiantPasswordDTO dto) {
         if (proseUserRepository.findByCredentials_Username(dto.getEmail()).isPresent()) {
@@ -242,5 +247,22 @@ public class EtudiantService {
                     return EtudiantCandidatureDTO.toDTO(candidature, employeur);
                 })
                 .collect(Collectors.toList());
+    }
+
+    public NotificationsResponseDTO getStudentsNotifications(String etudiantEmail) throws Exception {
+        try {
+            List<EtudiantCvNotification> cvNotifications = etudiantCvNotificationRepository
+                    .findNotificationsByTypeAndFirstRecipientReadAtAndEtudiant_Credentials_Username(
+                            NotificationType.ETUDIANT_CV_NOTIFICATION,
+                            null,
+                            etudiantEmail);
+
+            NotificationGroupDTO cvGroup = NotificationGroupDTO
+                    .toDTO(NotificationType.ETUDIANT_CV_NOTIFICATION.getDisplayName(), cvNotifications);
+
+            return NotificationsResponseDTO.toDTO(List.of(cvGroup));
+        } catch (Exception e) {
+            throw new NotificationExceptions.NotificationFetchException();
+        }
     }
 }
