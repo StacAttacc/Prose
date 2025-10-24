@@ -157,30 +157,22 @@ export default function StageDetailsModal({
                             </div>
                         )}
 
-        {error && (
-           <ErrorBanner message={error} />
-        )}
-        {stage.status === 'REJETEE' && stage.rejectionReason && (
-          <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded">
-            <h3 className="text-lg font-semibold mb-2 text-red-800">Raison du rejet</h3>
-            <p className="text-red-700">{stage.rejectionReason}</p>
-          </div>
-        )}
-        
-        <div className="mt-6 flex justify-end space-x-4">
-          <div className="w-full">
-            {shouldShowManagementButtons && (
-                <div className="flex flex-col">
-                  <button
-                      onClick={handleApprove}
-                      className="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center disabled:opacity-50 mb-1"
-                      disabled={isProcessing || isRejecting}
-                  >
-                    {isProcessing ? "Traitement..." : "Approuver"}
-                  </button>
-                  <button
-                      onClick={() => {setIsRejecting(!isRejecting)}}
-                      className="text-white bg-gradient-to-r
+                        <div className="mt-6">
+                            <div className="w-full">
+                                {shouldShowManagementButtons && (
+                                    <div className="flex flex-col mb-4">
+                                        <button
+                                            onClick={handleApprove}
+                                            className="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center disabled:opacity-50 mb-1"
+                                            disabled={isProcessing || isRejecting}
+                                        >
+                                            {isProcessing ? "Traitement..." : "Approuver"}
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                setIsRejecting(!isRejecting)
+                                            }}
+                                            className="text-white bg-gradient-to-r
                                     from-red-400 via-red-500 to-red-600
                                     hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300
                                     dark:focus:ring-red-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center  disabled:opacity-50"
@@ -236,31 +228,9 @@ export default function StageDetailsModal({
                                 </div>
                             </div>
                         </div>
-                      </div>
-                  )}
-                </div>
-            )}
-            <div className="flex justify-end mt-2">
-              <button
-                  onClick={handleClose}
-                  className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 disabled:opacity-50 align-end"
-                  disabled={isProcessing}
-              >
-                Fermer
-              </button>
-              {shouldShowPostulerButton && (
-                  <button
-                      onClick={handlePostuler}
-                      className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                  >
-                    Postuler
-                  </button>
-              )}
+                    </>
+                )}
             </div>
         </div>
-                </>
-                )}
-        </div>
-    </div>
-  );
+    );
 }
