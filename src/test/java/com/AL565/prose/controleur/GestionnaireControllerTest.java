@@ -3,7 +3,9 @@ package com.AL565.prose.controleur;
 import com.AL565.prose.controller.GestionnaireController;
 import com.AL565.prose.model.*;
 import com.AL565.prose.model.auth.Credentials;
+import com.AL565.prose.model.notifications.GestionnaireCvNotification;
 import com.AL565.prose.model.notifications.NotificationType;
+import com.AL565.prose.model.notifications.PostulationNotification;
 import com.AL565.prose.model.notifications.StageNotification;
 import com.AL565.prose.repository.CvRepository;
 import com.AL565.prose.repository.NotificationRepository;
@@ -302,8 +304,25 @@ class GestionnaireControllerTest {
         n2.setCreatedAt(LocalDateTime.now());
         n2.setSenderEmail("employer2@example.com");
 
-        NotificationGroupDTO group = NotificationGroupDTO.toDTO(NotificationType.STAGE_NOTIFICATION.getDisplayName(), List.of(n1, n2));
-        NotificationsResponseDTO response = NotificationsResponseDTO.toDTO(List.of(group));
+        PostulationNotification n3 = new PostulationNotification();
+        n3.setType(NotificationType.POSTULATION_NOTIFICATION);
+        n3.setMessage("New application");
+        n3.setCreatedAt(LocalDateTime.now());
+        n2.setSenderEmail("student@email.com");
+
+        GestionnaireCvNotification n4 = new GestionnaireCvNotification();
+        n4.setType(NotificationType.GESTIONNAIRE_CV_NOTIFICATION);
+        n4.setMessage("New CV uploaded");
+        n4.setCreatedAt(LocalDateTime.now());
+        n2.setSenderEmail("etudiant2@email.com");
+
+        NotificationGroupDTO stageGroup = NotificationGroupDTO
+                .toDTO(NotificationType.STAGE_NOTIFICATION.getDisplayName(), List.of(n1, n2));
+        NotificationGroupDTO postulationGroup = NotificationGroupDTO
+                .toDTO(NotificationType.POSTULATION_NOTIFICATION.getDisplayName(), List.of(n3));
+        NotificationGroupDTO cvGroup = NotificationGroupDTO
+                .toDTO(NotificationType.GESTIONNAIRE_CV_NOTIFICATION.getDisplayName(), List.of(n4));
+        NotificationsResponseDTO response = NotificationsResponseDTO.toDTO(List.of(stageGroup, postulationGroup, cvGroup));
 
         when(gestionnaireService.getGestionnaireNotifications()).thenReturn(response);
 

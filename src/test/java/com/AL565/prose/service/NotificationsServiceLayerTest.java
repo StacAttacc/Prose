@@ -1,5 +1,6 @@
 package com.AL565.prose.service;
 
+import com.AL565.prose.model.notifications.GestionnaireCvNotification;
 import com.AL565.prose.model.notifications.NotificationType;
 import com.AL565.prose.model.notifications.PostulationNotification;
 import com.AL565.prose.model.notifications.StageNotification;
@@ -57,20 +58,29 @@ class NotificationsServiceLayerTest {
         n3.setMessage("New application");
         n3.setCreatedAt(LocalDateTime.now());
 
+        GestionnaireCvNotification n4 = new GestionnaireCvNotification();
+        n4.setType(NotificationType.GESTIONNAIRE_CV_NOTIFICATION);
+        n4.setMessage("New CV uploaded");
+        n4.setCreatedAt(LocalDateTime.now());
+
         when(notificationRepository.findNotificationsByTypeAndFirstRecipientReadAt(NotificationType.STAGE_NOTIFICATION, null))
                 .thenReturn(List.of(n1, n2));
 
         when(notificationRepository.findNotificationsByTypeAndSecondRecipientReadAt(NotificationType.POSTULATION_NOTIFICATION, null))
                 .thenReturn(List.of(n3));
 
+        when(notificationRepository.findNotificationsByTypeAndFirstRecipientReadAt(NotificationType.GESTIONNAIRE_CV_NOTIFICATION, null))
+                .thenReturn(List.of(n4));
+
         NotificationsResponseDTO result = gestionnaireService.getGestionnaireNotifications();
 
         assertThat(result).isNotNull();
-        assertThat(result.getTotalCount()).isEqualTo(3);
-        assertThat(result.getGroups()).hasSize(2);
+        assertThat(result.getTotalCount()).isEqualTo(4);
+        assertThat(result.getGroups()).hasSize(3);
         assertThat(result.getGroups().get(0).getItems()).hasSize(2);
         assertThat(result.getGroups().get(0).getItems().getFirst().getMessage()).isEqualTo("Stage submitted");
         assertThat(result.getGroups().get(1).getItems().getFirst().getMessage()).isEqualTo("New application");
+        assertThat(result.getGroups().get(2).getItems().getFirst().getMessage()).isEqualTo("New CV uploaded");
 
         verify(notificationRepository, times(1))
                 .findNotificationsByTypeAndFirstRecipientReadAt(NotificationType.STAGE_NOTIFICATION, null);
