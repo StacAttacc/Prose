@@ -32,6 +32,7 @@ export default function Notifications() {
     function makeKeyForItem(item = {}, groupKey) {
         if (item?.candidatureId) return "postulation";
         if (item?.stageId) return "stage";
+        if (item?.cvId) return "cv";
         if (groupKey && typeof groupKey === "string" && !/\s/.test(groupKey)) return groupKey.toLowerCase();
         if (item?.type) {
             return String(item.type)
@@ -201,6 +202,11 @@ export default function Notifications() {
 
             if (user.role === "GESTIONNAIRE" && !isCandidature && stageId) {
                 navigate("/gestionnaire/list-stages", { state: { openStageId: stageId } });
+                return;
+            }
+
+            if (user.role === "GESTIONNAIRE" && !isCandidature && !stageId && cvId) {
+                navigate("/gestionnaire/gestion-cv", { state: { openCvId: cvId } });
                 return;
             }
 
