@@ -11,7 +11,7 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CvPostNotification extends Notification {
+public class GestionnaireCvNotification extends Notification {
     @OneToOne
     @JoinColumn(name = "cv_id")
     private CV cv;
