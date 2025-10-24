@@ -156,28 +156,40 @@ const StageApplicantsPage = () => {
                                 </td>
                             </tr>
                         ) : (
-                            filtered.map((app) => <ApplicantRow
-                                    applicant={app}
-                                    showActions
-                                    onApprove={async (a) => {
-                                        try {
-                                            await approveApplicant(a.id, user.token);
-                                            alert(`Candidature de ${a.etudiant?.firstName ?? "l'étudiant"} acceptée ✅`);
-                                        } catch {
-                                            alert("Erreur lors de l'approbation ❌");
+                            filtered.map((app) => (
+                                    <ApplicantRow
+                                        key={
+                                            app.id ??
+                                            app.candidatureId ??
+                                            app.applicationId ??
+                                            app.etudiant?.id ??
+                                            app.email // dernier recours avant d'éviter Math.random
                                         }
-                                    }}
-                                    onReject={async (a) => {
-                                        try {
-                                            await rejectApplicant(a.id, user.token);
-                                            alert(`Candidature de ${a.etudiant?.firstName ?? "l'étudiant"} refusée 🚫`);
-                                        } catch {
-                                            alert("Erreur lors du refus ❌");
-                                        }
-                                    }}
-                                />
-                            ))}
-                        </tbody>
+                                        applicant={app}
+                                        showActions
+                                        onApprove={async (a) => {
+                                            try {
+                                                await approveApplicant(a.id ?? a.candidatureId ?? a.applicationId, user.token);
+                                                alert(`Candidature de ${a.etudiant?.firstName ?? "l'étudiant"} acceptée ✅`);
+                                                // Optionnel: mise à jour optimiste
+                                                setApplicants((prev) => prev.filter(x => (x.id ?? x.candidatureId ?? x.applicationId) !== (a.id ?? a.candidatureId ?? a.applicationId)));
+                                            } catch {
+                                                alert("Erreur lors de l'approbation ❌");
+                                            }
+                                        }}
+                                        onReject={async (a) => {
+                                            try {
+                                                await rejectApplicant(a.id ?? a.candidatureId ?? a.applicationId, user.token);
+                                                alert(`Candidature de ${a.etudiant?.firstName ?? "l'étudiant"} refusée 🚫`);
+                                                // Optionnel: mise à jour optimiste
+                                                setApplicants((prev) => prev.filter(x => (x.id ?? x.candidatureId ?? x.applicationId) !== (a.id ?? a.candidatureId ?? a.applicationId)));
+                                            } catch {
+                                                alert("Erreur lors du refus ❌");
+                                            }
+                                        }}
+                                    />
+                                )))}
+                            </tbody>
                     </table>
                 </div>
             </div>
