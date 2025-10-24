@@ -71,7 +71,6 @@ public class EmployeurService {
         notification.setFirstRecipientReadAt(null);
         notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
         notification.setStage(stage);
-        notification.setSenderEmail(stage.getEmployeurEmail());
         notification.setType(NotificationType.STAGE_NOTIFICATION);
         notification.setMessage(employeurName + " a créé le stage " +stage.getTitle());
         notificationRepository.save(notification);

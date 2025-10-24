@@ -26,7 +26,6 @@ import java.util.stream.Collectors;
 import com.AL565.prose.security.exceptions.CvExceptions;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -152,7 +151,6 @@ public class EtudiantService {
         notification.setCv(cv);
         notification.setFirstRecipientReadAt(null);
         notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
-        notification.setSenderEmail(etudiant.getEmail());
         notification.setType(NotificationType.GESTIONNAIRE_CV_NOTIFICATION);
         notification.setMessage(etudiantName + " a soumis un nouveau CV");
         notificationRepository.save(notification);
@@ -225,7 +223,6 @@ public class EtudiantService {
         notification.setFirstRecipientReadAt(null);
         notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
         notification.setCandidature(candidature);
-        notification.setSenderEmail(candidature.getEtudiant().getEmail());
         notification.setType(NotificationType.POSTULATION_NOTIFICATION);
         notification.setMessage(studentName + " a postulé pour le stage " + companyName);
         notificationRepository.save(notification);
