@@ -6,9 +6,9 @@ import { Worker, Viewer } from '@react-pdf-viewer/core';
 import ErrorBanner from "../display-components/ErrorBanner.jsx";
 
 const statusColors = {
-    APPROVED: "bg-green-100 border-green-300",
-    PENDING: "bg-yellow-100 border-yellow-300",
-    REJECTED: "bg-red-100 border-red-300",
+    APPROVED: "bg-green-300 border-green-300",
+    PENDING: "bg-yellow-300 border-yellow-300",
+    REJECTED: "bg-red-300 border-red-300",
     NONE: "bg-gray-100 border-gray-300"
 };
 
@@ -74,7 +74,7 @@ export default function MonCV() {
     }
 
     return (
-        <div className="max-w-3xl mx-auto pt-6">
+        <div className="max-w-3xl mx-auto pt-6 space-y-4">
 
             <div className="flex flex-col md:flex-row gap-0 rounded-xl border shadow bg-white overflow-hidden">
 
@@ -99,22 +99,6 @@ export default function MonCV() {
                                     <p className="text-sm text-blue-600 font-medium">{cv.name}</p>
                                 </div>
                             </button>
-                            <div className="flex flex-col gap-2 text-xs">
-                                <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
-                                    <div>
-                                        <span className="inline-block w-4 h-4 rounded bg-green-400 mr-2"></span>
-                                        <span className="whitespace-nowrap">Accepté</span>
-                                    </div>
-                                    <div>
-                                        <span className="inline-block w-4 h-4 rounded bg-yellow-400 ml-4 mr-2"></span>
-                                        <span className="whitespace-nowrap">En Attente d'Approbation</span>
-                                    </div>
-                                    <div>
-                                        <span className="inline-block w-4 h-4 rounded bg-red-400 ml-4 mr-2"></span>
-                                        <span className="whitespace-nowrap">À Refaire</span>
-                                    </div>
-                                </div>
-                            </div>
                             {cv && cv.comment && (
                                 <div>
                                     <p><span className="text-sm font-medium">Commentaire: </span>{cv.comment}</p>
@@ -125,7 +109,29 @@ export default function MonCV() {
                         <div className="text-gray-500 text-center">Aucun CV trouvé.</div>
                     )}
                 </div>
-                {showModal && (
+            </div>
+
+            {/* Légende des statuts */}
+            <div className="bg-white rounded-xl border shadow p-4">
+                <div className="flex flex-col gap-2 text-xs">
+                    <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+                        <div>
+                            <span className="inline-block w-4 h-4 rounded bg-green-300 mr-2"></span>
+                            <span className="whitespace-nowrap">Accepté</span>
+                        </div>
+                        <div>
+                            <span className="inline-block w-4 h-4 rounded bg-yellow-300 ml-4 mr-2"></span>
+                            <span className="whitespace-nowrap">En Attente d'Approbation</span>
+                        </div>
+                        <div>
+                            <span className="inline-block w-4 h-4 rounded bg-red-300 ml-4 mr-2"></span>
+                            <span className="whitespace-nowrap">À Refaire</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {showModal && (
                     <div
                         className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50"
                         onClick={closeModal}
@@ -156,7 +162,6 @@ export default function MonCV() {
                         </div>
                     </div>
                 )}
-            </div>
         </div>
     );
 }
