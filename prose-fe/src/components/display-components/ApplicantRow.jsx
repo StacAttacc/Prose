@@ -43,7 +43,7 @@ export default function ApplicantRow({applicant, showActions = false, onApprove,
 
     const [docState, setDocState] = useState({
         open: false,
-        kind: null, // 'cv' | 'letter'
+        kind: null,
         url: null,
         error: null,
         loading: false,
