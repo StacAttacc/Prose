@@ -182,7 +182,7 @@ public class GestionnaireService {
                 .orElseThrow(NotificationExceptions.NotificationFetchException::new);
         if (notification.getType() == NotificationType.POSTULATION_NOTIFICATION) {
             markPostulationAsReadBySecondRecipient(notificationId);
-        } else if (notification.getType() == NotificationType.STAGE_NOTIFICATION) {
+        } else if (notification.getType() == NotificationType.GESTIONNAIRE_CV_NOTIFICATION) {
             GestionnaireCvNotification gestionnaireCvNotification = gestionnaireCvNotificationRepository.findById(notificationId)
                     .orElseThrow(NotificationExceptions.NotificationFetchException::new);
             createStudentNotificationForReviewedCV(gestionnaireCvNotification.getCv());
@@ -196,7 +196,7 @@ public class GestionnaireService {
         EtudiantCvNotification notification = new EtudiantCvNotification();
         notification.setFirstRecipientReadAt(null);
         notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
-        notification.setType(NotificationType.GESTIONNAIRE_CV_NOTIFICATION);
+        notification.setType(NotificationType.ETUDIANT_CV_NOTIFICATION);
         notification.setEtudiant(cv.getEtudiant());
         notification.setMessage("Votre CV a été examiné. Statut: " + cv.getStatus().toString());
         notificationRepository.save(notification);
