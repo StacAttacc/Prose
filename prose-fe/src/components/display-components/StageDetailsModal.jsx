@@ -11,7 +11,7 @@ export default function StageDetailsModal({
                                               onReject,
                                               showManagementButtons = false,
                                               showPostulerButton = false,
-                                              onCandidatureSuccess,
+                                              onCandidatureSuccess
                                           }) {
     const {user} = useAuth();
     const [rejectionReason, setRejectionReason] = useState("");
@@ -19,7 +19,6 @@ export default function StageDetailsModal({
     const [error, setError] = useState("");
     const [showCandidatureForm, setShowCandidatureForm] = useState(false);
     const [candidatureSuccess, setCandidatureSuccess] = useState(false);
-
     const [isRejecting, setIsRejecting] = useState(false);
 
     const shouldShowManagementButtons = showManagementButtons && user?.role === 'GESTIONNAIRE';
@@ -58,7 +57,6 @@ export default function StageDetailsModal({
         } finally {
             setIsProcessing(false);
             setIsRejecting(false);
-
         }
     };
 
@@ -121,8 +119,7 @@ export default function StageDetailsModal({
                                 <h3 className="text-lg font-semibold mb-2">Informations générales</h3>
                                 <div className="space-y-2">
                                     <p><strong>Titre :</strong> {stage.title}</p>
-                                    <p><strong>Employeur :</strong> {stage.employeur?.company} {stage.employeur?.email}
-                                    </p>
+                                    <p><strong>Employeur :</strong> {stage.employeur?.company} {stage.employeur?.email}</p>
                                     <p><strong>Date de début :</strong> {stage.startDate}</p>
                                     <p><strong>Date de fin :</strong> {stage.endDate}</p>
                                     <p><strong>Lieu :</strong> {stage.location}</p>
@@ -169,19 +166,14 @@ export default function StageDetailsModal({
                                             {isProcessing ? "Traitement..." : "Approuver"}
                                         </button>
                                         <button
-                                            onClick={() => {
-                                                setIsRejecting(!isRejecting)
-                                            }}
-                                            className="text-white bg-gradient-to-r
-                                    from-red-400 via-red-500 to-red-600
-                                    hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300
-                                    dark:focus:ring-red-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center  disabled:opacity-50"
+                                            onClick={() => {setIsRejecting(!isRejecting)}}
+                                            className="text-white bg-gradient-to-r from-red-400 via-red-500 to-red-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center disabled:opacity-50"
                                             disabled={isProcessing}
                                         >
                                             Rejeter
                                         </button>
                                         {isRejecting && (
-                                            <div className="mt-6 ">
+                                            <div className="mt-6">
                                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                                     Raison de rejet (obligatoire pour rejeter le stage) :
                                                 </label>
@@ -196,10 +188,7 @@ export default function StageDetailsModal({
                                                 <div className="flex justify-center">
                                                     <button
                                                         onClick={handleReject}
-                                                        className="text-white bg-gradient-to-r
-                                    from-red-400 via-red-500 to-red-600
-                                    hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300
-                                    dark:focus:ring-red-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center disabled:opacity-50 mt-2"
+                                                        className="text-white bg-gradient-to-r from-red-400 via-red-500 to-red-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center disabled:opacity-50 mt-2"
                                                         disabled={isProcessing || !rejectionReason}
                                                     >
                                                         {isProcessing ? "Traitement..." : "Confirmer"}
