@@ -119,7 +119,7 @@ public class EtudiantService {
                 .comment(null)
                 .build();
 
-        CV savedCv = cvRepository.findByEtudiant_Credentials_Username(email)
+        CV cvSaved = cvRepository.findByEtudiant_Credentials_Username(email)
                 .map(existingCv -> {
                     existingCv.setName(newCv.getName());
                     existingCv.setType(newCv.getType());
@@ -133,12 +133,12 @@ public class EtudiantService {
                 })
                 .orElseGet(() -> cvRepository.save(newCv));
 
-        createNotificationForNewCV(etudiant, savedCv);
+        createNotificationForNewCV(etudiant, cvSaved);
     }
 
     private void createNotificationForNewCV(Etudiant etudiant, CV cv) {
         if (cv == null) {
-            throw new IllegalArgumentException("Vous devez avoir un cv pour envoyer une notification pour un cv");
+            throw new IllegalArgumentException("Vous devez avoir un cv");
         }
         String etudiantName = etudiant.getFirstName() + " " + etudiant.getLastName();
         GestionnaireCvNotification notification = new GestionnaireCvNotification();
