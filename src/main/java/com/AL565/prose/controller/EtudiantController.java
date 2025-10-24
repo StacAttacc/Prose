@@ -188,4 +188,15 @@ public class EtudiantController {
                     .body(new ReturnEntityDTO<>("Erreur lors de la récupération des notifications", null));
         }
     }
+
+    @PutMapping("/notifications/read/{id}")
+    public ResponseEntity<ReturnEntityDTO<Void>> markNotificationAsRead(@PathVariable Long id) {
+        try {
+            etudiantService.markNotificationAsRead(id);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ReturnEntityDTO<>("Erreur lors du marquage de la notification comme lue", null));
+        }
+    }
 }

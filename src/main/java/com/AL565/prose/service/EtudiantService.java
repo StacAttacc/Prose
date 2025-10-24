@@ -55,6 +55,7 @@ public class EtudiantService {
     private final NotificationRepository notificationRepository;
     private final GestionnaireCvNotificationRepository gestionnaireCvNotificationRepository;
     private final EtudiantCvNotificationRepository etudiantCvNotificationRepository;
+    private final NotificationsHelper notificationsHelper;
 
     public void inscrireEtudiant(EtudiantPasswordDTO dto) {
         if (proseUserRepository.findByCredentials_Username(dto.getEmail()).isPresent()) {
@@ -264,5 +265,9 @@ public class EtudiantService {
         } catch (Exception e) {
             throw new NotificationExceptions.NotificationFetchException();
         }
+    }
+
+    public void markNotificationAsRead(Long notificationId) throws Exception {
+        notificationsHelper.markNotificationAsReadByFirstRecipient(notificationId);
     }
 }
