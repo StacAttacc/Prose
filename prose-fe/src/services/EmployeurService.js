@@ -1,6 +1,4 @@
-// src/services/EmployeurService.js
-import {getAccessToken, http} from "./http";
-import axios from "axios";
+import {http} from "./http";
 const BASE_URL = "http://localhost:8080/employeur";
 
 export async function getStageApplicants(stageId) {
@@ -15,10 +13,9 @@ export async function updateCandidatureStatus(candidatureId, status, token) {
 
     const res = await http.put(
         `/employeur/candidatures/${id}/update`,
-        // mets un body vide explicite pour éviter certains merges bizarres la 1re fois
         {},
         {
-            params: { status }, // "REFUSEE" | "ACCEPTEE"
+            params: { status },
             headers: { Authorization: `Bearer ${token}` },
         }
     );

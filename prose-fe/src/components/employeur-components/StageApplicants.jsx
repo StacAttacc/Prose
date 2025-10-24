@@ -57,7 +57,7 @@ const StageApplicantsPage = () => {
     const reloadApplicants = async () => {
         try {
             setLoading(true);
-            const list = await getStageApplicants(id); // renvoie déjà un tableau
+            const list = await getStageApplicants(id);
             setApplicants(Array.isArray(list) ? list : []);
             setError(null);
         } catch (e) {
@@ -137,7 +137,10 @@ const StageApplicantsPage = () => {
                             <th className="py-3 px-4 font-medium text-gray-600">Candidat</th>
                             <th className="py-3 px-4 font-medium text-gray-600">CV</th>
                             <th className="py-3 px-4 font-medium text-gray-600">Lettre de motivation</th>
+                            <th className="py-3 px-4 font-medium text-gray-600">Status</th>
                             <th className="py-3 px-4 font-medium text-gray-600">Actions</th>
+
+
                         </tr>
                         </thead>
                         <tbody>
@@ -170,7 +173,7 @@ const StageApplicantsPage = () => {
                                         if (!Number.isFinite(id)) return;
                                         if (!user?.token) { console.debug("reject: token absent (premier rendu)"); return; }
                                         try {
-                                            const res = await rejectApplicant(id, user?.token); // <-- token ajouté
+                                            const res = await rejectApplicant(id, user?.token);
                                             if (res.ok) {
                                                 setApplicants(prev => prev.filter(x =>
                                                     Number(x?.id ?? x?.candidatureId ?? x?.applicationId) !== id
