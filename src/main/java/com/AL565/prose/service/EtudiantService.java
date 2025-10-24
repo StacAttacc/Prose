@@ -49,6 +49,7 @@ public class EtudiantService {
     private final EmployeurRepository employeurRepository;
     private final CandidatureRepository candidatureRepository;
     private final NotificationRepository notificationRepository;
+    private final GestionnaireCvNotificationRepository gestionnaireCvNotificationRepository;
 
     public void inscrireEtudiant(EtudiantPasswordDTO dto) {
         if (proseUserRepository.findByCredentials_Username(dto.getEmail()).isPresent()) {
@@ -87,7 +88,7 @@ public class EtudiantService {
                 })
                 .collect(Collectors.toList());
     }
-  
+
     public void saveCv(MultipartFile cv, String email, String lastModified) throws Exception {
         if (cv == null || cv.isEmpty()) {
             throw new CvExceptions.NoFileException();
@@ -133,7 +134,12 @@ public class EtudiantService {
                 })
                 .orElseGet(() -> cvRepository.save(newCv));
 
-        createNotificationForNewCV(etudiant, cvSaved);
+        gestionnaireCvNotificationRepository.findByCv_Id(cvSaved.getId())
+                        .ifPresentOrElse(notification -> {
+                            notification.setFirstRecipientReadAt(null);
+                            notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
+                            notificationRepository.save(notification);
+                        }, () -> createNotificationForNewCV(etudiant, cvSaved));
     }
 
     private void createNotificationForNewCV(Etudiant etudiant, CV cv) {
@@ -184,7 +190,7 @@ public class EtudiantService {
 
         if (candidatureDTO.getMotivationLetterData() != null && candidatureDTO.getMotivationLetterData().length > 0) {
             if (candidatureDTO.getMotivationLetterContentType() == null ||
-                !MediaType.APPLICATION_PDF_VALUE.equalsIgnoreCase(candidatureDTO.getMotivationLetterContentType())) {
+                    !MediaType.APPLICATION_PDF_VALUE.equalsIgnoreCase(candidatureDTO.getMotivationLetterContentType())) {
                 throw new Exception("La lettre de motivation doit être au format PDF");
             }
         }
