@@ -163,7 +163,7 @@ const StageApplicantsPage = () => {
                                             app.candidatureId ??
                                             app.applicationId ??
                                             app.etudiant?.id ??
-                                            app.email // dernier recours avant d'éviter Math.random
+                                            app.email
                                         }
                                         applicant={app}
                                         showActions
@@ -171,10 +171,9 @@ const StageApplicantsPage = () => {
                                             try {
                                                 await approveApplicant(a.id ?? a.candidatureId ?? a.applicationId, user.token);
                                                 alert(`Candidature de ${a.etudiant?.firstName ?? "l'étudiant"} acceptée ✅`);
-                                                // Optionnel: mise à jour optimiste
                                                 setApplicants((prev) => prev.filter(x => (x.id ?? x.candidatureId ?? x.applicationId) !== (a.id ?? a.candidatureId ?? a.applicationId)));
                                             } catch {
-                                                alert("Erreur lors de l'approbation ❌");
+                                                alert("Erreur lors de l'approbation");
                                             }
                                         }}
                                         onReject={async (a) => {
@@ -184,7 +183,7 @@ const StageApplicantsPage = () => {
                                                 // Optionnel: mise à jour optimiste
                                                 setApplicants((prev) => prev.filter(x => (x.id ?? x.candidatureId ?? x.applicationId) !== (a.id ?? a.candidatureId ?? a.applicationId)));
                                             } catch {
-                                                alert("Erreur lors du refus ❌");
+                                                alert("Erreur lors du refus");
                                             }
                                         }}
                                     />
