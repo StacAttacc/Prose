@@ -144,9 +144,9 @@ export default function CandidatureForm({ stage, onClose, onSuccess }) {
 
           {cvStatus === 'notFound' && !error && (
             <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 text-yellow-700 rounded-lg">
-              <p className="font-medium">CV non disponible</p>
+              <p className="font-medium">CV en attente d'approbation</p>
               <p className="mt-1 text-sm">
-                Vous devez d'abord téléverser votre CV dans votre profil et le faire approuver avant de pouvoir postuler à ce stage.
+              Votre CV est en attente d'approbation. Veuillez attendre que le gestionnaire le valide avant de pouvoir postuler à ce stage.
               </p>
               <button
                 onClick={onClose}

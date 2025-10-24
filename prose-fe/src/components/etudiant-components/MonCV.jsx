@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { telechargerCv } from "../../services/EtudiantService.js";
 import { useAuth } from "../../context/AuthContext.jsx";
+import { useCv } from "../../context/CvContext.jsx";
 import TeleversementCV from "./TeleversementCV.jsx";
 import { Worker, Viewer } from '@react-pdf-viewer/core';
 import ErrorBanner from "../display-components/ErrorBanner.jsx";
@@ -14,6 +15,7 @@ const statusColors = {
 
 export default function MonCV() {
     const { user } = useAuth();
+    const { refreshCV } = useCv();
     const [status, setStatus] = useState("loading");
     const [cv, setCv] = useState(null);
     const [error, setError] = useState(null);
@@ -38,6 +40,7 @@ export default function MonCV() {
 
     const handleCvUpload = () => {
         setRefreshTrigger(prev => prev + 1);
+        refreshCV();
     };
 
     if (status === "loading") return <div>Loading...</div>;

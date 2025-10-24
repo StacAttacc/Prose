@@ -91,7 +91,10 @@ export default function StageDetailsModal({
                 {showCandidatureForm ? (
                     <CandidatureForm
                         stage={stage}
-                        onClose={() => setShowCandidatureForm(false)}
+                        onClose={() => {
+                            setShowCandidatureForm(false);
+                            handleClose();
+                        }}
                         onSuccess={handleCandidatureSuccess}
                     />
                 ) : (
