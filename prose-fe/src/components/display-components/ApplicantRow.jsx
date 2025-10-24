@@ -200,7 +200,7 @@ export default function ApplicantRow({applicant, showActions = false, onApprove,
                                             <button
                                                 onClick={() => onReject && onReject(applicant)}
                                                 className="text-white bg-gradient-to-r from-red-400 via-red-500 to-red-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
-                                                disabled={!onReject}
+                                                disabled={!onReject || !user?.token}
                                                 type="button"
                                             >
                                                 Refuser

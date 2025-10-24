@@ -4,7 +4,7 @@ import ApplicantRow from "../display-components/ApplicantRow";
 import {useAuth} from "../../context/AuthContext.jsx";
 import {approveApplicant, getStageApplicants, rejectApplicant} from "../../services/EmployeurService.js";
 import {getEmployeurStages} from "../../services/StageService.js";
-
+import ErrorBanner from "../display-components/ErrorBanner.jsx";
 
 const txt = (v) => (v == null ? "" : String(v));
 const norm = (s) =>
@@ -43,6 +43,7 @@ function buildSearchFields(app) {
 const StageApplicantsPage = () => {
     const {id} = useParams();
     const {user} = useAuth();
+    const ready = Boolean(user?.token);
 
     const [q, setQ] = useState("");
     const [applicants, setApplicants] = useState([]);
@@ -127,11 +128,7 @@ const StageApplicantsPage = () => {
             </div>
 
             <div className="w-full max-w-5xl bg-white rounded-2xl border border-gray-100 shadow-md overflow-hidden">
-                {error && (
-                    <div className="px-4 py-3 bg-rose-50 text-rose-700 text-sm border-b border-rose-200">
-                        {error}
-                    </div>
-                )}
+                {error && <ErrorBanner message={error}/>}
 
                 <div className="overflow-x-auto">
                     <table className="min-w-full text-sm">
@@ -158,37 +155,50 @@ const StageApplicantsPage = () => {
                             </tr>
                         ) : (
                             filtered.map((app) => (
-                                    <ApplicantRow
-                                        key={
-                                            app.id ??
-                                            app.candidatureId ??
-                                            app.applicationId ??
-                                            app.etudiant?.id ??
-                                            app.email
+                                <ApplicantRow
+                                    key={
+                                        app.id ??
+                                        app.candidatureId ??
+                                        app.applicationId ??
+                                        app.etudiant?.id ??
+                                        app.email
+                                    }
+                                    applicant={app}
+                                    showActions
+                                    onReject={async (a) => {
+                                        const id = Number(a?.id ?? a?.candidatureId ?? a?.applicationId);
+                                        if (!Number.isFinite(id)) return;
+                                        if (!user?.token) { console.debug("reject: token absent (premier rendu)"); return; }
+                                        try {
+                                            const res = await rejectApplicant(id, user?.token); // <-- token ajouté
+                                            if (res.ok) {
+                                                setApplicants(prev => prev.filter(x =>
+                                                    Number(x?.id ?? x?.candidatureId ?? x?.applicationId) !== id
+                                                ));
+                                            } else {
+                                                console.debug("reject:", res.status, res.data);
+                                            }
+                                        } catch (e) {
+                                            console.debug("reject error:", e?.response?.status, e?.response?.data);
                                         }
-                                        applicant={app}
-                                        showActions
-                                        onApprove={async (a) => {
-                                            try {
-                                                await approveApplicant(a.id ?? a.candidatureId ?? a.applicationId);
-                                                alert(`Candidature de ${a.etudiant?.firstName ?? "l'étudiant"} acceptée ✅`);
-                                                setApplicants((prev) => prev.filter(x => (x.id ?? x.candidatureId ?? x.applicationId) !== (a.id ?? a.candidatureId ?? a.applicationId)));
-                                            } catch {
-                                                alert("Erreur lors de l'approbation");
-                                            }
-                                        }}
-                                        onReject={async (a) => {
-                                            try {
-                                                await rejectApplicant(a.id ?? a.candidatureId ?? a.applicationId);
-                                                alert(`Candidature de ${a.etudiant?.firstName ?? "l'étudiant"} refusée 🚫`);
-                                                setApplicants((prev) => prev.filter(x => (x.id ?? x.candidatureId ?? x.applicationId) !== (a.id ?? a.candidatureId ?? a.applicationId)));
-                                            } catch {
-                                                alert("Erreur lors du refus");
-                                            }
-                                        }}
-                                    />
-                                )))}
-                            </tbody>
+                                    }}
+
+
+                                    onApprove={async (a) => {
+                                        const id = Number(a?.id ?? a?.candidatureId ?? a?.applicationId);
+                                        if (!Number.isFinite(id)) return;
+                                        try {
+                                            await approveApplicant(id, user?.token);  // <-- même pattern
+                                            setApplicants(prev =>
+                                                prev.filter(x => Number(x?.id ?? x?.candidatureId ?? x?.applicationId) !== id)
+                                            );
+                                        } catch (e) {
+                                            console.debug("approve error:", e?.response?.status, e?.response?.data);
+                                        }
+                                    }}
+                                />
+                            )))}
+                        </tbody>
                     </table>
                 </div>
             </div>
