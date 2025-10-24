@@ -2,8 +2,9 @@ import React, {useEffect, useMemo, useState} from "react";
 import {NavLink, useParams} from "react-router-dom";
 import ApplicantRow from "../display-components/ApplicantRow";
 import {useAuth} from "../../context/AuthContext.jsx";
-import {getStageApplicants} from "../../services/EmployeurService.js";
+import {approveApplicant, getStageApplicants, rejectApplicant} from "../../services/EmployeurService.js";
 import {getEmployeurStages} from "../../services/StageService.js";
+
 
 const txt = (v) => (v == null ? "" : String(v));
 const norm = (s) =>
@@ -55,8 +56,8 @@ const StageApplicantsPage = () => {
     const reloadApplicants = async () => {
         try {
             setLoading(true);
-            const res = await getStageApplicants(id, token);
-            setApplicants(unwrapArray(res));
+            const list = await getStageApplicants(id); // renvoie déjà un tableau
+            setApplicants(Array.isArray(list) ? list : []);
             setError(null);
         } catch (e) {
             console.debug("getStageApplicants error:", e);
@@ -156,12 +157,38 @@ const StageApplicantsPage = () => {
                                 </td>
                             </tr>
                         ) : (
-                            filtered.map((app) => <ApplicantRow key={app.id} applicant={app}
-                                                                showActions={true}
-                                                                onApprove={(a) => console.log("Approuve", a)}
-                                                                onReject={(a) => console.log("Reject", a)}/>)
-                        )}
-                        </tbody>
+                            filtered.map((app) => (
+                                    <ApplicantRow
+                                        key={
+                                            app.id ??
+                                            app.candidatureId ??
+                                            app.applicationId ??
+                                            app.etudiant?.id ??
+                                            app.email
+                                        }
+                                        applicant={app}
+                                        showActions
+                                        onApprove={async (a) => {
+                                            try {
+                                                await approveApplicant(a.id ?? a.candidatureId ?? a.applicationId, user.token);
+                                                alert(`Candidature de ${a.etudiant?.firstName ?? "l'étudiant"} acceptée ✅`);
+                                                setApplicants((prev) => prev.filter(x => (x.id ?? x.candidatureId ?? x.applicationId) !== (a.id ?? a.candidatureId ?? a.applicationId)));
+                                            } catch {
+                                                alert("Erreur lors de l'approbation");
+                                            }
+                                        }}
+                                        onReject={async (a) => {
+                                            try {
+                                                await rejectApplicant(a.id ?? a.candidatureId ?? a.applicationId, user.token);
+                                                alert(`Candidature de ${a.etudiant?.firstName ?? "l'étudiant"} refusée 🚫`);
+                                                setApplicants((prev) => prev.filter(x => (x.id ?? x.candidatureId ?? x.applicationId) !== (a.id ?? a.candidatureId ?? a.applicationId)));
+                                            } catch {
+                                                alert("Erreur lors du refus");
+                                            }
+                                        }}
+                                    />
+                                )))}
+                            </tbody>
                     </table>
                 </div>
             </div>
