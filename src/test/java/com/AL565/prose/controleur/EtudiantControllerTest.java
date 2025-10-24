@@ -3,15 +3,13 @@ package com.AL565.prose.controleur;
 import com.AL565.prose.controller.EtudiantController;
 import com.AL565.prose.model.Discipline;
 import com.AL565.prose.model.Employeur;
-import com.AL565.prose.repository.EtudiantRepository;
-import com.AL565.prose.repository.NotificationRepository;
-import com.AL565.prose.repository.PostulationNotificationRepository;
-import com.AL565.prose.repository.ProseUserRepository;
+import com.AL565.prose.repository.*;
 import com.AL565.prose.security.JwtTokenProvider;
 import com.AL565.prose.service.EmployeurService;
 import com.AL565.prose.service.EtudiantService;
 import com.AL565.prose.service.GestionnaireService;
 import com.AL565.prose.service.dto.*;
+import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.assertj.core.api.Assertions;
@@ -64,6 +62,12 @@ class EtudiantControllerTest {
 
     @MockitoBean
     private PostulationNotificationRepository postulationNotificationRepository;
+
+    @MockitoBean
+    private EtudiantCvNotificationRepository etudiantCvNotificationRepository;
+
+    @MockitoBean
+    private GestionnaireCvNotificationRepository gestionnaireCvNotificationRepository;
 
     @MockitoBean
     private JwtTokenProvider jwtTokenProvider;
@@ -425,5 +429,34 @@ class EtudiantControllerTest {
         etudiant.setEmail("test@test.com");
         etudiant.setDiscipline(Discipline.INFORMATIQUE);
         return etudiant;
+    }
+
+    @Test
+    void getAllNotifications_success() throws Exception {
+        NotificationsResponseDTO notifications = new NotificationsResponseDTO();
+        when(jwtTokenProvider.getEmailFromJWT(anyString())).thenReturn("test@test.com");
+        when(etudiantService.getStudentsNotifications("test@test.com")).thenReturn(notifications);
+
+        mockMvc.perform(get("/etudiant/notifications/all")
+                        .header("Authorization", "Bearer token123")
+                        .with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("notifications: "))
+                .andExpect(jsonPath("$.data").exists());
+
+        verify(etudiantService, times(1)).getStudentsNotifications("test@test.com");
+    }
+
+    @Test
+    void getAllNotifications_error() throws Exception {
+        when(jwtTokenProvider.getEmailFromJWT(anyString())).thenThrow(new RuntimeException("JWT error"));
+
+        mockMvc.perform(get("/etudiant/notifications/all")
+                        .header("Authorization", "Bearer token123")
+                        .with(csrf()))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.message").value("Erreur lors de la récupération des notifications"));
+
+        verify(etudiantService, times(0)).getStudentsNotifications(anyString());
     }
 }
