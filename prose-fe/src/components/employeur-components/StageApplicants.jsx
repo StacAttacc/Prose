@@ -5,6 +5,7 @@ import {useAuth} from "../../context/AuthContext.jsx";
 import {approveApplicant, getStageApplicants, rejectApplicant} from "../../services/EmployeurService.js";
 import {getEmployeurStages} from "../../services/StageService.js";
 
+
 const txt = (v) => (v == null ? "" : String(v));
 const norm = (s) =>
     txt(s).normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase().trim();
@@ -55,8 +56,8 @@ const StageApplicantsPage = () => {
     const reloadApplicants = async () => {
         try {
             setLoading(true);
-            const res = await getStageApplicants(id, token);
-            setApplicants(unwrapArray(res));
+            const list = await getStageApplicants(id); // renvoie déjà un tableau
+            setApplicants(Array.isArray(list) ? list : []);
             setError(null);
         } catch (e) {
             console.debug("getStageApplicants error:", e);
