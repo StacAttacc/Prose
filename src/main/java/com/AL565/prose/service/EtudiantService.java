@@ -4,6 +4,7 @@ import com.AL565.prose.model.Employeur;
 import com.AL565.prose.model.Etudiant;
 import com.AL565.prose.model.OfferStatus;
 import com.AL565.prose.model.Stage;
+import com.AL565.prose.model.notifications.GestionnaireCvNotification;
 import com.AL565.prose.model.notifications.NotificationType;
 import com.AL565.prose.model.notifications.PostulationNotification;
 import com.AL565.prose.repository.*;
@@ -118,7 +119,7 @@ public class EtudiantService {
                 .comment(null)
                 .build();
 
-        cvRepository.findByEtudiant_Credentials_Username(email)
+        CV savedCv = cvRepository.findByEtudiant_Credentials_Username(email)
                 .map(existingCv -> {
                     existingCv.setName(newCv.getName());
                     existingCv.setType(newCv.getType());
@@ -131,6 +132,23 @@ public class EtudiantService {
                     return cvRepository.save(existingCv);
                 })
                 .orElseGet(() -> cvRepository.save(newCv));
+
+        createNotificationForNewCV(etudiant, savedCv);
+    }
+
+    private void createNotificationForNewCV(Etudiant etudiant, CV cv) {
+        if (cv == null) {
+            throw new IllegalArgumentException("Vous devez avoir un cv pour envoyer une notification pour un cv");
+        }
+        String etudiantName = etudiant.getFirstName() + " " + etudiant.getLastName();
+        GestionnaireCvNotification notification = new GestionnaireCvNotification();
+        notification.setCv(cv);
+        notification.setFirstRecipientReadAt(null);
+        notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
+        notification.setSenderEmail(etudiant.getEmail());
+        notification.setType(NotificationType.GESTIONNAIRE_CV_NOTIFICATION);
+        notification.setMessage(etudiantName + " a soumis un nouveau CV");
+        notificationRepository.save(notification);
     }
 
     public EtudiantCvDTO getCvByEmail(String username) {
