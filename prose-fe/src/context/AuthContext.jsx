@@ -41,25 +41,29 @@ export function AuthProvider({ children }) {
 
     async function login(email, password) {
         const u = await apiLogin(email, password);
-        setUser(u);
-        return u;
+               setUser(u);
+                   setAccessToken(u?.token || u?.accessToken || null);
+               return u;
     }
 
     async function registerEmployeur(payload) {
         const u = await apiRegisterEmployeur(payload);
         setUser(u);
+        setAccessToken(u?.token || u?.accessToken || null);
         return u;
     }
 
     async function registerEtudiant(payload) {
         const u = await apiRegisterEtudiant(payload);
         setUser(u);
+        setAccessToken(u?.token || u?.accessToken || null);
         return u;
     }
 
     async function logout() {
         await apiLogout();
         setUser(null);
+        setAccessToken(null);
     }
 
     return (

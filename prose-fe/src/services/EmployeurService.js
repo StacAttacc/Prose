@@ -1,4 +1,4 @@
-import {http} from "./http.js";
+import {getAccessToken, http, setAccessToken} from "./http.js";
 
 const API = import.meta?.env?.VITE_API_URL || "http://localhost:8080";
 
@@ -16,26 +16,20 @@ export async function getStageApplicants(stageId) {
 }
 
 
-export async function approveApplicant(candidatureId, token) {
-    try {
-        const res = await http.post(`${API}/employeur/candidature/${candidatureId}/approve`, {}, {
-            headers: {Authorization: `Bearer ${token}`},
-        });
-        return res.data;
-    } catch (err) {
-        console.error("Erreur lors de l'approbation :", err);
-        throw err;
-    }
+
+export async function updateCandidatureStatus(candidatureId, status) {
+    const token = getAccessToken();
+    const { data } = await http.put(
+        `/employeur/candidatures/${candidatureId}/update`,
+        null,
+        {
+            params: { status },
+            headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        }
+    );
+    return data;
 }
 
-export async function rejectApplicant(candidatureId, token) {
-    try {
-        const res = await http.post(`${API}/employeur/candidature/${candidatureId}/reject`, {}, {
-            headers: {Authorization: `Bearer ${token}`},
-        });
-        return res.data;
-    } catch (err) {
-        console.error("Erreur lors du refus :", err);
-        throw err;
-    }
-}
+
+export const approveApplicant = (id) => updateCandidatureStatus(id, "ACCEPTEE");
+export const rejectApplicant  = (id) => updateCandidatureStatus(id, "REFUSEE");

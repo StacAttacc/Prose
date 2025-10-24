@@ -170,7 +170,7 @@ const StageApplicantsPage = () => {
                                         showActions
                                         onApprove={async (a) => {
                                             try {
-                                                await approveApplicant(a.id ?? a.candidatureId ?? a.applicationId, user.token);
+                                                await approveApplicant(a.id ?? a.candidatureId ?? a.applicationId);
                                                 alert(`Candidature de ${a.etudiant?.firstName ?? "l'étudiant"} acceptée ✅`);
                                                 setApplicants((prev) => prev.filter(x => (x.id ?? x.candidatureId ?? x.applicationId) !== (a.id ?? a.candidatureId ?? a.applicationId)));
                                             } catch {
@@ -179,7 +179,7 @@ const StageApplicantsPage = () => {
                                         }}
                                         onReject={async (a) => {
                                             try {
-                                                await rejectApplicant(a.id ?? a.candidatureId ?? a.applicationId, user.token);
+                                                await rejectApplicant(a.id ?? a.candidatureId ?? a.applicationId);
                                                 alert(`Candidature de ${a.etudiant?.firstName ?? "l'étudiant"} refusée 🚫`);
                                                 setApplicants((prev) => prev.filter(x => (x.id ?? x.candidatureId ?? x.applicationId) !== (a.id ?? a.candidatureId ?? a.applicationId)));
                                             } catch {
