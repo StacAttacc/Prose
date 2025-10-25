@@ -61,3 +61,16 @@ export const markNotificationsRead = (notificationIds = [], token) => {
     }
     return Promise.all(notificationIds.map(id => markNotificationRead(id, token)));
 };
+
+export async function convoquerEntrevue(candidatureId, interviewData, token) {
+    const res = await fetch(`${API}/employeur/candidatures/${candidatureId}/convoquer`, {
+        method: "POST",
+        headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(interviewData)
+    });
+    return await parseJsonOrThrow(res);
+}
