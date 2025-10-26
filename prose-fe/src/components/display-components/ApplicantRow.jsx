@@ -24,7 +24,7 @@ function blobFromUnknownData(data, mime = "application/pdf") {
 
     if (Array.isArray(data)) {
         const bytes = new Uint8Array(data);
-        return new Blob([bytes], { type: mime });
+        return new Blob([bytes], {type: mime});
     }
 
     if (typeof data === "string") {
@@ -32,7 +32,7 @@ function blobFromUnknownData(data, mime = "application/pdf") {
             const bin = atob(data);
             const bytes = new Uint8Array(bin.length);
             for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-            return new Blob([bytes], { type: mime });
+            return new Blob([bytes], {type: mime});
         } catch {
             return null;
         }
@@ -48,7 +48,7 @@ export default function ApplicantRow({ applicant, onStatusUpdate }) {
 
     const [docState, setDocState] = useState({
         open: false,
-        kind: null, // 'cv' | 'letter'
+        kind: null,
         url: null,
         error: null,
         loading: false,
@@ -62,6 +62,7 @@ export default function ApplicantRow({ applicant, onStatusUpdate }) {
         [applicant]
     );
 
+
     const fullName = useMemo(
         () =>
             firstNonEmpty(
@@ -74,6 +75,51 @@ export default function ApplicantRow({ applicant, onStatusUpdate }) {
             ),
         [applicant, email]
     );
+
+
+    const rawStatus = useMemo(() => {
+        const s =
+            firstNonEmpty(
+                applicant?.status,
+                applicant?.candidatureStatus,     // au cas où le backend utilise ce nom
+                applicant?.statut,
+                typeof applicant?.status === "object" ? applicant?.status?.name : "" // enum sérialisé en objet
+            );
+        return s;
+    }, [applicant]);
+
+    const status = useMemo(() => (rawStatus || "").toString().trim().toUpperCase(), [rawStatus]);
+
+    const statusLabel = useMemo(() => {
+        switch (status) {
+            case "SOUMISE":
+                return "Soumise";
+            case "ACCEPTEE":
+                return "Acceptée";
+            case "CONVOQUEE":
+                return "Convoquée";
+            case "REFUSEE":
+                return "Refusée";
+            default:
+                return status || "—";
+        }
+    }, [status]);
+
+    const statusBadgeClass = useMemo(() => {
+        switch (status) {
+            case "SOUMISE":
+                return "bg-gray-100 text-gray-800 border border-gray-300";
+            case "ACCEPTEE":
+                return "bg-green-100 text-green-800 border border-green-300";
+            case "CONVOQUEE":
+                return "bg-blue-100 text-blue-800 border border-blue-300";
+            case "REFUSEE":
+                return "bg-rose-100 text-rose-800 border border-rose-300";
+            default:
+                return "bg-slate-100 text-slate-700 border border-slate-300";
+        }
+    }, [status]);
+
 
     const letterData = useMemo(
         () =>
@@ -98,7 +144,7 @@ export default function ApplicantRow({ applicant, onStatusUpdate }) {
     );
 
     async function openDocument(kind) {
-        setDocState({ open: true, kind, url: null, error: null, loading: true });
+        setDocState({open: true, kind, url: null, error: null, loading: true});
 
         try {
             if (kind === "cv") {
@@ -139,7 +185,7 @@ export default function ApplicantRow({ applicant, onStatusUpdate }) {
 
     function closeModal() {
         if (docState.url) URL.revokeObjectURL(docState.url);
-        setDocState({ open: false, kind: null, url: null, error: null, loading: false });
+        setDocState({open: false, kind: null, url: null, error: null, loading: false});
     }
 
     const handleConvoquerEntrevue = async (interviewData) => {
@@ -195,6 +241,8 @@ export default function ApplicantRow({ applicant, onStatusUpdate }) {
 
     return (
         <>
+
+
             <tr className="border-b hover:bg-gray-50 transition">
                 <td className="py-3 px-4 align-top">
                     <div className="font-medium text-gray-800">{fullName}</div>
@@ -219,6 +267,7 @@ export default function ApplicantRow({ applicant, onStatusUpdate }) {
                     )}
                 </td>
 
+
                 <td className="py-3 px-4 align-top text-gray-700">
                     {letterData ? (
                         <button
@@ -236,7 +285,33 @@ export default function ApplicantRow({ applicant, onStatusUpdate }) {
                 </td>
 
                 <td className="py-3 px-4 align-top">
-                    {getStatusBadge(localStatus)}
+                    <span
+                           className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${statusBadgeClass}`}>
+     {statusLabel}
+                       </span>
+                </td>
+
+                <td className="py-3 px-4 align-top">
+                    {showActions ? (
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => onApprove && onApprove(applicant)}
+                                className="w-full px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br transition-all"
+                                disabled={!onApprove}
+                                type="button"
+                            >
+                                Accepter
+                            </button>
+                            <button
+                                onClick={() => onReject && onReject(applicant)}
+                                className="text-white bg-gradient-to-r from-red-400 via-red-500 to-red-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+                                disabled={!onReject || !user?.token}
+                                type="button"
+                            >
+                                Refuser
+                            </button>
+                        </div>
+                    ) : null}
                 </td>
 
                 <td className="py-3 px-4 align-top">

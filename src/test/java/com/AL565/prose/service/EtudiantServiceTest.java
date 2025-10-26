@@ -1,13 +1,6 @@
 package com.AL565.prose.service;
 
-import com.AL565.prose.model.Discipline;
-import com.AL565.prose.model.Etudiant;
-import com.AL565.prose.model.Employeur;
-import com.AL565.prose.model.OfferStatus;
-import com.AL565.prose.model.Candidature;
-import com.AL565.prose.model.CV;
-import com.AL565.prose.model.CvStatus;
-import com.AL565.prose.model.Stage;
+import com.AL565.prose.model.*;
 import com.AL565.prose.model.auth.Credentials;
 import com.AL565.prose.model.auth.Role;
 import com.AL565.prose.repository.*;
@@ -81,9 +74,7 @@ class EtudiantServiceTest {
         Etudiant existingEtudiant = new Etudiant();
         when(proseUserRepository.findByCredentials_Username(anyString())).thenReturn(Optional.of(existingEtudiant));
 
-        assertThrows(EmailAlreadyExistsException.class, () -> {
-            etudiantService.inscrireEtudiant(etudiantDTO);
-        });
+        assertThrows(EmailAlreadyExistsException.class, () -> etudiantService.inscrireEtudiant(etudiantDTO));
 
         verify(etudiantRepository, never()).save(any(Etudiant.class));
     }
@@ -143,9 +134,7 @@ class EtudiantServiceTest {
         when(candidatureRepository.existsByEtudiant_Credentials_UsernameAndStage_Id(email, stageId))
                 .thenReturn(true);
 
-        Exception exception = assertThrows(Exception.class, () -> {
-            etudiantService.createCandidature(candidatureDTO);
-        });
+        Exception exception = assertThrows(Exception.class, () -> etudiantService.createCandidature(candidatureDTO));
 
         assertEquals("Vous avez déjà postulé à ce stage", exception.getMessage());
         verify(candidatureRepository, never()).save(any(Candidature.class));
@@ -174,9 +163,7 @@ class EtudiantServiceTest {
         when(cvRepository.findByEtudiant_Credentials_Username(email))
                 .thenReturn(Optional.of(cv));
 
-        Exception exception = assertThrows(Exception.class, () -> {
-            etudiantService.createCandidature(candidatureDTO);
-        });
+        Exception exception = assertThrows(Exception.class, () -> etudiantService.createCandidature(candidatureDTO));
 
         assertEquals("Le CV n'est pas approuvé", exception.getMessage());
         verify(candidatureRepository, never()).save(any(Candidature.class));
@@ -184,9 +171,7 @@ class EtudiantServiceTest {
 
     @Test
     void createCandidature_nullDTO_throwsException() {
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            etudiantService.createCandidature(null);
-        });
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> etudiantService.createCandidature(null));
 
         assertEquals("Les données de candidature sont requises", exception.getMessage());
     }
@@ -209,9 +194,7 @@ class EtudiantServiceTest {
         when(candidatureRepository.existsByEtudiant_Credentials_UsernameAndStage_Id(email, stageId))
                 .thenReturn(false);
 
-        Exception exception = assertThrows(Exception.class, () -> {
-            etudiantService.createCandidature(candidatureDTO);
-        });
+        Exception exception = assertThrows(Exception.class, () -> etudiantService.createCandidature(candidatureDTO));
 
         assertEquals("La lettre de motivation doit être au format PDF", exception.getMessage());
         verify(candidatureRepository, never()).save(any(Candidature.class));
@@ -290,7 +273,7 @@ class EtudiantServiceTest {
         Etudiant etudiant = createMockEtudiant(email);
         Employeur employeur = createMockEmployeur("employer@company.com");
         Stage stage = createMockStageWithDetails(1L, "employer@company.com");
-        Candidature candidature = createMockCandidature(etudiant, stage, OfferStatus.SOUMISE);
+        Candidature candidature = createMockCandidature(etudiant, stage, CandidatureStatus.SOUMISE);
 
         List<Candidature> candidatures = Arrays.asList(candidature);
 
@@ -386,7 +369,7 @@ class EtudiantServiceTest {
         return stage;
     }
 
-    private Candidature createMockCandidature(Etudiant etudiant, Stage stage, OfferStatus status) {
+    private Candidature createMockCandidature(Etudiant etudiant, Stage stage, CandidatureStatus status) {
         Candidature candidature = new Candidature();
         candidature.setId(1L);
         candidature.setEtudiant(etudiant);
@@ -490,8 +473,8 @@ class EtudiantServiceTest {
         Etudiant etudiant = createMockEtudiant(etudiantEmail);
         
         // Créer des candidatures pour tous les stages
-        Candidature candidature1 = createMockCandidature(etudiant, stage1, OfferStatus.SOUMISE);
-        Candidature candidature2 = createMockCandidature(etudiant, stage2, OfferStatus.SOUMISE);
+        Candidature candidature1 = createMockCandidature(etudiant, stage1, CandidatureStatus.SOUMISE);
+        Candidature candidature2 = createMockCandidature(etudiant, stage2, CandidatureStatus.SOUMISE);
         
         // Mock le comportement
         when(jwtTokenProvider.getEmailFromJWT("validToken")).thenReturn(etudiantEmail);

@@ -1,9 +1,10 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { NavLink, useParams } from "react-router-dom";
+import React, {useEffect, useMemo, useState} from "react";
+import {NavLink, useParams} from "react-router-dom";
 import ApplicantRow from "../display-components/ApplicantRow";
-import { useAuth } from "../../context/AuthContext.jsx";
-import { getStageApplicants } from "../../services/EmployeurService.js";
-import { getEmployeurStages } from "../../services/StageService.js";
+import {useAuth} from "../../context/AuthContext.jsx";
+import {approveApplicant, getStageApplicants, rejectApplicant} from "../../services/EmployeurService.js";
+import {getEmployeurStages} from "../../services/StageService.js";
+import ErrorBanner from "../display-components/ErrorBanner.jsx";
 
 const txt = (v) => (v == null ? "" : String(v));
 const norm = (s) =>
@@ -35,13 +36,14 @@ function buildSearchFields(app) {
 
     const fullName = nameCandidates[0] || "";
 
-    return { email, fullName };
+    return {email, fullName};
 }
 
 
 const StageApplicantsPage = () => {
-    const { id } = useParams();
-    const { user } = useAuth();
+    const {id} = useParams();
+    const {user} = useAuth();
+    const ready = Boolean(user?.token);
 
     const [q, setQ] = useState("");
     const [applicants, setApplicants] = useState([]);
@@ -55,8 +57,8 @@ const StageApplicantsPage = () => {
     const reloadApplicants = async () => {
         try {
             setLoading(true);
-            const res = await getStageApplicants(id, token);
-            setApplicants(unwrapArray(res));
+            const list = await getStageApplicants(id);
+            setApplicants(Array.isArray(list) ? list : []);
             setError(null);
         } catch (e) {
             console.debug("getStageApplicants error:", e);
@@ -93,7 +95,7 @@ const StageApplicantsPage = () => {
         if (!qn) return applicants;
 
         return applicants.filter((app) => {
-            const { email, fullName } = buildSearchFields(app);
+            const {email, fullName} = buildSearchFields(app);
             return norm(fullName).includes(qn) || norm(email).includes(qn);
         });
     }, [applicants, q]);
@@ -118,18 +120,15 @@ const StageApplicantsPage = () => {
                         onChange={(e) => setQ(e.target.value)}
                         aria-label="Recherche"
                     />
-                    <div className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-gray-400 text-base">
+                    <div
+                        className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-gray-400 text-base">
                         ⌕
                     </div>
                 </div>
             </div>
 
             <div className="w-full max-w-5xl bg-white rounded-2xl border border-gray-100 shadow-md overflow-hidden">
-                {error && (
-                    <div className="px-4 py-3 bg-rose-50 text-rose-700 text-sm border-b border-rose-200">
-                        {error}
-                    </div>
-                )}
+                {error && <ErrorBanner message={error}/>}
 
                 <div className="overflow-x-auto">
                     <table className="min-w-full text-sm">
@@ -156,8 +155,50 @@ const StageApplicantsPage = () => {
                                 </td>
                             </tr>
                         ) : (
-                            filtered.map((app) => <ApplicantRow key={app.id} applicant={app} onStatusUpdate={() => reloadApplicants()} />)
-                        )}
+                            filtered.map((app) => (
+                                <ApplicantRow
+                                    key={
+                                        app.id ??
+                                        app.candidatureId ??
+                                        app.applicationId ??
+                                        app.etudiant?.id ??
+                                        app.email
+                                    }
+                                    applicant={app}
+                                    showActions
+                                    onReject={async (a) => {
+                                        const id = Number(a?.id ?? a?.candidatureId ?? a?.applicationId);
+                                        if (!Number.isFinite(id)) return;
+                                        if (!user?.token) { console.debug("reject: token absent (premier rendu)"); return; }
+                                        try {
+                                            const res = await rejectApplicant(id, user?.token);
+                                            if (res.ok) {
+                                                setApplicants(prev => prev.filter(x =>
+                                                    Number(x?.id ?? x?.candidatureId ?? x?.applicationId) !== id
+                                                ));
+                                            } else {
+                                                console.debug("reject:", res.status, res.data);
+                                            }
+                                        } catch (e) {
+                                            console.debug("reject error:", e?.response?.status, e?.response?.data);
+                                        }
+                                    }}
+
+
+                                    onApprove={async (a) => {
+                                        const id = Number(a?.id ?? a?.candidatureId ?? a?.applicationId);
+                                        if (!Number.isFinite(id)) return;
+                                        try {
+                                            await approveApplicant(id, user?.token);  // <-- même pattern
+                                            setApplicants(prev =>
+                                                prev.filter(x => Number(x?.id ?? x?.candidatureId ?? x?.applicationId) !== id)
+                                            );
+                                        } catch (e) {
+                                            console.debug("approve error:", e?.response?.status, e?.response?.data);
+                                        }
+                                    }}
+                                />
+                            )))}
                         </tbody>
                     </table>
                 </div>

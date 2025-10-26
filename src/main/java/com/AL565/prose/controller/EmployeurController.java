@@ -1,11 +1,14 @@
 package com.AL565.prose.controller;
 
-
 import com.AL565.prose.security.exceptions.UserNotFoundException;
 import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.EmployeurService;
+import com.AL565.prose.service.dto.ReturnEntityDTO;
+import com.AL565.prose.service.dto.StageDTO;
+import com.AL565.prose.service.exceptions.CandidatureNotFoundException;
 import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
+import com.AL565.prose.service.exceptions.InvalidCandidatureModificationException;
 import com.AL565.prose.service.exceptions.StageNotFoundException;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -89,6 +92,15 @@ public class EmployeurController {
         }
     }
 
+    @PutMapping("/candidatures/{id}/update")
+    public ResponseEntity<String> changeStatus(@PathVariable long id, @RequestParam String status) {
+        try {
+            employeurService.updateCandidatureStatus(id, status);
+            return ResponseEntity.ok("Candidature update avec success");
+        } catch (CandidatureNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Le candidature n'existe pas");
+        } catch (InvalidCandidatureModificationException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
     @GetMapping("/notifications/postulations/{email}")
     public ResponseEntity<ReturnEntityDTO<NotificationsResponseDTO>> getPostulationNotifications(@PathVariable String email) {
         try {
