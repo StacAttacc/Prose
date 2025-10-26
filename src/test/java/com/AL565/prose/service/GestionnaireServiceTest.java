@@ -51,9 +51,6 @@ class GestionnaireServiceTest {
     @Mock
     private PasswordEncoder passwordEncoder;
 
-    @Mock
-    private NotificationRepository notificationRepository;
-
     @InjectMocks
     private GestionnaireService gestionnaireService;
 
@@ -116,9 +113,9 @@ class GestionnaireServiceTest {
         List<StageDTO> result = gestionnaireService.getStagesByStatus("SOUMISE");
 
         assertThat(result).hasSize(2);
-        assertThat(result.get(0).getId()).isEqualTo(1L);
-        assertThat(result.get(0).getTitle()).isEqualTo("Stage 1");
-        assertThat(result.get(0).getEmployeur().getCompany()).isEqualTo("Company");
+        assertThat(result.getFirst().getId()).isEqualTo(1L);
+        assertThat(result.getFirst().getTitle()).isEqualTo("Stage 1");
+        assertThat(result.getFirst().getEmployeur().getCompany()).isEqualTo("Company");
     }
 
     @Test

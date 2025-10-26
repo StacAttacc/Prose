@@ -1,5 +1,6 @@
 import {Route, Routes, Navigate} from "react-router-dom";
 import {useAuth} from "./context/AuthContext.jsx";
+import {useCv} from "./context/CvContext.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import PageAuthentification from "./pages/PageAuthentification.jsx";
@@ -8,9 +9,7 @@ import PostedStages from "./components/employeur-components/PostedStages.jsx";
 import StageListings from "./components/etudiant-components/StageListings.jsx";
 import Stages from "./components/etudiant-components/Stages.jsx";
 import MesCandidature from "./components/etudiant-components/MesCandidature.jsx";
-import {useEffect, useState} from "react";
 import GestionCV from "./components/gestionnaire-components/GestionCV.jsx";
-import {telechargerCv} from "./services/EtudiantService.js";
 import MonCV from "./components/etudiant-components/MonCV.jsx";
 import GestRechercheStages from "./components/gestionnaire-components/RechercheStages.jsx";
 import StageApplicants from "./components/employeur-components/StageApplicants.jsx";
@@ -19,30 +18,15 @@ import GestionnaireEtuCandidature from "./components/gestionnaire-components/Ges
 
 export default function AppRoutes() {
     const {user, loading} = useAuth();
-    const [hasCv, setHasCv] = useState(null);
-
-    async function getCV() {
-        const data = await telechargerCv(user.email, user);
-        if (data) {
-            setHasCv(true);
-        } else {
-            setHasCv(false);
-        }
-    }
-
-    useEffect(() => {
-        if (user?.role === "ETUDIANT") {
-            getCV();
-        }
-    }, [user]);
+    const {hasCV, loading: cvLoading} = useCv();
 
     const defaultPathStudent = () => {
-        return hasCv === null ? (
+        return (hasCV === null || cvLoading) ? (
             <div>Loading...</div>
-        ) : hasCv ? (
+        ) : hasCV ? (
             <Navigate to="/etudiant/stages/disponibles" replace/>
         ) : (
-            <MonCV/>
+            <Navigate to="/etudiant/mon-cv" replace/>
         );
     };
 
@@ -69,7 +53,13 @@ export default function AppRoutes() {
                     <Route path="employeur/modifier-stage/:id" element={<StageCreation mode="edit"/>}/>
 
                     <Route path="etudiant/mon-cv" element={<MonCV/>}/>
-                    <Route path="etudiant/stages" element={<Stages/>}>
+                    <Route path="etudiant/stages" element={
+                        user?.role === "ETUDIANT" && hasCV === false ? (
+                            <Navigate to="/etudiant/mon-cv" replace/>
+                        ) : (
+                            <Stages/>
+                        )
+                    }>
                         <Route index element={<StageListings/>}/>
                         <Route path="disponibles" element={<StageListings/>}/>
                         <Route path="candidatures" element={<MesCandidature/>}/>

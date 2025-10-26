@@ -1,9 +1,12 @@
-import React, {useEffect, useMemo, useState} from "react";
-import {createPortal} from "react-dom";
-import {useAuth} from "../../context/AuthContext.jsx";
-import {telechargerCv} from "../../services/EtudiantService.js";
+import React, { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
+import { useAuth } from "../../context/AuthContext.jsx";
+import { telechargerCv } from "../../services/EtudiantService.js";
+import { convoquerEntrevue } from "../../services/EmployeurService.js";
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import PdfModal from "./PdfModal.jsx";
+import InterviewConvocationModal from "./InterviewConvocationModal.jsx";
+import {useLocation, useNavigate} from "react-router-dom";
 
 const firstNonEmpty = (...vals) =>
     vals
@@ -38,8 +41,10 @@ function blobFromUnknownData(data, mime = "application/pdf") {
     return null;
 }
 
-export default function ApplicantRow({applicant, showActions = false, onApprove, onReject}) {
-    const {user} = useAuth();
+export default function ApplicantRow({ applicant, onStatusUpdate }) {
+    const { user } = useAuth();
+    const location = useLocation();
+    const navigate = useNavigate();
 
     const [docState, setDocState] = useState({
         open: false,
@@ -48,6 +53,9 @@ export default function ApplicantRow({applicant, showActions = false, onApprove,
         error: null,
         loading: false,
     });
+
+    const [showConvocationModal, setShowConvocationModal] = useState(false);
+    const [localStatus, setLocalStatus] = useState(applicant?.statut || applicant?.status || "EN_ATTENTE");
 
     const email = useMemo(
         () => firstNonEmpty(applicant?.email, applicant?.etudiant?.email),
@@ -180,11 +188,56 @@ export default function ApplicantRow({applicant, showActions = false, onApprove,
         setDocState({open: false, kind: null, url: null, error: null, loading: false});
     }
 
+    const handleConvoquerEntrevue = async (interviewData) => {
+        try {
+            await convoquerEntrevue(applicant.id, interviewData, user?.token);
+            setLocalStatus("CONVOQUE");
+            if (onStatusUpdate) {
+                onStatusUpdate(applicant.id, "CONVOQUE");
+            }
+        } catch (error) {
+            console.error("Erreur lors de la convocation:", error);
+            throw new Error(error.message || "Erreur lors de la convocation");
+        }
+    };
+
+    const getStatusBadge = (status) => {
+        const statusMap = {
+            "EN_ATTENTE": { label: "En attente", color: "bg-yellow-100 text-yellow-800" },
+            "ACCEPTE": { label: "Accepté", color: "bg-green-100 text-green-800" },
+            "REFUSE": { label: "Refusé", color: "bg-red-100 text-red-800" },
+            "CONVOQUE": { label: "Convoqué", color: "bg-blue-100 text-blue-800" },
+        };
+
+        const statusInfo = statusMap[status] || { label: status, color: "bg-gray-100 text-gray-800" };
+
+        return (
+            <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}>
+                {statusInfo.label}
+            </span>
+        );
+    };
+
     useEffect(() => {
         const onKey = (e) => e.key === "Escape" && closeModal();
         window.addEventListener("keydown", onKey);
         return () => window.removeEventListener("keydown", onKey);
     }, [docState.open]);
+
+    useEffect(() => {
+        const targetId = location?.state?.openCandidatureId;
+        const kind = location?.state?.openDocType || "letter";
+        if (!targetId) return;
+        if (String(applicant?.id) !== String(targetId)) return;
+        if (docState.open) return;
+        (async () => {
+            try {
+                await openDocument("cv");
+            } finally {
+                navigate(location.pathname, { replace: true, state: {} });
+            }
+        })();
+    }, [location?.state, applicant?.id]);
 
     return (
         <>
@@ -232,7 +285,7 @@ export default function ApplicantRow({applicant, showActions = false, onApprove,
                 </td>
 
                 <td className="py-3 px-4 align-top">
-                       <span
+                    <span
                            className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${statusBadgeClass}`}>
      {statusLabel}
                        </span>
@@ -261,7 +314,19 @@ export default function ApplicantRow({applicant, showActions = false, onApprove,
                     ) : null}
                 </td>
 
-
+                <td className="py-3 px-4 align-top">
+                    {localStatus === "EN_ATTENTE" && (
+                        <button
+                            onClick={() => setShowConvocationModal(true)}
+                            className="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 font-medium rounded-lg text-sm px-4 py-2 transition"
+                        >
+                            Convoquer
+                        </button>
+                    )}
+                    {localStatus === "CONVOQUE" && (
+                        <span className="text-sm text-gray-500 italic">Convoqué</span>
+                    )}
+                </td>
             </tr>
 
             {docState.open &&
@@ -271,6 +336,17 @@ export default function ApplicantRow({applicant, showActions = false, onApprove,
                         url={docState.url}
                         error={docState.error}
                         onClose={closeModal}
+                    />,
+                    document.body
+                )}
+
+            {showConvocationModal &&
+                createPortal(
+                    <InterviewConvocationModal
+                        applicant={applicant}
+                        isOpen={showConvocationModal}
+                        onClose={() => setShowConvocationModal(false)}
+                        onConfirm={handleConvoquerEntrevue}
                     />,
                     document.body
                 )}

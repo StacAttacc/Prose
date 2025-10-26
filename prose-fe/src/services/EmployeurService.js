@@ -34,3 +34,47 @@ export function approveApplicant(candidatureId, token) {
 export function rejectApplicant(candidatureId, token) {
     return updateCandidatureStatus(candidatureId, "REFUSEE", token);
 }
+export async function getEmployeurCandidatureNotifications(employeurEmail, token) {
+    const res = await fetch(`${API}/employeur/notifications/postulations/${encodeURIComponent(employeurEmail)}`, {
+        method: "GET",
+        headers: {
+            Accept: "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+    });
+    return await parseJsonOrThrow(res);
+}
+
+export async function markNotificationRead(notificationId, token) {
+    if (!notificationId) return;
+    const res = await fetch(`${API}/employeur/notifications/read/${notificationId}`, {
+        method: "PUT",
+        headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ notificationId })
+    });
+    return await parseJsonOrThrow(res).catch(() => {});
+}
+
+export const markNotificationsRead = (notificationIds = [], token) => {
+    if (!Array.isArray(notificationIds) || notificationIds.length === 0) {
+        return Promise.resolve();
+    }
+    return Promise.all(notificationIds.map(id => markNotificationRead(id, token)));
+};
+
+export async function convoquerEntrevue(candidatureId, interviewData, token) {
+    const res = await fetch(`${API}/employeur/candidatures/${candidatureId}/convoquer`, {
+        method: "POST",
+        headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(interviewData)
+    });
+    return await parseJsonOrThrow(res);
+}

@@ -137,22 +137,20 @@ const StageApplicantsPage = () => {
                             <th className="py-3 px-4 font-medium text-gray-600">Candidat</th>
                             <th className="py-3 px-4 font-medium text-gray-600">CV</th>
                             <th className="py-3 px-4 font-medium text-gray-600">Lettre de motivation</th>
-                            <th className="py-3 px-4 font-medium text-gray-600">Status</th>
+                            <th className="py-3 px-4 font-medium text-gray-600">Statut</th>
                             <th className="py-3 px-4 font-medium text-gray-600">Actions</th>
-
-
                         </tr>
                         </thead>
                         <tbody>
                         {loading ? (
                             <tr>
-                                <td className="py-8 px-4 text-gray-500 text-center" colSpan={4}>
+                                <td className="py-8 px-4 text-gray-500 text-center" colSpan={5}>
                                     Chargement…
                                 </td>
                             </tr>
                         ) : filtered.length === 0 ? (
                             <tr>
-                                <td className="py-8 px-4 text-gray-500 text-center" colSpan={4}>
+                                <td className="py-8 px-4 text-gray-500 text-center" colSpan={5}>
                                     Aucune candidature trouvée.
                                 </td>
                             </tr>

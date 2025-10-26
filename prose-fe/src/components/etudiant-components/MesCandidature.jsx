@@ -87,7 +87,7 @@ export default function MesCandidature() {
     const getStatusText = (status) => {
         switch (status) {
             case 'SOUMISE':
-                return 'En attente';
+                return 'En attente d\'approbation par l\'employeur';
             case 'ACCEPTEE':
                 return 'Acceptée';
             case 'REFUSEE':

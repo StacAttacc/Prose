@@ -1,6 +1,9 @@
 package com.AL565.prose.service;
 
 import com.AL565.prose.model.CvStatus;
+import com.AL565.prose.model.auth.Credentials;
+import com.AL565.prose.model.notifications.Notification;
+import com.AL565.prose.repository.NotificationRepository;
 import com.AL565.prose.service.dto.EtudiantCvDTO;
 import com.AL565.prose.model.CV;
 import com.AL565.prose.model.Etudiant;
@@ -30,6 +33,9 @@ class EtudiantServiceCvTest {
 
     @Mock
     private EtudiantRepository etudiantRepository;
+
+    @Mock
+    private NotificationRepository notificationRepository;
 
     @InjectMocks
     private EtudiantService etudiantService;
@@ -71,15 +77,26 @@ class EtudiantServiceCvTest {
         when(file.isEmpty()).thenReturn(false);
         when(file.getContentType()).thenReturn(MediaType.APPLICATION_PDF_VALUE);
         when(file.getBytes()).thenReturn(new byte[]{1, 2, 3});
-        when(file.getOriginalFilename()).thenReturn("cv.pdf");
         when(file.getSize()).thenReturn(123L);
 
-        when(etudiantRepository.findEtudiantByCredentials_Username("email@email.email"))
-                .thenReturn(Optional.of(mock(Etudiant.class)));
+        Credentials credentials = new Credentials();
+        credentials.setUsername("dummy@email.com");
+        credentials.setPassword("dummyPassword");
+        Etudiant etudiant = new Etudiant();
+        etudiant.setFirstName("dummy");
+        etudiant.setLastName("dum dum");
+        etudiant.setCredentials(credentials);
 
-        when(cvRepository.save(any(CV.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(etudiantRepository.findEtudiantByCredentials_Username(etudiant.getEmail()))
+                .thenReturn(Optional.of(etudiant));
 
-        etudiantService.saveCv(file, "email@email.email", "2024-06-01");
+        when(cvRepository.findByEtudiant_Credentials_Username(etudiant.getEmail()))
+                .thenReturn(Optional.empty());
+
+        when(cvRepository.save(any(CV.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        etudiantService.saveCv(file, etudiant.getEmail(), "2024-06-01");
 
         ArgumentCaptor<CV> captor = ArgumentCaptor.forClass(CV.class);
         verify(cvRepository).save(captor.capture());
@@ -89,7 +106,10 @@ class EtudiantServiceCvTest {
         assertEquals(123L, saved.getSize());
         assertArrayEquals(new byte[]{1, 2, 3}, saved.getData());
         assertEquals("2024-06-01", saved.getLastModified());
+
+        verify(notificationRepository, times(1)).save(any(Notification.class));
     }
+
 
 
     @Test

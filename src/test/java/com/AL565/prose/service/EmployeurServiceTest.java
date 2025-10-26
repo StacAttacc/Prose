@@ -4,11 +4,7 @@ import com.AL565.prose.model.Employeur;
 import com.AL565.prose.model.Stage;
 import com.AL565.prose.model.*;
 import com.AL565.prose.model.auth.Credentials;
-import com.AL565.prose.repository.CandidatureRepository;
-import com.AL565.prose.repository.EmployeurRepository;
-import com.AL565.prose.repository.NotificationRepository;
-import com.AL565.prose.repository.ProseUserRepository;
-import com.AL565.prose.repository.StageRepository;
+import com.AL565.prose.repository.*;
 import com.AL565.prose.service.dto.CandidatureDTO;
 import com.AL565.prose.service.dto.EmployeurDTO;
 import com.AL565.prose.service.dto.EmployeurPasswordDTO;
@@ -36,25 +32,16 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class EmployeurServiceTest {
-
     @Mock
     private ProseUserRepository proseUserRepository;
-
     @Mock
     private EmployeurRepository employeurRepository;
-
-    @Mock
-    private PasswordEncoder passwordEncoder;
-
     @Mock
     private StageRepository stageRepository;
-
-    @Mock
-    private EtudiantService etudiantService;
-
     @Mock
     private CandidatureRepository candidatureRepository;
-
+    @Mock
+    private PasswordEncoder passwordEncoder;
     @Mock
     private NotificationRepository notificationRepository;
 

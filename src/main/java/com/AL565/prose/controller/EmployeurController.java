@@ -1,12 +1,12 @@
 package com.AL565.prose.controller;
 
 import com.AL565.prose.security.exceptions.UserNotFoundException;
-import com.AL565.prose.service.dto.CandidatureDTO;
-import com.AL565.prose.service.dto.EmployeurPasswordDTO;
+import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.EmployeurService;
 import com.AL565.prose.service.dto.ReturnEntityDTO;
 import com.AL565.prose.service.dto.StageDTO;
 import com.AL565.prose.service.exceptions.CandidatureNotFoundException;
+import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import com.AL565.prose.service.exceptions.InvalidCandidatureModificationException;
 import com.AL565.prose.service.exceptions.StageNotFoundException;
@@ -101,6 +101,25 @@ public class EmployeurController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Le candidature n'existe pas");
         } catch (InvalidCandidatureModificationException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+    @GetMapping("/notifications/postulations/{email}")
+    public ResponseEntity<ReturnEntityDTO<NotificationsResponseDTO>> getPostulationNotifications(@PathVariable String email) {
+        try {
+            NotificationsResponseDTO notifications = employeurService.getPostulationNotifications(email);
+            return ResponseEntity.ok(new ReturnEntityDTO<>("Notifications: ", notifications));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ReturnEntityDTO<>("Erreur lors de la récupération des notifications de postulation", null));
+        }
+    }
+
+    @PutMapping("/notifications/read/{id}")
+    public ResponseEntity<ReturnEntityDTO<Void>> markNotificationAsRead(@PathVariable Long id) {
+        try {
+            employeurService.markNotificationAsRead(id);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ReturnEntityDTO<>("Erreur lors du marquage de la notification comme lue", null));
         }
     }
 }

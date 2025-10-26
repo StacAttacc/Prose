@@ -3,15 +3,20 @@ package com.AL565.prose.controleur;
 import com.AL565.prose.controller.GestionnaireController;
 import com.AL565.prose.model.*;
 import com.AL565.prose.model.auth.Credentials;
+import com.AL565.prose.model.notifications.GestionnaireCvNotification;
 import com.AL565.prose.model.notifications.NotificationType;
+import com.AL565.prose.model.notifications.PostulationNotification;
 import com.AL565.prose.model.notifications.StageNotification;
 import com.AL565.prose.repository.CvRepository;
+import com.AL565.prose.repository.NotificationRepository;
+import com.AL565.prose.repository.PostulationNotificationRepository;
 import com.AL565.prose.security.JwtTokenProvider;
-import com.AL565.prose.security.exceptions.NotificationExceptions;
 import com.AL565.prose.service.EmployeurService;
 import com.AL565.prose.service.EtudiantService;
 import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.GestionnaireService;
+import com.AL565.prose.service.dto.notifications.NotificationGroupDTO;
+import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
@@ -58,6 +63,12 @@ class GestionnaireControllerTest {
     private EtudiantService etudiantService;
 
     @MockitoBean
+    private NotificationRepository notificationRepository;
+
+    @MockitoBean
+    private PostulationNotificationRepository postulationNotificationRepository;
+
+    @MockitoBean
     private CvRepository cvRepository;
 
     @MockitoBean
@@ -65,7 +76,9 @@ class GestionnaireControllerTest {
 
     @Autowired
     ObjectMapper objectMapper;
+
     private record CvDecisionStub(Long id, String status, String comment) {}
+
     @Test
     void getStagesSoumises_returnsStages() throws Exception {
         Employeur employeur1 = new Employeur(1L, "John", "Doe", "Entreprise Test", "john@example.com");
@@ -194,7 +207,6 @@ class GestionnaireControllerTest {
         String payload = objectMapper.writeValueAsString(new CvDecisionStub(99L, "INVALID", "no"));
         doThrow(new Exception("boom")).when(gestionnaireService).changeCvStatus(99L, "INVALID", "no");
 
-        String body = "{\"id\":99,\"status\":\"ewww\",\"comment\":\"non\"}";
         mockMvc.perform(post("/gestionnaire/cv/change-status")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(payload))
@@ -278,46 +290,69 @@ class GestionnaireControllerTest {
         assertThat(candidatures.getData().size()).isEqualTo(2);
     }
     @Test
-    @DisplayName("GET /gestionnaire/notifications/all -> 200 + list of notifications")
+    @DisplayName("GET /gestionnaire/notifications/all -> 200 + list of notifications (updated DTO)")
     void getStageNotifications_returnsOkWithList() throws Exception {
         StageNotification n1 = new StageNotification();
         n1.setType(NotificationType.STAGE_NOTIFICATION);
         n1.setMessage("Stage submitted");
         n1.setCreatedAt(LocalDateTime.now());
         n1.setSenderEmail("employer1@example.com");
-        n1.setStage(null);
 
         StageNotification n2 = new StageNotification();
         n2.setType(NotificationType.STAGE_NOTIFICATION);
         n2.setMessage("Stage updated");
         n2.setCreatedAt(LocalDateTime.now());
         n2.setSenderEmail("employer2@example.com");
-        n2.setStage(null);
 
-        when(gestionnaireService.getStageNotifications()).thenReturn(StageNotificationDTO.builder().stageNotifications(List.of(n1, n2)).count(2).build());
+        PostulationNotification n3 = new PostulationNotification();
+        n3.setType(NotificationType.POSTULATION_NOTIFICATION);
+        n3.setMessage("New application");
+        n3.setCreatedAt(LocalDateTime.now());
+        n2.setSenderEmail("student@email.com");
 
-        mockMvc.perform(get("/gestionnaire/notifications/all").accept(MediaType.APPLICATION_JSON))
+        GestionnaireCvNotification n4 = new GestionnaireCvNotification();
+        n4.setType(NotificationType.GESTIONNAIRE_CV_NOTIFICATION);
+        n4.setMessage("New CV uploaded");
+        n4.setCreatedAt(LocalDateTime.now());
+        n2.setSenderEmail("etudiant2@email.com");
+
+        NotificationGroupDTO stageGroup = NotificationGroupDTO
+                .toDTO(NotificationType.STAGE_NOTIFICATION.getDisplayName(), List.of(n1, n2));
+        NotificationGroupDTO postulationGroup = NotificationGroupDTO
+                .toDTO(NotificationType.POSTULATION_NOTIFICATION.getDisplayName(), List.of(n3));
+        NotificationGroupDTO cvGroup = NotificationGroupDTO
+                .toDTO(NotificationType.GESTIONNAIRE_CV_NOTIFICATION.getDisplayName(), List.of(n4));
+        NotificationsResponseDTO response = NotificationsResponseDTO.toDTO(List.of(stageGroup, postulationGroup, cvGroup));
+
+        when(gestionnaireService.getGestionnaireNotifications()).thenReturn(response);
+
+        var mvc = mockMvc.perform(get("/gestionnaire/notifications/all").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
+                .andReturn();
+
+        String content = mvc.getResponse().getContentAsString();
+        assertThat(content).contains("notifications: ");
+        assertThat(content).contains("Stage submitted");
+        assertThat(content).contains("employer1@example.com");
     }
 
     @Test
     @DisplayName("GET /gestionnaire/notifications/all -> 500 when service throws")
     void getAllNotifications_whenServiceThrows_returns500() throws Exception {
-        when(gestionnaireService.getStageNotifications()).thenThrow(new NotificationExceptions.NotificationFetchException());
+        when(gestionnaireService.getGestionnaireNotifications()).thenThrow(new com.AL565.prose.security.exceptions.NotificationExceptions.NotificationFetchException());
 
         mockMvc.perform(get("/gestionnaire/notifications/all").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isInternalServerError());
     }
 
     @Test
-    void markNotificationAsRead_success_returnsOk() throws Exception {
+    void markNotificationAsRead_ByFirstRecipient_success_returnsOk() throws Exception {
         mockMvc.perform(put("/gestionnaire/notifications/read/1").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
 
     @Test
-    void markNotificationAsRead_whenServiceThrows_returns500WithMessage() throws Exception {
+    void markNotificationAsRead_ByFirstRecipient_whenServiceThrows_returns500WithMessage() throws Exception {
         doThrow(new Exception("boom")).when(gestionnaireService).markNotificationAsRead(anyLong());
 
         mockMvc.perform(put("/gestionnaire/notifications/read/1").accept(MediaType.APPLICATION_JSON))
@@ -326,5 +361,4 @@ class GestionnaireControllerTest {
                 .andExpect(jsonPath("$.message", is("Erreur lors du marquage de la notification comme lue")))
                 .andExpect(jsonPath("$.data").doesNotExist());
     }
-
 }
