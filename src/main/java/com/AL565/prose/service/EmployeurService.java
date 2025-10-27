@@ -5,9 +5,9 @@ import com.AL565.prose.model.notifications.NotificationType;
 import com.AL565.prose.model.notifications.PostulationNotification;
 import com.AL565.prose.model.notifications.StageNotification;
 import com.AL565.prose.repository.*;
-import com.AL565.prose.security.exceptions.NotificationExceptions.*;
+import com.AL565.prose.security.exceptions.NotificationExceptions;
 import com.AL565.prose.security.exceptions.UserNotFoundException;
-import com.AL565.prose.service.dto.*
+import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.exceptions.CandidatureNotFoundException;
 import com.AL565.prose.service.dto.notifications.NotificationGroupDTO;
 import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
@@ -117,10 +117,8 @@ public class EmployeurService {
     }
 
     public void updateCandidatureStatus(long candidatureId, String status) throws CandidatureNotFoundException, InvalidCandidatureModificationException {
-        CandidatureStatus candidatureStatus = CandidatureStatus.valueOf(status);
+        CandidatureStatus candidatureStatus = CandidatureStatus.getByDescription(status);
         Candidature candidature = candidatureRepository.findById(candidatureId).orElseThrow(() -> new CandidatureNotFoundException("La candidature n'existe pas"));
-
-        candidature.setStatus(CandidatureStatus.valueOf(status));
 
         if (candidatureStatus == CandidatureStatus.ACCEPTEE && candidature.getStatus() != CandidatureStatus.CONVOQUEE) {
             throw new InvalidCandidatureModificationException("Il est impossible d'accepter un étudiant avant de le convoquer en entrevue.");
@@ -128,7 +126,8 @@ public class EmployeurService {
 
         candidature.setStatus(candidatureStatus);
         candidatureRepository.save(candidature);
-  }
+    }
+
     @Transactional
     public NotificationsResponseDTO getPostulationNotifications(String employeurEmail) throws Exception {
         try {

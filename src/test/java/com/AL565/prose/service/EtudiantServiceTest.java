@@ -98,7 +98,7 @@ class EtudiantServiceTest {
         CV cv = createMockCV(etudiant, CvStatus.APPROVED);
         Stage stage = createMockStage(stageId);
 
-        Candidature savedCandidature = createMockCandidature(etudiant, stage, OfferStatus.SOUMISE);
+        Candidature savedCandidature = createMockCandidature(etudiant, stage, CandidatureStatus.SOUMISE);
 
         when(candidatureRepository.existsByEtudiant_Credentials_UsernameAndStage_Id(email, stageId))
                 .thenReturn(false);
@@ -287,7 +287,7 @@ class EtudiantServiceTest {
         assertNotNull(result);
         assertEquals(1, result.size());
 
-        EtudiantCandidatureDTO dto = result.get(0);
+        EtudiantCandidatureDTO dto = result.getFirst();
         assertEquals("SOUMISE", dto.getStatus());
         assertEquals("Développeur Java", dto.getStage().getTitle());
         assertEquals("Stage en développement Java", dto.getStage().getDescription());
@@ -429,7 +429,7 @@ class EtudiantServiceTest {
         
         Etudiant etudiant = createMockEtudiant(etudiantEmail);
         
-        Candidature candidature1 = createMockCandidature(etudiant, stage1, OfferStatus.SOUMISE);
+        Candidature candidature1 = createMockCandidature(etudiant, stage1, CandidatureStatus.SOUMISE);
         
         // Créer des employeurs
         Employeur employeur2 = createMockEmployeur("employeur2@test.com");

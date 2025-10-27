@@ -101,6 +101,9 @@ public class EmployeurController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Le candidature n'existe pas");
         } catch (InvalidCandidatureModificationException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        }
+    }
+
     @GetMapping("/notifications/postulations/{email}")
     public ResponseEntity<ReturnEntityDTO<NotificationsResponseDTO>> getPostulationNotifications(@PathVariable String email) {
         try {

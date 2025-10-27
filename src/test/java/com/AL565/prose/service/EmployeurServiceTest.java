@@ -9,7 +9,9 @@ import com.AL565.prose.service.dto.CandidatureDTO;
 import com.AL565.prose.service.dto.EmployeurDTO;
 import com.AL565.prose.service.dto.EmployeurPasswordDTO;
 import com.AL565.prose.service.dto.StageDTO;
+import com.AL565.prose.service.exceptions.CandidatureNotFoundException;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
+import com.AL565.prose.service.exceptions.InvalidCandidatureModificationException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -142,9 +144,53 @@ class EmployeurServiceTest {
                         null)
         )));
 
-
         List<CandidatureDTO> candidatures = employeurService.getStageCandidatures(stage.getId());
 
         assertThat(candidatures.size()).isEqualTo(2);
+    }
+
+    @Test
+    void approveCandidature() throws CandidatureNotFoundException, InvalidCandidatureModificationException {
+        Stage stage = new Stage(1L, "Démissioner", "Partir immédiatement!", "Rien", new ArrayList<>(), LocalDate.now(), LocalDate.now(), "Chez vous", null, "Remote", "0$", OfferStatus.APPROUVEE, "jemployeur1@gmail.com", OffsetDateTime.now(), OffsetDateTime.now());
+
+        Candidature candidature = new Candidature(
+                1L,
+                new Etudiant("Umberto", "Larrios", Credentials.builder().username("umberto@gmail.com").password("1234567890").build(), Discipline.INFORMATIQUE),
+                null,
+                null,
+                stage,
+                LocalDateTime.now(),
+                CandidatureStatus.CONVOQUEE,
+                null,
+                ""
+        );
+
+        when(candidatureRepository.findById(anyLong())).thenReturn(Optional.of(candidature));
+
+        employeurService.updateCandidatureStatus(candidature.getId(), "Acceptee");
+
+        verify(candidatureRepository, times(1)).save(candidature);
+    }
+
+    @Test
+    void approveCandidatureBeforeConvocationException() throws CandidatureNotFoundException, InvalidCandidatureModificationException {
+        Stage stage = new Stage(1L, "Démissioner", "Partir immédiatement!", "Rien", new ArrayList<>(), LocalDate.now(), LocalDate.now(), "Chez vous", null, "Remote", "0$", OfferStatus.APPROUVEE, "jemployeur1@gmail.com", OffsetDateTime.now(), OffsetDateTime.now());
+
+        Candidature candidature = new Candidature(
+                1L,
+                new Etudiant("Umberto", "Larrios", Credentials.builder().username("umberto@gmail.com").password("1234567890").build(), Discipline.INFORMATIQUE),
+                null,
+                null,
+                stage,
+                LocalDateTime.now(),
+                CandidatureStatus.SOUMISE,
+                null,
+                ""
+        );
+
+        when(candidatureRepository.findById(anyLong())).thenReturn(Optional.of(candidature));
+
+        assertThatThrownBy(() -> employeurService.updateCandidatureStatus(candidature.getId(), "Acceptee"))
+                .isInstanceOf(InvalidCandidatureModificationException.class);
     }
 }
