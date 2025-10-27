@@ -36,6 +36,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -230,5 +231,41 @@ class EmployeurControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isInternalServerError());
         verify(employeurService, times(1)).getPostulationNotifications(anyString());
+    }
+
+    @Test
+    void convoquerEntrevue_success() throws Exception {
+        Long candidatureId = 1L;
+        InterviewDTO interviewDTO = new InterviewDTO();
+        interviewDTO.setDateTime(LocalDateTime.of(2025, 11, 15, 10, 30));
+        
+        String requestBody = objectMapper.writeValueAsString(interviewDTO);
+
+        mockMvc.perform(put("/employeur/candidatures/" + candidatureId + "/convoquer")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message", is("Convocation réussie")));
+
+        verify(employeurService, times(1)).convoquerEntrevue(eq(candidatureId), any(InterviewDTO.class));
+    }
+
+    @Test
+    void convoquerEntrevue_whenServiceThrows_returns500() throws Exception {
+        Long candidatureId = 1L;
+        InterviewDTO interviewDTO = new InterviewDTO();
+        interviewDTO.setDateTime(LocalDateTime.of(2025, 11, 15, 10, 30));
+        
+        String requestBody = objectMapper.writeValueAsString(interviewDTO);
+
+        doThrow(new RuntimeException("boom")).when(employeurService).convoquerEntrevue(anyLong(), any(InterviewDTO.class));
+
+        mockMvc.perform(put("/employeur/candidatures/" + candidatureId + "/convoquer")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.message", is("Erreur lors de la convocation de l'entrevue")));
+
+        verify(employeurService, times(1)).convoquerEntrevue(anyLong(), any(InterviewDTO.class));
     }
 }

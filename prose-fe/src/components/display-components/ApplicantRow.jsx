@@ -41,7 +41,7 @@ function blobFromUnknownData(data, mime = "application/pdf") {
     return null;
 }
 
-export default function ApplicantRow({ applicant, onStatusUpdate }) {
+export default function ApplicantRow({ applicant, onStatusUpdate, showActions = true, onApprove, onReject }) {
     const { user } = useAuth();
     const location = useLocation();
     const navigate = useNavigate();
@@ -290,6 +290,20 @@ export default function ApplicantRow({ applicant, onStatusUpdate }) {
      {statusLabel}
                        </span>
                 </td>
+                
+                <td className="py-3 px-4 align-top">
+                    {localStatus === "EN_ATTENTE" && (
+                        <button
+                            onClick={() => setShowConvocationModal(true)}
+                            className="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 font-medium rounded-lg text-sm px-4 py-2 transition"
+                        >
+                            Convoquer
+                        </button>
+                    )}
+                    {localStatus === "CONVOQUE" && (
+                        <span className="text-sm text-gray-500 italic">Convoqué</span>
+                    )}
+                </td>
 
                 <td className="py-3 px-4 align-top">
                     {showActions ? (
@@ -312,20 +326,6 @@ export default function ApplicantRow({ applicant, onStatusUpdate }) {
                             </button>
                         </div>
                     ) : null}
-                </td>
-
-                <td className="py-3 px-4 align-top">
-                    {localStatus === "EN_ATTENTE" && (
-                        <button
-                            onClick={() => setShowConvocationModal(true)}
-                            className="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 font-medium rounded-lg text-sm px-4 py-2 transition"
-                        >
-                            Convoquer
-                        </button>
-                    )}
-                    {localStatus === "CONVOQUE" && (
-                        <span className="text-sm text-gray-500 italic">Convoqué</span>
-                    )}
                 </td>
             </tr>
 

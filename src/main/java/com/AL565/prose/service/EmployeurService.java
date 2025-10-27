@@ -5,9 +5,10 @@ import com.AL565.prose.model.notifications.NotificationType;
 import com.AL565.prose.model.notifications.PostulationNotification;
 import com.AL565.prose.model.notifications.StageNotification;
 import com.AL565.prose.repository.*;
+import com.AL565.prose.security.exceptions.NotificationExceptions;
 import com.AL565.prose.security.exceptions.NotificationExceptions.*;
 import com.AL565.prose.security.exceptions.UserNotFoundException;
-import com.AL565.prose.service.dto.*
+import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.exceptions.CandidatureNotFoundException;
 import com.AL565.prose.service.dto.notifications.NotificationGroupDTO;
 import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
@@ -144,5 +145,15 @@ public class EmployeurService {
 
     public void markNotificationAsRead(Long notificationId) throws Exception {
         notificationsHelper.markNotificationAsReadByFirstRecipient(notificationId);
+    }
+
+    @Transactional
+    public void convoquerEntrevue(long candidatureId, InterviewDTO interviewDTO) throws CandidatureNotFoundException {
+        Candidature candidature = candidatureRepository.findById(candidatureId).orElseThrow(() -> new CandidatureNotFoundException("La candidature n'existe pas"));
+
+        candidature.setStatus(CandidatureStatus.CONVOQUEE);
+        candidature.setDateDecision(interviewDTO.getDateTime());
+        candidatureRepository.save(candidature);
+
     }
 }

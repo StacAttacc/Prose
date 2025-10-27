@@ -101,6 +101,8 @@ public class EmployeurController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Le candidature n'existe pas");
         } catch (InvalidCandidatureModificationException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        }
+    }
     @GetMapping("/notifications/postulations/{email}")
     public ResponseEntity<ReturnEntityDTO<NotificationsResponseDTO>> getPostulationNotifications(@PathVariable String email) {
         try {
@@ -120,6 +122,17 @@ public class EmployeurController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ReturnEntityDTO<>("Erreur lors du marquage de la notification comme lue", null));
+        }
+    }
+
+    @PutMapping("/candidatures/{id}/convoquer")
+    public ResponseEntity<ReturnEntityDTO<Void>> convoquerEntrevue(@PathVariable long id, @RequestBody InterviewDTO interviewDTO) {
+        try {
+            employeurService.convoquerEntrevue(id, interviewDTO);
+            return ResponseEntity.ok(new ReturnEntityDTO<>("Convocation réussie", null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ReturnEntityDTO<>("Erreur lors de la convocation de l'entrevue", null));
         }
     }
 }

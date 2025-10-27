@@ -1,5 +1,14 @@
 import {http} from "./http";
-const BASE_URL = "http://localhost:8080/employeur";
+const API = "http://localhost:8080";
+
+
+// Fonction utilitaire pour parser les réponses JSON
+async function parseJsonOrThrow(response) {
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return await response.json();
+}
 
 export async function getStageApplicants(stageId) {
     const { data } = await http.get(`/employeur/stages/${stageId}/applications`);
@@ -68,7 +77,7 @@ export const markNotificationsRead = (notificationIds = [], token) => {
 
 export async function convoquerEntrevue(candidatureId, interviewData, token) {
     const res = await fetch(`${API}/employeur/candidatures/${candidatureId}/convoquer`, {
-        method: "POST",
+        method: "PUT",
         headers: {
             Accept: "application/json",
             "Content-Type": "application/json",

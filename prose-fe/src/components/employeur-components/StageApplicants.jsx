@@ -138,6 +138,7 @@ const StageApplicantsPage = () => {
                             <th className="py-3 px-4 font-medium text-gray-600">CV</th>
                             <th className="py-3 px-4 font-medium text-gray-600">Lettre de motivation</th>
                             <th className="py-3 px-4 font-medium text-gray-600">Statut</th>
+                            <th className="py-3 px-4 font-medium text-gray-600">entrevue</th>
                             <th className="py-3 px-4 font-medium text-gray-600">Actions</th>
                         </tr>
                         </thead>
