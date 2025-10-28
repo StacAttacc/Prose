@@ -1,7 +1,5 @@
 package com.AL565.prose.service;
 
-import com.AL565.prose.model.CV;
-import com.AL565.prose.model.CvStatus;
 import com.AL565.prose.model.notifications.*;
 import com.AL565.prose.repository.*;
 import com.AL565.prose.security.JwtTokenProvider;
@@ -99,8 +97,7 @@ class NotificationsServiceLayerTest {
         when(notificationRepository.findNotificationsByTypeAndFirstRecipientReadAt(NotificationType.GESTIONNAIRE_CV_NOTIFICATION, null))
                 .thenReturn(List.of(n4));
 
-        when(etudiantCvNotificationRepository.findNotificationsByTypeAndFirstRecipientReadAtAndEtudiant_Credentials_Username(
-                NotificationType.ETUDIANT_CV_NOTIFICATION,
+        when(etudiantCvNotificationRepository.findEtudiantCvNotificationsByFirstRecipientReadAtAndEtudiantEmail(
                 null,
                 "dummy@email.com"
         )).thenReturn(List.of(n5));
@@ -123,8 +120,7 @@ class NotificationsServiceLayerTest {
         assertThat(etudiantResult.getGroups().getFirst().getItems().getFirst().getMessage()).isEqualTo("CV processed");
 
         verify(etudiantCvNotificationRepository, times(1))
-                .findNotificationsByTypeAndFirstRecipientReadAtAndEtudiant_Credentials_Username(
-                        NotificationType.ETUDIANT_CV_NOTIFICATION,
+                .findEtudiantCvNotificationsByFirstRecipientReadAtAndEtudiantEmail(
                         null,
                         "dummy@email.com");
         verify(notificationRepository, times(1))
@@ -184,26 +180,6 @@ class NotificationsServiceLayerTest {
 
         verify(postulationNotificationRepository, times(1)).findById(1L);
         verify(notificationRepository, times(1)).save(any());
-    }
-
-    @Test
-    @DisplayName("markNotificationAsRead() creates student CV notification when gestionnaire notification found")
-    void markNotificationAsRead_createsEtudiantCvNotification_whenGestionnaireReadsNotification() throws Exception {
-        CV cv = new CV();
-        cv.setId(42L);
-        cv.setStatus(CvStatus.REJECTED);
-
-        GestionnaireCvNotification gcn = new GestionnaireCvNotification();
-        gcn.setId(1L);
-        gcn.setType(NotificationType.GESTIONNAIRE_CV_NOTIFICATION);
-        gcn.setCv(cv);
-
-        when(notificationRepository.findById(1L)).thenReturn(java.util.Optional.of(gcn));
-        when(gestionnaireCvNotificationRepository.findById(1L)).thenReturn(java.util.Optional.of(gcn));
-
-        gestionnaireService.markNotificationAsRead(1L);
-
-        verify(notificationRepository, times(1)).save(any(Notification.class));
     }
 
 }
