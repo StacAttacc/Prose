@@ -97,7 +97,6 @@ export async function getGestionnaireNotifications(token) {
             'Authorization': `Bearer ${token}`
         }
     });
-    console.log(data);
     return data;
 }
 

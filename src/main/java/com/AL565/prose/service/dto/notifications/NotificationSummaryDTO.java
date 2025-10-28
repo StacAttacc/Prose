@@ -50,11 +50,6 @@ public class NotificationSummaryDTO {
                     cvId = gcn.getCv().getId();
                 }
             }
-            case EtudiantCvNotification ecn -> {
-                if (ecn.getEtudiant() != null) {
-                    etudiantId = ecn.getEtudiant().getId();
-                }
-            }
             default -> {
             }
         }
@@ -72,5 +67,4 @@ public class NotificationSummaryDTO {
                 .cvId(cvId)
                 .build();
     }
-
 }

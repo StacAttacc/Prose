@@ -19,7 +19,6 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -36,7 +35,6 @@ public class GestionnaireService {
     private final CandidatureRepository candidatureRepository;
     private final NotificationRepository notificationRepository;
     private final PostulationNotificationRepository postulastionNotificationRepository;
-    private final GestionnaireCvNotificationRepository gestionnaireCvNotificationRepository;
     private final NotificationsHelper notificationsHelper;
 
     public void saveGestionnaire(GestionnairePasswordDTO dto) {
@@ -107,7 +105,8 @@ public class GestionnaireService {
             CV cv = cvRepository.findById(cvId).orElseThrow(CvNotFoundException::new);
             cv.setStatus(CvStatus.valueOf(status.toUpperCase()));
             cv.setComment(comment);
-            cvRepository.save(cv);
+            CV savedCd = cvRepository.save(cv);
+            createStudentNotificationForReviewedCV(savedCd);
         } catch (Exception e) {
             throw new FailedToChangeCvStatusException();
         }
@@ -183,13 +182,6 @@ public class GestionnaireService {
                 .orElseThrow(NotificationExceptions.NotificationFetchException::new);
         if (notification.getType() == NotificationType.POSTULATION_NOTIFICATION) {
             markPostulationAsReadBySecondRecipient(notificationId);
-        } else if (notification.getType() == NotificationType.GESTIONNAIRE_CV_NOTIFICATION) {
-            Optional<GestionnaireCvNotification> n = gestionnaireCvNotificationRepository.findById(notificationId);
-            n.ifPresent(notif -> {
-                notif.setFirstRecipientReadAt(OffsetDateTime.now().toLocalDateTime());
-                gestionnaireCvNotificationRepository.save(notif);
-                createStudentNotificationForReviewedCV(notif.getCv());
-            });
         } else {
             notificationsHelper.markNotificationAsReadByFirstRecipient(notificationId);
         }
@@ -198,11 +190,19 @@ public class GestionnaireService {
     @Transactional
     public void createStudentNotificationForReviewedCV(CV cv) {
         EtudiantCvNotification notification = new EtudiantCvNotification();
+        if (cv.getStatus() == CvStatus.PENDING) {
+            return;
+        }
+        String statusMessage = switch (cv.getStatus()) {
+            case APPROVED -> "approuvé";
+            case REJECTED -> "rejeté";
+            default -> "";
+        };
         notification.setFirstRecipientReadAt(null);
         notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
         notification.setType(NotificationType.ETUDIANT_CV_NOTIFICATION);
-        notification.setEtudiant(cv.getEtudiant());
-        notification.setMessage("Votre CV a été examiné. Statut: " + cv.getStatus().toString());
+        notification.setEtudiantEmail(cv.getEtudiant().getEmail());
+        notification.setMessage("Votre CV a été " + statusMessage + ".");
         notificationRepository.save(notification);
     }
 

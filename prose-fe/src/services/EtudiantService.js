@@ -109,9 +109,16 @@ export const getMesCandidatures = async () => {
     }
 };
 
-export const getEtudiantNotifications = async () => {
+export async function getEtudiantNotifications(token) {
     try {
-        const { data } = await http.get("/etudiant/notifications/all");
+        const { data } = await http.get("/etudiant/notifications/all", {
+            method: "GET",
+            headers: {
+                Accept: "application/json",
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+        });
+        console.log(data);
         return data;
     } catch (e) {
         console.error("Erreur lors de la récupération des notifications:", e);

@@ -253,8 +253,7 @@ public class EtudiantService {
     public NotificationsResponseDTO getStudentsNotifications(String etudiantEmail) throws Exception {
         try {
             List<EtudiantCvNotification> cvNotifications = etudiantCvNotificationRepository
-                    .findNotificationsByTypeAndFirstRecipientReadAtAndEtudiant_Credentials_Username(
-                            NotificationType.ETUDIANT_CV_NOTIFICATION,
+                    .findEtudiantCvNotificationsByFirstRecipientReadAtAndEtudiantEmail(
                             null,
                             etudiantEmail);
 
