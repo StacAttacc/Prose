@@ -57,6 +57,11 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
     const [showConvocationModal, setShowConvocationModal] = useState(false);
     const [localStatus, setLocalStatus] = useState(applicant?.statut || applicant?.status || "EN_ATTENTE");
 
+    useEffect(() => {
+        const newStatus = applicant?.statut || applicant?.status || "EN_ATTENTE";
+        setLocalStatus(newStatus);
+    }, [applicant?.statut, applicant?.status]);
+
     const email = useMemo(
         () => firstNonEmpty(applicant?.email, applicant?.etudiant?.email),
         [applicant]
@@ -190,10 +195,11 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
 
     const handleConvoquerEntrevue = async (interviewData) => {
         try {
-            await convoquerEntrevue(applicant.id, interviewData, user?.token);
-            setLocalStatus("CONVOQUE");
+            const result = await convoquerEntrevue(applicant.id, interviewData, user?.token);
+            console.log("Convocation réussie:", result);
+            setLocalStatus("CONVOQUEE");
             if (onStatusUpdate) {
-                onStatusUpdate(applicant.id, "CONVOQUE");
+                onStatusUpdate(applicant.id, "CONVOQUEE", interviewData.dateTime);
             }
         } catch (error) {
             console.error("Erreur lors de la convocation:", error);
@@ -292,40 +298,79 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                 </td>
                 
                 <td className="py-3 px-4 align-top">
-                    {localStatus === "EN_ATTENTE" && (
-                        <button
-                            onClick={() => setShowConvocationModal(true)}
-                            className="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 font-medium rounded-lg text-sm px-4 py-2 transition"
-                        >
-                            Convoquer
-                        </button>
-                    )}
-                    {localStatus === "CONVOQUE" && (
-                        <span className="text-sm text-gray-500 italic">Convoqué</span>
+                    {localStatus === "CONVOQUEE" && applicant?.dateDecision ? (
+                        <div className="text-sm">
+                            <div className="font-medium text-gray-800">
+                                {new Date(applicant.dateDecision).toLocaleDateString('fr-FR', {
+                                    day: '2-digit',
+                                    month: 'long',
+                                    year: 'numeric'
+                                })}
+                            </div>
+                            <div className="text-gray-500">
+                                {new Date(applicant.dateDecision).toLocaleTimeString('fr-FR', {
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                })}
+                            </div>
+                        </div>
+                    ) : (
+                        <span className="text-sm text-gray-400">—</span>
                     )}
                 </td>
 
                 <td className="py-3 px-4 align-top">
-                    {showActions ? (
+                    {showActions && (
                         <div className="flex gap-2">
-                            <button
-                                onClick={() => onApprove && onApprove(applicant)}
-                                className="w-full px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br transition-all"
-                                disabled={!onApprove}
-                                type="button"
-                            >
-                                Accepter
-                            </button>
-                            <button
-                                onClick={() => onReject && onReject(applicant)}
-                                className="text-white bg-gradient-to-r from-red-400 via-red-500 to-red-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
-                                disabled={!onReject || !user?.token}
-                                type="button"
-                            >
-                                Refuser
-                            </button>
+                            {/* Pour candidatures SOUMISE : proposer Convoquer ou Refuser directement */}
+                            {localStatus === "SOUMISE" && (
+                                <>
+                                    <button
+                                        onClick={() => setShowConvocationModal(true)}
+                                        className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 hover:bg-gradient-to-br transition-all"
+                                        type="button"
+                                    >
+                                        Convoquer
+                                    </button>
+                                    <button
+                                        onClick={() => onReject && onReject(applicant)}
+                                        className="text-white bg-gradient-to-r from-red-400 via-red-500 to-red-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+                                        disabled={!onReject || !user?.token}
+                                        type="button"
+                                    >
+                                        Refuser
+                                    </button>
+                                </>
+                            )}
+
+                            {/* Pour candidatures CONVOQUEE : proposer Accepter ou Refuser */}
+                            {localStatus === "CONVOQUEE" && (
+                                <>
+                                    <button
+                                        onClick={() => onApprove && onApprove(applicant)}
+                                        className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br transition-all"
+                                        disabled={!onApprove}
+                                        type="button"
+                                    >
+                                        Accepter
+                                    </button>
+                                    <button
+                                        onClick={() => onReject && onReject(applicant)}
+                                        className="text-white bg-gradient-to-r from-red-400 via-red-500 to-red-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+                                        disabled={!onReject || !user?.token}
+                                        type="button"
+                                    >
+                                        Refuser
+                                    </button>
+                                </>
+                            )}
+
+                            {/* Pour candidatures ACCEPTEE ou REFUSEE : plus d'actions */}
+                            {(localStatus === "ACCEPTEE" || localStatus === "REFUSEE") && (
+                                <span className="text-sm text-gray-400 italic px-4 py-2">Traité</span>
+                            )}
                         </div>
-                    ) : null}
+                    )}
                 </td>
             </tr>
 

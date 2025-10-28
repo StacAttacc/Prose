@@ -167,6 +167,20 @@ const StageApplicantsPage = () => {
                                     }
                                     applicant={app}
                                     showActions
+                                    onStatusUpdate={(candidatureId, newStatus, dateDecision) => {
+                                        setApplicants(prev => prev.map(a => {
+                                            const id = a?.id ?? a?.candidatureId ?? a?.applicationId;
+                                            if (Number(id) === Number(candidatureId)) {
+                                                return {
+                                                    ...a,
+                                                    status: newStatus,
+                                                    statut: newStatus,
+                                                    dateDecision: dateDecision || a.dateDecision
+                                                };
+                                            }
+                                            return a;
+                                        }));
+                                    }}
                                     onReject={async (a) => {
                                         const id = Number(a?.id ?? a?.candidatureId ?? a?.applicationId);
                                         if (!Number.isFinite(id)) return;

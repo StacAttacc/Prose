@@ -20,6 +20,8 @@ import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -151,9 +153,14 @@ public class EmployeurService {
     public void convoquerEntrevue(long candidatureId, InterviewDTO interviewDTO) throws CandidatureNotFoundException {
         Candidature candidature = candidatureRepository.findById(candidatureId).orElseThrow(() -> new CandidatureNotFoundException("La candidature n'existe pas"));
 
+        LocalDateTime dateDecision = interviewDTO.getDateTimeAsLocalDateTime();
+        System.out.println("DEBUG - InterviewDTO dateTime reçu (string): " + interviewDTO.getDateTime());
+        System.out.println("DEBUG - InterviewDTO dateTime parsé (LocalDateTime): " + dateDecision);
+
         candidature.setStatus(CandidatureStatus.CONVOQUEE);
-        candidature.setDateDecision(interviewDTO.getDateTime());
+        candidature.setDateDecision(dateDecision);
         candidatureRepository.save(candidature);
 
+        System.out.println("DEBUG - Candidature après save - dateDecision: " + candidature.getDateDecision());
     }
 }
