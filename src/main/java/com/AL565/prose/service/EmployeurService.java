@@ -154,13 +154,9 @@ public class EmployeurService {
         Candidature candidature = candidatureRepository.findById(candidatureId).orElseThrow(() -> new CandidatureNotFoundException("La candidature n'existe pas"));
 
         LocalDateTime dateDecision = interviewDTO.getDateTimeAsLocalDateTime();
-        System.out.println("DEBUG - InterviewDTO dateTime reçu (string): " + interviewDTO.getDateTime());
-        System.out.println("DEBUG - InterviewDTO dateTime parsé (LocalDateTime): " + dateDecision);
 
         candidature.setStatus(CandidatureStatus.CONVOQUEE);
         candidature.setDateDecision(dateDecision);
         candidatureRepository.save(candidature);
-
-        System.out.println("DEBUG - Candidature après save - dateDecision: " + candidature.getDateDecision());
     }
 }

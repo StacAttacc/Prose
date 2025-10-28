@@ -148,7 +148,7 @@ class EmployeurControllerTest {
         );
 
         CandidatureDTO candidatureDTO = new CandidatureDTO(
-                1L, stage.getId(), null, null, null, 0L, new EtudiantDTO()
+                1L, stage.getId(), com.AL565.prose.model.CandidatureStatus.SOUMISE, null, null, null, null, 0L, new EtudiantDTO()
         );
 
         when(employeurService.getStageCandidatures(any(Long.class)))
@@ -237,10 +237,9 @@ class EmployeurControllerTest {
     void convoquerEntrevue_success() throws Exception {
         Long candidatureId = 1L;
         InterviewDTO interviewDTO = new InterviewDTO();
-        interviewDTO.setDateTime(LocalDateTime.of(2025, 11, 15, 10, 30));
+        interviewDTO.setDateTime("2025-11-15T10:30:00");
         
         String requestBody = objectMapper.writeValueAsString(interviewDTO);
-
         mockMvc.perform(put("/employeur/candidatures/" + candidatureId + "/convoquer")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
@@ -254,7 +253,7 @@ class EmployeurControllerTest {
     void convoquerEntrevue_whenServiceThrows_returns500() throws Exception {
         Long candidatureId = 1L;
         InterviewDTO interviewDTO = new InterviewDTO();
-        interviewDTO.setDateTime(LocalDateTime.of(2025, 11, 15, 10, 30));
+        interviewDTO.setDateTime("2025-11-15T10:30:00");
         
         String requestBody = objectMapper.writeValueAsString(interviewDTO);
 
