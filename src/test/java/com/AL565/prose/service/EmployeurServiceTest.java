@@ -128,7 +128,7 @@ class EmployeurServiceTest {
                         null,
                         stage,
                         LocalDateTime.now(),
-                        OfferStatus.SOUMISE,
+                        CandidatureStatus.SOUMISE,
                         null,
                         null),
                 new Candidature(2L,
@@ -137,7 +137,7 @@ class EmployeurServiceTest {
                         null,
                         stage,
                         LocalDateTime.now(),
-                        OfferStatus.SOUMISE,
+                        CandidatureStatus.SOUMISE,
                         null,
                         null)
         )));

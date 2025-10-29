@@ -79,6 +79,8 @@ export default function MesCandidature() {
                 return 'bg-green-100 text-green-800';
             case 'REFUSEE':
                 return 'bg-red-100 text-red-800';
+            case 'CONVOQUEE':
+                return 'bg-yellow-100 text-yellow-800';
             default:
                 return 'bg-gray-100 text-gray-800';
         }
@@ -92,6 +94,8 @@ export default function MesCandidature() {
                 return 'Acceptée';
             case 'REFUSEE':
                 return 'Refusée';
+            case 'CONVOQUEE':
+                return 'Convoquée à une entrevue';
             default:
                 return status;
         }
@@ -252,14 +256,33 @@ export default function MesCandidature() {
                                 </div>
                             )}
 
-                            {candidature.dateDecision && (
-                                <div className="mt-2">
-                                    <p className="text-xs text-gray-500">
-                                        Décision prise le:{' '}
-                                        {new Date(candidature.dateDecision).toLocaleDateString('fr-FR')}
-                                    </p>
-                                </div>
-                            )}
+                            {((candidature.status === 'CONVOQUEE' || candidature.dateDecision) && (
+                                <div className="mt-4 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-lg shadow-sm">
+                                <p className="text-base font-semibold text-yellow-900">
+                                    {candidature.status === 'CONVOQUEE' ? (
+                                        <>
+                                            <strong>Entrevue prévue le:</strong>{' '}
+                                            <span className="text-lg text-yellow-800">
+                                                {candidature.dateDecision
+                                                    ? new Date(candidature.dateDecision).toLocaleDateString('fr-FR', {
+                                                        year: 'numeric',
+                                                        month: 'long',
+                                                        day: 'numeric',
+                                                        hour: '2-digit',
+                                                        minute: '2-digit'
+                                                    })
+                                                    : 'Date non disponible'}
+                                            </span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            Décision prise le:{' '}
+                                            {new Date(candidature.dateDecision).toLocaleDateString('fr-FR')}
+                                        </>
+                                    )}
+                                </p>
+                            </div>
+                            ))}
 
                             <div className="mt-4 flex justify-end items-center">
                                 <button

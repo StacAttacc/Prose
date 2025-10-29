@@ -1,10 +1,6 @@
 package com.AL565.prose.service.dto;
 
-import com.AL565.prose.model.CV;
-import com.AL565.prose.model.Etudiant;
-import com.AL565.prose.model.OfferStatus;
-import com.AL565.prose.model.Candidature;
-import com.AL565.prose.model.Stage;
+import com.AL565.prose.model.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,6 +15,8 @@ import java.time.LocalDateTime;
 public class CandidatureDTO {
     private Long id;
     private Long stageId;
+    private CandidatureStatus status;
+    private LocalDateTime dateDecision;
     private byte[] motivationLetterData;
     private String motivationLetterFileName;
     private String motivationLetterContentType;
@@ -32,7 +30,7 @@ public class CandidatureDTO {
                 .stage(stage)
                 .motivationLetter(this.motivationLetterData)
                 .dateCandidature(LocalDateTime.now())
-                .status(OfferStatus.SOUMISE)
+                .status(CandidatureStatus.SOUMISE)
                 .build();
     }
 
@@ -42,6 +40,8 @@ public class CandidatureDTO {
         return CandidatureDTO.builder()
                 .id(candidature.getId())
                 .stageId(candidature.getStage().getId())
+                .status(candidature.getStatus())
+                .dateDecision(candidature.getDateDecision())
                 .etudiant(EtudiantDTO.toDTO(etu, null))
                 .motivationLetterData(candidature.getMotivationLetter())
                 .build();
