@@ -1,9 +1,7 @@
 package com.AL565.prose.service;
 
 import com.AL565.prose.model.*;
-import com.AL565.prose.model.notifications.Notification;
-import com.AL565.prose.model.notifications.NotificationType;
-import com.AL565.prose.model.notifications.PostulationNotification;
+import com.AL565.prose.model.notifications.*;
 import com.AL565.prose.repository.*;
 import com.AL565.prose.security.exceptions.CvExceptions.*;
 import com.AL565.prose.security.exceptions.NotificationExceptions;
@@ -107,7 +105,8 @@ public class GestionnaireService {
             CV cv = cvRepository.findById(cvId).orElseThrow(CvNotFoundException::new);
             cv.setStatus(CvStatus.valueOf(status.toUpperCase()));
             cv.setComment(comment);
-            cvRepository.save(cv);
+            CV savedCd = cvRepository.save(cv);
+            createStudentNotificationForReviewedCV(savedCd);
         } catch (Exception e) {
             throw new FailedToChangeCvStatusException();
         }
@@ -186,6 +185,25 @@ public class GestionnaireService {
         } else {
             notificationsHelper.markNotificationAsReadByFirstRecipient(notificationId);
         }
+    }
+
+    @Transactional
+    public void createStudentNotificationForReviewedCV(CV cv) {
+        EtudiantCvNotification notification = new EtudiantCvNotification();
+        if (cv.getStatus() == CvStatus.PENDING) {
+            return;
+        }
+        String statusMessage = switch (cv.getStatus()) {
+            case APPROVED -> "approuvé";
+            case REJECTED -> "rejeté";
+            default -> "";
+        };
+        notification.setFirstRecipientReadAt(null);
+        notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
+        notification.setType(NotificationType.ETUDIANT_CV_NOTIFICATION);
+        notification.setEtudiantEmail(cv.getEtudiant().getEmail());
+        notification.setMessage("Votre CV a été " + statusMessage + ".");
+        notificationRepository.save(notification);
     }
 
     @Transactional

@@ -2,7 +2,9 @@ package com.AL565.prose.service;
 
 import com.AL565.prose.model.CvStatus;
 import com.AL565.prose.model.auth.Credentials;
+import com.AL565.prose.model.notifications.GestionnaireCvNotification;
 import com.AL565.prose.model.notifications.Notification;
+import com.AL565.prose.repository.GestionnaireCvNotificationRepository;
 import com.AL565.prose.repository.NotificationRepository;
 import com.AL565.prose.service.dto.EtudiantCvDTO;
 import com.AL565.prose.model.CV;
@@ -36,6 +38,9 @@ class EtudiantServiceCvTest {
 
     @Mock
     private NotificationRepository notificationRepository;
+
+    @Mock
+    private GestionnaireCvNotificationRepository gestionnaireCvNotificationRepository;
 
     @InjectMocks
     private EtudiantService etudiantService;
@@ -87,6 +92,14 @@ class EtudiantServiceCvTest {
         etudiant.setLastName("dum dum");
         etudiant.setCredentials(credentials);
 
+        CV cv = new CV();
+        cv.setEtudiant(etudiant);
+        cv.setId(1L);
+
+        GestionnaireCvNotification gcn = new GestionnaireCvNotification();
+        gcn.setCv(cv);
+        gcn.setId(1L);
+
         when(etudiantRepository.findEtudiantByCredentials_Username(etudiant.getEmail()))
                 .thenReturn(Optional.of(etudiant));
 
@@ -94,7 +107,13 @@ class EtudiantServiceCvTest {
                 .thenReturn(Optional.empty());
 
         when(cvRepository.save(any(CV.class)))
+                .thenReturn(cv)
                 .thenAnswer(invocation -> invocation.getArgument(0));
+
+        when(notificationRepository.save(any(Notification.class)))
+                .thenReturn(null);
+
+        when(gestionnaireCvNotificationRepository.findByCv_Id(1L)).thenReturn(Optional.of(gcn));
 
         etudiantService.saveCv(file, etudiant.getEmail(), "2024-06-01");
 

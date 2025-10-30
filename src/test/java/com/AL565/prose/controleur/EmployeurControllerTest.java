@@ -80,6 +80,12 @@ class EmployeurControllerTest {
     @MockitoBean
     private PostulationNotificationRepository postulationNotificationRepository;
 
+    @MockitoBean
+    private EtudiantCvNotificationRepository etudiantCvNotificationRepository;
+
+    @MockitoBean
+    private GestionnaireCvNotificationRepository gestionnaireCvNotificationRepository;
+
     @Autowired
     ObjectMapper objectMapper;
 
@@ -193,7 +199,6 @@ class EmployeurControllerTest {
 
         PostulationNotification pn = new PostulationNotification();
         pn.setId(1L);
-        pn.setSenderEmail("jean.dupont@etudiant.ca");
         pn.setCreatedAt(LocalDateTime.now());
 
         NotificationGroupDTO group = NotificationGroupDTO.toDTO("postulation", List.of(pn));
@@ -217,8 +222,6 @@ class EmployeurControllerTest {
         assertThat(response.getData().getTotalCount()).isEqualTo(1);
         assertThat(response.getData().getGroups()).hasSize(1);
         assertThat(response.getData().getGroups().getFirst().getItems()).hasSize(1);
-        assertThat(response.getData().getGroups().getFirst().getItems().getFirst().getSenderEmail())
-                .isEqualTo("jean.dupont@etudiant.ca");
 
         verify(employeurService, times(1)).getPostulationNotifications(email);
     }

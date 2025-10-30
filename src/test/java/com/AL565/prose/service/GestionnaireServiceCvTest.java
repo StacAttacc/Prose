@@ -4,6 +4,7 @@ import com.AL565.prose.model.*;
 import com.AL565.prose.model.auth.Credentials;
 import com.AL565.prose.repository.CvRepository;
 import com.AL565.prose.repository.GestionnaireRepository;
+import com.AL565.prose.repository.NotificationRepository;
 import com.AL565.prose.service.dto.GestionnaireCvDTO;
 import com.AL565.prose.security.exceptions.CvExceptions;
 import com.AL565.prose.service.dto.GestionnairePasswordDTO;
@@ -35,6 +36,9 @@ public class GestionnaireServiceCvTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private NotificationRepository notificationRepository;
 
     @InjectMocks
     private GestionnaireService gestionnaireService;
@@ -120,19 +124,26 @@ public class GestionnaireServiceCvTest {
 
     @Test
     void approveCv_ShouldValidApproveCv() throws Exception {
-        Long cvId = 1L;
+        Credentials credentials = new Credentials();
+        credentials.setUsername("dummy@email.com");
+        credentials.setPassword("password");
+
+        Etudiant etudiant = new Etudiant();
+        etudiant.setCredentials(credentials);
+
         CV cv = CV.builder()
-                .id(cvId)
-                .etudiant(new Etudiant())
+                .id(1L)
+                .etudiant(etudiant)
                 .status(CvStatus.PENDING)
                 .build();
 
-        when(cvRepository.findById(cvId)).thenReturn(Optional.of(cv));
+        when(cvRepository.findById(cv.getId())).thenReturn(Optional.of(cv));
         when(cvRepository.save(any(CV.class))).thenReturn(cv);
+        when(notificationRepository.save(any())).thenReturn(null);
 
-        gestionnaireService.changeCvStatus(cvId, CvStatus.APPROVED.name(), "Looks good");
+        gestionnaireService.changeCvStatus(cv.getId(), CvStatus.APPROVED.name(), "Looks good");
 
-        verify(cvRepository).findById(cvId);
+        verify(cvRepository).findById(cv.getId());
         verify(cvRepository).save(cv);
         assertThat(cv.getStatus()).isEqualTo(CvStatus.APPROVED);
     }
@@ -153,19 +164,26 @@ public class GestionnaireServiceCvTest {
 
     @Test
     void rejectCv_ShouldRejectCv() throws Exception {
-        Long cvId = 2L;
+        Credentials credentials = new Credentials();
+        credentials.setUsername("dummy@email.com");
+        credentials.setPassword("password");
+
+        Etudiant etudiant = new Etudiant();
+        etudiant.setCredentials(credentials);
+
         CV cv = CV.builder()
-                .id(cvId)
-                .etudiant(new Etudiant())
+                .id(2L)
+                .etudiant(etudiant)
                 .status(CvStatus.PENDING)
                 .build();
 
-        when(cvRepository.findById(cvId)).thenReturn(Optional.of(cv));
+        when(cvRepository.findById(cv.getId())).thenReturn(Optional.of(cv));
         when(cvRepository.save(any(CV.class))).thenReturn(cv);
+        when(notificationRepository.save(any())).thenReturn(null);
 
-        gestionnaireService.changeCvStatus(cvId, CvStatus.REJECTED.name() ,"Not suitable");
+        gestionnaireService.changeCvStatus(cv.getId(), CvStatus.REJECTED.name() ,"Not suitable");
 
-        verify(cvRepository).findById(cvId);
+        verify(cvRepository).findById(cv.getId());
         verify(cvRepository).save(cv);
         assertThat(cv.getStatus()).isEqualTo(CvStatus.REJECTED);
     }

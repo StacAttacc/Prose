@@ -12,6 +12,11 @@ import {
     markNotificationRead as markNotificationReadEmployeur,
     markNotificationsRead as markNotificationsReadEmployeur
 } from "../services/EmployeurService.js";
+import {
+    getEtudiantNotifications,
+    markNotificationRead as markNotificationReadEtudiant,
+    markNotificationsRead as markNotificationsReadEtudiant
+} from "../services/EtudiantService.js";
 
 export default function Notifications() {
     const { user } = useAuth();
@@ -33,6 +38,7 @@ export default function Notifications() {
         if (item?.candidatureId) return "postulation";
         if (item?.stageId) return "stage";
         if (item?.cvId) return "gestionnaire_cv";
+        if (item?.etudiantId) return "etudiant_cv";
         if (groupKey && typeof groupKey === "string" && !/\s/.test(groupKey)) return groupKey.toLowerCase();
         if (item?.type) {
             return String(item.type)
@@ -84,7 +90,10 @@ export default function Notifications() {
                 raw = await getGestionnaireNotifications(user.token);
             } else if (user.role === "EMPLOYEUR") {
                 raw = await getEmployeurCandidatureNotifications(user.email, user.token);
-            } else {
+            } else if (user.role === "ETUDIANT") {
+                raw = await getEtudiantNotifications(user.token);
+            }
+            else {
                 raw = null;
             }
 
@@ -101,8 +110,9 @@ export default function Notifications() {
                 byType = normalizeListToTypes(payload.stageNotifications, "stage");
             } else if (payload?.gestionnaireCvNotifications) {
                 byType = normalizeListToTypes(payload.gestionnaireCvNotifications, "gestionnaire_cv");
-            }
-            else if (payload?.items && Array.isArray(payload.items)) {
+            } else if (payload?.etudiantCvNotifications) {
+                byType = normalizeListToTypes(payload.etudiantCvNotifications, "etudiant_cv");
+            } else if (payload?.items && Array.isArray(payload.items)) {
                 byType = normalizeListToTypes(payload.items);
             } else if (payload?.data && Array.isArray(payload.data)) {
                 byType = normalizeListToTypes(payload.data);
@@ -142,6 +152,8 @@ export default function Notifications() {
             await markNotificationReadGestionnaire(id, user.token);
         } else if (user.role === "EMPLOYEUR") {
             await markNotificationReadEmployeur(id, user.token);
+        } else if (user.role === "ETUDIANT") {
+            await markNotificationReadEtudiant(id, user.token);
         }
     }
 
@@ -151,12 +163,15 @@ export default function Notifications() {
             await markNotificationsReadGestionnaire(ids, user.token);
         } else if (user.role === "EMPLOYEUR") {
             await markNotificationsReadEmployeur(ids, user.token);
+        } else if (user.role === "ETUDIANT") {
+            await markNotificationsReadEtudiant(ids, user.token);
         }
     }
 
     function defaultNavigatePath() {
         if (user.role === "GESTIONNAIRE") return "/gestionnaire/candidatures";
         if (user.role === "EMPLOYEUR") return `/employeur/posted-stages`;
+        if (user.role === "ETUDIANT") return `etudiant/mon-cv`;
         return "/";
     }
 
@@ -201,6 +216,9 @@ export default function Notifications() {
                         return;
                     }
                 }
+            }
+            else if (user.role === "ETUDIANT") {
+                navigate(defaultNavigatePath());
             }
             else if (user.role === "GESTIONNAIRE") {
                 if (isCandidature) {
@@ -273,6 +291,7 @@ export default function Notifications() {
         if (key === "stage") return `nouvelles offre(s) de stage à approuver`;
         if (key === "postulation") return `nouvelles candidature(s) reçue(s)`;
         if (key === "gestionnaire_cv") return `nouveau(x) CV(s) à examiner`;
+        if (key === "etudiant_cv") return `changement sur votre CV`;
         return `${key} notification(s)`;
     }
 

@@ -33,18 +33,24 @@ public class NotificationSummaryDTO {
         Long cvId = null;
         Long etudiantId = null;
 
-        if (n instanceof StageNotification sn) {
-            if (sn.getStage() != null) stageId = sn.getStage().getId();
-        } else if (n instanceof PostulationNotification pn) {
-            Candidature c = pn.getCandidature();
-            if (c != null) {
-                candidatureId = c.getId();
-                if (c.getStage() != null) stageId = c.getStage().getId();
-                if (c.getEtudiant() != null) etudiantId = c.getEtudiant().getId();
+        switch (n) {
+            case StageNotification sn -> {
+                if (sn.getStage() != null) stageId = sn.getStage().getId();
             }
-        } else if (n instanceof GestionnaireCvNotification gcn) {
-            if (gcn.getCv() != null) {
-                cvId = gcn.getCv().getId();
+            case PostulationNotification pn -> {
+                Candidature c = pn.getCandidature();
+                if (c != null) {
+                    candidatureId = c.getId();
+                    if (c.getStage() != null) stageId = c.getStage().getId();
+                    if (c.getEtudiant() != null) etudiantId = c.getEtudiant().getId();
+                }
+            }
+            case GestionnaireCvNotification gcn -> {
+                if (gcn.getCv() != null) {
+                    cvId = gcn.getCv().getId();
+                }
+            }
+            default -> {
             }
         }
 
@@ -52,7 +58,6 @@ public class NotificationSummaryDTO {
                 .id(n.getId())
                 .type(n.getType() != null ? n.getType().getDisplayName() : null)
                 .message(n.getMessage())
-                .senderEmail(n.getSenderEmail())
                 .createdAt(n.getCreatedAt())
                 .readAt(n.getFirstRecipientReadAt())
                 .secondaryRecipientReadAt(n.getSecondRecipientReadAt())
@@ -62,5 +67,4 @@ public class NotificationSummaryDTO {
                 .cvId(cvId)
                 .build();
     }
-
 }
