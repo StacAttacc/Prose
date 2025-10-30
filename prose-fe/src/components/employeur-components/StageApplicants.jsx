@@ -204,12 +204,23 @@ const StageApplicantsPage = () => {
                                         const id = Number(a?.id ?? a?.candidatureId ?? a?.applicationId);
                                         if (!Number.isFinite(id)) return;
                                         try {
-                                            await approveApplicant(id, user?.token);  // <-- même pattern
-                                            setApplicants(prev =>
-                                                prev.filter(x => Number(x?.id ?? x?.candidatureId ?? x?.applicationId) !== id)
-                                            );
+                                            const res = await approveApplicant(id, user?.token);
+                                            if (res.ok) {
+                                                setApplicants(prev =>
+                                                    prev.filter(x => Number(x?.id ?? x?.candidatureId ?? x?.applicationId) !== id)
+                                                );
+                                            } else if (res.status === 403) {
+                                                setError("Vous devez d'abord convoquer l'étudiant en entrevue avant de l'accepter.");
+                                            } else {
+                                                setError("Erreur lors de l'acceptation de la candidature.");
+                                            }
                                         } catch (e) {
                                             console.debug("approve error:", e?.response?.status, e?.response?.data);
+                                            if (e?.response?.status === 403) {
+                                                setError("Vous devez d'abord convoquer l'étudiant en entrevue avant de l'accepter.");
+                                            } else {
+                                                setError("Erreur lors de l'acceptation de la candidature.");
+                                            }
                                         }
                                     }}
                                 />

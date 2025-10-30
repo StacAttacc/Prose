@@ -123,8 +123,6 @@ public class EmployeurService {
         CandidatureStatus candidatureStatus = CandidatureStatus.valueOf(status);
         Candidature candidature = candidatureRepository.findById(candidatureId).orElseThrow(() -> new CandidatureNotFoundException("La candidature n'existe pas"));
 
-        candidature.setStatus(CandidatureStatus.valueOf(status));
-
         if (candidatureStatus == CandidatureStatus.ACCEPTEE && candidature.getStatus() != CandidatureStatus.CONVOQUEE) {
             throw new InvalidCandidatureModificationException("Il est impossible d'accepter un étudiant avant de le convoquer en entrevue.");
         }
