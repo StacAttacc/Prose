@@ -11,7 +11,10 @@ import com.AL565.prose.service.dto.EtudiantPasswordDTO;
 import com.AL565.prose.service.dto.ReturnEntityDTO;
 import com.AL565.prose.service.dto.StageDTO;
 import com.AL565.prose.service.dto.EtudiantCandidatureDTO;
+import com.AL565.prose.service.dto.EtudiantResponseOfferDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
+import com.AL565.prose.service.exceptions.CandidatureNotFoundException;
+import com.AL565.prose.service.exceptions.InvalidCandidatureModificationException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -197,6 +200,33 @@ public class EtudiantController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ReturnEntityDTO<>("Erreur lors du marquage de la notification comme lue", null));
+        }
+    }
+
+    @PutMapping("/candidatures/respond")
+    public ResponseEntity<ReturnEntityDTO<String>> respondToOffer(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestBody EtudiantResponseOfferDTO responseDTO) {
+        try {
+            String token = authHeader.replace("Bearer ", "");
+            String email = jwtTokenProvider.getEmailFromJWT(token);
+
+            etudiantService.respondToOffer(email, responseDTO);
+
+            String message = responseDTO.isAccepted()
+                ? "Offre acceptée avec succès"
+                : "Offre refusée avec succès";
+
+            return ResponseEntity.ok(new ReturnEntityDTO<>(message, null));
+        } catch (CandidatureNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ReturnEntityDTO<>("Candidature non trouvée", null));
+        } catch (InvalidCandidatureModificationException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new ReturnEntityDTO<>(e.getMessage(), null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ReturnEntityDTO<>("Erreur lors de la réponse à l'offre", null));
         }
     }
 }
