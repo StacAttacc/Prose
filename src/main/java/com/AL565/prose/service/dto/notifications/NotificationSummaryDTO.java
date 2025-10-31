@@ -23,6 +23,7 @@ public class NotificationSummaryDTO {
     private Long cvId;
     private Long candidatureId;
     private Long etudiantId;
+    private Long convocation;
 
     public static NotificationSummaryDTO toDTO(Notification n) {
         if (n == null) return null;
@@ -31,6 +32,7 @@ public class NotificationSummaryDTO {
         Long candidatureId = null;
         Long cvId = null;
         Long etudiantId = null;
+        Long convocation = null;
 
         switch (n) {
             case StageNotification sn -> {
@@ -51,6 +53,13 @@ public class NotificationSummaryDTO {
                     cvId = gcn.getCv().getId();
                 }
             }
+            case ConvocationNotification cn -> {
+                Long candidatureConvocationId = cn.getCandidatureConvocationId();
+                if (candidatureConvocationId != null) {
+                    convocation = candidatureConvocationId;
+                    etudiantId = cn.getEtudiantConvocationId();
+                }
+            }
             default -> {
             }
         }
@@ -66,6 +75,7 @@ public class NotificationSummaryDTO {
                 .candidatureId(candidatureId)
                 .etudiantId(etudiantId)
                 .cvId(cvId)
+                .convocation(convocation)
                 .build();
     }
 }

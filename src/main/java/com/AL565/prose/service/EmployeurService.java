@@ -176,6 +176,7 @@ public class EmployeurService {
         notification.setType(NotificationType.CONVOCATION_NOTIFICATION);
         notification.setMessage(notifMessage);
         notification.setEtudiantConvocationEmail(candidature.getEtudiant().getEmail());
+        notification.setEtudiantConvocationId(candidature.getEtudiant().getId());
         notificationRepository.save(notification);
     }
 }

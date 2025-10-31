@@ -35,12 +35,13 @@ export default function Notifications() {
     }, []);
 
     function makeKeyForItem(item = {}, groupKey) {
-        if (item?.candidatureId) return "postulation";
-        if (item?.stageId) return "stage";
-        if (item?.cvId) return "gestionnaire_cv";
-        if (item?.etudiantId) return "etudiant_cv";
-        if (groupKey && typeof groupKey === "string" && !/\s/.test(groupKey)) return groupKey.toLowerCase();
-        if (item?.type) {
+        if (item?.convocation) return "convocation";
+        else if (item?.candidatureId) return "postulation";
+        else if (item?.stageId) return "stage";
+        else if (item?.cvId) return "gestionnaire_cv";
+        else if (item?.etudiantId) return "etudiant_cv";
+        else if (groupKey && typeof groupKey === "string" && !/\s/.test(groupKey)) return groupKey.toLowerCase();
+        else if (item?.type) {
             return String(item.type)
                 .toLowerCase()
                 .replace(/\s+/g, "-")
@@ -108,6 +109,8 @@ export default function Notifications() {
                 byType = normalizeListToTypes(payload.postulationNotifications, "postulation");
             } else if (payload?.stageNotifications) {
                 byType = normalizeListToTypes(payload.stageNotifications, "stage");
+            } else if (payload?.convocationNotifications) {
+                byType = normalizeListToTypes(payload.convocationNotifications, "convocation");
             } else if (payload?.gestionnaireCvNotifications) {
                 byType = normalizeListToTypes(payload.gestionnaireCvNotifications, "gestionnaire_cv");
             } else if (payload?.etudiantCvNotifications) {
@@ -195,6 +198,7 @@ export default function Notifications() {
         const candidatureId = notification?.candidatureId || null;
         const etudiantId = notification?.etudiantId || null;
         const cvId = notification?.cvId || null;
+        const convocation = notification?.convocation || null;
 
         const isCandidature = Boolean(notification?.candidature || notification?.candidatureId);
 
@@ -232,6 +236,9 @@ export default function Notifications() {
                         return;
                     } else if (!stageId && cvId) {
                         navigate("/gestionnaire/gestion-cv", { state: { openCvId: cvId } });
+                        return;
+                    } else if (convocation) {
+                        navigate(defaultNavigatePath(), { state: { openEtudiantId: etudiantId } });
                         return;
                     }
                 }
@@ -292,6 +299,7 @@ export default function Notifications() {
         if (key === "postulation") return `nouvelles candidature(s) reçue(s)`;
         if (key === "gestionnaire_cv") return `nouveau(x) CV(s) à examiner`;
         if (key === "etudiant_cv") return `changement sur votre CV`;
+        if (key === "convocation") return `nouvelle(s) convocation(s)`;
         return `${key} notification(s)`;
     }
 

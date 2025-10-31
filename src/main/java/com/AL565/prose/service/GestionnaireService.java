@@ -186,8 +186,9 @@ public class GestionnaireService {
     public void markNotificationAsRead(Long notificationId) throws Exception {
         Notification notification = notificationRepository.findById(notificationId)
                 .orElseThrow(NotificationExceptions.NotificationFetchException::new);
-        if (notification.getType() == NotificationType.POSTULATION_NOTIFICATION
-                || notification.getType() == NotificationType.CONVOCATION_NOTIFICATION) {
+        if (notification.getType() == NotificationType.POSTULATION_NOTIFICATION) {
+            markPostulationAsReadBySecondRecipient(notificationId);
+        } else if (notification.getType() == NotificationType.CONVOCATION_NOTIFICATION) {
             markPostulationAsReadBySecondRecipient(notificationId);
         } else {
             notificationsHelper.markNotificationAsReadByFirstRecipient(notificationId);
@@ -216,7 +217,7 @@ public class GestionnaireService {
     @Transactional
     public void markPostulationAsReadBySecondRecipient(Long notificationId) throws Exception {
         try {
-            PostulationNotification notification = postulastionNotificationRepository.findById(notificationId)
+            Notification notification = notificationRepository.findById(notificationId)
                     .orElseThrow(NotificationExceptions.NotificationFetchException::new);
             notification.setSecondRecipientReadAt(OffsetDateTime.now().toLocalDateTime());
             notificationRepository.save(notification);
