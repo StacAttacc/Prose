@@ -150,3 +150,17 @@ export const markNotificationsRead = (notificationIds = [], token) => {
     }
     return Promise.all(notificationIds.map(id => markNotificationRead(id, token)));
 };
+
+export const respondToOffer = async (candidatureId, accepted, comment = "") => {
+    try {
+        const { data } = await http.put("/etudiant/candidatures/respond", {
+            candidatureId: candidatureId,
+            accepted: accepted,
+            comment: comment
+        });
+        return data;
+    } catch (e) {
+        console.error("Erreur lors de la réponse à l'offre:", e);
+        throw e;
+    }
+};
