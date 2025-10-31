@@ -12,5 +12,5 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ConvocationNotification extends Notification {
-    private String candidatureReference;
+    private Long candidatureConvocationId;
 }
