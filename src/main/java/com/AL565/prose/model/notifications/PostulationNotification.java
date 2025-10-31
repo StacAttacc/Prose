@@ -1,6 +1,7 @@
 package com.AL565.prose.model.notifications;
 
 import com.AL565.prose.model.Candidature;
+import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
@@ -10,6 +11,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
+@DiscriminatorValue("postulation")
 @Getter
 @Setter
 @NoArgsConstructor
