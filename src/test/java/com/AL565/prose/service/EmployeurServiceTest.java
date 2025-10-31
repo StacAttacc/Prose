@@ -41,7 +41,7 @@ class EmployeurServiceTest {
     @Mock
     private CandidatureRepository candidatureRepository;
     @Mock
-    private PasswordEncoder passwordEncoder;
+    private PasswordEncoder passwordEncoder; 
     @Mock
     private NotificationRepository notificationRepository;
 

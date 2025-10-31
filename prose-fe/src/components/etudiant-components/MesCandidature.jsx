@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { getMesCandidatures } from "../../services/EtudiantService.js";
+import { getMesCandidatures, respondToOffer } from "../../services/EtudiantService.js";
 import StageDetailsModal from "../display-components/StageDetailsModal.jsx";
 
 export default function MesCandidature() {
@@ -12,6 +12,11 @@ export default function MesCandidature() {
     const [statusFilter, setStatusFilter] = useState("");
     const [selectedStage, setSelectedStage] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [responseComments, setResponseComments] = useState({});
+    const [respondingTo, setRespondingTo] = useState(null);
+    const [errors, setErrors] = useState({});
+    const [showingRefusalForm, setShowingRefusalForm] = useState({});
+    const [notification, setNotification] = useState(null);
 
     useEffect(() => {
         const fetchCandidatures = async () => {
@@ -31,6 +36,10 @@ export default function MesCandidature() {
 
   const filteredCandidatures = useMemo(() => {
     return candidatures.filter(candidature => {
+      if (candidature.status === 'REFUSEE_ETUDIANT') {
+        return false;
+      }
+      
       const stage = candidature.stage;
       
       if (!stage) return false;
@@ -71,6 +80,59 @@ export default function MesCandidature() {
         setSelectedStage(null);
     };
 
+    const handleRespondToOffer = async (candidatureId, accepted) => {
+        // Réinitialiser l'erreur pour cette candidature
+        setErrors(prev => {
+            const newState = { ...prev };
+            delete newState[candidatureId];
+            return newState;
+        });
+
+        try {
+            const comment = responseComments[candidatureId] || "";
+            setRespondingTo(candidatureId);
+            await respondToOffer(candidatureId, accepted, comment);
+            
+            // Rafraîchir les candidatures après la réponse
+            const data = await getMesCandidatures();
+            setCandidatures(data);
+            
+            setResponseComments(prev => {
+                const newState = { ...prev };
+                delete newState[candidatureId];
+                return newState;
+            });
+            setShowingRefusalForm(prev => {
+                const newState = { ...prev };
+                delete newState[candidatureId];
+                return newState;
+            });
+            setRespondingTo(null);
+            
+            setNotification({
+                type: 'success',
+                message: accepted ? "Vous avez accepté l'offre avec succès" : "Vous avez refusé l'offre avec succès"
+            });
+
+            setTimeout(() => setNotification(null), 5000);
+
+        } catch (err) {
+            const errorMessage = err.response?.data?.message || err.message || "Erreur lors de l'envoi de votre réponse. Veuillez réessayer.";
+            setErrors(prev => ({
+                ...prev,
+                [candidatureId]: errorMessage
+            }));
+            setRespondingTo(null);
+        }
+    };
+
+    const handleCommentChange = (candidatureId, comment) => {
+        setResponseComments(prev => ({
+            ...prev,
+            [candidatureId]: comment
+        }));
+    };
+
     const getStatusColor = (status) => {
         switch (status) {
             case 'SOUMISE':
@@ -81,6 +143,10 @@ export default function MesCandidature() {
                 return 'bg-red-100 text-red-800';
             case 'CONVOQUEE':
                 return 'bg-yellow-100 text-yellow-800';
+            case 'CONFIRMER':
+                return 'bg-green-100 text-green-800';
+            case 'REFUSEE_ETUDIANT':
+                return 'bg-red-100 text-red-800';
             default:
                 return 'bg-gray-100 text-gray-800';
         }
@@ -91,11 +157,15 @@ export default function MesCandidature() {
             case 'SOUMISE':
                 return 'En attente d\'approbation par l\'employeur';
             case 'ACCEPTEE':
-                return 'Acceptée';
+                return 'Acceptée Par L\'Employeur';
             case 'REFUSEE':
-                return 'Refusée';
+                return 'Refusée Par L\'Employeur';
             case 'CONVOQUEE':
                 return 'Convoquée à une entrevue';
+            case 'CONFIRMER':
+                return 'Confirmée';
+            case 'REFUSEE_ETUDIANT':
+                return 'Refusée';
             default:
                 return status;
         }
@@ -103,6 +173,24 @@ export default function MesCandidature() {
 
     return (
         <div className="p-6">
+            {notification && (
+                <div className={`fixed top-4 right-4 z-50 max-w-md p-4 rounded-lg shadow-lg transform transition-all duration-300 ease-in-out ${
+                    notification.type === 'success' 
+                        ? 'bg-green-500 text-white' 
+                        : 'bg-red-500 text-white'
+                }`}>
+                    <div className="flex items-center justify-between">
+                        <p className="font-medium">{notification.message}</p>
+                        <button
+                            onClick={() => setNotification(null)}
+                            className="ml-4 text-white hover:text-gray-200 font-bold text-xl"
+                        >
+                            ×
+                        </button>
+                    </div>
+                </div>
+            )}
+
             <h1 className="text-2xl font-bold mb-6 text-center">Mes Candidatures</h1>
 
             <div className="mb-8 bg-white rounded-lg shadow-md border border-gray-200 p-6">
@@ -214,86 +302,187 @@ export default function MesCandidature() {
                 </div>
             ) : (
                 <div className="space-y-4">
-                    {filteredCandidatures.map((candidature, index) => (
-                        <div
-                            key={index}
-                            className="bg-white rounded-lg shadow-md border border-gray-200 p-6 hover:shadow-lg transition-shadow"
-                        >
-                            <div className="flex justify-between items-start mb-4">
-                                <div className="flex-1">
-                                    <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                                        {candidature.stage?.title || 'Titre non disponible'}
-                                    </h3>
-                                    <p className="text-gray-600 text-sm mb-2">
-                                        <strong>Entreprise:</strong> {candidature.stage?.employeur?.company || 'N/A'}
-                                    </p>
-                                    <p className="text-gray-600 text-sm mb-2">
-                                        <strong>Lieu:</strong> {candidature.stage?.location || 'N/A'}
-                                    </p>
-                                    <p className="text-gray-600 text-sm mb-2">
-                                        <strong>Date de candidature:</strong>{' '}
-                                        {candidature.datePostulation
-                                            ? new Date(candidature.datePostulation).toLocaleDateString('fr-FR')
-                                            : 'N/A'}
-                                    </p>
-                                </div>
-                                <div>
-                                    <span
-                                        className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(
-                                            candidature.status
-                                        )}`}
+                    {filteredCandidatures.map((candidature, index) => {
+                        const isAcceptedByStudent = candidature.status === 'CONFIRMER';
+                        
+                        return (
+                            <div
+                                key={index}
+                                className={`rounded-lg shadow-md border p-6 hover:shadow-lg transition-shadow ${
+                                    isAcceptedByStudent 
+                                        ? 'bg-green-100 border-green-300' 
+                                        : 'bg-white border-gray-200'
+                                }`}
+                            >
+                                {isAcceptedByStudent ? (
+                                    <div>
+                                        <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                                            {candidature.stage?.title || 'Titre non disponible'}
+                                        </h3>
+                                        <h4 className="text-3xl font-bold text-green-800 text-center">
+                                            Stage Accepté
+                                        </h4>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <div className="flex justify-between items-start mb-4">
+                                            <div className="flex-1">
+                                                <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                                                    {candidature.stage?.title || 'Titre non disponible'}
+                                                </h3>
+                                                <p className="text-gray-600 text-sm mb-2">
+                                                    <strong>Entreprise:</strong> {candidature.stage?.employeur?.company || 'N/A'}
+                                                </p>
+                                                <p className="text-gray-600 text-sm mb-2">
+                                                    <strong>Lieu:</strong> {candidature.stage?.location || 'N/A'}
+                                                </p>
+                                                <p className="text-gray-600 text-sm mb-2">
+                                                    <strong>Date de candidature:</strong>{' '}
+                                                    {candidature.datePostulation
+                                                        ? new Date(candidature.datePostulation).toLocaleDateString('fr-FR')
+                                                        : 'N/A'}
+                                                </p>
+                                                {candidature.status === 'ACCEPTEE' && candidature.dateDecision && (
+                                                    <p className="text-gray-600 text-sm mb-2">
+                                                        <strong>Décision prise le:</strong>{' '}
+                                                        {new Date(candidature.dateDecision).toLocaleDateString('fr-FR')}
+                                                    </p>
+                                                )}
+                                            </div>
+                                            <div>
+                                                <span
+                                                    className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(
+                                                        candidature.status
+                                                    )}`}
+                                                >
+                                                    {getStatusText(candidature.status)}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        {candidature.decision && candidature.decision.trim() !== "" && (
+                                            <div className="mt-4 p-3 bg-gray-50 border border-gray-200 rounded">
+                                                <p className="text-sm text-gray-700">
+                                                    <strong>Commentaire:</strong> {candidature.decision}
+                                                </p>
+                                            </div>
+                                        )}
+
+                                        {candidature.status === 'CONVOQUEE' && candidature.dateDecision && (
+                                            <div className="mt-4 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-lg shadow-sm">
+                                                <p className="text-base font-semibold text-yellow-900">
+                                                    <strong>Entrevue prévue le:</strong>{' '}
+                                                    <span className="text-lg text-yellow-800">
+                                                        {new Date(candidature.dateDecision).toLocaleDateString('fr-FR', {
+                                                            year: 'numeric',
+                                                            month: 'long',
+                                                            day: 'numeric',
+                                                            hour: '2-digit',
+                                                            minute: '2-digit'
+                                                        })}
+                                                    </span>
+                                                </p>
+                                            </div>
+                                        )}
+
+                                        {candidature.status === 'ACCEPTEE' && (
+                                            <div className="mt-4 p-4 bg-green-50 border-l-4 border-green-400 rounded-lg shadow-sm">
+                                                <p className="text-sm text-gray-700 mb-3">
+                                                    <strong>Félicitations ! L'employeur vous a sélectionné pour ce stage.</strong> Vous avez maintenant reçu une offre officielle. Souhaitez-vous l'accepter ou la refuser ?
+                                                </p>
+
+                                                {!showingRefusalForm[candidature.id] ? (
+                                                    <div className="flex gap-3">
+                                                        <button
+                                                            onClick={() => handleRespondToOffer(candidature.id, true)}
+                                                            disabled={respondingTo === candidature.id}
+                                                            className="flex-1 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
+                                                        >
+                                                            {respondingTo === candidature.id ? 'Envoi...' : '✓ Accepter l\'offre'}
+                                                        </button>
+                                                        <button
+                                                            onClick={() => setShowingRefusalForm(prev => ({ ...prev, [candidature.id]: true }))}
+                                                            disabled={respondingTo === candidature.id}
+                                                            className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
+                                                        >
+                                                            ✗ Refuser l'offre
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <div className="space-y-3">
+                                                        <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                                                            <p className="text-sm text-red-800 font-medium mb-2">
+                                                                Vous êtes sur le point de refuser cette offre.
+                                                            </p>
+                                                            <p className="text-xs text-red-600">
+                                                                Veuillez expliquer brièvement votre raison (optionnel mais recommandé pour maintenir une bonne relation professionnelle).
+                                                            </p>
+                                                        </div>
+                                                        <div>
+                                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                                Raison du refus (optionnel)
+                                                            </label>
+                                                            <textarea
+                                                                value={responseComments[candidature.id] || ""}
+                                                                onChange={(e) => handleCommentChange(candidature.id, e.target.value)}
+                                                                placeholder="Ex: J'ai accepté une autre opportunité, Les conditions ne correspondent pas à mes attentes..."
+                                                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 resize-none"
+                                                                rows="3"
+                                                                disabled={respondingTo === candidature.id}
+                                                            />
+                                                        </div>
+                                                        {errors[candidature.id] && (
+                                                            <div className="p-3 bg-red-50 border-l-4 border-red-400 rounded">
+                                                                <p className="text-sm text-red-700">
+                                                                    {errors[candidature.id]}
+                                                                </p>
+                                                            </div>
+                                                        )}
+                                                        <div className="flex gap-3">
+                                                            <button
+                                                                onClick={() => {
+                                                                    setShowingRefusalForm(prev => {
+                                                                        const newState = { ...prev };
+                                                                        delete newState[candidature.id];
+                                                                        return newState;
+                                                                    });
+                                                                    setResponseComments(prev => {
+                                                                        const newState = { ...prev };
+                                                                        delete newState[candidature.id];
+                                                                        return newState;
+                                                                    });
+                                                                }}
+                                                                disabled={respondingTo === candidature.id}
+                                                                className="flex-1 px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                                                            >
+                                                                Annuler
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleRespondToOffer(candidature.id, false)}
+                                                                disabled={respondingTo === candidature.id}
+                                                                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
+                                                            >
+                                                                {respondingTo === candidature.id ? 'Envoi...' : 'Confirmer le refus'}
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </>
+                                )}
+
+                                <div className="mt-4 flex justify-end items-center">
+                                    <button
+                                        onClick={() => handleViewDetails(candidature)}
+                                        className="text-teal-600 hover:text-teal-800 font-medium"
                                     >
-                                        {getStatusText(candidature.status)}
-                                    </span>
+                                        Voir détails →
+                                    </button>
                                 </div>
                             </div>
-
-                            {candidature.decision && (
-                                <div className="mt-4 p-3 bg-gray-50 border border-gray-200 rounded">
-                                    <p className="text-sm text-gray-700">
-                                        <strong>Commentaire:</strong> {candidature.decision}
-                                    </p>
-                                </div>
-                            )}
-
-                            {((candidature.status === 'CONVOQUEE' || candidature.dateDecision) && (
-                                <div className="mt-4 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-lg shadow-sm">
-                                <p className="text-base font-semibold text-yellow-900">
-                                    {candidature.status === 'CONVOQUEE' ? (
-                                        <>
-                                            <strong>Entrevue prévue le:</strong>{' '}
-                                            <span className="text-lg text-yellow-800">
-                                                {candidature.dateDecision
-                                                    ? new Date(candidature.dateDecision).toLocaleDateString('fr-FR', {
-                                                        year: 'numeric',
-                                                        month: 'long',
-                                                        day: 'numeric',
-                                                        hour: '2-digit',
-                                                        minute: '2-digit'
-                                                    })
-                                                    : 'Date non disponible'}
-                                            </span>
-                                        </>
-                                    ) : (
-                                        <>
-                                            Décision prise le:{' '}
-                                            {new Date(candidature.dateDecision).toLocaleDateString('fr-FR')}
-                                        </>
-                                    )}
-                                </p>
-                            </div>
-                            ))}
-
-                            <div className="mt-4 flex justify-end items-center">
-                                <button
-                                    onClick={() => handleViewDetails(candidature)}
-                                    className="text-teal-600 hover:text-teal-800 font-medium"
-                                >
-                                    Voir détails →
-                                </button>
-                            </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             )}
 

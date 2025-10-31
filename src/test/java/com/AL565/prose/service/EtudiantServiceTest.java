@@ -6,6 +6,8 @@ import com.AL565.prose.model.auth.Role;
 import com.AL565.prose.repository.*;
 import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
+import com.AL565.prose.service.exceptions.CandidatureNotFoundException;
+import com.AL565.prose.service.exceptions.InvalidCandidatureModificationException;
 import com.AL565.prose.security.JwtTokenProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -383,19 +385,15 @@ class EtudiantServiceTest {
 
     @Test
     void getEtudiantStages_withoutApplications_returnsAllApprovedStages() {
-        // Arrange
         String token = "Bearer validToken";
         String etudiantEmail = "etudiant@test.com";
         
-        // Créer des stages approuvés
         Stage stage1 = createMockStageWithDetails(1L, "employeur1@test.com");
         Stage stage2 = createMockStageWithDetails(2L, "employeur2@test.com");
         
-        // Créer des employeurs
         Employeur employeur1 = createMockEmployeur("employeur1@test.com");
         Employeur employeur2 = createMockEmployeur("employeur2@test.com");
         
-        // Mock le comportement
         when(jwtTokenProvider.getEmailFromJWT("validToken")).thenReturn(etudiantEmail);
         when(stageRepository.findByStatus(OfferStatus.APPROUVEE))
                 .thenReturn(Arrays.asList(stage1, stage2));
@@ -406,10 +404,8 @@ class EtudiantServiceTest {
         when(employeurRepository.getEmployeurByCredentials_Username("employeur2@test.com"))
                 .thenReturn(employeur2);
         
-        // Act
         List<StageDTO> result = etudiantService.getEtudiantStages(token);
         
-        // Assert
         assertEquals(2, result.size());
         assertEquals("Développeur Java", result.get(0).getTitle());
         assertEquals("Développeur Java", result.get(1).getTitle());
@@ -491,5 +487,199 @@ class EtudiantServiceTest {
         verify(jwtTokenProvider).getEmailFromJWT("validToken");
         verify(stageRepository).findByStatus(OfferStatus.APPROUVEE);
         verify(candidatureRepository).findByEtudiant_Credentials_Username(etudiantEmail);
+    }
+
+    @Test
+    void respondToOffer_acceptOffer_success() throws CandidatureNotFoundException, InvalidCandidatureModificationException {
+        String email = "jean.dupont@etudiant.ca";
+        Long candidatureId = 1L;
+
+        Etudiant etudiant = createMockEtudiant(email);
+        Stage stage = createMockStage(1L);
+        Candidature candidature = createMockCandidature(etudiant, stage, CandidatureStatus.ACCEPTEE);
+        candidature.setId(candidatureId);
+
+        EtudiantResponseOfferDTO responseDTO = EtudiantResponseOfferDTO.builder()
+                .candidatureId(candidatureId)
+                .accepted(true)
+                .comment("Je suis ravi d'accepter cette offre!")
+                .build();
+
+        when(candidatureRepository.findById(candidatureId))
+                .thenReturn(Optional.of(candidature));
+        when(candidatureRepository.save(any(Candidature.class)))
+                .thenReturn(candidature);
+
+        etudiantService.respondToOffer(email, responseDTO);
+
+        verify(candidatureRepository, times(1)).findById(candidatureId);
+        verify(candidatureRepository, times(1)).save(candidature);
+        assertEquals(CandidatureStatus.CONFIRMER, candidature.getStatus());
+        assertEquals("Je suis ravi d'accepter cette offre!", candidature.getDecision());
+        assertNotNull(candidature.getDateDecision());
+    }
+
+    @Test
+    void respondToOffer_refuseOffer_success() throws CandidatureNotFoundException, InvalidCandidatureModificationException {
+        String email = "jean.dupont@etudiant.ca";
+        Long candidatureId = 1L;
+
+        Etudiant etudiant = createMockEtudiant(email);
+        Stage stage = createMockStage(1L);
+        Candidature candidature = createMockCandidature(etudiant, stage, CandidatureStatus.ACCEPTEE);
+        candidature.setId(candidatureId);
+
+        EtudiantResponseOfferDTO responseDTO = EtudiantResponseOfferDTO.builder()
+                .candidatureId(candidatureId)
+                .accepted(false)
+                .comment("J'ai accepté une autre offre.")
+                .build();
+
+        when(candidatureRepository.findById(candidatureId))
+                .thenReturn(Optional.of(candidature));
+        when(candidatureRepository.save(any(Candidature.class)))
+                .thenReturn(candidature);
+
+        etudiantService.respondToOffer(email, responseDTO);
+
+        verify(candidatureRepository, times(1)).findById(candidatureId);
+        verify(candidatureRepository, times(1)).save(candidature);
+        assertEquals(CandidatureStatus.REFUSEE_ETUDIANT, candidature.getStatus());
+        assertEquals("J'ai accepté une autre offre.", candidature.getDecision());
+        assertNotNull(candidature.getDateDecision());
+    }
+
+    @Test
+    void respondToOffer_withoutComment_success() throws CandidatureNotFoundException, InvalidCandidatureModificationException {
+        String email = "jean.dupont@etudiant.ca";
+        Long candidatureId = 1L;
+
+        Etudiant etudiant = createMockEtudiant(email);
+        Stage stage = createMockStage(1L);
+        Candidature candidature = createMockCandidature(etudiant, stage, CandidatureStatus.ACCEPTEE);
+        candidature.setId(candidatureId);
+
+        EtudiantResponseOfferDTO responseDTO = EtudiantResponseOfferDTO.builder()
+                .candidatureId(candidatureId)
+                .accepted(true)
+                .comment(null)
+                .build();
+
+        when(candidatureRepository.findById(candidatureId))
+                .thenReturn(Optional.of(candidature));
+        when(candidatureRepository.save(any(Candidature.class)))
+                .thenReturn(candidature);
+
+        etudiantService.respondToOffer(email, responseDTO);
+
+        verify(candidatureRepository, times(1)).findById(candidatureId);
+        verify(candidatureRepository, times(1)).save(candidature);
+        assertEquals(CandidatureStatus.CONFIRMER, candidature.getStatus());
+        assertNull(candidature.getDecision());
+        assertNotNull(candidature.getDateDecision());
+    }
+
+    @Test
+    void respondToOffer_candidatureNotFound_throwsException() {
+        String email = "jean.dupont@etudiant.ca";
+        Long candidatureId = 999L;
+
+        EtudiantResponseOfferDTO responseDTO = EtudiantResponseOfferDTO.builder()
+                .candidatureId(candidatureId)
+                .accepted(true)
+                .build();
+
+        when(candidatureRepository.findById(candidatureId))
+                .thenReturn(Optional.empty());
+
+        assertThrows(CandidatureNotFoundException.class,
+                () -> etudiantService.respondToOffer(email, responseDTO));
+
+        verify(candidatureRepository, times(1)).findById(candidatureId);
+        verify(candidatureRepository, never()).save(any(Candidature.class));
+    }
+
+    @Test
+    void respondToOffer_notOwner_throwsException() {
+        String email = "jean.dupont@etudiant.ca";
+        String otherEmail = "autre.etudiant@etudiant.ca";
+        Long candidatureId = 1L;
+
+        Etudiant otherEtudiant = createMockEtudiant(otherEmail);
+        Stage stage = createMockStage(1L);
+        Candidature candidature = createMockCandidature(otherEtudiant, stage, CandidatureStatus.ACCEPTEE);
+        candidature.setId(candidatureId);
+
+        EtudiantResponseOfferDTO responseDTO = EtudiantResponseOfferDTO.builder()
+                .candidatureId(candidatureId)
+                .accepted(true)
+                .build();
+
+        when(candidatureRepository.findById(candidatureId))
+                .thenReturn(Optional.of(candidature));
+
+        InvalidCandidatureModificationException exception = assertThrows(
+                InvalidCandidatureModificationException.class,
+                () -> etudiantService.respondToOffer(email, responseDTO));
+
+        assertEquals("Cette candidature ne vous appartient pas", exception.getMessage());
+        verify(candidatureRepository, times(1)).findById(candidatureId);
+        verify(candidatureRepository, never()).save(any(Candidature.class));
+    }
+
+    @Test
+    void respondToOffer_wrongStatus_throwsException() {
+        String email = "jean.dupont@etudiant.ca";
+        Long candidatureId = 1L;
+
+        Etudiant etudiant = createMockEtudiant(email);
+        Stage stage = createMockStage(1L);
+        Candidature candidature = createMockCandidature(etudiant, stage, CandidatureStatus.SOUMISE);
+        candidature.setId(candidatureId);
+
+        EtudiantResponseOfferDTO responseDTO = EtudiantResponseOfferDTO.builder()
+                .candidatureId(candidatureId)
+                .accepted(true)
+                .build();
+
+        when(candidatureRepository.findById(candidatureId))
+                .thenReturn(Optional.of(candidature));
+
+        InvalidCandidatureModificationException exception = assertThrows(
+                InvalidCandidatureModificationException.class,
+                () -> etudiantService.respondToOffer(email, responseDTO));
+
+        assertEquals("Vous ne pouvez répondre qu'à une candidature acceptée par l'employeur",
+                exception.getMessage());
+        verify(candidatureRepository, times(1)).findById(candidatureId);
+        verify(candidatureRepository, never()).save(any(Candidature.class));
+    }
+
+    @Test
+    void respondToOffer_convoqueeStatus_throwsException() {
+        String email = "jean.dupont@etudiant.ca";
+        Long candidatureId = 1L;
+
+        Etudiant etudiant = createMockEtudiant(email);
+        Stage stage = createMockStage(1L);
+        Candidature candidature = createMockCandidature(etudiant, stage, CandidatureStatus.CONVOQUEE);
+        candidature.setId(candidatureId);
+
+        EtudiantResponseOfferDTO responseDTO = EtudiantResponseOfferDTO.builder()
+                .candidatureId(candidatureId)
+                .accepted(true)
+                .build();
+
+        when(candidatureRepository.findById(candidatureId))
+                .thenReturn(Optional.of(candidature));
+
+        InvalidCandidatureModificationException exception = assertThrows(
+                InvalidCandidatureModificationException.class,
+                () -> etudiantService.respondToOffer(email, responseDTO));
+
+        assertEquals("Vous ne pouvez répondre qu'à une candidature acceptée par l'employeur",
+                exception.getMessage());
+        verify(candidatureRepository, times(1)).findById(candidatureId);
+        verify(candidatureRepository, never()).save(any(Candidature.class));
     }
 }

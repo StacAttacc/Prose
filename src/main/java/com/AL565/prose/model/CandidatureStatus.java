@@ -4,7 +4,9 @@ public enum CandidatureStatus {
     SOUMISE("Soumise"),
     ACCEPTEE("Acceptee"),
     CONVOQUEE("Convoquee"),
-    REFUSEE("Refusee");
+    REFUSEE("Refusee"),
+    CONFIRMER("Confirmer"),
+    REFUSEE_ETUDIANT("Refusee par etudiant");
 
     CandidatureStatus(String description) {}
 
