@@ -15,6 +15,8 @@ export default function MesCandidature() {
     const [responseComments, setResponseComments] = useState({});
     const [respondingTo, setRespondingTo] = useState(null);
     const [errors, setErrors] = useState({});
+    const [showingRefusalForm, setShowingRefusalForm] = useState({});
+    const [notification, setNotification] = useState(null);
 
     useEffect(() => {
         const fetchCandidatures = async () => {
@@ -95,14 +97,25 @@ export default function MesCandidature() {
             const data = await getMesCandidatures();
             setCandidatures(data);
             
-            // Réinitialiser l'état
             setResponseComments(prev => {
+                const newState = { ...prev };
+                delete newState[candidatureId];
+                return newState;
+            });
+            setShowingRefusalForm(prev => {
                 const newState = { ...prev };
                 delete newState[candidatureId];
                 return newState;
             });
             setRespondingTo(null);
             
+            setNotification({
+                type: 'success',
+                message: accepted ? "Vous avez accepté l'offre avec succès" : "Vous avez refusé l'offre avec succès"
+            });
+
+            setTimeout(() => setNotification(null), 5000);
+
         } catch (err) {
             const errorMessage = err.response?.data?.message || err.message || "Erreur lors de l'envoi de votre réponse. Veuillez réessayer.";
             setErrors(prev => ({
@@ -160,6 +173,24 @@ export default function MesCandidature() {
 
     return (
         <div className="p-6">
+            {notification && (
+                <div className={`fixed top-4 right-4 z-50 max-w-md p-4 rounded-lg shadow-lg transform transition-all duration-300 ease-in-out ${
+                    notification.type === 'success' 
+                        ? 'bg-green-500 text-white' 
+                        : 'bg-red-500 text-white'
+                }`}>
+                    <div className="flex items-center justify-between">
+                        <p className="font-medium">{notification.message}</p>
+                        <button
+                            onClick={() => setNotification(null)}
+                            className="ml-4 text-white hover:text-gray-200 font-bold text-xl"
+                        >
+                            ×
+                        </button>
+                    </div>
+                </div>
+            )}
+
             <h1 className="text-2xl font-bold mb-6 text-center">Mes Candidatures</h1>
 
             <div className="mb-8 bg-white rounded-lg shadow-md border border-gray-200 p-6">
@@ -359,44 +390,83 @@ export default function MesCandidature() {
                                                 <p className="text-sm text-gray-700 mb-3">
                                                     <strong>Félicitations ! L'employeur vous a sélectionné pour ce stage.</strong> Vous avez maintenant reçu une offre officielle. Souhaitez-vous l'accepter ou la refuser ?
                                                 </p>
-                                                <div className="space-y-3">
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                            Commentaire (optionnel)
-                                                        </label>
-                                                        <textarea
-                                                            value={responseComments[candidature.id] || ""}
-                                                            onChange={(e) => handleCommentChange(candidature.id, e.target.value)}
-                                                            placeholder="Ajoutez un commentaire..."
-                                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500 resize-none"
-                                                            rows="3"
-                                                            disabled={respondingTo === candidature.id}
-                                                        />
-                                                    </div>
-                                                    {errors[candidature.id] && (
-                                                        <div className="p-3 bg-red-50 border-l-4 border-red-400 rounded">
-                                                            <p className="text-sm text-red-700">
-                                                                {errors[candidature.id]}
-                                                            </p>
-                                                        </div>
-                                                    )}
+
+                                                {!showingRefusalForm[candidature.id] ? (
                                                     <div className="flex gap-3">
                                                         <button
                                                             onClick={() => handleRespondToOffer(candidature.id, true)}
                                                             disabled={respondingTo === candidature.id}
-                                                            className="flex-1 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                                                            className="flex-1 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
                                                         >
-                                                            {respondingTo === candidature.id ? 'Envoi...' : 'Accepter l\'offre'}
+                                                            {respondingTo === candidature.id ? 'Envoi...' : '✓ Accepter l\'offre'}
                                                         </button>
                                                         <button
-                                                            onClick={() => handleRespondToOffer(candidature.id, false)}
+                                                            onClick={() => setShowingRefusalForm(prev => ({ ...prev, [candidature.id]: true }))}
                                                             disabled={respondingTo === candidature.id}
-                                                            className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                                                            className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
                                                         >
-                                                            {respondingTo === candidature.id ? 'Envoi...' : 'Refuser l\'offre'}
+                                                            ✗ Refuser l'offre
                                                         </button>
                                                     </div>
-                                                </div>
+                                                ) : (
+                                                    <div className="space-y-3">
+                                                        <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                                                            <p className="text-sm text-red-800 font-medium mb-2">
+                                                                Vous êtes sur le point de refuser cette offre.
+                                                            </p>
+                                                            <p className="text-xs text-red-600">
+                                                                Veuillez expliquer brièvement votre raison (optionnel mais recommandé pour maintenir une bonne relation professionnelle).
+                                                            </p>
+                                                        </div>
+                                                        <div>
+                                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                                Raison du refus (optionnel)
+                                                            </label>
+                                                            <textarea
+                                                                value={responseComments[candidature.id] || ""}
+                                                                onChange={(e) => handleCommentChange(candidature.id, e.target.value)}
+                                                                placeholder="Ex: J'ai accepté une autre opportunité, Les conditions ne correspondent pas à mes attentes..."
+                                                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 resize-none"
+                                                                rows="3"
+                                                                disabled={respondingTo === candidature.id}
+                                                            />
+                                                        </div>
+                                                        {errors[candidature.id] && (
+                                                            <div className="p-3 bg-red-50 border-l-4 border-red-400 rounded">
+                                                                <p className="text-sm text-red-700">
+                                                                    {errors[candidature.id]}
+                                                                </p>
+                                                            </div>
+                                                        )}
+                                                        <div className="flex gap-3">
+                                                            <button
+                                                                onClick={() => {
+                                                                    setShowingRefusalForm(prev => {
+                                                                        const newState = { ...prev };
+                                                                        delete newState[candidature.id];
+                                                                        return newState;
+                                                                    });
+                                                                    setResponseComments(prev => {
+                                                                        const newState = { ...prev };
+                                                                        delete newState[candidature.id];
+                                                                        return newState;
+                                                                    });
+                                                                }}
+                                                                disabled={respondingTo === candidature.id}
+                                                                className="flex-1 px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                                                            >
+                                                                Annuler
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleRespondToOffer(candidature.id, false)}
+                                                                disabled={respondingTo === candidature.id}
+                                                                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
+                                                            >
+                                                                {respondingTo === candidature.id ? 'Envoi...' : 'Confirmer le refus'}
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
                                         )}
                                     </>
