@@ -345,7 +345,7 @@ export default function MesCandidature() {
                                         {candidature.status === 'ACCEPTEE' && (
                                             <div className="mt-4 p-4 bg-green-50 border-l-4 border-green-400 rounded-lg shadow-sm">
                                                 <p className="text-sm text-gray-700 mb-3">
-                                                    <strong>Vous avez reçu une offre pour ce stage.</strong> Souhaitez-vous l'accepter ou la refuser ?
+                                                    <strong>Félicitations ! L'employeur vous a sélectionné pour ce stage.</strong> Vous avez maintenant reçu une offre officielle. Souhaitez-vous l'accepter ou la refuser ?
                                                 </p>
                                                 <div className="space-y-3">
                                                     <div>
