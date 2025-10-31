@@ -86,51 +86,55 @@ export default function ApplicationsModal({
                         </div>
                     ) : (
                         <div className="overflow-x-auto">
-                            <table className="min-w-full border-separate border-spacing-0">
-                                <thead>
-                                <tr className="bg-slate-50 text-left text-sm font-semibold text-slate-700">
-                                    <th className="px-3 py-2">Stage</th>
-                                    <th className="px-3 py-2">Entreprise</th>
-                                    <th className="px-3 py-2">Statut</th>
-                                    <th className="px-3 py-2">Action</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {rows.map((ap, i) => {
-                                    const stage = ap?.stage || {};
-                                    const emp = stage?.employeur || {};
-                                    const title   = stage?.title || ap?.title || "Stage";
-                                    const company = emp?.company || emp?.nomEntreprise || ap?.company || "—";
-                                    const st = U(ap?.status ?? ap?.statut ?? ap?.candidatureStatus);
+                            {/* conteneur scrollable vertical dans la modale */}
+                            <div className="max-h-[420px] md:max-h-[60vh] overflow-y-auto rounded-md pr-2">
+                                <table className="min-w-full border-separate border-spacing-0">
+                                    <thead className="bg-slate-50 sticky top-0 z-10">
+                                    <tr className="text-left text-sm font-semibold text-slate-700">
+                                        <th className="px-3 py-2 bg-slate-50">Stage</th>
+                                        <th className="px-3 py-2 bg-slate-50">Entreprise</th>
+                                        <th className="px-3 py-2 bg-slate-50">Statut</th>
+                                        <th className="px-3 py-2 bg-slate-50">Action</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {rows.map((ap, i) => {
+                                        const stage = ap?.stage || {};
+                                        const emp = stage?.employeur || {};
+                                        const title = stage?.title || ap?.title || "Stage";
+                                        const company = emp?.company || emp?.nomEntreprise || ap?.company || "—";
+                                        const st = U(ap?.status ?? ap?.statut ?? ap?.candidatureStatus);
 
-                                    return (
-                                        <tr key={ap.id ?? i} className={i % 2 ? "bg-white" : "bg-slate-50"}>
-                                            <td className="px-3 py-2 align-top">
-                                                <div className="font-medium text-slate-900">{title}</div>
-                                            </td>
-                                            <td className="px-3 py-2 align-top text-slate-700">{company}</td>
-                                            <td className="px-3 py-2 align-top">
-                          <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${badgeClass(st)}`}>
-                            {labelOf(st)}
-                          </span>
-                                            </td>
-                                            <td className="px-3 py-2 align-top">
-                                                <button
-                                                    className="text-blue-600 hover:underline"
-                                                    onClick={() => onSeeStage && onSeeStage(ap)}
-                                                    type="button"
-                                                >
-                                                    Voir le stage
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                                </tbody>
-                            </table>
+                                        return (
+                                            <tr key={ap.id ?? i} className={i % 2 ? "bg-white" : "bg-slate-50"}>
+                                                <td className="px-3 py-2 align-top">
+                                                    <div className="font-medium text-slate-900">{title}</div>
+                                                </td>
+                                                <td className="px-3 py-2 align-top text-slate-700">{company}</td>
+                                                <td className="px-3 py-2 align-top">
+                    <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${badgeClass(st)}`}>
+                      {labelOf(st)}
+                    </span>
+                                                </td>
+                                                <td className="px-3 py-2 align-top">
+                                                    <button
+                                                        className="text-blue-600 hover:underline"
+                                                        onClick={() => onSeeStage && onSeeStage(ap)}
+                                                        type="button"
+                                                    >
+                                                        Voir le stage
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     )}
                 </div>
+
 
                 <div className="border-t px-5 py-4 flex justify-end">
                     <button

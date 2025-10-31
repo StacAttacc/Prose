@@ -179,81 +179,76 @@ export default function GestionnaireEtuCandidature() {
                         <div className="py-10 text-center text-gray-700">Aucun étudiant dans cette catégorie.</div>
                     ) : (
                         <div className="w-full overflow-x-auto">
-                            {/* Conteneur scrollable avec en-tête fixe */}
-                            <div className="w-full overflow-x-auto">
-                                <div className="max-h-[500px] overflow-y-auto rounded-b-xl">
-                                    <table className="min-w-full border-separate border-spacing-0">
-                                        <thead className="bg-gray-50 sticky top-0 z-10">
-                                        <tr>
-                                            <th className="text-left text-gray-800 font-semibold py-3 px-4 bg-gray-50">Étudiant</th>
-                                            <th className="text-left text-gray-800 font-semibold py-3 px-4 bg-gray-50">Email</th>
-                                            <th className="text-left text-gray-800 font-semibold py-3 px-4 bg-gray-50">
-                                                {tab === "APPLIED" ? "Candidatures" : "Statut"}
-                                            </th>
-                                            {tab !== "APPROVED" && (
-                                                <th className="text-left text-gray-800 font-semibold py-3 px-4 bg-gray-50">Action</th>
+                            <table className="min-w-full border-separate border-spacing-0">
+                                <thead className="bg-gray-50">
+                                <tr>
+                                    <th className="text-left text-gray-800 font-semibold py-3 px-4">Étudiant</th>
+                                    <th className="text-left text-gray-800 font-semibold py-3 px-4">Email</th>
+                                    <th className="text-left text-gray-800 font-semibold py-3 px-4">
+                                        {tab === "APPLIED" ? "Candidatures" : "Statut"}
+                                    </th>
+
+                                    {/* On enlève complètement la colonne Action si Stage trouvé */}
+                                    {tab !== "APPROVED" && (
+                                        <th className="text-left text-gray-800 font-semibold py-3 px-4">Action</th>
+                                    )}
+                                </tr>
+                                </thead>
+
+                                <tbody>
+                                {list.map((s, idx) => (
+                                    <tr
+                                        key={s.id ?? s.email ?? idx}
+                                        className={`${idx % 2 === 0 ? "bg-white" : "bg-teal-50"} hover:bg-teal-100 transition`}
+                                    >
+                                        <td className="py-3 px-4 align-top">
+                                            <div className="font-medium text-gray-800">{s.fullName}</div>
+                                        </td>
+                                        <td className="py-3 px-4 align-top text-gray-700">{s.email}</td>
+                                        <td className="py-3 px-4 align-top">
+                                            {tab === "APPLIED" ? (
+                                                <span className="text-gray-700">
+              {
+                  (s.applications || []).filter(
+                      (a) => (a?.status || "").toString().toUpperCase() !== "ACCEPTEE_ETUDIANT"
+                  ).length
+              }{" "}
+                                                    candidature(s)
+            </span>
+                                            ) : tab === "APPROVED" ? (
+                                                <span
+                                                    className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold bg-teal-100 text-teal-700">
+              Stage trouvé
+            </span>
+                                            ) : (
+                                                <span className="text-gray-500">Aucune candidature</span>
                                             )}
-                                        </tr>
-                                        </thead>
+                                        </td>
 
-                                        <tbody>
-                                        {list.map((s, idx) => (
-                                            <tr
-                                                key={s.id ?? s.email ?? idx}
-                                                className={`${idx % 2 === 0 ? "bg-white" : "bg-teal-50"} hover:bg-teal-100 transition`}
-                                            >
-                                                <td className="py-3 px-4 align-top">
-                                                    <div className="font-medium text-gray-800">{s.fullName}</div>
-                                                </td>
-                                                <td className="py-3 px-4 align-top text-gray-700">{s.email}</td>
-                                                <td className="py-3 px-4 align-top">
-                                                    {tab === "APPLIED" ? (
-                                                        <span className="text-gray-700">
-                  {
-                      (s.applications || []).filter(
-                          (a) =>
-                              (a?.status || "").toString().toUpperCase() !==
-                              "ACCEPTEE_ETUDIANT"
-                      ).length
-                  }{" "}
-                                                            candidature(s)
-                </span>
-                                                    ) : tab === "APPROVED" ? (
-                                                        <span
-                                                            className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold bg-teal-100 text-teal-700">
-                  Stage trouvé
-                </span>
-                                                    ) : (
-                                                        <span className="text-gray-500">Aucune candidature</span>
-                                                    )}
-                                                </td>
-
-                                                {tab !== "APPROVED" && (
-                                                    <td className="py-3 px-4 align-top">
-                                                        {tab === "APPLIED" ? (
-                                                            <button
-                                                                type="button"
-                                                                className="text-blue-600 hover:underline"
-                                                                title="Voir les candidatures"
-                                                                onClick={() => {
-                                                                    setModalFilterStatuses(null);
-                                                                    setModalStudent(s);
-                                                                }}
-                                                            >
-                                                                Voir ses candidatures
-                                                            </button>
-                                                        ) : (
-                                                            <span className="text-gray-400">—</span>
-                                                        )}
-                                                    </td>
+                                        {/* On supprime complètement la colonne Action si tab = APPROVED */}
+                                        {tab !== "APPROVED" && (
+                                            <td className="py-3 px-4 align-top">
+                                                {tab === "APPLIED" ? (
+                                                    <button
+                                                        type="button"
+                                                        className="text-blue-600 hover:underline"
+                                                        title="Voir les candidatures"
+                                                        onClick={() => {
+                                                            setModalFilterStatuses(null);
+                                                            setModalStudent(s);
+                                                        }}
+                                                    >
+                                                        Voir ses candidatures
+                                                    </button>
+                                                ) : (
+                                                    <span className="text-gray-400">—</span>
                                                 )}
-                                            </tr>
-                                        ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-
+                                            </td>
+                                        )}
+                                    </tr>
+                                ))}
+                                </tbody>
+                            </table>
 
                         </div>
                     )}
