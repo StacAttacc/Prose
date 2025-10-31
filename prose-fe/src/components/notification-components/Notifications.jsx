@@ -7,6 +7,7 @@ import {
     markSingleNotification,
     fetchNotifications
 } from "./notification-utils/notifications-service-logic.jsx";
+import { normalizeNotifications } from "./notification-utils/notification-parsing-logic.jsx";
 
 export default function Notifications() {
     const { user } = useAuth();
@@ -24,47 +25,7 @@ export default function Notifications() {
         return () => { mountedRef.current = false; };
     }, []);
 
-    function makeKeyForItem(item = {}, groupKey) {
-        if (item?.convocation) return "convocation";
-        else if (item?.candidatureId) return "postulation";
-        else if (item?.stageId) return "stage";
-        else if (item?.cvId) return "gestionnaire_cv";
-        else if (item?.etudiantId) return "etudiant_cv";
-        else if (groupKey && typeof groupKey === "string" && !/\s/.test(groupKey)) return groupKey.toLowerCase();
-        else if (item?.type) {
-            return String(item.type)
-                .toLowerCase()
-                .replace(/\s+/g, "-")
-                .replace(/[^a-z0-9\-]/g, "");
-        }
-        return "default";
-    }
-
-    function normalizeListToTypes(list = [], fallbackKey = "default") {
-        const map = {};
-        list.forEach(n => {
-            const key = makeKeyForItem(n, fallbackKey || undefined) || fallbackKey;
-            if (!map[key]) map[key] = [];
-            map[key].push(n);
-        });
-        return map;
-    }
-
-    function buildFromGroups(groups = []) {
-        const map = {};
-        groups.forEach(g => {
-            const items = Array.isArray(g.items) ? g.items : [];
-            const groupKey = g?.typeKey || g?.type || undefined;
-            items.forEach(item => {
-                const key = makeKeyForItem(item, groupKey);
-                if (!map[key]) map[key] = [];
-                map[key].push(item);
-            });
-        });
-        return map;
-    }
-
-    async function fetchAndNormalize() {
+    useEffect(() => {
         if (!user?.token) {
             setNotificationsByType({});
             setLoading(false);
@@ -74,35 +35,8 @@ export default function Notifications() {
 
         setLoading(true);
         setError(null);
-
         try {
-            let raw = await fetchNotifications(user);
-
-            const payload = raw?.data || raw || null;
-            let byType;
-
-            if (payload?.groups && Array.isArray(payload.groups)) {
-                byType = buildFromGroups(payload.groups);
-            } else if (Array.isArray(payload)) {
-                byType = normalizeListToTypes(payload);
-            } else if (payload?.postulationNotifications) {
-                byType = normalizeListToTypes(payload.postulationNotifications, "postulation");
-            } else if (payload?.stageNotifications) {
-                byType = normalizeListToTypes(payload.stageNotifications, "stage");
-            } else if (payload?.convocationNotifications) {
-                byType = normalizeListToTypes(payload.convocationNotifications, "convocation");
-            } else if (payload?.gestionnaireCvNotifications) {
-                byType = normalizeListToTypes(payload.gestionnaireCvNotifications, "gestionnaire_cv");
-            } else if (payload?.etudiantCvNotifications) {
-                byType = normalizeListToTypes(payload.etudiantCvNotifications, "etudiant_cv");
-            } else if (payload?.items && Array.isArray(payload.items)) {
-                byType = normalizeListToTypes(payload.items);
-            } else if (payload?.data && Array.isArray(payload.data)) {
-                byType = normalizeListToTypes(payload.data);
-            } else {
-                byType = {};
-            }
-
+            let byType = normalizeNotifications(await fetchNotifications(user));
             if (mountedRef.current) setNotificationsByType(byType);
         } catch (err) {
             console.error("Failed to load notifications:", err);
@@ -112,12 +46,8 @@ export default function Notifications() {
             }
         } finally {
             if (mountedRef.current) setLoading(false);
-        }
-    }
-
-    useEffect(() => {
-        fetchAndNormalize();
-    }, [user?.token, user?.role, user?.email, readCounter]);
+        }  
+    }, [user.token, user.role, user.email, readCounter]);
 
     useEffect(() => {
         function onClickOutside(e) {
