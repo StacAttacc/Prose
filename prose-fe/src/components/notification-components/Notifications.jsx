@@ -6,8 +6,11 @@ import {
     markManyNotifications,
     markSingleNotification,
     fetchNotifications
-} from "./notification-utils/notifications-service-logic.jsx";
-import { normalizeNotifications } from "./notification-utils/notification-parsing-logic.jsx";
+} from "./notification-utils/notificationsServiceLogic.jsx";
+import { normalizeNotifications } from "./notification-utils/notificationParsingLogic.jsx";
+import { getDefaultNavigationPath } from "./notification-utils/notificationsNavigationLogic.jsx";
+import { labelForKey, shortText } from "./notification-utils/notificationText.jsx";
+import ErrorBanner from "../display-components/ErrorBanner.jsx";
 
 export default function Notifications() {
     const { user } = useAuth();
@@ -25,29 +28,33 @@ export default function Notifications() {
         return () => { mountedRef.current = false; };
     }, []);
 
-    useEffect(() => {
-        if (!user?.token) {
-            setNotificationsByType({});
-            setLoading(false);
-            setError(null);
-            return;
-        }
-
-        setLoading(true);
-        setError(null);
-        try {
-            let byType = normalizeNotifications(await fetchNotifications(user));
-            if (mountedRef.current) setNotificationsByType(byType);
-        } catch (err) {
-            console.error("Failed to load notifications:", err);
-            if (mountedRef.current) {
-                setError(err?.message || "Failed to load notifications");
+    useEffect(() => async () => {
+        async function fetchData() {
+            if (!user?.token) {
                 setNotificationsByType({});
+                setLoading(false);
+                setError(null);
+                return;
             }
-        } finally {
-            if (mountedRef.current) setLoading(false);
-        }  
-    }, [user.token, user.role, user.email, readCounter]);
+
+            setLoading(true);
+            setError(null);
+            try {
+                let payload = await fetchNotifications(user);
+                let byType = normalizeNotifications(payload);
+                if (mountedRef.current) setNotificationsByType(byType);
+            } catch (err) {
+                console.error("Failed to load notifications:", err);
+                if (mountedRef.current) {
+                    setError(err?.message || "Failed to load notifications");
+                    setNotificationsByType({});
+                }
+            } finally {
+                if (mountedRef.current) setLoading(false);
+            }
+        }
+        await fetchData();
+    }, [user, readCounter]);
 
     useEffect(() => {
         function onClickOutside(e) {
@@ -68,38 +75,27 @@ export default function Notifications() {
     }
 
     function defaultNavigatePath() {
-        if (user.role === "GESTIONNAIRE") return "/gestionnaire/candidatures";
-        if (user.role === "EMPLOYEUR") return `/employeur/posted-stages`;
-        if (user.role === "ETUDIANT") return `etudiant/mon-cv`;
-        return "/";
+        return getDefaultNavigationPath(user);
     }
 
     const handleGroupClick = useCallback(async (typeKey, list) => {
         const ids = (list || []).map(n => n.id).filter(Boolean);
         try {
-            await markManyNotificationsAsRead(ids);
+            await markNotificationsRead(ids, user);
             setReadCounter(c => c + ids.length);
-            navigate(defaultNavigatePath());
+            navigate(getDefaultNavigatePath(user.role));
         } catch (err) {
             console.error("Failed to mark card notifications as read:", err);
-            navigate(defaultNavigatePath());
+            navigate(getDefaultNavigatePath(user.role));
         }
-    }, [navigate, user?.role, user?.token, user?.email]);
+    }, [navigate, user]);
 
     const handleItemClick = useCallback(async (e, notification, typeKey) => {
         e?.stopPropagation?.();
         setOpenType(null);
 
-        const stageId = notification?.stageId || null;
-        const candidatureId = notification?.candidatureId || null;
-        const etudiantId = notification?.etudiantId || null;
-        const cvId = notification?.cvId || null;
-        const convocation = notification?.convocation || null;
-
-        const isCandidature = Boolean(notification?.candidature || notification?.candidatureId);
-
         try {
-            await markNotificationAsRead(notification.id);
+            await markNotificationRead(notification.id, user);
             setNotificationsByType(prev => {
                 const next = { ...prev };
                 const arr = (next[typeKey] || []).filter(n => n.id !== notification.id);
@@ -109,49 +105,19 @@ export default function Notifications() {
             });
             setReadCounter(c => c + 1);
 
-            if (user.role === "EMPLOYEUR") {
-                if (isCandidature) {
-                    if (stageId) {
-                        navigate(`/employeur/stages/${stageId}/candidatures`, { state: { openCandidatureId: candidatureId } });
-                        return;
-                    }
-                }
-            }
-            else if (user.role === "ETUDIANT") {
-                navigate(defaultNavigatePath());
-            }
-            else if (user.role === "GESTIONNAIRE") {
-                if (isCandidature) {
-                    if (stageId) {
-                        navigate(defaultNavigatePath(), { state: { openEtudiantId: etudiantId } });
-                        return;
-                    }
-                } else {
-                    if (stageId) {
-                        navigate("/gestionnaire/list-stages", { state: { openStageId: stageId } });
-                        return;
-                    } else if (!stageId && cvId) {
-                        navigate("/gestionnaire/gestion-cv", { state: { openCvId: cvId } });
-                        return;
-                    } else if (convocation) {
-                        navigate(defaultNavigatePath(), { state: { openEtudiantId: etudiantId } });
-                        return;
-                    }
-                }
-            }
-
-            navigate(defaultNavigatePath());
+            const { path, state } = getNotificationNavigationPath(notification, user.role);
+            navigate(path, state ? { state } : undefined);
         } catch (err) {
             console.error("Failed to mark notification as read:", err);
-            navigate(defaultNavigatePath());
+            navigate(getDefaultNavigatePath(user.role));
         }
-    }, [navigate, user?.role, user?.token, user?.email]);
+    }, [navigate, user]);
 
     const handleMarkSingleClick = async (e, notification, typeKey) => {
         e?.stopPropagation?.();
         if (!notification?.id) return;
         try {
-            await markNotificationAsRead(notification.id);
+            await markNotificationRead(notification.id, user);
             setNotificationsByType(prev => {
                 const next = { ...prev };
                 const arr = (next[typeKey] || []).filter(n => n.id !== notification.id);
@@ -169,35 +135,21 @@ export default function Notifications() {
         e?.stopPropagation?.();
         const ids = (list || []).map(n => n.id).filter(Boolean);
         try {
-            await markManyNotificationsAsRead(ids);
+            await markNotificationsRead(ids, user);
             setReadCounter(c => c + ids.length);
             setOpenType(null);
         } catch (err) {
             console.error("Failed to mark notifications as read (close type):", err);
         }
-    }, [user?.role, user?.token, user?.email]);
+    }, [user]);
 
     const totalCount = Object.values(notificationsByType).reduce((acc, arr) => acc + (Array.isArray(arr) ? arr.length : 0), 0);
 
     if (!loading && error) {
-        return <div className="mt-3 text-sm text-red-600">{error}</div>;
+        return <ErrorBanner message={error} />;
     }
 
     if (totalCount === 0) return null;
-
-    function shortText(text, max = 80) {
-        if (!text) return "";
-        return text.length > max ? text.slice(0, max - 3) + "..." : text;
-    }
-
-    function labelForKey(key) {
-        if (key === "stage") return `nouvelles offre(s) de stage à approuver`;
-        if (key === "postulation") return `nouvelles candidature(s) reçue(s)`;
-        if (key === "gestionnaire_cv") return `nouveau(x) CV(s) à examiner`;
-        if (key === "etudiant_cv") return `changement sur votre CV`;
-        if (key === "convocation") return `nouvelle(s) convocation(s)`;
-        return `${key} notification(s)`;
-    }
 
     return (
         <div ref={dropdownRef} className="space-y-3">

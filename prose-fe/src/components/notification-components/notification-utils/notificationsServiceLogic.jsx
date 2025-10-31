@@ -2,12 +2,12 @@ import {
     getGestionnaireNotifications,
     markNotificationRead as markNotificationReadGestionnaire,
     markNotificationsRead as markNotificationsReadGestionnaire
-} from "../../services/GestionnaireService.js";
+} from "../../../services/GestionnaireService.js";
 import {
     getEmployeurCandidatureNotifications,
     markNotificationRead as markNotificationReadEmployeur,
     markNotificationsRead as markNotificationsReadEmployeur
-} from "../../services/EmployeurService.js";
+} from "../../../services/EmployeurService.js";
 import {
     getEtudiantNotifications,
     markNotificationRead as markNotificationReadEtudiant,
