@@ -7,7 +7,6 @@ import com.AL565.prose.model.notifications.PostulationNotification;
 import com.AL565.prose.model.notifications.StageNotification;
 import com.AL565.prose.repository.*;
 import com.AL565.prose.security.exceptions.NotificationExceptions;
-import com.AL565.prose.security.exceptions.NotificationExceptions.*;
 import com.AL565.prose.security.exceptions.UserNotFoundException;
 import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.exceptions.CandidatureNotFoundException;
@@ -168,14 +167,15 @@ public class EmployeurService {
         String notifMessage = employeur.getCompany()
                 + " a convoqué " + candidature.getEtudiant().getFirstName()
                 + " " + candidature.getEtudiant().getLastName()
-                + " pour une entrevue pour votre candidature au stage "
-                + candidature.getEtudiant().getLastName() + " en entrevue";
+                + " pour une entrevue";
         ConvocationNotification notification = new ConvocationNotification();
         notification.setFirstRecipientReadAt(null);
+        notification.setSecondRecipientReadAt(null);
         notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
         notification.setCandidatureConvocationId(candidature.getId());
         notification.setType(NotificationType.CONVOCATION_NOTIFICATION);
         notification.setMessage(notifMessage);
+        notification.setEtudiantConvocationEmail(candidature.getEtudiant().getEmail());
         notificationRepository.save(notification);
     }
 }

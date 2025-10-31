@@ -163,6 +163,8 @@ public class GestionnaireService {
                         .findNotificationsByTypeAndSecondRecipientReadAt(NotificationType.POSTULATION_NOTIFICATION, null);
                 List<Notification> cvs = notificationRepository
                         .findNotificationsByTypeAndFirstRecipientReadAt(NotificationType.GESTIONNAIRE_CV_NOTIFICATION, null);
+                List<Notification> convocations = notificationRepository
+                        .findNotificationsByTypeAndSecondRecipientReadAt(NotificationType.CONVOCATION_NOTIFICATION, null);
 
                 NotificationGroupDTO stagesGroup = NotificationGroupDTO
                         .toDTO(NotificationType.STAGE_NOTIFICATION.getDisplayName(), stages);
@@ -170,8 +172,11 @@ public class GestionnaireService {
                         .toDTO(NotificationType.POSTULATION_NOTIFICATION.getDisplayName(), postulations);
                 NotificationGroupDTO cvsGroup = NotificationGroupDTO
                         .toDTO(NotificationType.GESTIONNAIRE_CV_NOTIFICATION.getDisplayName(), cvs);
+                NotificationGroupDTO convocationsGroup = NotificationGroupDTO
+                        .toDTO(NotificationType.CONVOCATION_NOTIFICATION.getDisplayName(), convocations);
 
-            return NotificationsResponseDTO.toDTO(List.of(stagesGroup, postulationGroup, cvsGroup));
+            return NotificationsResponseDTO
+                    .toDTO(List.of(stagesGroup, postulationGroup, cvsGroup, convocationsGroup));
         } catch (Exception e) {
             throw new NotificationExceptions.NotificationFetchException();
         }
@@ -180,7 +185,8 @@ public class GestionnaireService {
     public void markNotificationAsRead(Long notificationId) throws Exception {
         Notification notification = notificationRepository.findById(notificationId)
                 .orElseThrow(NotificationExceptions.NotificationFetchException::new);
-        if (notification.getType() == NotificationType.POSTULATION_NOTIFICATION) {
+        if (notification.getType() == NotificationType.POSTULATION_NOTIFICATION
+                || notification.getType() == NotificationType.CONVOCATION_NOTIFICATION) {
             markPostulationAsReadBySecondRecipient(notificationId);
         } else {
             notificationsHelper.markNotificationAsReadByFirstRecipient(notificationId);

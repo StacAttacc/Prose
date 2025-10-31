@@ -1,5 +1,6 @@
 package com.AL565.prose.model.notifications;
 
+import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,6 +10,7 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
+@DiscriminatorValue("etudiant_cv")
 @NoArgsConstructor
 @AllArgsConstructor
 public class EtudiantCvNotification extends Notification {
