@@ -1,22 +1,12 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext.jsx";
+import { useAuth } from "../../context/AuthContext.jsx";
 import { Eye, EyeOff } from "lucide-react";
 import {
-    getGestionnaireNotifications,
-    markNotificationRead as markNotificationReadGestionnaire,
-    markNotificationsRead as markNotificationsReadGestionnaire
-} from "../services/GestionnaireService.js";
-import {
-    getEmployeurCandidatureNotifications,
-    markNotificationRead as markNotificationReadEmployeur,
-    markNotificationsRead as markNotificationsReadEmployeur
-} from "../services/EmployeurService.js";
-import {
-    getEtudiantNotifications,
-    markNotificationRead as markNotificationReadEtudiant,
-    markNotificationsRead as markNotificationsReadEtudiant
-} from "../services/EtudiantService.js";
+    markManyNotifications,
+    markSingleNotification,
+    fetchNotifications
+} from "./notification-utils/notifications-service-logic.jsx";
 
 export default function Notifications() {
     const { user } = useAuth();
@@ -86,17 +76,7 @@ export default function Notifications() {
         setError(null);
 
         try {
-            let raw;
-            if (user.role === "GESTIONNAIRE") {
-                raw = await getGestionnaireNotifications(user.token);
-            } else if (user.role === "EMPLOYEUR") {
-                raw = await getEmployeurCandidatureNotifications(user.email, user.token);
-            } else if (user.role === "ETUDIANT") {
-                raw = await getEtudiantNotifications(user.token);
-            }
-            else {
-                raw = null;
-            }
+            let raw = await fetchNotifications(user);
 
             const payload = raw?.data || raw || null;
             let byType;
@@ -149,26 +129,12 @@ export default function Notifications() {
         return () => document.removeEventListener("click", onClickOutside);
     }, []);
 
-    async function markSingleNotification(id) {
-        if (!id) return;
-        if (user.role === "GESTIONNAIRE") {
-            await markNotificationReadGestionnaire(id, user.token);
-        } else if (user.role === "EMPLOYEUR") {
-            await markNotificationReadEmployeur(id, user.token);
-        } else if (user.role === "ETUDIANT") {
-            await markNotificationReadEtudiant(id, user.token);
-        }
+    async function markNotificationAsRead(id) {
+        markSingleNotification(id, user);
     }
 
-    async function markManyNotifications(ids = []) {
-        if (!Array.isArray(ids) || ids.length === 0) return;
-        if (user.role === "GESTIONNAIRE") {
-            await markNotificationsReadGestionnaire(ids, user.token);
-        } else if (user.role === "EMPLOYEUR") {
-            await markNotificationsReadEmployeur(ids, user.token);
-        } else if (user.role === "ETUDIANT") {
-            await markNotificationsReadEtudiant(ids, user.token);
-        }
+    async function markManyNotificationsAsRead(ids = []) {
+        markManyNotifications(user, ids);
     }
 
     function defaultNavigatePath() {
@@ -181,7 +147,7 @@ export default function Notifications() {
     const handleGroupClick = useCallback(async (typeKey, list) => {
         const ids = (list || []).map(n => n.id).filter(Boolean);
         try {
-            await markManyNotifications(ids);
+            await markManyNotificationsAsRead(ids);
             setReadCounter(c => c + ids.length);
             navigate(defaultNavigatePath());
         } catch (err) {
@@ -203,7 +169,7 @@ export default function Notifications() {
         const isCandidature = Boolean(notification?.candidature || notification?.candidatureId);
 
         try {
-            await markSingleNotification(notification.id);
+            await markNotificationAsRead(notification.id);
             setNotificationsByType(prev => {
                 const next = { ...prev };
                 const arr = (next[typeKey] || []).filter(n => n.id !== notification.id);
@@ -255,7 +221,7 @@ export default function Notifications() {
         e?.stopPropagation?.();
         if (!notification?.id) return;
         try {
-            await markSingleNotification(notification.id);
+            await markNotificationAsRead(notification.id);
             setNotificationsByType(prev => {
                 const next = { ...prev };
                 const arr = (next[typeKey] || []).filter(n => n.id !== notification.id);
@@ -273,7 +239,7 @@ export default function Notifications() {
         e?.stopPropagation?.();
         const ids = (list || []).map(n => n.id).filter(Boolean);
         try {
-            await markManyNotifications(ids);
+            await markManyNotificationsAsRead(ids);
             setReadCounter(c => c + ids.length);
             setOpenType(null);
         } catch (err) {
