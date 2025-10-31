@@ -1,6 +1,7 @@
 package com.AL565.prose.service;
 
 import com.AL565.prose.model.*;
+import com.AL565.prose.model.notifications.ConvocationNotification;
 import com.AL565.prose.model.notifications.NotificationType;
 import com.AL565.prose.model.notifications.PostulationNotification;
 import com.AL565.prose.model.notifications.StageNotification;
@@ -128,13 +129,14 @@ public class EmployeurService {
 
         candidature.setStatus(candidatureStatus);
         candidatureRepository.save(candidature);
-  }
+    }
+
     @Transactional
     public NotificationsResponseDTO getPostulationNotifications(String employeurEmail) throws Exception {
         try {
             List<PostulationNotification> notifications =
                     postulationNotificationRepository
-                            .findByFirstRecipientReadAtAndCandidature_StageEmployeurEmail(null, employeurEmail);
+                            .findByFirstRecipientReadAtAndEmployeurEmail(null, employeurEmail);
             NotificationGroupDTO group = NotificationGroupDTO.toDTO("postulation", notifications);
             return NotificationsResponseDTO.toDTO(List.of(group));
         } catch (Exception e) {
@@ -154,6 +156,26 @@ public class EmployeurService {
 
         candidature.setStatus(CandidatureStatus.CONVOQUEE);
         candidature.setDateDecision(dateDecision);
-        candidatureRepository.save(candidature);
+        Candidature saved = candidatureRepository.save(candidature);
+        Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(saved.getStage().getEmployeurEmail());
+        createNotificationForNewEnterview(saved, employeur);
+    }
+
+    private void createNotificationForNewEnterview(Candidature candidature, Employeur employeur) {
+        if (candidature == null) {
+            throw new IllegalArgumentException("candidature must not be null");
+        }
+        String notifMessage = employeur.getCompany()
+                + " a convoqué " + candidature.getEtudiant().getFirstName()
+                + " " + candidature.getEtudiant().getLastName()
+                + " pour une entrevue pour votre candidature au stage "
+                + candidature.getEtudiant().getLastName() + " en entrevue";
+        ConvocationNotification notification = new ConvocationNotification();
+        notification.setFirstRecipientReadAt(null);
+        notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
+        notification.setCandidatureConvocationId(candidature.getId());
+        notification.setType(NotificationType.CONVOCATION_NOTIFICATION);
+        notification.setMessage(notifMessage);
+        notificationRepository.save(notification);
     }
 }

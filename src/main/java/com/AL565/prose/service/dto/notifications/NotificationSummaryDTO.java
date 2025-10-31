@@ -1,6 +1,5 @@
 package com.AL565.prose.service.dto.notifications;
 
-import com.AL565.prose.model.Candidature;
 import com.AL565.prose.model.notifications.*;
 import lombok.*;
 
@@ -38,11 +37,13 @@ public class NotificationSummaryDTO {
                 if (sn.getStage() != null) stageId = sn.getStage().getId();
             }
             case PostulationNotification pn -> {
-                Candidature c = pn.getCandidature();
-                if (c != null) {
-                    candidatureId = c.getId();
-                    if (c.getStage() != null) stageId = c.getStage().getId();
-                    if (c.getEtudiant() != null) etudiantId = c.getEtudiant().getId();
+                Long candidaturePostulationId = pn.getCandidaturePostulationId();
+                Long candidatueEtudiantId = pn.getEtudiantPostulationId();
+                Long candidatureStageId = pn.getStagePostulationId();
+                if (candidaturePostulationId != null) {
+                    candidatureId = candidaturePostulationId;
+                    if (candidatureStageId != null) stageId = candidatureStageId;
+                    if (candidatueEtudiantId != null) etudiantId = candidatueEtudiantId;
                 }
             }
             case GestionnaireCvNotification gcn -> {

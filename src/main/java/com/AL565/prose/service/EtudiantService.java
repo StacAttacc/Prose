@@ -228,7 +228,10 @@ public class EtudiantService {
         PostulationNotification notification = new PostulationNotification();
         notification.setFirstRecipientReadAt(null);
         notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
-        notification.setCandidature(candidature);
+        notification.setCandidaturePostulationId(candidature.getId());
+        notification.setEtudiantPostulationId(candidature.getEtudiant().getId());
+        notification.setStagePostulationId(candidature.getStage().getId());
+        notification.setEmployeurEmail(candidature.getStage().getEmployeurEmail());
         notification.setType(NotificationType.POSTULATION_NOTIFICATION);
         notification.setMessage(studentName + " a postulé pour le stage " + companyName);
         notificationRepository.save(notification);
