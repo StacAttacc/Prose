@@ -51,13 +51,19 @@ export default function ApplicationsModal({
     }, [filterStatuses]);
 
     const rows = useMemo(() => {
-        const apps = Array.isArray(student?.applications) ? student.applications : [];
-        if (!filterSet) return apps;
-        return apps.filter((a) => {
-            const k = U(a?.status ?? a?.statut ?? a?.candidatureStatus);
-            return filterSet.has(k);
-        });
-    }, [student?.applications, filterSet]);
+           const apps = Array.isArray(student?.applications) ? student.applications : [];
+           const base = !filterSet
+             ? apps
+                 : apps.filter((a) => {
+                     const k = U(a?.status ?? a?.statut ?? a?.candidatureStatus);
+                     return filterSet.has(k);
+                   });
+
+               // Règle: on ne montre pas les candidatures déjà acceptées par l'étudiant
+                   return base.filter(
+                 (a) => U(a?.status ?? a?.statut ?? a?.candidatureStatus) !== "ACCEPTEE_ETUDIANT"
+           );
+         }, [student?.applications, filterSet]);
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
