@@ -289,7 +289,7 @@ public class EtudiantService {
         }
 
         if (responseDTO.isAccepted()) {
-            candidature.setStatus(CandidatureStatus.ACCEPTEE_ETUDIANT);
+            candidature.setStatus(CandidatureStatus.CONFIRMER);
         } else {
             candidature.setStatus(CandidatureStatus.REFUSEE_ETUDIANT);
         }

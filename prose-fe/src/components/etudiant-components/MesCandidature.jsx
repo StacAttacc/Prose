@@ -14,6 +14,7 @@ export default function MesCandidature() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [responseComments, setResponseComments] = useState({});
     const [respondingTo, setRespondingTo] = useState(null);
+    const [errors, setErrors] = useState({});
 
     useEffect(() => {
         const fetchCandidatures = async () => {
@@ -33,6 +34,10 @@ export default function MesCandidature() {
 
   const filteredCandidatures = useMemo(() => {
     return candidatures.filter(candidature => {
+      if (candidature.status === 'REFUSEE_ETUDIANT') {
+        return false;
+      }
+      
       const stage = candidature.stage;
       
       if (!stage) return false;
@@ -74,6 +79,13 @@ export default function MesCandidature() {
     };
 
     const handleRespondToOffer = async (candidatureId, accepted) => {
+        // Réinitialiser l'erreur pour cette candidature
+        setErrors(prev => {
+            const newState = { ...prev };
+            delete newState[candidatureId];
+            return newState;
+        });
+
         try {
             const comment = responseComments[candidatureId] || "";
             setRespondingTo(candidatureId);
@@ -91,10 +103,12 @@ export default function MesCandidature() {
             });
             setRespondingTo(null);
             
-            alert(accepted ? "Vous avez accepté l'offre avec succès" : "Vous avez refusé l'offre avec succès");
         } catch (err) {
-            console.error("Erreur lors de la réponse à l'offre:", err);
-            alert("Erreur lors de l'envoi de votre réponse. Veuillez réessayer.");
+            const errorMessage = err.response?.data?.message || err.message || "Erreur lors de l'envoi de votre réponse. Veuillez réessayer.";
+            setErrors(prev => ({
+                ...prev,
+                [candidatureId]: errorMessage
+            }));
             setRespondingTo(null);
         }
     };
@@ -116,7 +130,7 @@ export default function MesCandidature() {
                 return 'bg-red-100 text-red-800';
             case 'CONVOQUEE':
                 return 'bg-yellow-100 text-yellow-800';
-            case 'ACCEPTEE_ETUDIANT':
+            case 'CONFIRMER':
                 return 'bg-green-100 text-green-800';
             case 'REFUSEE_ETUDIANT':
                 return 'bg-red-100 text-red-800';
@@ -135,8 +149,8 @@ export default function MesCandidature() {
                 return 'Refusée Par L\'Employeur';
             case 'CONVOQUEE':
                 return 'Convoquée à une entrevue';
-            case 'ACCEPTEE_ETUDIANT':
-                return 'Acceptée';
+            case 'CONFIRMER':
+                return 'Confirmée';
             case 'REFUSEE_ETUDIANT':
                 return 'Refusée';
             default:
@@ -258,7 +272,7 @@ export default function MesCandidature() {
             ) : (
                 <div className="space-y-4">
                     {filteredCandidatures.map((candidature, index) => {
-                        const isAcceptedByStudent = candidature.status === 'ACCEPTEE_ETUDIANT';
+                        const isAcceptedByStudent = candidature.status === 'CONFIRMER';
                         
                         return (
                             <div
@@ -270,7 +284,6 @@ export default function MesCandidature() {
                                 }`}
                             >
                                 {isAcceptedByStudent ? (
-                                    // Affichage simplifié pour ACCEPTEE_ETUDIANT
                                     <div>
                                         <h3 className="text-xl font-semibold text-gray-800 mb-2">
                                             {candidature.stage?.title || 'Titre non disponible'}
@@ -280,7 +293,6 @@ export default function MesCandidature() {
                                         </h4>
                                     </div>
                                 ) : (
-                                    // Affichage normal pour les autres statuts
                                     <>
                                         <div className="flex justify-between items-start mb-4">
                                             <div className="flex-1">
@@ -317,7 +329,7 @@ export default function MesCandidature() {
                                             </div>
                                         </div>
 
-                                        {candidature.decision && (
+                                        {candidature.decision && candidature.decision.trim() !== "" && (
                                             <div className="mt-4 p-3 bg-gray-50 border border-gray-200 rounded">
                                                 <p className="text-sm text-gray-700">
                                                     <strong>Commentaire:</strong> {candidature.decision}
@@ -361,6 +373,13 @@ export default function MesCandidature() {
                                                             disabled={respondingTo === candidature.id}
                                                         />
                                                     </div>
+                                                    {errors[candidature.id] && (
+                                                        <div className="p-3 bg-red-50 border-l-4 border-red-400 rounded">
+                                                            <p className="text-sm text-red-700">
+                                                                {errors[candidature.id]}
+                                                            </p>
+                                                        </div>
+                                                    )}
                                                     <div className="flex gap-3">
                                                         <button
                                                             onClick={() => handleRespondToOffer(candidature.id, true)}

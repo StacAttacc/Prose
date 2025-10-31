@@ -514,7 +514,7 @@ class EtudiantServiceTest {
 
         verify(candidatureRepository, times(1)).findById(candidatureId);
         verify(candidatureRepository, times(1)).save(candidature);
-        assertEquals(CandidatureStatus.ACCEPTEE_ETUDIANT, candidature.getStatus());
+        assertEquals(CandidatureStatus.CONFIRMER, candidature.getStatus());
         assertEquals("Je suis ravi d'accepter cette offre!", candidature.getDecision());
         assertNotNull(candidature.getDateDecision());
     }
@@ -574,7 +574,7 @@ class EtudiantServiceTest {
 
         verify(candidatureRepository, times(1)).findById(candidatureId);
         verify(candidatureRepository, times(1)).save(candidature);
-        assertEquals(CandidatureStatus.ACCEPTEE_ETUDIANT, candidature.getStatus());
+        assertEquals(CandidatureStatus.CONFIRMER, candidature.getStatus());
         assertNull(candidature.getDecision());
         assertNotNull(candidature.getDateDecision());
     }

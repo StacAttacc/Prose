@@ -105,8 +105,8 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                 return "Convoquée";
             case "REFUSEE":
                 return "Refusée";
-            case "ACCEPTEE_ETUDIANT":
-                return "Acceptée";
+            case "CONFIRMER":
+                return "Confirmée par l'étudiant";
             case "REFUSEE_ETUDIANT":
                 return "Refusée par l'étudiant";
             default:
