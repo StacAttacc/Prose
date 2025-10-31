@@ -36,10 +36,6 @@ export default function MesCandidature() {
 
   const filteredCandidatures = useMemo(() => {
     return candidatures.filter(candidature => {
-      if (candidature.status === 'REFUSEE_ETUDIANT') {
-        return false;
-      }
-      
       const stage = candidature.stage;
       
       if (!stage) return false;
@@ -304,14 +300,17 @@ export default function MesCandidature() {
                 <div className="space-y-4">
                     {filteredCandidatures.map((candidature, index) => {
                         const isAcceptedByStudent = candidature.status === 'CONFIRMER';
-                        
+                        const isRefusedByStudent = candidature.status === 'REFUSEE_ETUDIANT';
+
                         return (
                             <div
                                 key={index}
                                 className={`rounded-lg shadow-md border p-6 hover:shadow-lg transition-shadow ${
                                     isAcceptedByStudent 
                                         ? 'bg-green-100 border-green-300' 
-                                        : 'bg-white border-gray-200'
+                                        : isRefusedByStudent
+                                            ? 'bg-red-100 border-red-300'
+                                            : 'bg-white border-gray-200'
                                 }`}
                             >
                                 {isAcceptedByStudent ? (
@@ -322,6 +321,22 @@ export default function MesCandidature() {
                                         <h4 className="text-3xl font-bold text-green-800 text-center">
                                             Stage Accepté
                                         </h4>
+                                    </div>
+                                ) : isRefusedByStudent ? (
+                                    <div>
+                                        <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                                            {candidature.stage?.title || 'Titre non disponible'}
+                                        </h3>
+                                        <h4 className="text-3xl font-bold text-red-800 text-center">
+                                            Offre Refusée
+                                        </h4>
+                                        {candidature.decision && candidature.decision.trim() !== "" && (
+                                            <div className="mt-4 p-3 bg-red-50 border border-red-300 rounded">
+                                                <p className="text-sm text-gray-700">
+                                                    <strong>Raison du refus:</strong> {candidature.decision}
+                                                </p>
+                                            </div>
+                                        )}
                                     </div>
                                 ) : (
                                     <>
