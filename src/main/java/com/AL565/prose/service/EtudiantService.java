@@ -9,11 +9,13 @@ import com.AL565.prose.repository.*;
 import com.AL565.prose.model.CV;
 import com.AL565.prose.model.CvStatus;
 import com.AL565.prose.model.Candidature;
+import com.AL565.prose.model.CandidatureStatus;
 import com.AL565.prose.security.exceptions.NotificationExceptions;
 import com.AL565.prose.service.dto.EtudiantPasswordDTO;
 import com.AL565.prose.service.dto.CandidatureDTO;
 import com.AL565.prose.service.dto.StageDTO;
 import com.AL565.prose.service.dto.EtudiantCandidatureDTO;
+import com.AL565.prose.service.dto.EtudiantResponseOfferDTO;
 import com.AL565.prose.security.JwtTokenProvider;
 import com.AL565.prose.service.dto.*;
 
@@ -26,6 +28,8 @@ import com.AL565.prose.security.exceptions.CvExceptions;
 import com.AL565.prose.service.dto.notifications.NotificationGroupDTO;
 import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
+import com.AL565.prose.service.exceptions.InvalidCandidatureModificationException;
+import com.AL565.prose.service.exceptions.CandidatureNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -275,5 +279,34 @@ public class EtudiantService {
 
     public void markNotificationAsRead(Long notificationId) throws Exception {
         notificationsHelper.markNotificationAsReadByFirstRecipient(notificationId);
+    }
+
+    public void respondToOffer(String email, EtudiantResponseOfferDTO responseDTO)
+            throws CandidatureNotFoundException, InvalidCandidatureModificationException {
+
+        Candidature candidature = candidatureRepository.findById(responseDTO.getCandidatureId())
+                .orElseThrow(() -> new CandidatureNotFoundException("Candidature non trouvée"));
+
+        if (!candidature.getEtudiant().getCredentials().getUsername().equals(email)) {
+            throw new InvalidCandidatureModificationException("Cette candidature ne vous appartient pas");
+        }
+        if (candidature.getStatus() != CandidatureStatus.ACCEPTEE) {
+            throw new InvalidCandidatureModificationException(
+                "Vous ne pouvez répondre qu'à une candidature acceptée par l'employeur");
+        }
+
+        if (responseDTO.isAccepted()) {
+            candidature.setStatus(CandidatureStatus.ACCEPTEE_ETUDIANT);
+        } else {
+            candidature.setStatus(CandidatureStatus.REFUSEE_ETUDIANT);
+        }
+
+        if (responseDTO.getComment() != null && !responseDTO.getComment().trim().isEmpty()) {
+            candidature.setDecision(responseDTO.getComment());
+        }
+
+        candidature.setDateDecision(java.time.LocalDateTime.now());
+
+        candidatureRepository.save(candidature);
     }
 }

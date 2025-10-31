@@ -136,6 +136,7 @@ public class GestionnaireService {
                 Stage stage = stageRepository.findById(candidature.getStageId()).get();
                 Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(stage.getEmployeurEmail());
                 return EtudiantCandidatureDTO.builder()
+                        .id(candidature.getId())
                         .stage(StageSimpleDTO.toDTOfromStageDTO(StageDTO.fromModel(stage, employeur)))
                         .status(candidature.getStatus().toString())
                         .decision(candidature.getDecision())

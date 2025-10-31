@@ -100,11 +100,15 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
             case "SOUMISE":
                 return "Soumise";
             case "ACCEPTEE":
-                return "Acceptée";
+                return "En attente de réponse de l'étudiant";
             case "CONVOQUEE":
                 return "Convoquée";
             case "REFUSEE":
                 return "Refusée";
+            case "ACCEPTEE_ETUDIANT":
+                return "Acceptée";
+            case "REFUSEE_ETUDIANT":
+                return "Refusée par l'étudiant";
             default:
                 return status || "—";
         }

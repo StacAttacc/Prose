@@ -16,9 +16,10 @@ export default function GestionnaireEtuCandidature() {
     const [note, setNote] = useState("");
     const [tab, setTab] = useState("APPLIED"); // ZERO | APPLIED | APPROVED
     const [modalStudent, setModalStudent] = useState(null);
-
     const [selectedStage, setSelectedStage] = useState(null);
     const [isStageModalOpen, setIsStageModalOpen] = useState(false);
+    const [modalFilterStatuses, setModalFilterStatuses] = useState(null);
+
     const openStageModal = (stage) => {
         setSelectedStage(stage);
         setIsStageModalOpen(true);
@@ -43,7 +44,9 @@ export default function GestionnaireEtuCandidature() {
                     const applications = candidatures.map((c, i) => {
                         const stg = c?.stage || {};
                         const emp = stg?.employeur || {};
-                        const status = (c?.status || "").toUpperCase();
+                        const status = (c?.status ?? c?.statut ?? c?.candidatureStatus ?? "")
+                            .toString()
+                            .toUpperCase();
 
                         return {
                             id: c?.id ?? `${stu.id || "stu"}-${i}`,
@@ -56,9 +59,7 @@ export default function GestionnaireEtuCandidature() {
                         };
                     });
 
-                    const accepted = applications.some(
-                        (a) => a.status === "APPROUVEE"
-                    );
+                    const accepted = applications.some((a) => a.status === "ACCEPTEE");
 
                     return {
                         id: stu?.id ?? null,
@@ -96,7 +97,7 @@ export default function GestionnaireEtuCandidature() {
             setModalStudent(student);
         }
 
-        navigate(location.pathname, { replace: true, state: {} });
+        navigate(location.pathname, {replace: true, state: {}});
     }, [
         loading,
         students,
@@ -221,9 +222,9 @@ export default function GestionnaireEtuCandidature() {
                                                     <button
                                                         type="button"
                                                         className="text-blue-600 hover:underline"
-                                                        title="Voir les stages postulés"
+                                                        title="Voir les candidatures acceptées/refusées"
                                                         onClick={() => {
-                                                            setTab("APPLIED");
+                                                            setModalFilterStatuses(null);
                                                             setModalStudent(s);
                                                         }}
                                                     >
@@ -246,7 +247,11 @@ export default function GestionnaireEtuCandidature() {
             {modalStudent && (
                 <ApplicationsModal
                     student={modalStudent}
-                    onClose={() => setModalStudent(null)}
+                    filterStatuses={modalFilterStatuses}
+                    onClose={() => {
+                        setModalStudent(null)
+                        setModalFilterStatuses(null);
+                    }}
                     onSeeStage={(ap) => openStageModal(ap.stage)}
                 />
             )}
