@@ -11,6 +11,8 @@ import com.AL565.prose.service.GestionnaireService;
 import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
+import com.AL565.prose.service.exceptions.CandidatureNotFoundException;
+import com.AL565.prose.service.exceptions.InvalidCandidatureModificationException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -458,5 +460,173 @@ class EtudiantControllerTest {
                 .andExpect(jsonPath("$.message").value("Erreur lors de la récupération des notifications"));
 
         verify(etudiantService, times(0)).getStudentsNotifications(anyString());
+    }
+
+    @Test
+    void respondToOffer_acceptOffer_success() throws Exception {
+        EtudiantResponseOfferDTO responseDTO = EtudiantResponseOfferDTO.builder()
+                .candidatureId(1L)
+                .accepted(true)
+                .comment("Je suis ravi d'accepter cette offre!")
+                .build();
+
+        when(jwtTokenProvider.getEmailFromJWT(anyString())).thenReturn("test@test.com");
+        doNothing().when(etudiantService).respondToOffer(anyString(), any(EtudiantResponseOfferDTO.class));
+
+        String content = new ObjectMapper().writeValueAsString(responseDTO);
+
+        mockMvc.perform(put("/etudiant/candidatures/respond")
+                .header("Authorization", "Bearer token123")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(content)
+                .with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Offre acceptée avec succès"));
+
+        verify(etudiantService, times(1)).respondToOffer(eq("test@test.com"), any(EtudiantResponseOfferDTO.class));
+    }
+
+    @Test
+    void respondToOffer_refuseOffer_success() throws Exception {
+        EtudiantResponseOfferDTO responseDTO = EtudiantResponseOfferDTO.builder()
+                .candidatureId(1L)
+                .accepted(false)
+                .comment("J'ai accepté une autre offre.")
+                .build();
+
+        when(jwtTokenProvider.getEmailFromJWT(anyString())).thenReturn("test@test.com");
+        doNothing().when(etudiantService).respondToOffer(anyString(), any(EtudiantResponseOfferDTO.class));
+
+        String content = new ObjectMapper().writeValueAsString(responseDTO);
+
+        mockMvc.perform(put("/etudiant/candidatures/respond")
+                .header("Authorization", "Bearer token123")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(content)
+                .with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Offre refusée avec succès"));
+
+        verify(etudiantService, times(1)).respondToOffer(eq("test@test.com"), any(EtudiantResponseOfferDTO.class));
+    }
+
+    @Test
+    void respondToOffer_candidatureNotFound() throws Exception {
+        EtudiantResponseOfferDTO responseDTO = EtudiantResponseOfferDTO.builder()
+                .candidatureId(999L)
+                .accepted(true)
+                .build();
+
+        when(jwtTokenProvider.getEmailFromJWT(anyString())).thenReturn("test@test.com");
+        doThrow(new CandidatureNotFoundException("Candidature non trouvée"))
+                .when(etudiantService).respondToOffer(anyString(), any(EtudiantResponseOfferDTO.class));
+
+        String content = new ObjectMapper().writeValueAsString(responseDTO);
+
+        mockMvc.perform(put("/etudiant/candidatures/respond")
+                .header("Authorization", "Bearer token123")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(content)
+                .with(csrf()))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Candidature non trouvée"));
+
+        verify(etudiantService, times(1)).respondToOffer(eq("test@test.com"), any(EtudiantResponseOfferDTO.class));
+    }
+
+    @Test
+    void respondToOffer_invalidModification_wrongStatus() throws Exception {
+        EtudiantResponseOfferDTO responseDTO = EtudiantResponseOfferDTO.builder()
+                .candidatureId(1L)
+                .accepted(true)
+                .build();
+
+        when(jwtTokenProvider.getEmailFromJWT(anyString())).thenReturn("test@test.com");
+        doThrow(new InvalidCandidatureModificationException("Vous ne pouvez répondre qu'à une candidature acceptée par l'employeur"))
+                .when(etudiantService).respondToOffer(anyString(), any(EtudiantResponseOfferDTO.class));
+
+        String content = new ObjectMapper().writeValueAsString(responseDTO);
+
+        mockMvc.perform(put("/etudiant/candidatures/respond")
+                .header("Authorization", "Bearer token123")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(content)
+                .with(csrf()))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.message").value("Vous ne pouvez répondre qu'à une candidature acceptée par l'employeur"));
+
+        verify(etudiantService, times(1)).respondToOffer(eq("test@test.com"), any(EtudiantResponseOfferDTO.class));
+    }
+
+    @Test
+    void respondToOffer_invalidModification_notOwner() throws Exception {
+        EtudiantResponseOfferDTO responseDTO = EtudiantResponseOfferDTO.builder()
+                .candidatureId(1L)
+                .accepted(true)
+                .build();
+
+        when(jwtTokenProvider.getEmailFromJWT(anyString())).thenReturn("test@test.com");
+        doThrow(new InvalidCandidatureModificationException("Cette candidature ne vous appartient pas"))
+                .when(etudiantService).respondToOffer(anyString(), any(EtudiantResponseOfferDTO.class));
+
+        String content = new ObjectMapper().writeValueAsString(responseDTO);
+
+        mockMvc.perform(put("/etudiant/candidatures/respond")
+                .header("Authorization", "Bearer token123")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(content)
+                .with(csrf()))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.message").value("Cette candidature ne vous appartient pas"));
+
+        verify(etudiantService, times(1)).respondToOffer(eq("test@test.com"), any(EtudiantResponseOfferDTO.class));
+    }
+
+    @Test
+    void respondToOffer_internalServerError() throws Exception {
+        EtudiantResponseOfferDTO responseDTO = EtudiantResponseOfferDTO.builder()
+                .candidatureId(1L)
+                .accepted(true)
+                .build();
+
+        when(jwtTokenProvider.getEmailFromJWT(anyString())).thenReturn("test@test.com");
+        doThrow(new RuntimeException("Erreur inattendue"))
+                .when(etudiantService).respondToOffer(anyString(), any(EtudiantResponseOfferDTO.class));
+
+        String content = new ObjectMapper().writeValueAsString(responseDTO);
+
+        mockMvc.perform(put("/etudiant/candidatures/respond")
+                .header("Authorization", "Bearer token123")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(content)
+                .with(csrf()))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.message").value("Erreur lors de la réponse à l'offre"));
+
+        verify(etudiantService, times(1)).respondToOffer(eq("test@test.com"), any(EtudiantResponseOfferDTO.class));
+    }
+
+    @Test
+    void respondToOffer_withoutComment_success() throws Exception {
+        EtudiantResponseOfferDTO responseDTO = EtudiantResponseOfferDTO.builder()
+                .candidatureId(1L)
+                .accepted(true)
+                .comment(null)
+                .build();
+
+        when(jwtTokenProvider.getEmailFromJWT(anyString())).thenReturn("test@test.com");
+        doNothing().when(etudiantService).respondToOffer(anyString(), any(EtudiantResponseOfferDTO.class));
+
+        String content = new ObjectMapper().writeValueAsString(responseDTO);
+
+        mockMvc.perform(put("/etudiant/candidatures/respond")
+                .header("Authorization", "Bearer token123")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(content)
+                .with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Offre acceptée avec succès"));
+
+        verify(etudiantService, times(1)).respondToOffer(eq("test@test.com"), any(EtudiantResponseOfferDTO.class));
     }
 }
