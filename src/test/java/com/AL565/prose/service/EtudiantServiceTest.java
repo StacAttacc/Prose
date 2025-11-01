@@ -289,7 +289,7 @@ class EtudiantServiceTest {
         assertNotNull(result);
         assertEquals(1, result.size());
 
-        EtudiantCandidatureDTO dto = result.get(0);
+        EtudiantCandidatureDTO dto = result.getFirst();
         assertEquals("SOUMISE", dto.getStatus());
         assertEquals("Développeur Java", dto.getStage().getTitle());
         assertEquals("Stage en développement Java", dto.getStage().getDescription());
