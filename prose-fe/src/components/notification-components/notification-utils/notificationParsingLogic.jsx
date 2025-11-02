@@ -12,7 +12,7 @@ function makeKeyForItem(item = {}, groupKey) {
             .replace(/[^a-z0-9-]/g, "");
     }
     return "default";
-}  
+}
 
 function buildFromGroups(groups = []) {
     const map = {};
@@ -39,24 +39,30 @@ function normalizeListToTypes(list = [], fallbackKey = "default") {
 }
 
 export function normalizeNotifications(payload) {
-    if (payload?.groups && Array.isArray(payload.groups)) {
-        return buildFromGroups(payload.groups);
-    } else if (Array.isArray(payload)) {
-        return normalizeListToTypes(payload);
-    } else if (payload?.postulationNotifications) {
-        return normalizeListToTypes(payload.postulationNotifications, "postulation");
-    } else if (payload?.stageNotifications) {
-        return normalizeListToTypes(payload.stageNotifications, "stage");
-    } else if (payload?.convocationNotifications) {
-        return normalizeListToTypes(payload.convocationNotifications, "convocation");
-    } else if (payload?.gestionnaireCvNotifications) {
-        return normalizeListToTypes(payload.gestionnaireCvNotifications, "gestionnaire_cv");
-    } else if (payload?.etudiantCvNotifications) {
-        return normalizeListToTypes(payload.etudiantCvNotifications, "etudiant_cv");
-    } else if (payload?.items && Array.isArray(payload.items)) {
-        return normalizeListToTypes(payload.items);
-    } else if (payload?.data && Array.isArray(payload.data)) {
-        return normalizeListToTypes(payload.data);
+    const root = payload?.data ?? payload;
+
+    if (root?.groups && Array.isArray(root.groups)) {
+        return buildFromGroups(root.groups);
+    } else if (Array.isArray(root)) {
+        return normalizeListToTypes(root);
+    } else if (root?.postulationNotifications) {
+        return normalizeListToTypes(root.postulationNotifications, "postulation");
+    } else if (root?.stageNotifications) {
+        return normalizeListToTypes(root.stageNotifications, "stage");
+    } else if (root?.convocationNotifications) {
+        return normalizeListToTypes(root.convocationNotifications, "convocation");
+    } else if (root?.gestionnaireCvNotifications) {
+        return normalizeListToTypes(root.gestionnaireCvNotifications, "gestionnaire_cv");
+    } else if (root?.etudiantCvNotifications) {
+        return normalizeListToTypes(root.etudiantCvNotifications, "etudiant_cv");
+    } else if (root?.items && Array.isArray(root.items)) {
+        return normalizeListToTypes(root.items);
+    } else if (root?.content && Array.isArray(root.content)) {
+        return normalizeListToTypes(root.content);
+    } else if (root?.page?.content && Array.isArray(root.page.content)) {
+        return normalizeListToTypes(root.page.content);
+    } else if (root?.data && Array.isArray(root.data)) {
+        return normalizeListToTypes(root.data);
     } else {
         return {};
     }

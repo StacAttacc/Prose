@@ -8,9 +8,10 @@ import {
     fetchNotifications
 } from "./notification-utils/notificationsServiceLogic.jsx";
 import { normalizeNotifications } from "./notification-utils/notificationParsingLogic.jsx";
-import { getDefaultNavigationPath } from "./notification-utils/notificationsNavigationLogic.jsx";
+import { getDefaultNavigationPath, getNotificationNavigationPath } from "./notification-utils/notificationsNavigationLogic.jsx";
 import { labelForKey, shortText } from "./notification-utils/notificationText.jsx";
 import ErrorBanner from "../display-components/ErrorBanner.jsx";
+import {markNotificationsRead} from "../../services/EtudiantService.js";
 
 export default function Notifications() {
     const { user } = useAuth();
@@ -28,7 +29,7 @@ export default function Notifications() {
         return () => { mountedRef.current = false; };
     }, []);
 
-    useEffect(() => async () => {
+    useEffect(() => {
         async function fetchData() {
             if (!user?.token) {
                 setNotificationsByType({});
@@ -40,8 +41,9 @@ export default function Notifications() {
             setLoading(true);
             setError(null);
             try {
-                let payload = await fetchNotifications(user);
-                let byType = normalizeNotifications(payload);
+                const payload = await fetchNotifications(user);
+                const byType = await normalizeNotifications(payload);
+                console.log("Fetched notifications normalized:", byType);
                 if (mountedRef.current) setNotificationsByType(byType);
             } catch (err) {
                 console.error("Failed to load notifications:", err);
@@ -53,7 +55,7 @@ export default function Notifications() {
                 if (mountedRef.current) setLoading(false);
             }
         }
-        await fetchData();
+        fetchData();
     }, [user, readCounter]);
 
     useEffect(() => {
@@ -67,11 +69,11 @@ export default function Notifications() {
     }, []);
 
     async function markNotificationAsRead(id) {
-        markSingleNotification(id, user);
+        await markSingleNotification(id, user);
     }
 
     async function markManyNotificationsAsRead(ids = []) {
-        markManyNotifications(user, ids);
+        await markManyNotifications(user, ids);
     }
 
     function defaultNavigatePath() {
@@ -83,10 +85,10 @@ export default function Notifications() {
         try {
             await markNotificationsRead(ids, user);
             setReadCounter(c => c + ids.length);
-            navigate(getDefaultNavigatePath(user.role));
+            navigate(getDefaultNavigationPath(user));
         } catch (err) {
             console.error("Failed to mark card notifications as read:", err);
-            navigate(getDefaultNavigatePath(user.role));
+            navigate(getDefaultNavigationPath(user));
         }
     }, [navigate, user]);
 

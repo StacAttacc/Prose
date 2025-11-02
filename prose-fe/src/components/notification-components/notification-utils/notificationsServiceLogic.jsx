@@ -12,7 +12,7 @@ import {
     getEtudiantNotifications,
     markNotificationRead as markNotificationReadEtudiant,
     markNotificationsRead as markNotificationsReadEtudiant
-} from "../../services/EtudiantService.js";
+} from "../../../services/EtudiantService.js";
 
 export async function fetchNotifications(user) {
     if (user.role === "GESTIONNAIRE") {
