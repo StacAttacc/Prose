@@ -289,7 +289,7 @@ class EtudiantServiceTest {
         assertNotNull(result);
         assertEquals(1, result.size());
 
-        EtudiantCandidatureDTO dto = result.get(0);
+        EtudiantCandidatureDTO dto = result.getFirst();
         assertEquals("SOUMISE", dto.getStatus());
         assertEquals("Développeur Java", dto.getStage().getTitle());
         assertEquals("Stage en développement Java", dto.getStage().getDescription());
@@ -514,7 +514,7 @@ class EtudiantServiceTest {
 
         verify(candidatureRepository, times(1)).findById(candidatureId);
         verify(candidatureRepository, times(1)).save(candidature);
-        assertEquals(CandidatureStatus.ACCEPTEE_ETUDIANT, candidature.getStatus());
+        assertEquals(CandidatureStatus.CONFIRMER, candidature.getStatus());
         assertEquals("Je suis ravi d'accepter cette offre!", candidature.getDecision());
         assertNotNull(candidature.getDateDecision());
     }
@@ -574,7 +574,7 @@ class EtudiantServiceTest {
 
         verify(candidatureRepository, times(1)).findById(candidatureId);
         verify(candidatureRepository, times(1)).save(candidature);
-        assertEquals(CandidatureStatus.ACCEPTEE_ETUDIANT, candidature.getStatus());
+        assertEquals(CandidatureStatus.CONFIRMER, candidature.getStatus());
         assertNull(candidature.getDecision());
         assertNotNull(candidature.getDateDecision());
     }

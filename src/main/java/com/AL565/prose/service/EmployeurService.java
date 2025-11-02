@@ -119,7 +119,7 @@ public class EmployeurService {
     }
 
     public void updateCandidatureStatus(long candidatureId, String status) throws CandidatureNotFoundException, InvalidCandidatureModificationException {
-        CandidatureStatus candidatureStatus = CandidatureStatus.valueOf(status);
+        CandidatureStatus candidatureStatus = CandidatureStatus.getByDescription(status);
         Candidature candidature = candidatureRepository.findById(candidatureId).orElseThrow(() -> new CandidatureNotFoundException("La candidature n'existe pas"));
 
         if (candidatureStatus == CandidatureStatus.ACCEPTEE && candidature.getStatus() != CandidatureStatus.CONVOQUEE) {

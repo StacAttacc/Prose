@@ -109,6 +109,7 @@ public class EmployeurController {
                     .body("Erreur interne lors de la mise à jour de la candidature : " + e.getMessage());
         }
     }
+
     @GetMapping("/notifications/postulations/{email}")
     public ResponseEntity<ReturnEntityDTO<NotificationsResponseDTO>> getPostulationNotifications(@PathVariable String email) {
         try {

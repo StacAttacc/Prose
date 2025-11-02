@@ -1,6 +1,7 @@
 package com.AL565.prose.controleur;
 
 import com.AL565.prose.controller.EmployeurController;
+import com.AL565.prose.model.CandidatureStatus;
 import com.AL565.prose.model.Employeur;
 import com.AL565.prose.model.OfferStatus;
 import com.AL565.prose.model.Stage;
@@ -13,6 +14,7 @@ import com.AL565.prose.service.dto.EmployeurPasswordDTO;
 import com.AL565.prose.service.EmployeurService;
 import com.AL565.prose.service.dto.notifications.NotificationGroupDTO;
 import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
+import com.AL565.prose.service.exceptions.InvalidCandidatureModificationException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -154,7 +156,7 @@ class EmployeurControllerTest {
         );
 
         CandidatureDTO candidatureDTO = new CandidatureDTO(
-                1L, stage.getId(), com.AL565.prose.model.CandidatureStatus.SOUMISE, null, null, null, null, 0L, new EtudiantDTO()
+                1L, stage.getId(), CandidatureStatus.SOUMISE, null, null, null, null, 0L, new EtudiantDTO()
         );
 
         when(employeurService.getStageCandidatures(any(Long.class)))
@@ -214,7 +216,7 @@ class EmployeurControllerTest {
         TypeReference<com.AL565.prose.service.dto.ReturnEntityDTO<NotificationsResponseDTO>> tr =
                 new TypeReference<>() { };
 
-        com.AL565.prose.service.dto.ReturnEntityDTO<NotificationsResponseDTO> response =
+        ReturnEntityDTO<NotificationsResponseDTO> response =
                 objectMapper.readValue(result.getResponse().getContentAsString(), tr);
 
         assertThat(response.getMessage()).isEqualTo("Notifications: ");
@@ -241,7 +243,7 @@ class EmployeurControllerTest {
         Long candidatureId = 1L;
         InterviewDTO interviewDTO = new InterviewDTO();
         interviewDTO.setDateTime("2025-11-15T10:30:00");
-        
+
         String requestBody = objectMapper.writeValueAsString(interviewDTO);
         mockMvc.perform(put("/employeur/candidatures/" + candidatureId + "/convoquer")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -257,7 +259,7 @@ class EmployeurControllerTest {
         Long candidatureId = 1L;
         InterviewDTO interviewDTO = new InterviewDTO();
         interviewDTO.setDateTime("2025-11-15T10:30:00");
-        
+
         String requestBody = objectMapper.writeValueAsString(interviewDTO);
 
         doThrow(new RuntimeException("boom")).when(employeurService).convoquerEntrevue(anyLong(), any(InterviewDTO.class));
@@ -269,5 +271,45 @@ class EmployeurControllerTest {
                 .andExpect(jsonPath("$.message", is("Erreur lors de la convocation de l'entrevue")));
 
         verify(employeurService, times(1)).convoquerEntrevue(anyLong(), any(InterviewDTO.class));
+    }
+
+    @Test
+    void updateCandidatureApprove() throws Exception {
+        StageDTO stage = new StageDTO();
+        stage.setId(1L);
+        stage.setTitle("Partir");
+        stage.setEmployeur(new EmployeurDTO());
+        stage.setDescription("S'enfuir immédiatement!");
+        stage.setStatus(OfferStatus.APPROUVEE);
+
+        CandidatureDTO candidatureDTO = new CandidatureDTO(
+                1L, stage.getId(), CandidatureStatus.SOUMISE, null, null, null, null, 0L, new EtudiantDTO()
+        );
+
+        doNothing().when(employeurService).updateCandidatureStatus(anyLong(), anyString());
+
+        mockMvc.perform(put("/employeur/candidatures/" + candidatureDTO.getId() + "/update")
+                        .param("status", "Acceptee"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void updateCandidatureApproveInvalidState() throws Exception {
+        StageDTO stage = new StageDTO();
+        stage.setId(1L);
+        stage.setTitle("Partir");
+        stage.setEmployeur(new EmployeurDTO());
+        stage.setDescription("S'enfuir immédiatement!");
+        stage.setStatus(OfferStatus.APPROUVEE);
+
+        CandidatureDTO candidatureDTO = new CandidatureDTO(
+                1L, stage.getId(), CandidatureStatus.SOUMISE, null, null, null, null, 0L, new EtudiantDTO()
+        );
+
+        doThrow(new InvalidCandidatureModificationException("")).when(employeurService).updateCandidatureStatus(anyLong(), anyString());
+
+        mockMvc.perform(put("/employeur/candidatures/" + candidatureDTO.getId() + "/update")
+                        .param("status", "Acceptee"))
+                .andExpect(status().isForbidden());
     }
 }
