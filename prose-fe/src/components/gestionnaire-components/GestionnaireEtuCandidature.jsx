@@ -59,7 +59,7 @@ export default function GestionnaireEtuCandidature() {
                         };
                     });
 
-                    const accepted = applications.some((a) => a.status === "ACCEPTEE_ETUDIANT");
+                    const accepted = applications.some((a) => a.status === "ACCEPTEE");
 
                     return {
                         id: stu?.id ?? null,
