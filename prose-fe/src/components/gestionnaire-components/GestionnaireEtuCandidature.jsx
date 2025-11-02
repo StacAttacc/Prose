@@ -16,9 +16,10 @@ export default function GestionnaireEtuCandidature() {
     const [note, setNote] = useState("");
     const [tab, setTab] = useState("APPLIED"); // ZERO | APPLIED | APPROVED
     const [modalStudent, setModalStudent] = useState(null);
-
     const [selectedStage, setSelectedStage] = useState(null);
     const [isStageModalOpen, setIsStageModalOpen] = useState(false);
+    const [modalFilterStatuses, setModalFilterStatuses] = useState(null);
+
     const openStageModal = (stage) => {
         setSelectedStage(stage);
         setIsStageModalOpen(true);
@@ -43,7 +44,9 @@ export default function GestionnaireEtuCandidature() {
                     const applications = candidatures.map((c, i) => {
                         const stg = c?.stage || {};
                         const emp = stg?.employeur || {};
-                        const status = (c?.status || "").toUpperCase();
+                        const status = (c?.status ?? c?.statut ?? c?.candidatureStatus ?? "")
+                            .toString()
+                            .toUpperCase();
 
                         return {
                             id: c?.id ?? `${stu.id || "stu"}-${i}`,
@@ -56,9 +59,7 @@ export default function GestionnaireEtuCandidature() {
                         };
                     });
 
-                    const accepted = applications.some(
-                        (a) => a.status === "APPROUVEE"
-                    );
+                    const accepted = applications.some((a) => a.status === "ACCEPTEE_ETUDIANT");
 
                     return {
                         id: stu?.id ?? null,
@@ -96,7 +97,7 @@ export default function GestionnaireEtuCandidature() {
             setModalStudent(student);
         }
 
-        navigate(location.pathname, { replace: true, state: {} });
+        navigate(location.pathname, {replace: true, state: {}});
     }, [
         loading,
         students,
@@ -186,11 +187,14 @@ export default function GestionnaireEtuCandidature() {
                                     <th className="text-left text-gray-800 font-semibold py-3 px-4">
                                         {tab === "APPLIED" ? "Candidatures" : "Statut"}
                                     </th>
-                                    {showAction && (
+
+                                    {tab === "APPLIED" && (
                                         <th className="text-left text-gray-800 font-semibold py-3 px-4">Action</th>
                                     )}
+
                                 </tr>
                                 </thead>
+
                                 <tbody>
                                 {list.map((s, idx) => (
                                     <tr
@@ -203,41 +207,45 @@ export default function GestionnaireEtuCandidature() {
                                         <td className="py-3 px-4 align-top text-gray-700">{s.email}</td>
                                         <td className="py-3 px-4 align-top">
                                             {tab === "APPLIED" ? (
-                                                <span
-                                                    className="text-gray-700">{s.applications.length} candidature(s)</span>
+                                                <span className="text-gray-700">
+              {
+                  (s.applications || []).filter(
+                      (a) => (a?.status || "").toString().toUpperCase() !== "ACCEPTEE_ETUDIANT"
+                  ).length
+              }{" "}
+                                                    candidature(s)
+            </span>
                                             ) : tab === "APPROVED" ? (
                                                 <span
                                                     className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold bg-teal-100 text-teal-700">
-                            Stage trouvé
-                          </span>
+              Stage trouvé
+            </span>
                                             ) : (
                                                 <span className="text-gray-500">Aucune candidature</span>
                                             )}
                                         </td>
 
-                                        {showAction && (
+                                        {tab === "APPLIED" && (
                                             <td className="py-3 px-4 align-top">
-                                                {tab === "APPLIED" ? (
-                                                    <button
-                                                        type="button"
-                                                        className="text-blue-600 hover:underline"
-                                                        title="Voir les stages postulés"
-                                                        onClick={() => {
-                                                            setTab("APPLIED");
-                                                            setModalStudent(s);
-                                                        }}
-                                                    >
-                                                        Voir ses candidatures
-                                                    </button>
-                                                ) : (
-                                                    <span className="text-gray-400">—</span>
-                                                )}
+                                                <button
+                                                    type="button"
+                                                    className="text-blue-600 hover:underline"
+                                                    title="Voir les candidatures"
+                                                    onClick={() => {
+                                                        setModalFilterStatuses(null);
+                                                        setModalStudent(s);
+                                                    }}
+                                                >
+                                                    Voir ses candidatures
+                                                </button>
                                             </td>
                                         )}
+
                                     </tr>
                                 ))}
                                 </tbody>
                             </table>
+
                         </div>
                     )}
                 </div>
@@ -246,7 +254,11 @@ export default function GestionnaireEtuCandidature() {
             {modalStudent && (
                 <ApplicationsModal
                     student={modalStudent}
-                    onClose={() => setModalStudent(null)}
+                    filterStatuses={modalFilterStatuses}
+                    onClose={() => {
+                        setModalStudent(null)
+                        setModalFilterStatuses(null);
+                    }}
                     onSeeStage={(ap) => openStageModal(ap.stage)}
                 />
             )}

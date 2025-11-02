@@ -96,11 +96,17 @@ public class EmployeurController {
     public ResponseEntity<String> changeStatus(@PathVariable long id, @RequestParam String status) {
         try {
             employeurService.updateCandidatureStatus(id, status);
-            return ResponseEntity.ok("Candidature update avec success");
+            return ResponseEntity.ok("Candidature mise à jour avec succès");
         } catch (CandidatureNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Le candidature n'existe pas");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("La candidature n'existe pas");
         } catch (InvalidCandidatureModificationException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erreur interne lors de la mise à jour de la candidature : " + e.getMessage());
         }
     }
 
@@ -136,4 +142,5 @@ public class EmployeurController {
                     .body(new ReturnEntityDTO<>("Erreur lors de la convocation de l'entrevue", null));
         }
     }
+
 }
