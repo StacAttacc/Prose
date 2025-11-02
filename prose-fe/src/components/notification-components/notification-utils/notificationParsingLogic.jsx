@@ -28,42 +28,10 @@ function buildFromGroups(groups = []) {
     return map;
 }
 
-function normalizeListToTypes(list = [], fallbackKey = "default") {
-    const map = {};
-    list.forEach(n => {
-        const key = makeKeyForItem(n, fallbackKey || undefined) || fallbackKey;
-        if (!map[key]) map[key] = [];
-        map[key].push(n);
-    });
-    return map;
-}
-
 export function normalizeNotifications(payload) {
-    const root = payload?.data ?? payload;
-
-    if (root?.groups && Array.isArray(root.groups)) {
+    const root = payload?.data;
+    if (Array.isArray(root?.groups)) {
         return buildFromGroups(root.groups);
-    } else if (Array.isArray(root)) {
-        return normalizeListToTypes(root);
-    } else if (root?.postulationNotifications) {
-        return normalizeListToTypes(root.postulationNotifications, "postulation");
-    } else if (root?.stageNotifications) {
-        return normalizeListToTypes(root.stageNotifications, "stage");
-    } else if (root?.convocationNotifications) {
-        return normalizeListToTypes(root.convocationNotifications, "convocation");
-    } else if (root?.gestionnaireCvNotifications) {
-        return normalizeListToTypes(root.gestionnaireCvNotifications, "gestionnaire_cv");
-    } else if (root?.etudiantCvNotifications) {
-        return normalizeListToTypes(root.etudiantCvNotifications, "etudiant_cv");
-    } else if (root?.items && Array.isArray(root.items)) {
-        return normalizeListToTypes(root.items);
-    } else if (root?.content && Array.isArray(root.content)) {
-        return normalizeListToTypes(root.content);
-    } else if (root?.page?.content && Array.isArray(root.page.content)) {
-        return normalizeListToTypes(root.page.content);
-    } else if (root?.data && Array.isArray(root.data)) {
-        return normalizeListToTypes(root.data);
-    } else {
-        return {};
     }
+    return {};
 }
