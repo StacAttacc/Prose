@@ -157,10 +157,10 @@ public class EmployeurService {
         candidature.setDateDecision(dateDecision);
         Candidature saved = candidatureRepository.save(candidature);
         Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(saved.getStage().getEmployeurEmail());
-        createNotificationForNewEnterview(saved, employeur);
+        createNotificationForConvocation(saved, employeur);
     }
 
-    private void createNotificationForNewEnterview(Candidature candidature, Employeur employeur) {
+    private void createNotificationForConvocation(Candidature candidature, Employeur employeur) {
         if (candidature == null) {
             throw new IllegalArgumentException("candidature must not be null");
         }
