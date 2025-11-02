@@ -24,7 +24,7 @@ export async function fetchNotifications(user) {
     } else return null;
 }
 
-export async function markSingleNotification(id, user) {
+export async function markSingleNotificationAsRead(id, user) {
     if (!id) return;
     if (user.role === "GESTIONNAIRE") {
         await markNotificationReadGestionnaire(id, user.token);

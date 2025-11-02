@@ -4,8 +4,8 @@ import { useAuth } from "../../context/AuthContext.jsx";
 import { Eye, EyeOff } from "lucide-react";
 import {
     markManyNotifications,
-    markSingleNotification,
-    fetchNotifications
+    fetchNotifications,
+    markSingleNotificationAsRead
 } from "./notification-utils/notificationsServiceLogic.jsx";
 import { normalizeNotifications } from "./notification-utils/notificationParsingLogic.jsx";
 import { getDefaultNavigationPath, getNotificationNavigationPath } from "./notification-utils/notificationsNavigationLogic.jsx";
@@ -68,18 +68,6 @@ export default function Notifications() {
         return () => document.removeEventListener("click", onClickOutside);
     }, []);
 
-    async function markNotificationAsRead(id) {
-        await markSingleNotification(id, user);
-    }
-
-    async function markManyNotificationsAsRead(ids = []) {
-        await markManyNotifications(user, ids);
-    }
-
-    function defaultNavigatePath() {
-        return getDefaultNavigationPath(user);
-    }
-
     const handleGroupClick = useCallback(async (typeKey, list) => {
         const ids = (list || []).map(n => n.id).filter(Boolean);
         try {
@@ -92,12 +80,13 @@ export default function Notifications() {
         }
     }, [navigate, user]);
 
-    const handleItemClick = useCallback(async (e, notification, typeKey) => {
+    const markAndNavigate = useCallback(async (e, notification, typeKey) => {
         e?.stopPropagation?.();
+        if (!notification?.id) return;
         setOpenType(null);
 
         try {
-            await markNotificationRead(notification.id, user);
+            await markSingleNotificationAsRead(notification.id, user);
             setNotificationsByType(prev => {
                 const next = { ...prev };
                 const arr = (next[typeKey] || []).filter(n => n.id !== notification.id);
@@ -111,15 +100,15 @@ export default function Notifications() {
             navigate(path, state ? { state } : undefined);
         } catch (err) {
             console.error("Failed to mark notification as read:", err);
-            navigate(getDefaultNavigatePath(user.role));
+            navigate(getDefaultNavigationPath(user.role));
         }
     }, [navigate, user]);
 
-    const handleMarkSingleClick = async (e, notification, typeKey) => {
+    const markAndClose = async (e, notification, typeKey) => {
         e?.stopPropagation?.();
         if (!notification?.id) return;
         try {
-            await markNotificationRead(notification.id, user);
+            await markSingleNotificationAsRead(notification.id, user);
             setNotificationsByType(prev => {
                 const next = { ...prev };
                 const arr = (next[typeKey] || []).filter(n => n.id !== notification.id);
@@ -200,7 +189,7 @@ export default function Notifications() {
                                                 <li key={n.id} className="flex items-center gap-3 p-2 hover:bg-gray-100 rounded">
                                                     <div
                                                         className="flex items-start gap-3 flex-1"
-                                                        onClick={(e) => handleItemClick(e, n, typeKey)}
+                                                        onClick={(e) => markAndNavigate(e, n, typeKey)}
                                                     >
                                                         {renderCompactItem(n)}
                                                     </div>
@@ -209,7 +198,7 @@ export default function Notifications() {
                                                         {count <= 3 && (
                                                             <button
                                                                 type="button"
-                                                                onClick={(e) => handleMarkSingleClick(e, n, typeKey)}
+                                                                onClick={(e) => markAndClose(e, n, typeKey)}
                                                                 className="inline-flex items-center ml-2 py-1 px-2 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200"
                                                                 aria-label="Mark this notification as read"
                                                                 title="Mark this notification as read"
@@ -274,7 +263,7 @@ export default function Notifications() {
                                         <ul className="space-y-2 overflow-y-auto max-h-64">
                                             {(list || []).slice(0, 20).map((n) => (
                                                 <li key={n.id} className="flex items-center gap-3 p-2 hover:bg-gray-100 rounded">
-                                                    <div className="flex items-start gap-3 flex-1" onClick={(e) => handleItemClick(e, n, typeKey)}>
+                                                    <div className="flex items-start gap-3 flex-1" onClick={(e) => markAndNavigate(e, n, typeKey)}>
                                                         {renderCompactItem(n)}
                                                     </div>
                                                     <div className="flex items-center gap-2">
@@ -282,7 +271,7 @@ export default function Notifications() {
                                                             <>
                                                                 <button
                                                                     type="button"
-                                                                    onClick={(e) => { e.stopPropagation(); handleMarkSingleClick(e, n, typeKey); }}
+                                                                    onClick={(e) => { e.stopPropagation(); markAndClose(e, n, typeKey); }}
                                                                     className="inline-flex items-center ml-2 py-1 px-2 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200"
                                                                     aria-label="Mark this notification as read"
                                                                     title="Mark this notification as read"
