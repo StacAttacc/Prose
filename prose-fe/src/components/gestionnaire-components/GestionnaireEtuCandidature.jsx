@@ -188,7 +188,6 @@ export default function GestionnaireEtuCandidature() {
                                         {tab === "APPLIED" ? "Candidatures" : "Statut"}
                                     </th>
 
-                                    {/* On enlève complètement la colonne Action si Stage trouvé */}
                                     {tab === "APPLIED" && (
                                         <th className="text-left text-gray-800 font-semibold py-3 px-4">Action</th>
                                     )}
