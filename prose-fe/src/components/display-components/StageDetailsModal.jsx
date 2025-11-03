@@ -1,7 +1,8 @@
-import React, {useState} from "react";
-import {useAuth} from "../../context/AuthContext.jsx";
+import React, { useState } from "react";
+import { useAuth } from "../../context/AuthContext.jsx";
 import ErrorBanner from "./ErrorBanner.jsx";
 import CandidatureForm from "../etudiant-components/CandidatureForm.jsx";
+import { generateEntente } from "../../services/GestionnaireService.js";
 
 export default function StageDetailsModal({
                                               stage,
@@ -11,9 +12,12 @@ export default function StageDetailsModal({
                                               onReject,
                                               showManagementButtons = false,
                                               showPostulerButton = false,
-                                              onCandidatureSuccess
+                                              onCandidatureSuccess,
+                                              candidatureId,
+                                              // ⬇️ NEW: on contrôle l’affichage du bouton d’entente depuis le parent
+                                              allowGenerateEntente = false,
                                           }) {
-    const {user} = useAuth();
+    const { user } = useAuth();
     const [rejectionReason, setRejectionReason] = useState("");
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState("");
@@ -21,11 +25,15 @@ export default function StageDetailsModal({
     const [candidatureSuccess, setCandidatureSuccess] = useState(false);
     const [isRejecting, setIsRejecting] = useState(false);
 
-    const shouldShowManagementButtons = showManagementButtons && user?.role === 'GESTIONNAIRE';
+    // Génération d’entente
+    const [ententeDownloading, setEntenteDownloading] = useState(false);
+    const [ententeError, setEntenteError] = useState("");
+
+    const shouldShowManagementButtons =
+        showManagementButtons && user?.role === "GESTIONNAIRE";
 
     const handleApprove = async () => {
         if (!onApprove) return;
-
         setIsProcessing(true);
         try {
             await onApprove(stage);
@@ -71,15 +79,48 @@ export default function StageDetailsModal({
         }
     };
 
-    const handlePostuler = () => {
-        setShowCandidatureForm(true);
-    };
+    const handlePostuler = () => setShowCandidatureForm(true);
 
     const handleCandidatureSuccess = () => {
         setShowCandidatureForm(false);
         setCandidatureSuccess(true);
-        if (onCandidatureSuccess) {
-            onCandidatureSuccess(stage);
+        if (onCandidatureSuccess) onCandidatureSuccess(stage);
+    };
+
+    const handleGenerateEntente = async () => {
+        if (!candidatureId || !Number.isFinite(Number(candidatureId))) {
+            setEntenteError("Aucun ID de candidature valide n’a été fourni.");
+            return;
+        }
+        setEntenteError("");
+        setEntenteDownloading(true);
+        try {
+            const entente = await generateEntente(Number(candidatureId), user?.token);
+            const b64 = entente?.documentPdfBase64;
+            const name = entente?.documentName || "entente.pdf";
+            if (b64) {
+                const bin = atob(b64);
+                const bytes = new Uint8Array(bin.length);
+                for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+                const blob = new Blob([bytes], { type: "application/pdf" });
+                const url = URL.createObjectURL(blob);
+
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = name;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                URL.revokeObjectURL(url);
+            } else {
+                alert("Entente générée avec succès.");
+            }
+        } catch (e) {
+            console.error("Erreur lors de la génération de l'entente:", e);
+            const msg = e?.response?.data?.message || e?.message || "Erreur inconnue";
+            setEntenteError(String(msg));
+        } finally {
+            setEntenteDownloading(false);
         }
     };
 
@@ -112,22 +153,43 @@ export default function StageDetailsModal({
 
                         {candidatureSuccess && (
                             <div className="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
-                                <p className="font-medium">Votre candidature a été envoyée avec succès !</p>
-                                <p className="text-sm mt-1">L'employeur sera notifié de votre intérêt pour ce stage.</p>
+                                <p className="font-medium">
+                                    Votre candidature a été envoyée avec succès !
+                                </p>
+                                <p className="text-sm mt-1">
+                                    L'employeur sera notifié de votre intérêt pour ce stage.
+                                </p>
                             </div>
                         )}
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <h3 className="text-lg font-semibold mb-2">Informations générales</h3>
+                                <h3 className="text-lg font-semibold mb-2">
+                                    Informations générales
+                                </h3>
                                 <div className="space-y-2">
-                                    <p><strong>Titre :</strong> {stage.title}</p>
-                                    <p><strong>Employeur :</strong> {stage.employeur?.company} {stage.employeur?.email}</p>
-                                    <p><strong>Date de début :</strong> {stage.startDate}</p>
-                                    <p><strong>Date de fin :</strong> {stage.endDate}</p>
-                                    <p><strong>Lieu :</strong> {stage.location}</p>
-                                    <p><strong>Mode de travail :</strong> {stage.workMode}</p>
-                                    <p><strong>Compensation :</strong> {stage.compensation}</p>
+                                    <p>
+                                        <strong>Titre :</strong> {stage.title}
+                                    </p>
+                                    <p>
+                                        <strong>Employeur :</strong> {stage.employeur?.company}{" "}
+                                        {stage.employeur?.email}
+                                    </p>
+                                    <p>
+                                        <strong>Date de début :</strong> {stage.startDate}
+                                    </p>
+                                    <p>
+                                        <strong>Date de fin :</strong> {stage.endDate}
+                                    </p>
+                                    <p>
+                                        <strong>Lieu :</strong> {stage.location}
+                                    </p>
+                                    <p>
+                                        <strong>Mode de travail :</strong> {stage.workMode}
+                                    </p>
+                                    <p>
+                                        <strong>Compensation :</strong> {stage.compensation}
+                                    </p>
                                 </div>
                             </div>
 
@@ -138,7 +200,9 @@ export default function StageDetailsModal({
                                 <h3 className="text-lg font-semibold mb-2">Exigences</h3>
                                 <p className="text-gray-700 mb-4">{stage.requirements}</p>
 
-                                <h3 className="text-lg font-semibold mb-2">Compétences requises</h3>
+                                <h3 className="text-lg font-semibold mb-2">
+                                    Compétences requises
+                                </h3>
                                 <ul className="list-disc list-inside text-gray-700">
                                     {stage.skills?.map((skill, skillIndex) => (
                                         <li key={skillIndex}>{skill}</li>
@@ -147,13 +211,20 @@ export default function StageDetailsModal({
                             </div>
                         </div>
 
-                        {error && (
-                            <ErrorBanner message={error}/>
-                        )}
-                        {stage.status === 'REJETEE' && stage.rejectionReason && (
+                        {error && <ErrorBanner message={error} />}
+
+                        {stage.status === "REJETEE" && stage.rejectionReason && (
                             <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded">
-                                <h3 className="text-lg font-semibold mb-2 text-red-800">Raison du rejet</h3>
+                                <h3 className="text-lg font-semibold mb-2 text-red-800">
+                                    Raison du rejet
+                                </h3>
                                 <p className="text-red-700">{stage.rejectionReason}</p>
+                            </div>
+                        )}
+
+                        {ententeError && (
+                            <div className="mt-4">
+                                <ErrorBanner message={ententeError} />
                             </div>
                         )}
 
@@ -168,13 +239,17 @@ export default function StageDetailsModal({
                                         >
                                             {isProcessing ? "Traitement..." : "Approuver"}
                                         </button>
+
                                         <button
-                                            onClick={() => {setIsRejecting(!isRejecting)}}
+                                            onClick={() => {
+                                                setIsRejecting(!isRejecting);
+                                            }}
                                             className="text-white bg-gradient-to-r from-red-400 via-red-500 to-red-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center disabled:opacity-50"
                                             disabled={isProcessing}
                                         >
                                             Rejeter
                                         </button>
+
                                         {isRejecting && (
                                             <div className="mt-6">
                                                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -201,6 +276,24 @@ export default function StageDetailsModal({
                                         )}
                                     </div>
                                 )}
+
+                                {/* Bouton ENTENTE indépendant (affiché seulement si autorisé + id valide) */}
+                                {allowGenerateEntente &&
+                                    Number.isFinite(Number(candidatureId)) && (
+                                        <div className="mb-4">
+                                            <button
+                                                onClick={handleGenerateEntente}
+                                                className="mt-1 text-white bg-emerald-600 hover:bg-emerald-700 focus:ring-4 focus:outline-none focus:ring-emerald-300 font-medium rounded-lg text-sm px-5 py-2.5 disabled:opacity-50"
+                                                disabled={ententeDownloading}
+                                                title="Générer et télécharger l'entente de stage"
+                                            >
+                                                {ententeDownloading
+                                                    ? "Génération du PDF…"
+                                                    : "Générer entente"}
+                                            </button>
+                                        </div>
+                                    )}
+
                                 <div className="flex justify-end space-x-4">
                                     <button
                                         onClick={handleClose}
@@ -209,6 +302,7 @@ export default function StageDetailsModal({
                                     >
                                         Fermer
                                     </button>
+
                                     {showPostulerButton && !candidatureSuccess && (
                                         <button
                                             onClick={handlePostuler}
