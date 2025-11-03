@@ -16,7 +16,20 @@ export function getNotificationNavigationPath(notification, role) {
         };
     }
 
-    if (role === "GESTIONNAIRE") {
+    else if (role === "ETUDIANT") {
+        if (notification.type === "etudiant_cv") {
+            return {
+                path: `/etudiant/mon-cv`,
+            }
+        } else if (notification.type === "convocation" && notification.convocation) {
+            return {
+                path: `/etudiant/stages/candidatures`,
+                state: { openCandidatureId: notification.convocation }
+            }
+        }
+    }
+
+    else if (role === "GESTIONNAIRE") {
         if (isCandidature && stageId) {
             return {
                 path: getDefaultNavigationPath(role),
