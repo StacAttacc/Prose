@@ -1,6 +1,8 @@
 package com.AL565.prose.service;
 
 import com.AL565.prose.model.*;
+import com.AL565.prose.model.entente.Entente;
+import com.AL565.prose.model.entente.EntenteStatus;
 import com.AL565.prose.model.notifications.*;
 import com.AL565.prose.repository.*;
 import com.AL565.prose.security.exceptions.CvExceptions.*;
@@ -10,11 +12,19 @@ import com.AL565.prose.service.dto.notifications.NotificationGroupDTO;
 import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import com.AL565.prose.service.exceptions.FailedToRetrieveStagesException;
+import com.itextpdf.io.source.ByteArrayOutputStream;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.layout.Document;
+import com.itextpdf.layout.element.Paragraph;
+import com.itextpdf.layout.properties.TextAlignment;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +45,7 @@ public class GestionnaireService {
     private final CandidatureRepository candidatureRepository;
     private final NotificationRepository notificationRepository;
     private final PostulationNotificationRepository postulastionNotificationRepository;
+    private final EntenteRepository ententeRepository;
     private final NotificationsHelper notificationsHelper;
 
     public void saveGestionnaire(GestionnairePasswordDTO dto) {
@@ -216,6 +227,88 @@ public class GestionnaireService {
             notificationRepository.save(notification);
         } catch (Exception e) {
             throw new NotificationExceptions.NotificationFetchException();
+        }
+    }
+    @Transactional
+    public EntenteDTO genererEntente(Long candidatureId) throws Exception {
+        Candidature candidature = candidatureRepository.findById(candidatureId)
+                .orElseThrow(() -> new IllegalArgumentException("Candidature non trouvée"));
+
+        if (candidature.getStatus() != CandidatureStatus.CONFIRMER) {
+            throw new IllegalArgumentException("La candidature doit être confirmée pour générer une entente");
+        }
+
+        if (ententeRepository.existsByCandidatureId(candidatureId)) {
+            throw new IllegalArgumentException("Une entente existe déjà pour cette candidature");
+        }
+
+        Etudiant etudiant = candidature.getEtudiant();
+        Stage stage = candidature.getStage();
+        Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(stage.getEmployeurEmail());
+
+        byte[] pdfData = generateContractPdf(candidature, etudiant, employeur, stage);
+
+        Entente entente = Entente.builder()
+                .candidature(candidature)
+                .status(EntenteStatus.A_SIGNER)
+                .documentPdf(pdfData)
+                .documentName("entente_stage_" + candidatureId + ".pdf")
+                .documentType("application/pdf")
+                .documentSize((long) pdfData.length)
+                .dateCreation(LocalDateTime.now())
+                .build();
+
+        entente = ententeRepository.save(entente);
+
+        return EntenteDTO.toDTO(entente, employeur);
+    }
+
+    private byte[] generateContractPdf(Candidature candidature, Etudiant etudiant, 
+                                        Employeur employeur, Stage stage) throws Exception {
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            PdfWriter writer = new PdfWriter(baos);
+            PdfDocument pdfDoc = new PdfDocument(writer);
+            Document document = new Document(pdfDoc)) {
+
+            document.add(new Paragraph("ENTENTE DE STAGE")
+                    .setFontSize(20)
+                    .setBold()
+                    .setTextAlignment(TextAlignment.CENTER));
+            
+            document.add(new Paragraph("\n"));
+            
+            document.add(new Paragraph("ÉTUDIANT:")
+                    .setBold());
+            document.add(new Paragraph(etudiant.getFirstName() + " " + etudiant.getLastName()));
+            document.add(new Paragraph("Email: " + etudiant.getEmail()));
+            document.add(new Paragraph("\n"));
+
+            document.add(new Paragraph("EMPLOYEUR:")
+                    .setBold());
+            document.add(new Paragraph(employeur.getFirstName() + " " + employeur.getLastName()));
+            document.add(new Paragraph("Entreprise: " + employeur.getCompany()));
+            document.add(new Paragraph("Email: " + employeur.getEmail()));
+            document.add(new Paragraph("\n"));
+
+            document.add(new Paragraph("STAGE:")
+                    .setBold());
+            document.add(new Paragraph("Titre: " + stage.getTitle()));
+            document.add(new Paragraph("Description: " + stage.getDescription()));
+            document.add(new Paragraph("Lieu: " + stage.getLocation()));
+            document.add(new Paragraph("Compensation: " + stage.getCompensation()));
+            document.add(new Paragraph("Date début: " + stage.getStartDate()));
+            document.add(new Paragraph("Date fin: " + stage.getEndDate()));
+            document.add(new Paragraph("\n"));
+
+            document.add(new Paragraph("SIGNATURES:")
+                    .setBold());
+            document.add(new Paragraph("\n\n\n"));
+            document.add(new Paragraph("Étudiant: _________________  Date: __________"));
+            document.add(new Paragraph("\n\n"));
+            document.add(new Paragraph("Employeur: _________________  Date: __________"));
+
+            document.close();
+            return baos.toByteArray();
         }
     }
 }
