@@ -293,6 +293,7 @@ class GestionnaireControllerTest {
 
         assertThat(candidatures.getData().size()).isEqualTo(2);
     }
+
     @Test
     @DisplayName("GET /gestionnaire/notifications/all -> 200 + list of notifications (updated DTO)")
     void getStageNotifications_returnsOkWithList() throws Exception {
@@ -359,5 +360,72 @@ class GestionnaireControllerTest {
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.message", is("Erreur lors du marquage de la notification comme lue")))
                 .andExpect(jsonPath("$.data").doesNotExist());
+    }
+
+    @Test
+    void getCandidaturesStatus() throws Exception {
+        EtudiantDTO john = EtudiantDTO.toDTOTokenless(
+                new Etudiant("John", "Doe", Credentials.builder().username("email@email.com").password("1234567890").build(), Discipline.INFORMATIQUE)
+        );
+        EtudiantDTO umberto = EtudiantDTO.toDTOTokenless(
+                new Etudiant("Umberto", "Larrios", Credentials.builder().username("email2@email.com").password("1234567890").build(), Discipline.INFORMATIQUE)
+        );
+
+        Employeur jean = new Employeur("Jean", "Employeur", "JeanEmployeurs", "jemployeur@gmail.com", "1234567890");
+
+        Stage stage = new Stage();
+        stage.setId(1L);
+        stage.setTitle("Stage Test");
+        stage.setStatus(OfferStatus.SOUMISE);
+
+        Stage stage2 = new Stage();
+        stage2.setId(2L);
+        stage2.setTitle("Stage Test 2");
+        stage2.setStatus(OfferStatus.SOUMISE);
+
+        EtudiantCandidaturesDTO candidatureJohn = EtudiantCandidaturesDTO.builder()
+                .etudiant(john)
+                .candidatures(List.of(
+                        EtudiantCandidatureDTO.builder()
+                                .stage(StageSimpleDTO.toDTOfromStageDTO(StageDTO.fromModel(stage, jean)))
+                                .dateDecision(LocalDateTime.now())
+                                .datePostulation(LocalDateTime.now())
+                                .status("ACCEPTEE")
+                                .build()
+                )).build();
+
+        EtudiantCandidaturesDTO candidaturesUmberto = EtudiantCandidaturesDTO.builder()
+                .etudiant(umberto)
+                .candidatures(List.of(
+                        EtudiantCandidatureDTO.builder()
+                                .stage(StageSimpleDTO.toDTOfromStageDTO(StageDTO.fromModel(stage, jean)))
+                                .dateDecision(LocalDateTime.now())
+                                .datePostulation(LocalDateTime.now())
+                                .status("ACCEPTEE")
+                                .build(),
+                        EtudiantCandidatureDTO.builder()
+                                .stage(StageSimpleDTO.toDTOfromStageDTO(StageDTO.fromModel(stage2, jean)))
+                                .dateDecision(LocalDateTime.now())
+                                .datePostulation(LocalDateTime.now())
+                                .status("REFUSEE")
+                                .build()
+                )).build();
+        when(gestionnaireService.getAllEtudiantsCandidatures()).thenReturn(List.of(candidatureJohn, candidaturesUmberto));
+
+        MvcResult result = mockMvc.perform(get("/gestionnaire/getCandidatures"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        ReturnEntityDTO<List<EtudiantCandidaturesDTO>> candidatures = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
+        });
+
+        List<EtudiantCandidaturesDTO> candidaturesList = candidatures.getData();
+
+        List<EtudiantCandidatureDTO> candidaturesJohnDTO = candidaturesList.getFirst().getCandidatures();
+        List<EtudiantCandidatureDTO> candidaturesUmbertoDTO = candidaturesList.get(1).getCandidatures();
+
+        assertThat(candidaturesJohnDTO.getFirst().getStatus()).isEqualTo(String.valueOf(CandidatureStatus.ACCEPTEE));
+        assertThat(candidaturesUmbertoDTO.getFirst().getStatus()).isEqualTo(String.valueOf(CandidatureStatus.ACCEPTEE));
+        assertThat(candidaturesUmbertoDTO.get(1).getStatus()).isEqualTo(String.valueOf(CandidatureStatus.REFUSEE));
     }
 }
