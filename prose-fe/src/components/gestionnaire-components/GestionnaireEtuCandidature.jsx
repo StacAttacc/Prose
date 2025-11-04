@@ -59,7 +59,7 @@ export default function GestionnaireEtuCandidature() {
                         };
                     });
 
-                    const accepted = applications.some((a) => a.status === "ACCEPTEE_ETUDIANT");
+                    const accepted = applications.some((a) => a.status === "ACCEPTEE");
 
                     return {
                         id: stu?.id ?? null,
@@ -188,10 +188,10 @@ export default function GestionnaireEtuCandidature() {
                                         {tab === "APPLIED" ? "Candidatures" : "Statut"}
                                     </th>
 
-                                    {/* On enlève complètement la colonne Action si Stage trouvé */}
-                                    {tab !== "APPROVED" && (
+                                    {tab === "APPLIED" && (
                                         <th className="text-left text-gray-800 font-semibold py-3 px-4">Action</th>
                                     )}
+
                                 </tr>
                                 </thead>
 
@@ -225,26 +225,22 @@ export default function GestionnaireEtuCandidature() {
                                             )}
                                         </td>
 
-                                        {/* On supprime complètement la colonne Action si tab = APPROVED */}
-                                        {tab !== "APPROVED" && (
+                                        {tab === "APPLIED" && (
                                             <td className="py-3 px-4 align-top">
-                                                {tab === "APPLIED" ? (
-                                                    <button
-                                                        type="button"
-                                                        className="text-blue-600 hover:underline"
-                                                        title="Voir les candidatures"
-                                                        onClick={() => {
-                                                            setModalFilterStatuses(null);
-                                                            setModalStudent(s);
-                                                        }}
-                                                    >
-                                                        Voir ses candidatures
-                                                    </button>
-                                                ) : (
-                                                    <span className="text-gray-400">—</span>
-                                                )}
+                                                <button
+                                                    type="button"
+                                                    className="text-blue-600 hover:underline"
+                                                    title="Voir les candidatures"
+                                                    onClick={() => {
+                                                        setModalFilterStatuses(null);
+                                                        setModalStudent(s);
+                                                    }}
+                                                >
+                                                    Voir ses candidatures
+                                                </button>
                                             </td>
                                         )}
+
                                     </tr>
                                 ))}
                                 </tbody>
