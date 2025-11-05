@@ -1,6 +1,5 @@
 package com.AL565.prose.controller;
 
-import com.AL565.prose.service.EtudiantService;
 import com.AL565.prose.service.GestionnaireService;
 import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
@@ -17,7 +16,6 @@ import java.util.List;
 public class GestionnaireController {
 
     private final GestionnaireService gestionnaireService;
-    private final EtudiantService etudiantService;
 
     @GetMapping("/stages")
     public ResponseEntity<ReturnEntityDTO<List<StageDTO>>> getAllStages() {
@@ -107,6 +105,21 @@ public class GestionnaireController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ReturnEntityDTO<>("Erreur lors du marquage de la notification comme lue", null));
+        }
+    }
+
+    @PostMapping("/candidatures/{candidatureId}/generer-entente")
+    public ResponseEntity<ReturnEntityDTO<EntenteDTO>> genererEntente(@PathVariable Long candidatureId) {
+        try {
+            EntenteDTO entente = gestionnaireService.genererEntente(candidatureId);
+            return ResponseEntity.ok(new ReturnEntityDTO<>("Entente générée avec succès", entente));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ReturnEntityDTO<>(e.getMessage(), null));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ReturnEntityDTO<>("Erreur lors de la génération de l'entente", null));
         }
     }
 }
