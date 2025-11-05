@@ -294,11 +294,20 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                     )}
                 </td>
 
-                <td className="py-3 px-4 align-top">
-                    <span
-                           className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${statusBadgeClass}`}>
-     {statusLabel}
-                       </span>
+                <td className={`py-3 px-4 align-top ${status === "ACCEPTEE" ? "text-center" : ""}`}>
+                    {status === "ACCEPTEE" ? (
+                        <div className="flex justify-center">
+                            <span
+                                className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${statusBadgeClass}`}>
+                                {statusLabel}
+                            </span>
+                        </div>
+                    ) : (
+                        <span
+                            className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${statusBadgeClass}`}>
+                            {statusLabel}
+                        </span>
+                    )}
                 </td>
                 
                 <td className="py-3 px-4 align-top">
