@@ -7,6 +7,5 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface PostulationNotificationRepository extends JpaRepository<PostulationNotification, Long> {
-    List<PostulationNotification> findByFirstRecipientReadAtAndCandidature_StageEmployeurEmail(LocalDateTime readAt,
-                                                                                               String candidatureStageEmployeurEmail);
+    List<PostulationNotification> findByFirstRecipientReadAtAndEmployeurEmail(LocalDateTime firstRecipientReadAt, String employeurEmail);
 }

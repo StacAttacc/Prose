@@ -8,9 +8,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@DiscriminatorValue("etudiant_cv")
 @Getter
 @Setter
+@DiscriminatorValue("etudiant_cv")
 @NoArgsConstructor
 @AllArgsConstructor
 public class EtudiantCvNotification extends Notification {

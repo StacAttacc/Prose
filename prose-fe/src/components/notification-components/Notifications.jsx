@@ -1,22 +1,20 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext.jsx";
+import { useAuth } from "../../context/AuthContext.jsx";
 import { Eye, EyeOff } from "lucide-react";
 import {
-    getGestionnaireNotifications,
-    markNotificationRead as markNotificationReadGestionnaire,
-    markNotificationsRead as markNotificationsReadGestionnaire
-} from "../services/GestionnaireService.js";
+    markManyNotifications,
+    fetchNotifications,
+    markSingleNotificationAsRead
+} from "./notification-utils/notificationsServiceLogic.jsx";
+import { normalizeNotifications } from "./notification-utils/notificationParsingLogic.jsx";
 import {
-    getEmployeurCandidatureNotifications,
-    markNotificationRead as markNotificationReadEmployeur,
-    markNotificationsRead as markNotificationsReadEmployeur
-} from "../services/EmployeurService.js";
-import {
-    getEtudiantNotifications,
-    markNotificationRead as markNotificationReadEtudiant,
-    markNotificationsRead as markNotificationsReadEtudiant
-} from "../services/EtudiantService.js";
+    getDefaultNavigationPath,
+    getGroupedNotificationNavigation,
+    getNotificationNavigationPath
+} from "./notification-utils/notificationsNavigationLogic.jsx";
+import { labelForKey, shortText } from "./notification-utils/notificationText.jsx";
+import ErrorBanner from "../display-components/ErrorBanner.jsx";
 
 export default function Notifications() {
     const { user } = useAuth();
@@ -34,107 +32,33 @@ export default function Notifications() {
         return () => { mountedRef.current = false; };
     }, []);
 
-    function makeKeyForItem(item = {}, groupKey) {
-        if (item?.candidatureId) return "postulation";
-        if (item?.stageId) return "stage";
-        if (item?.cvId) return "gestionnaire_cv";
-        if (item?.etudiantId) return "etudiant_cv";
-        if (groupKey && typeof groupKey === "string" && !/\s/.test(groupKey)) return groupKey.toLowerCase();
-        if (item?.type) {
-            return String(item.type)
-                .toLowerCase()
-                .replace(/\s+/g, "-")
-                .replace(/[^a-z0-9\-]/g, "");
-        }
-        return "default";
-    }
-
-    function normalizeListToTypes(list = [], fallbackKey = "default") {
-        const map = {};
-        list.forEach(n => {
-            const key = makeKeyForItem(n, fallbackKey || undefined) || fallbackKey;
-            if (!map[key]) map[key] = [];
-            map[key].push(n);
-        });
-        return map;
-    }
-
-    function buildFromGroups(groups = []) {
-        const map = {};
-        groups.forEach(g => {
-            const items = Array.isArray(g.items) ? g.items : [];
-            const groupKey = g?.typeKey || g?.type || undefined;
-            items.forEach(item => {
-                const key = makeKeyForItem(item, groupKey);
-                if (!map[key]) map[key] = [];
-                map[key].push(item);
-            });
-        });
-        return map;
-    }
-
-    async function fetchAndNormalize() {
-        if (!user?.token) {
-            setNotificationsByType({});
-            setLoading(false);
-            setError(null);
-            return;
-        }
-
-        setLoading(true);
-        setError(null);
-
-        try {
-            let raw;
-            if (user.role === "GESTIONNAIRE") {
-                raw = await getGestionnaireNotifications(user.token);
-            } else if (user.role === "EMPLOYEUR") {
-                raw = await getEmployeurCandidatureNotifications(user.email, user.token);
-            } else if (user.role === "ETUDIANT") {
-                raw = await getEtudiantNotifications(user.token);
-            }
-            else {
-                raw = null;
-            }
-
-            const payload = raw?.data || raw || null;
-            let byType;
-
-            if (payload?.groups && Array.isArray(payload.groups)) {
-                byType = buildFromGroups(payload.groups);
-            } else if (Array.isArray(payload)) {
-                byType = normalizeListToTypes(payload);
-            } else if (payload?.postulationNotifications) {
-                byType = normalizeListToTypes(payload.postulationNotifications, "postulation");
-            } else if (payload?.stageNotifications) {
-                byType = normalizeListToTypes(payload.stageNotifications, "stage");
-            } else if (payload?.gestionnaireCvNotifications) {
-                byType = normalizeListToTypes(payload.gestionnaireCvNotifications, "gestionnaire_cv");
-            } else if (payload?.etudiantCvNotifications) {
-                byType = normalizeListToTypes(payload.etudiantCvNotifications, "etudiant_cv");
-            } else if (payload?.items && Array.isArray(payload.items)) {
-                byType = normalizeListToTypes(payload.items);
-            } else if (payload?.data && Array.isArray(payload.data)) {
-                byType = normalizeListToTypes(payload.data);
-            } else {
-                byType = {};
-            }
-
-            if (mountedRef.current) setNotificationsByType(byType);
-        } catch (err) {
-            console.error("Failed to load notifications:", err);
-            if (mountedRef.current) {
-                setError(err?.message || "Failed to load notifications");
-                setNotificationsByType({});
-            }
-        } finally {
-            if (mountedRef.current) setLoading(false);
-        }
-    }
-
     useEffect(() => {
-        fetchAndNormalize();
-    }, [user?.token, user?.role, user?.email, readCounter]);
+        async function fetchData() {
+            if (!user?.token) {
+                setNotificationsByType({});
+                setLoading(false);
+                setError(null);
+                return;
+            }
+
+            setLoading(true);
+            setError(null);
+            try {
+                const payload = await fetchNotifications(user);
+                const byType = await normalizeNotifications(payload);
+                if (mountedRef.current) setNotificationsByType(byType);
+            } catch (err) {
+                console.error("Failed to load notifications:", err);
+                if (mountedRef.current) {
+                    setError(err?.message || "Failed to load notifications");
+                    setNotificationsByType({});
+                }
+            } finally {
+                if (mountedRef.current) setLoading(false);
+            }
+        }
+        fetchData();
+    }, [user, readCounter]);
 
     useEffect(() => {
         function onClickOutside(e) {
@@ -146,60 +70,26 @@ export default function Notifications() {
         return () => document.removeEventListener("click", onClickOutside);
     }, []);
 
-    async function markSingleNotification(id) {
-        if (!id) return;
-        if (user.role === "GESTIONNAIRE") {
-            await markNotificationReadGestionnaire(id, user.token);
-        } else if (user.role === "EMPLOYEUR") {
-            await markNotificationReadEmployeur(id, user.token);
-        } else if (user.role === "ETUDIANT") {
-            await markNotificationReadEtudiant(id, user.token);
-        }
-    }
-
-    async function markManyNotifications(ids = []) {
-        if (!Array.isArray(ids) || ids.length === 0) return;
-        if (user.role === "GESTIONNAIRE") {
-            await markNotificationsReadGestionnaire(ids, user.token);
-        } else if (user.role === "EMPLOYEUR") {
-            await markNotificationsReadEmployeur(ids, user.token);
-        } else if (user.role === "ETUDIANT") {
-            await markNotificationsReadEtudiant(ids, user.token);
-        }
-    }
-
-    function defaultNavigatePath() {
-        if (user.role === "GESTIONNAIRE") return "/gestionnaire/candidatures";
-        if (user.role === "EMPLOYEUR") return `/employeur/posted-stages`;
-        if (user.role === "ETUDIANT") return `etudiant/mon-cv`;
-        return "/";
-    }
-
     const handleGroupClick = useCallback(async (typeKey, list) => {
         const ids = (list || []).map(n => n.id).filter(Boolean);
         try {
-            await markManyNotifications(ids);
+            await markManyNotifications(user, ids);
             setReadCounter(c => c + ids.length);
-            navigate(defaultNavigatePath());
+            const { path, state } = getGroupedNotificationNavigation(typeKey, user.role);
+            navigate(path, state ? { state } : undefined);
         } catch (err) {
             console.error("Failed to mark card notifications as read:", err);
-            navigate(defaultNavigatePath());
+            navigate(getDefaultNavigationPath(user.role));
         }
-    }, [navigate, user?.role, user?.token, user?.email]);
+    }, [navigate, user]);
 
-    const handleItemClick = useCallback(async (e, notification, typeKey) => {
+    const markAndNavigate = useCallback(async (e, notification, typeKey) => {
         e?.stopPropagation?.();
+        if (!notification?.id) return;
         setOpenType(null);
 
-        const stageId = notification?.stageId || null;
-        const candidatureId = notification?.candidatureId || null;
-        const etudiantId = notification?.etudiantId || null;
-        const cvId = notification?.cvId || null;
-
-        const isCandidature = Boolean(notification?.candidature || notification?.candidatureId);
-
         try {
-            await markSingleNotification(notification.id);
+            await markSingleNotificationAsRead(notification.id, user);
             setNotificationsByType(prev => {
                 const next = { ...prev };
                 const arr = (next[typeKey] || []).filter(n => n.id !== notification.id);
@@ -209,46 +99,19 @@ export default function Notifications() {
             });
             setReadCounter(c => c + 1);
 
-            if (user.role === "EMPLOYEUR") {
-                if (isCandidature) {
-                    if (stageId) {
-                        navigate(`/employeur/stages/${stageId}/candidatures`, { state: { openCandidatureId: candidatureId } });
-                        return;
-                    }
-                }
-            }
-            else if (user.role === "ETUDIANT") {
-                navigate(defaultNavigatePath());
-            }
-            else if (user.role === "GESTIONNAIRE") {
-                if (isCandidature) {
-                    if (stageId) {
-                        navigate(defaultNavigatePath(), { state: { openEtudiantId: etudiantId } });
-                        return;
-                    }
-                } else {
-                    if (stageId) {
-                        navigate("/gestionnaire/list-stages", { state: { openStageId: stageId } });
-                        return;
-                    } else if (!stageId && cvId) {
-                        navigate("/gestionnaire/gestion-cv", { state: { openCvId: cvId } });
-                        return;
-                    }
-                }
-            }
-
-            navigate(defaultNavigatePath());
+            const { path, state } = getNotificationNavigationPath(notification, user.role);
+            navigate(path, state ? { state } : undefined);
         } catch (err) {
             console.error("Failed to mark notification as read:", err);
-            navigate(defaultNavigatePath());
+            navigate(getDefaultNavigationPath(user.role));
         }
-    }, [navigate, user?.role, user?.token, user?.email]);
+    }, [navigate, user]);
 
-    const handleMarkSingleClick = async (e, notification, typeKey) => {
+    const markAndClose = async (e, notification, typeKey) => {
         e?.stopPropagation?.();
         if (!notification?.id) return;
         try {
-            await markSingleNotification(notification.id);
+            await markSingleNotificationAsRead(notification.id, user);
             setNotificationsByType(prev => {
                 const next = { ...prev };
                 const arr = (next[typeKey] || []).filter(n => n.id !== notification.id);
@@ -266,34 +129,21 @@ export default function Notifications() {
         e?.stopPropagation?.();
         const ids = (list || []).map(n => n.id).filter(Boolean);
         try {
-            await markManyNotifications(ids);
+            await markManyNotifications(typeKey, ids);
             setReadCounter(c => c + ids.length);
             setOpenType(null);
         } catch (err) {
             console.error("Failed to mark notifications as read (close type):", err);
         }
-    }, [user?.role, user?.token, user?.email]);
+    }, [user]);
 
     const totalCount = Object.values(notificationsByType).reduce((acc, arr) => acc + (Array.isArray(arr) ? arr.length : 0), 0);
 
     if (!loading && error) {
-        return <div className="mt-3 text-sm text-red-600">{error}</div>;
+        return <ErrorBanner message={error} />;
     }
 
     if (totalCount === 0) return null;
-
-    function shortText(text, max = 80) {
-        if (!text) return "";
-        return text.length > max ? text.slice(0, max - 3) + "..." : text;
-    }
-
-    function labelForKey(key) {
-        if (key === "stage") return `nouvelles offre(s) de stage à approuver`;
-        if (key === "postulation") return `nouvelles candidature(s) reçue(s)`;
-        if (key === "gestionnaire_cv") return `nouveau(x) CV(s) à examiner`;
-        if (key === "etudiant_cv") return `changement sur votre CV`;
-        return `${key} notification(s)`;
-    }
 
     return (
         <div ref={dropdownRef} className="space-y-3">
@@ -342,7 +192,7 @@ export default function Notifications() {
                                                 <li key={n.id} className="flex items-center gap-3 p-2 hover:bg-gray-100 rounded">
                                                     <div
                                                         className="flex items-start gap-3 flex-1"
-                                                        onClick={(e) => handleItemClick(e, n, typeKey)}
+                                                        onClick={(e) => markAndNavigate(e, n, typeKey)}
                                                     >
                                                         {renderCompactItem(n)}
                                                     </div>
@@ -351,7 +201,7 @@ export default function Notifications() {
                                                         {count <= 3 && (
                                                             <button
                                                                 type="button"
-                                                                onClick={(e) => handleMarkSingleClick(e, n, typeKey)}
+                                                                onClick={(e) => markAndClose(e, n, typeKey)}
                                                                 className="inline-flex items-center ml-2 py-1 px-2 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200"
                                                                 aria-label="Mark this notification as read"
                                                                 title="Mark this notification as read"
@@ -416,7 +266,7 @@ export default function Notifications() {
                                         <ul className="space-y-2 overflow-y-auto max-h-64">
                                             {(list || []).slice(0, 20).map((n) => (
                                                 <li key={n.id} className="flex items-center gap-3 p-2 hover:bg-gray-100 rounded">
-                                                    <div className="flex items-start gap-3 flex-1" onClick={(e) => handleItemClick(e, n, typeKey)}>
+                                                    <div className="flex items-start gap-3 flex-1" onClick={(e) => markAndNavigate(e, n, typeKey)}>
                                                         {renderCompactItem(n)}
                                                     </div>
                                                     <div className="flex items-center gap-2">
@@ -424,7 +274,7 @@ export default function Notifications() {
                                                             <>
                                                                 <button
                                                                     type="button"
-                                                                    onClick={(e) => { e.stopPropagation(); handleMarkSingleClick(e, n, typeKey); }}
+                                                                    onClick={(e) => { e.stopPropagation(); markAndClose(e, n, typeKey); }}
                                                                     className="inline-flex items-center ml-2 py-1 px-2 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200"
                                                                     aria-label="Mark this notification as read"
                                                                     title="Mark this notification as read"

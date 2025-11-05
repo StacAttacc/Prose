@@ -8,9 +8,9 @@ import jakarta.persistence.OneToOne;
 import lombok.*;
 
 @Entity
-@DiscriminatorValue("stage")
 @Getter
 @Setter
+@DiscriminatorValue("stage")
 @NoArgsConstructor
 @AllArgsConstructor
 public class StageNotification extends Notification {

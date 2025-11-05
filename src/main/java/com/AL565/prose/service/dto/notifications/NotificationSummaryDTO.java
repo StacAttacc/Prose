@@ -1,6 +1,5 @@
 package com.AL565.prose.service.dto.notifications;
 
-import com.AL565.prose.model.Candidature;
 import com.AL565.prose.model.notifications.*;
 import lombok.*;
 
@@ -24,6 +23,7 @@ public class NotificationSummaryDTO {
     private Long cvId;
     private Long candidatureId;
     private Long etudiantId;
+    private Long convocation;
 
     public static NotificationSummaryDTO toDTO(Notification n) {
         if (n == null) return null;
@@ -32,22 +32,32 @@ public class NotificationSummaryDTO {
         Long candidatureId = null;
         Long cvId = null;
         Long etudiantId = null;
+        Long convocation = null;
 
         switch (n) {
             case StageNotification sn -> {
                 if (sn.getStage() != null) stageId = sn.getStage().getId();
             }
             case PostulationNotification pn -> {
-                Candidature c = pn.getCandidature();
-                if (c != null) {
-                    candidatureId = c.getId();
-                    if (c.getStage() != null) stageId = c.getStage().getId();
-                    if (c.getEtudiant() != null) etudiantId = c.getEtudiant().getId();
+                Long candidaturePostulationId = pn.getCandidaturePostulationId();
+                Long candidatueEtudiantId = pn.getEtudiantPostulationId();
+                Long candidatureStageId = pn.getStagePostulationId();
+                if (candidaturePostulationId != null) {
+                    candidatureId = candidaturePostulationId;
+                    if (candidatureStageId != null) stageId = candidatureStageId;
+                    if (candidatueEtudiantId != null) etudiantId = candidatueEtudiantId;
                 }
             }
             case GestionnaireCvNotification gcn -> {
                 if (gcn.getCv() != null) {
                     cvId = gcn.getCv().getId();
+                }
+            }
+            case ConvocationNotification cn -> {
+                Long candidatureConvocationId = cn.getCandidatureConvocationId();
+                if (candidatureConvocationId != null) {
+                    convocation = candidatureConvocationId;
+                    etudiantId = cn.getEtudiantConvocationId();
                 }
             }
             default -> {
@@ -65,6 +75,7 @@ public class NotificationSummaryDTO {
                 .candidatureId(candidatureId)
                 .etudiantId(etudiantId)
                 .cvId(cvId)
+                .convocation(convocation)
                 .build();
     }
 }
