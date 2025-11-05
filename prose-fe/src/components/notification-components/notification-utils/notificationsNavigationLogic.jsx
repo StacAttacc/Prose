@@ -21,7 +21,7 @@ export function getNotificationNavigationPath(notification, role) {
             return {
                 path: `/etudiant/mon-cv`,
             }
-        } else if (notification.type === "convocation" && notification.convocation) {
+        } else if (notification.type === "convocation") {
             return {
                 path: `/etudiant/stages/candidatures`,
                 state: { openCandidatureId: notification.convocation }
@@ -52,6 +52,52 @@ export function getNotificationNavigationPath(notification, role) {
             return {
                 path: getDefaultNavigationPath(role),
                 state: { openEtudiantId: etudiantId }
+            };
+        }
+    }
+
+    return { path: getDefaultNavigationPath(role), state: null };
+}
+
+export function getGroupedNotificationNavigation(type, role) {
+    if (role === "EMPLOYEUR") {
+        if (type === "postulation")
+        return {
+            path: `/employeur/posted-stages`,
+        };
+    }
+
+    else if (role === "ETUDIANT") {
+        if (type === "etudiant_cv") {
+            return {
+                path: `/etudiant/mon-cv`,
+            }
+        } else if (type === "convocation") {
+            return {
+                path: `/etudiant/stages/candidatures`,
+            }
+        }
+    }
+
+    else if (role === "GESTIONNAIRE") {
+        if (type === "postulation") {
+            return {
+                path: getDefaultNavigationPath(role),
+            };
+        }
+        if (type === "stage") {
+            return {
+                path: "/gestionnaire/list-stages",
+            };
+        }
+        if (type === "gestionnaire_cv") {
+            return {
+                path: "/gestionnaire/gestion-cv",
+            };
+        }
+        if (type === "convocation") {
+            return {
+                path: getDefaultNavigationPath(role),
             };
         }
     }

@@ -8,10 +8,13 @@ import {
     markSingleNotificationAsRead
 } from "./notification-utils/notificationsServiceLogic.jsx";
 import { normalizeNotifications } from "./notification-utils/notificationParsingLogic.jsx";
-import { getDefaultNavigationPath, getNotificationNavigationPath } from "./notification-utils/notificationsNavigationLogic.jsx";
+import {
+    getDefaultNavigationPath,
+    getGroupedNotificationNavigation,
+    getNotificationNavigationPath
+} from "./notification-utils/notificationsNavigationLogic.jsx";
 import { labelForKey, shortText } from "./notification-utils/notificationText.jsx";
 import ErrorBanner from "../display-components/ErrorBanner.jsx";
-import {markNotificationsRead} from "../../services/EtudiantService.js";
 
 export default function Notifications() {
     const { user } = useAuth();
@@ -43,7 +46,6 @@ export default function Notifications() {
             try {
                 const payload = await fetchNotifications(user);
                 const byType = await normalizeNotifications(payload);
-                console.log("Fetched notifications normalized:", byType);
                 if (mountedRef.current) setNotificationsByType(byType);
             } catch (err) {
                 console.error("Failed to load notifications:", err);
@@ -71,12 +73,13 @@ export default function Notifications() {
     const handleGroupClick = useCallback(async (typeKey, list) => {
         const ids = (list || []).map(n => n.id).filter(Boolean);
         try {
-            await markNotificationsRead(ids, user);
+            await markManyNotifications(user, ids);
             setReadCounter(c => c + ids.length);
-            navigate(getDefaultNavigationPath(user));
+            const { path, state } = getGroupedNotificationNavigation(typeKey, user.role);
+            navigate(path, state ? { state } : undefined);
         } catch (err) {
             console.error("Failed to mark card notifications as read:", err);
-            navigate(getDefaultNavigationPath(user));
+            navigate(getDefaultNavigationPath(user.role));
         }
     }, [navigate, user]);
 
@@ -126,7 +129,7 @@ export default function Notifications() {
         e?.stopPropagation?.();
         const ids = (list || []).map(n => n.id).filter(Boolean);
         try {
-            await markNotificationsRead(ids, user);
+            await markManyNotifications(typeKey, ids);
             setReadCounter(c => c + ids.length);
             setOpenType(null);
         } catch (err) {

@@ -10,7 +10,7 @@ import lombok.*;
 @Entity
 @Getter
 @Setter
-@DiscriminatorValue("value")
+@DiscriminatorValue("stage")
 @NoArgsConstructor
 @AllArgsConstructor
 public class StageNotification extends Notification {
