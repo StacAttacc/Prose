@@ -6,6 +6,10 @@ import StageDetailsModal from "../display-components/StageDetailsModal.jsx";
 import ApplicationsModal from "../display-components/ApplicationsModal.jsx";
 import { useLocation, useNavigate } from "react-router-dom";
 
+// Statut qui détermine si un étudiant est dans "Stage Trouvé"
+const CONFIRMED_STATUS = "CONFIRMER";
+
+// Statuts qui excluent une candidature de "Candidature Soumise" (utilisé pour le filtre)
 const APPROVED_STATUSES = new Set([
     "ACCEPTEE",
     "ACCEPTÉE",
@@ -62,7 +66,7 @@ export default function GestionnaireEtuCandidature() {
                     });
 
                     const accepted = applications.some((a) =>
-                        APPROVED_STATUSES.has(String(a.status).toUpperCase())
+                        String(a.status).toUpperCase() === CONFIRMED_STATUS
                     );
 
                     return {
@@ -307,9 +311,7 @@ export default function GestionnaireEtuCandidature() {
                                                     onClick={() => {
                                                         const app =
                                                             (s.applications || []).find((a) =>
-                                                                APPROVED_STATUSES.has(
-                                                                    String(a.status).toUpperCase()
-                                                                )
+                                                                String(a.status).toUpperCase() === CONFIRMED_STATUS
                                                             ) || (s.applications || [])[0];
                                                         if (app) openStageModal(app);
                                                     }}
