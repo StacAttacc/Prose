@@ -1,7 +1,9 @@
 import { http } from "./http.js";
+import axios from "axios";
 
 const CV_UPLOAD_URL = "/etudiant/televerser-cv";
 const CV_DOWNLOAD_URL = "/etudiant/telecharger-cv";
+const BASE_URL_ETUDIANT = "http://localhost:8080/etudiant";
 
 export const televerserCv = async (cv, user) => {
     try{
@@ -103,6 +105,62 @@ export const getMesCandidatures = async () => {
         return data.data;
     } catch (e) {
         console.error("Erreur lors de la récupération des candidatures:", e);
+        throw e;
+    }
+};
+
+export async function getEtudiantNotifications(token) {
+    try {
+        const { data } = await http.get("/etudiant/notifications/all", {
+            method: "GET",
+            headers: {
+                Accept: "application/json",
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+        });
+        console.log(data);
+        return data;
+    } catch (e) {
+        console.error("Erreur lors de la récupération des notifications:", e);
+        throw e;
+    }
+}
+
+export async function markNotificationRead(notificationId, token) {
+    try {
+        const { data } = await http.put(
+            `${BASE_URL_ETUDIANT}/notifications/read/${notificationId}`,
+            { notificationId },
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        );
+        return data;
+    } catch (e) {
+        console.error("Erreur lors du marquage de la notification comme lue:", e);
+        throw e;
+    }
+}
+
+export const markNotificationsRead = (notificationIds = [], token) => {
+    if (!Array.isArray(notificationIds) || notificationIds.length === 0) {
+        return Promise.resolve();
+    }
+    return Promise.all(notificationIds.map(id => markNotificationRead(id, token)));
+};
+
+export const respondToOffer = async (candidatureId, accepted, comment = "") => {
+    try {
+        const { data } = await http.put("/etudiant/candidatures/respond", {
+            candidatureId: candidatureId,
+            accepted: accepted,
+            comment: comment
+        });
+        return data;
+    } catch (e) {
+        console.error("Erreur lors de la réponse à l'offre:", e);
         throw e;
     }
 };

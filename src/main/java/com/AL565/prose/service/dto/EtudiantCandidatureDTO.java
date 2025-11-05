@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class EtudiantCandidatureDTO {
+    private Long id;
     private StageSimpleDTO stage;
     private String status;
     private LocalDateTime datePostulation;
@@ -24,6 +25,7 @@ public class EtudiantCandidatureDTO {
         var stage = candidature.getStage();
 
         return EtudiantCandidatureDTO.builder()
+                .id(candidature.getId())
                 .stage(StageSimpleDTO.builder()
                         .title(stage.getTitle())
                         .description(stage.getDescription())

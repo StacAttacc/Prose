@@ -4,16 +4,18 @@ import com.AL565.prose.model.Employeur;
 import com.AL565.prose.model.Etudiant;
 import com.AL565.prose.model.OfferStatus;
 import com.AL565.prose.model.Stage;
-import com.AL565.prose.model.notifications.NotificationType;
-import com.AL565.prose.model.notifications.PostulationNotification;
+import com.AL565.prose.model.notifications.*;
 import com.AL565.prose.repository.*;
 import com.AL565.prose.model.CV;
 import com.AL565.prose.model.CvStatus;
 import com.AL565.prose.model.Candidature;
+import com.AL565.prose.model.CandidatureStatus;
+import com.AL565.prose.security.exceptions.NotificationExceptions;
 import com.AL565.prose.service.dto.EtudiantPasswordDTO;
 import com.AL565.prose.service.dto.CandidatureDTO;
 import com.AL565.prose.service.dto.StageDTO;
 import com.AL565.prose.service.dto.EtudiantCandidatureDTO;
+import com.AL565.prose.service.dto.EtudiantResponseOfferDTO;
 import com.AL565.prose.security.JwtTokenProvider;
 import com.AL565.prose.service.dto.*;
 
@@ -23,7 +25,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.AL565.prose.security.exceptions.CvExceptions;
+import com.AL565.prose.service.dto.notifications.NotificationGroupDTO;
+import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
+import com.AL565.prose.service.exceptions.InvalidCandidatureModificationException;
+import com.AL565.prose.service.exceptions.CandidatureNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -48,6 +54,10 @@ public class EtudiantService {
     private final EmployeurRepository employeurRepository;
     private final CandidatureRepository candidatureRepository;
     private final NotificationRepository notificationRepository;
+    private final GestionnaireCvNotificationRepository gestionnaireCvNotificationRepository;
+    private final EtudiantCvNotificationRepository etudiantCvNotificationRepository;
+    private final ConvocationNotificationRepository convocationNotificationRepository;
+    private final NotificationsHelper notificationsHelper;
 
     public void inscrireEtudiant(EtudiantPasswordDTO dto) {
         if (proseUserRepository.findByCredentials_Username(dto.getEmail()).isPresent()) {
@@ -86,7 +96,7 @@ public class EtudiantService {
                 })
                 .collect(Collectors.toList());
     }
-  
+
     public void saveCv(MultipartFile cv, String email, String lastModified) throws Exception {
         if (cv == null || cv.isEmpty()) {
             throw new CvExceptions.NoFileException();
@@ -118,7 +128,7 @@ public class EtudiantService {
                 .comment(null)
                 .build();
 
-        cvRepository.findByEtudiant_Credentials_Username(email)
+        CV cvSaved = cvRepository.findByEtudiant_Credentials_Username(email)
                 .map(existingCv -> {
                     existingCv.setName(newCv.getName());
                     existingCv.setType(newCv.getType());
@@ -131,6 +141,27 @@ public class EtudiantService {
                     return cvRepository.save(existingCv);
                 })
                 .orElseGet(() -> cvRepository.save(newCv));
+
+        gestionnaireCvNotificationRepository.findByCv_Id(cvSaved.getId())
+                        .ifPresentOrElse(notification -> {
+                            notification.setFirstRecipientReadAt(null);
+                            notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
+                            notificationRepository.save(notification);
+                        }, () -> createNotificationForNewCV(etudiant, cvSaved));
+    }
+
+    private void createNotificationForNewCV(Etudiant etudiant, CV cv) {
+        if (cv == null) {
+            throw new IllegalArgumentException("Vous devez avoir un cv");
+        }
+        String etudiantName = etudiant.getFirstName() + " " + etudiant.getLastName();
+        GestionnaireCvNotification notification = new GestionnaireCvNotification();
+        notification.setCv(cv);
+        notification.setFirstRecipientReadAt(null);
+        notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
+        notification.setType(NotificationType.GESTIONNAIRE_CV_NOTIFICATION);
+        notification.setMessage(etudiantName + " a soumis un nouveau CV");
+        notificationRepository.save(notification);
     }
 
     public EtudiantCvDTO getCvByEmail(String username) {
@@ -166,7 +197,7 @@ public class EtudiantService {
 
         if (candidatureDTO.getMotivationLetterData() != null && candidatureDTO.getMotivationLetterData().length > 0) {
             if (candidatureDTO.getMotivationLetterContentType() == null ||
-                !MediaType.APPLICATION_PDF_VALUE.equalsIgnoreCase(candidatureDTO.getMotivationLetterContentType())) {
+                    !MediaType.APPLICATION_PDF_VALUE.equalsIgnoreCase(candidatureDTO.getMotivationLetterContentType())) {
                 throw new Exception("La lettre de motivation doit être au format PDF");
             }
         }
@@ -199,8 +230,10 @@ public class EtudiantService {
         PostulationNotification notification = new PostulationNotification();
         notification.setFirstRecipientReadAt(null);
         notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
-        notification.setCandidature(candidature);
-        notification.setSenderEmail(candidature.getEtudiant().getEmail());
+        notification.setCandidaturePostulationId(candidature.getId());
+        notification.setEtudiantPostulationId(candidature.getEtudiant().getId());
+        notification.setStagePostulationId(candidature.getStage().getId());
+        notification.setEmployeurEmail(candidature.getStage().getEmployeurEmail());
         notification.setType(NotificationType.POSTULATION_NOTIFICATION);
         notification.setMessage(studentName + " a postulé pour le stage " + companyName);
         notificationRepository.save(notification);
@@ -220,5 +253,60 @@ public class EtudiantService {
                     return EtudiantCandidatureDTO.toDTO(candidature, employeur);
                 })
                 .collect(Collectors.toList());
+    }
+
+    public NotificationsResponseDTO getStudentsNotifications(String etudiantEmail) throws Exception {
+        try {
+            List<EtudiantCvNotification> cvNotifications = etudiantCvNotificationRepository
+                    .findEtudiantCvNotificationsByFirstRecipientReadAtAndEtudiantEmail(
+                            null,
+                            etudiantEmail);
+
+            List<ConvocationNotification> convocationNotifications = convocationNotificationRepository
+                    .findByFirstRecipientReadAtAndEtudiantConvocationEmail(null, etudiantEmail);
+
+            NotificationGroupDTO cvGroup = NotificationGroupDTO
+                    .toDTO(NotificationType.ETUDIANT_CV_NOTIFICATION.getDisplayName(), cvNotifications);
+
+            NotificationGroupDTO convocationGroup = NotificationGroupDTO
+                    .toDTO(NotificationType.CONVOCATION_NOTIFICATION.getDisplayName(), convocationNotifications);
+
+            return NotificationsResponseDTO.toDTO(List.of(cvGroup, convocationGroup));
+        } catch (Exception e) {
+            throw new NotificationExceptions.NotificationFetchException();
+        }
+    }
+
+    public void markNotificationAsRead(Long notificationId) throws Exception {
+        notificationsHelper.markNotificationAsReadByFirstRecipient(notificationId);
+    }
+
+    public void respondToOffer(String email, EtudiantResponseOfferDTO responseDTO)
+            throws CandidatureNotFoundException, InvalidCandidatureModificationException {
+
+        Candidature candidature = candidatureRepository.findById(responseDTO.getCandidatureId())
+                .orElseThrow(() -> new CandidatureNotFoundException("Candidature non trouvée"));
+
+        if (!candidature.getEtudiant().getCredentials().getUsername().equals(email)) {
+            throw new InvalidCandidatureModificationException("Cette candidature ne vous appartient pas");
+        }
+        if (candidature.getStatus() != CandidatureStatus.ACCEPTEE) {
+            throw new InvalidCandidatureModificationException(
+                "Vous ne pouvez répondre qu'à une candidature acceptée par l'employeur");
+        }
+
+        if (responseDTO.isAccepted()) {
+            candidature.setStatus(CandidatureStatus.CONFIRMER);
+        } else {
+            candidature.setStatus(CandidatureStatus.REFUSEE_ETUDIANT);
+        }
+
+        if (responseDTO.getComment() != null && !responseDTO.getComment().trim().isEmpty()) {
+            candidature.setDecision(responseDTO.getComment());
+        }
+
+        candidature.setDateDecision(java.time.LocalDateTime.now());
+
+        candidatureRepository.save(candidature);
     }
 }

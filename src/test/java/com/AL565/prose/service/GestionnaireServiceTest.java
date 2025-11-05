@@ -4,6 +4,7 @@ import com.AL565.prose.model.*;
 import com.AL565.prose.model.auth.Credentials;
 import com.AL565.prose.model.auth.Role;
 import com.AL565.prose.repository.*;
+import com.AL565.prose.service.dto.EtudiantCandidatureDTO;
 import com.AL565.prose.service.dto.EtudiantCandidaturesDTO;
 import com.AL565.prose.service.dto.GestionnairePasswordDTO;
 import com.AL565.prose.service.dto.StageDTO;
@@ -300,12 +301,12 @@ class GestionnaireServiceTest {
         when(etudiantRepository.findAll()).thenReturn(List.of(john, umberto));
 
         when(candidatureRepository.findByEtudiant_Credentials_Username(john.getEmail())).thenReturn(List.of(
-                new Candidature(1L, john, null, null, stage, LocalDateTime.now(), OfferStatus.SOUMISE, null, "Pending")
+                new Candidature(1L, john, null, null, stage, LocalDateTime.now(), CandidatureStatus.SOUMISE, null, "Pending")
         ));
 
         when(candidatureRepository.findByEtudiant_Credentials_Username(umberto.getEmail())).thenReturn(List.of(
-                new Candidature(2L, umberto, null, null, stage, LocalDateTime.now(), OfferStatus.SOUMISE, null, "Pending"),
-                new Candidature(3L, umberto, null, null, stage2, LocalDateTime.now(), OfferStatus.SOUMISE, null, "Pending")
+                new Candidature(2L, umberto, null, null, stage, LocalDateTime.now(), CandidatureStatus.SOUMISE, null, "Pending"),
+                new Candidature(3L, umberto, null, null, stage2, LocalDateTime.now(), CandidatureStatus.SOUMISE, null, "Pending")
         ));
 
         when(employeurRepository.getEmployeurByCredentials_Username(anyString())).thenReturn(
@@ -321,4 +322,46 @@ class GestionnaireServiceTest {
         assertThat(candidatures.get(1).getCandidatures()).hasSize(2);
     }
 
+    @Test
+    void getAllEtudiantsCandidaturesStatus() {
+        Etudiant john = new Etudiant("John", "Doe", Credentials.builder().username("email@email.com").password("1234567890").build(), Discipline.INFORMATIQUE);
+        Etudiant umberto = new Etudiant("Umberto", "Larrios", Credentials.builder().username("email2@email.com").password("1234567890").build(), Discipline.INFORMATIQUE);
+
+        Stage stage = new Stage();
+        stage.setId(1L);
+        stage.setTitle("Stage Test");
+        stage.setStatus(OfferStatus.SOUMISE);
+
+        Stage stage2 = new Stage();
+        stage2.setId(2L);
+        stage2.setTitle("Stage Test 2");
+        stage2.setStatus(OfferStatus.SOUMISE);
+
+        stage.setEmployeurEmail("employer@company.com");
+        when(etudiantRepository.findAll()).thenReturn(List.of(john, umberto));
+
+        when(candidatureRepository.findByEtudiant_Credentials_Username(john.getEmail())).thenReturn(List.of(
+                new Candidature(1L, john, null, null, stage, LocalDateTime.now(), CandidatureStatus.ACCEPTEE, null, "Pending")
+        ));
+
+        when(candidatureRepository.findByEtudiant_Credentials_Username(umberto.getEmail())).thenReturn(List.of(
+                new Candidature(2L, umberto, null, null, stage, LocalDateTime.now(), CandidatureStatus.ACCEPTEE, null, "Pending"),
+                new Candidature(3L, umberto, null, null, stage2, LocalDateTime.now(), CandidatureStatus.REFUSEE, null, "Pending")
+        ));
+
+        when(employeurRepository.getEmployeurByCredentials_Username(anyString())).thenReturn(
+                new  Employeur("Jean", "Employeur", "JeanEmployeurs", "jemployeur@gmail.com", "1234567890")
+        );
+
+        when(stageRepository.findById(anyLong())).thenReturn(Optional.of(stage));
+
+        List<EtudiantCandidaturesDTO> candidatures =  gestionnaireService.getAllEtudiantsCandidatures();
+
+        List<EtudiantCandidatureDTO> candidaturesJohn = candidatures.getFirst().getCandidatures();
+        List<EtudiantCandidatureDTO> candidaturesUmberto = candidatures.get(1).getCandidatures();
+
+        assertThat(candidaturesJohn.getFirst().getStatus()).isEqualTo(String.valueOf(CandidatureStatus.ACCEPTEE));
+        assertThat(candidaturesUmberto.getFirst().getStatus()).isEqualTo(String.valueOf(CandidatureStatus.ACCEPTEE));
+        assertThat(candidaturesUmberto.get(1).getStatus()).isEqualTo(String.valueOf(CandidatureStatus.REFUSEE));
+    }
 }

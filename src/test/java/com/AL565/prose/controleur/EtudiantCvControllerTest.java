@@ -2,15 +2,13 @@ package com.AL565.prose.controleur;
 
 import com.AL565.prose.controller.EtudiantController;
 import com.AL565.prose.model.CvStatus;
-import com.AL565.prose.repository.NotificationRepository;
-import com.AL565.prose.repository.PostulationNotificationRepository;
+import com.AL565.prose.repository.*;
 import com.AL565.prose.security.JwtTokenProvider;
 import com.AL565.prose.service.EmployeurService;
 import com.AL565.prose.service.EtudiantService;
 import com.AL565.prose.service.GestionnaireService;
 import com.AL565.prose.service.dto.EtudiantCvDTO;
 import com.AL565.prose.model.CV;
-import com.AL565.prose.repository.CvRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -53,6 +51,12 @@ class EtudiantCvControllerTest {
 
     @MockitoBean
     private PostulationNotificationRepository postulationNotificationRepository;
+
+    @MockitoBean
+    private EtudiantCvNotificationRepository etudiantCvNotificationRepository;
+
+    @MockitoBean
+    private GestionnaireCvNotificationRepository gestionnaireCvNotificationRepository;
 
     @Autowired
     private EtudiantService etudiantService;

@@ -57,7 +57,7 @@ public class Candidature {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private OfferStatus status;
+    private CandidatureStatus status;
 
     @Column(name = "date_decision")
     private LocalDateTime dateDecision;

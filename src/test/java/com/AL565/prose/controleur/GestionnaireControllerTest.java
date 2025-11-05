@@ -3,11 +3,11 @@ package com.AL565.prose.controleur;
 import com.AL565.prose.controller.GestionnaireController;
 import com.AL565.prose.model.*;
 import com.AL565.prose.model.auth.Credentials;
+import com.AL565.prose.model.notifications.GestionnaireCvNotification;
 import com.AL565.prose.model.notifications.NotificationType;
+import com.AL565.prose.model.notifications.PostulationNotification;
 import com.AL565.prose.model.notifications.StageNotification;
-import com.AL565.prose.repository.CvRepository;
-import com.AL565.prose.repository.NotificationRepository;
-import com.AL565.prose.repository.PostulationNotificationRepository;
+import com.AL565.prose.repository.*;
 import com.AL565.prose.security.JwtTokenProvider;
 import com.AL565.prose.service.EmployeurService;
 import com.AL565.prose.service.EtudiantService;
@@ -65,6 +65,12 @@ class GestionnaireControllerTest {
 
     @MockitoBean
     private PostulationNotificationRepository postulationNotificationRepository;
+
+    @MockitoBean
+    private EtudiantCvNotificationRepository etudiantCvNotificationRepository;
+
+    @MockitoBean
+    private GestionnaireCvNotificationRepository gestionnaireCvNotificationRepository;
 
     @MockitoBean
     private CvRepository cvRepository;
@@ -287,6 +293,7 @@ class GestionnaireControllerTest {
 
         assertThat(candidatures.getData().size()).isEqualTo(2);
     }
+
     @Test
     @DisplayName("GET /gestionnaire/notifications/all -> 200 + list of notifications (updated DTO)")
     void getStageNotifications_returnsOkWithList() throws Exception {
@@ -294,16 +301,29 @@ class GestionnaireControllerTest {
         n1.setType(NotificationType.STAGE_NOTIFICATION);
         n1.setMessage("Stage submitted");
         n1.setCreatedAt(LocalDateTime.now());
-        n1.setSenderEmail("employer1@example.com");
 
         StageNotification n2 = new StageNotification();
         n2.setType(NotificationType.STAGE_NOTIFICATION);
         n2.setMessage("Stage updated");
         n2.setCreatedAt(LocalDateTime.now());
-        n2.setSenderEmail("employer2@example.com");
 
-        NotificationGroupDTO group = NotificationGroupDTO.toDTO(NotificationType.STAGE_NOTIFICATION.getDisplayName(), List.of(n1, n2));
-        NotificationsResponseDTO response = NotificationsResponseDTO.toDTO(List.of(group));
+        PostulationNotification n3 = new PostulationNotification();
+        n3.setType(NotificationType.POSTULATION_NOTIFICATION);
+        n3.setMessage("New application");
+        n3.setCreatedAt(LocalDateTime.now());
+
+        GestionnaireCvNotification n4 = new GestionnaireCvNotification();
+        n4.setType(NotificationType.GESTIONNAIRE_CV_NOTIFICATION);
+        n4.setMessage("New CV uploaded");
+        n4.setCreatedAt(LocalDateTime.now());
+
+        NotificationGroupDTO stageGroup = NotificationGroupDTO
+                .toDTO(NotificationType.STAGE_NOTIFICATION.getDisplayName(), List.of(n1, n2));
+        NotificationGroupDTO postulationGroup = NotificationGroupDTO
+                .toDTO(NotificationType.POSTULATION_NOTIFICATION.getDisplayName(), List.of(n3));
+        NotificationGroupDTO cvGroup = NotificationGroupDTO
+                .toDTO(NotificationType.GESTIONNAIRE_CV_NOTIFICATION.getDisplayName(), List.of(n4));
+        NotificationsResponseDTO response = NotificationsResponseDTO.toDTO(List.of(stageGroup, postulationGroup, cvGroup));
 
         when(gestionnaireService.getGestionnaireNotifications()).thenReturn(response);
 
@@ -314,7 +334,6 @@ class GestionnaireControllerTest {
         String content = mvc.getResponse().getContentAsString();
         assertThat(content).contains("notifications: ");
         assertThat(content).contains("Stage submitted");
-        assertThat(content).contains("employer1@example.com");
     }
 
     @Test
@@ -341,5 +360,72 @@ class GestionnaireControllerTest {
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.message", is("Erreur lors du marquage de la notification comme lue")))
                 .andExpect(jsonPath("$.data").doesNotExist());
+    }
+
+    @Test
+    void getCandidaturesStatus() throws Exception {
+        EtudiantDTO john = EtudiantDTO.toDTOTokenless(
+                new Etudiant("John", "Doe", Credentials.builder().username("email@email.com").password("1234567890").build(), Discipline.INFORMATIQUE)
+        );
+        EtudiantDTO umberto = EtudiantDTO.toDTOTokenless(
+                new Etudiant("Umberto", "Larrios", Credentials.builder().username("email2@email.com").password("1234567890").build(), Discipline.INFORMATIQUE)
+        );
+
+        Employeur jean = new Employeur("Jean", "Employeur", "JeanEmployeurs", "jemployeur@gmail.com", "1234567890");
+
+        Stage stage = new Stage();
+        stage.setId(1L);
+        stage.setTitle("Stage Test");
+        stage.setStatus(OfferStatus.SOUMISE);
+
+        Stage stage2 = new Stage();
+        stage2.setId(2L);
+        stage2.setTitle("Stage Test 2");
+        stage2.setStatus(OfferStatus.SOUMISE);
+
+        EtudiantCandidaturesDTO candidatureJohn = EtudiantCandidaturesDTO.builder()
+                .etudiant(john)
+                .candidatures(List.of(
+                        EtudiantCandidatureDTO.builder()
+                                .stage(StageSimpleDTO.toDTOfromStageDTO(StageDTO.fromModel(stage, jean)))
+                                .dateDecision(LocalDateTime.now())
+                                .datePostulation(LocalDateTime.now())
+                                .status("ACCEPTEE")
+                                .build()
+                )).build();
+
+        EtudiantCandidaturesDTO candidaturesUmberto = EtudiantCandidaturesDTO.builder()
+                .etudiant(umberto)
+                .candidatures(List.of(
+                        EtudiantCandidatureDTO.builder()
+                                .stage(StageSimpleDTO.toDTOfromStageDTO(StageDTO.fromModel(stage, jean)))
+                                .dateDecision(LocalDateTime.now())
+                                .datePostulation(LocalDateTime.now())
+                                .status("ACCEPTEE")
+                                .build(),
+                        EtudiantCandidatureDTO.builder()
+                                .stage(StageSimpleDTO.toDTOfromStageDTO(StageDTO.fromModel(stage2, jean)))
+                                .dateDecision(LocalDateTime.now())
+                                .datePostulation(LocalDateTime.now())
+                                .status("REFUSEE")
+                                .build()
+                )).build();
+        when(gestionnaireService.getAllEtudiantsCandidatures()).thenReturn(List.of(candidatureJohn, candidaturesUmberto));
+
+        MvcResult result = mockMvc.perform(get("/gestionnaire/getCandidatures"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        ReturnEntityDTO<List<EtudiantCandidaturesDTO>> candidatures = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
+        });
+
+        List<EtudiantCandidaturesDTO> candidaturesList = candidatures.getData();
+
+        List<EtudiantCandidatureDTO> candidaturesJohnDTO = candidaturesList.getFirst().getCandidatures();
+        List<EtudiantCandidatureDTO> candidaturesUmbertoDTO = candidaturesList.get(1).getCandidatures();
+
+        assertThat(candidaturesJohnDTO.getFirst().getStatus()).isEqualTo(String.valueOf(CandidatureStatus.ACCEPTEE));
+        assertThat(candidaturesUmbertoDTO.getFirst().getStatus()).isEqualTo(String.valueOf(CandidatureStatus.ACCEPTEE));
+        assertThat(candidaturesUmbertoDTO.get(1).getStatus()).isEqualTo(String.valueOf(CandidatureStatus.REFUSEE));
     }
 }

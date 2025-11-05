@@ -13,16 +13,25 @@ let pending = [];
 
 export function setAccessToken(token) {
     accessToken = token || null;
+    if (token) {
+        http.defaults.headers.common.Authorization = `Bearer ${token}`;
+    } else {
+        delete http.defaults.headers.common.Authorization;
+    }
 }
+
 
 export function getAccessToken() {
     return accessToken;
 }
 
 http.interceptors.request.use((config) => {
+
     if (accessToken) {
         config.headers.Authorization = `Bearer ${accessToken}`;
     }
+    console.debug("[http] Authorization ->", config.headers?.Authorization);
+
     return config;
 });
 
@@ -35,7 +44,7 @@ http.interceptors.response.use(
 
         if (error.response.status === 401 && !original._retry && !original.url.includes('/login')) {
             original._retry = true;
-
+            console.debug("[http] Authorization =>", config.headers?.Authorization);
             if (isRefreshing) {
                 return new Promise((resolve, reject) => {
                     pending.push({ resolve, reject });

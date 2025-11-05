@@ -1,9 +1,6 @@
 package com.AL565.prose.service.dto.notifications;
 
-import com.AL565.prose.model.Candidature;
-import com.AL565.prose.model.notifications.Notification;
-import com.AL565.prose.model.notifications.PostulationNotification;
-import com.AL565.prose.model.notifications.StageNotification;
+import com.AL565.prose.model.notifications.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -23,24 +20,47 @@ public class NotificationSummaryDTO {
     private LocalDateTime readAt;
     private LocalDateTime secondaryRecipientReadAt;
     private Long stageId;
+    private Long cvId;
     private Long candidatureId;
     private Long etudiantId;
+    private Long convocation;
 
     public static NotificationSummaryDTO toDTO(Notification n) {
         if (n == null) return null;
 
         Long stageId = null;
         Long candidatureId = null;
+        Long cvId = null;
         Long etudiantId = null;
+        Long convocation = null;
 
-        if (n instanceof StageNotification sn) {
-            if (sn.getStage() != null) stageId = sn.getStage().getId();
-        } else if (n instanceof PostulationNotification pn) {
-            Candidature c = pn.getCandidature();
-            if (c != null) {
-                candidatureId = c.getId();
-                if (c.getStage() != null) stageId = c.getStage().getId();
-                if (c.getEtudiant() != null) etudiantId = c.getEtudiant().getId();
+        switch (n) {
+            case StageNotification sn -> {
+                if (sn.getStage() != null) stageId = sn.getStage().getId();
+            }
+            case PostulationNotification pn -> {
+                Long candidaturePostulationId = pn.getCandidaturePostulationId();
+                Long candidatueEtudiantId = pn.getEtudiantPostulationId();
+                Long candidatureStageId = pn.getStagePostulationId();
+                if (candidaturePostulationId != null) {
+                    candidatureId = candidaturePostulationId;
+                    if (candidatureStageId != null) stageId = candidatureStageId;
+                    if (candidatueEtudiantId != null) etudiantId = candidatueEtudiantId;
+                }
+            }
+            case GestionnaireCvNotification gcn -> {
+                if (gcn.getCv() != null) {
+                    cvId = gcn.getCv().getId();
+                }
+            }
+            case ConvocationNotification cn -> {
+                Long candidatureConvocationId = cn.getCandidatureConvocationId();
+                if (candidatureConvocationId != null) {
+                    convocation = candidatureConvocationId;
+                    etudiantId = cn.getEtudiantConvocationId();
+                }
+            }
+            default -> {
             }
         }
 
@@ -48,14 +68,14 @@ public class NotificationSummaryDTO {
                 .id(n.getId())
                 .type(n.getType() != null ? n.getType().getDisplayName() : null)
                 .message(n.getMessage())
-                .senderEmail(n.getSenderEmail())
                 .createdAt(n.getCreatedAt())
                 .readAt(n.getFirstRecipientReadAt())
                 .secondaryRecipientReadAt(n.getSecondRecipientReadAt())
                 .stageId(stageId)
                 .candidatureId(candidatureId)
                 .etudiantId(etudiantId)
+                .cvId(cvId)
+                .convocation(convocation)
                 .build();
     }
-
 }

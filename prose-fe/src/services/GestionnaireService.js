@@ -51,7 +51,7 @@ export const rejectCv = async (cvId, comment, token) => {
     try {
         await axios.post(
             `${BASE_URL_GESTIONNAIRE}/cv/change-status`,
-            { id: cvId, status: "Rejected", comment: comment },
+            {id: cvId, status: "Rejected", comment: comment},
             {
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -92,11 +92,12 @@ export async function getAllStages(token) {
 }
 
 export async function getGestionnaireNotifications(token) {
-    const { data } = await axios.get(`${BASE_URL_GESTIONNAIRE}/notifications/all`, {
+    const {data} = await axios.get(`${BASE_URL_GESTIONNAIRE}/notifications/all`, {
         headers: {
             'Authorization': `Bearer ${token}`
         }
     });
+    console.log(data);
     return data;
 }
 
@@ -133,4 +134,18 @@ export async function getStageApplicantsManager(token) {
         console.error("Erreur getStageApplicantsManager:", e);
         return [];
     }
+}
+
+export async function generateEntente(candidatureId, token) {
+    const BASE_URL_GESTIONNAIRE = "http://localhost:8080/gestionnaire";
+    const url = `${BASE_URL_GESTIONNAIRE}/candidatures/${candidatureId}/generer-entente`;
+    const res = await axios.post(url, {}, {
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        }
+    });
+
+    return res?.data?.data ?? res?.data;
 }
