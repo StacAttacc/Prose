@@ -31,7 +31,7 @@ export default function GenererEntente() {
 
     return (
         <div className="p-4 max-w-5xl mx-auto">
-            <h1 className="text-2xl font-bold mb-4">Générer une entente de stage</h1>
+            <h1 className="text-2xl font-bold mb-4">Générer ou récupérer une entente de stage</h1>
             <div className="flex gap-2 mb-4">
                 <input
                     type="number"
@@ -45,7 +45,7 @@ export default function GenererEntente() {
                     disabled={!candidatureId || loading}
                     className="px-4 py-2 rounded bg-emerald-600 text-white disabled:opacity-50"
                 >
-                    {loading ? "Génération..." : "Générer"}
+                    {loading ? "Chargement..." : "Générer / Récupérer"}
                 </button>
             </div>
 

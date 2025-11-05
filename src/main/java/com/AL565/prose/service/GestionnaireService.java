@@ -249,10 +249,16 @@ public class GestionnaireService {
             throw new IllegalArgumentException("La candidature doit être confirmée pour générer une entente");
         }
 
-        if (ententeRepository.existsByCandidatureId(candidatureId)) {
-            throw new IllegalArgumentException("Une entente existe déjà pour cette candidature");
+        // Vérifier si une entente existe déjà, si oui la retourner
+        Optional<Entente> existingEntente = ententeRepository.findByCandidatureId(candidatureId);
+        if (existingEntente.isPresent()) {
+            Entente entente = existingEntente.get();
+            Stage stage = candidature.getStage();
+            Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(stage.getEmployeurEmail());
+            return EntenteDTO.toDTO(entente, employeur);
         }
 
+        // Sinon, créer une nouvelle entente
         Etudiant etudiant = candidature.getEtudiant();
         Stage stage = candidature.getStage();
         Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(stage.getEmployeurEmail());
