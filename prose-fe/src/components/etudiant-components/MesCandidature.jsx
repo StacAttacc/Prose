@@ -1,8 +1,11 @@
 import { useState, useEffect, useMemo } from "react";
 import { getMesCandidatures, respondToOffer } from "../../services/EtudiantService.js";
 import StageDetailsModal from "../display-components/StageDetailsModal.jsx";
+import {useLocation, useNavigate} from "react-router-dom";
 
 export default function MesCandidature() {
+    const location = useLocation();
+    const navigate = useNavigate();
     const [candidatures, setCandidatures] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -33,6 +36,19 @@ export default function MesCandidature() {
 
         fetchCandidatures();
     }, []);
+
+    useEffect(() => {
+        const openCandidatureFromNotif = location?.state?.openCandidatureId;
+        if (!openCandidatureFromNotif) return;
+
+        if (candidatures && candidatures.length > 0) {
+            const candidatureToOpen = candidatures.find(c => String(c.id) === String(openCandidatureFromNotif));
+            if (candidatureToOpen) {
+                handleViewDetails(candidatureToOpen);
+                navigate(location.pathname, { replace: true, state: {} });
+            }
+        }
+    }, [location.state?.openCandidatureId, candidatures, navigate, location]);
 
   const filteredCandidatures = useMemo(() => {
     return candidatures.filter(candidature => {

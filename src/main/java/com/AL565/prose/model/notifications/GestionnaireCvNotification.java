@@ -8,9 +8,9 @@ import jakarta.persistence.OneToOne;
 import lombok.*;
 
 @Entity
-@DiscriminatorValue("gestionnaire_cv")
 @Getter
 @Setter
+@DiscriminatorValue("gestionnaire_cv")
 @NoArgsConstructor
 @AllArgsConstructor
 public class GestionnaireCvNotification extends Notification {

@@ -4,10 +4,7 @@ import com.AL565.prose.model.Employeur;
 import com.AL565.prose.model.Etudiant;
 import com.AL565.prose.model.OfferStatus;
 import com.AL565.prose.model.Stage;
-import com.AL565.prose.model.notifications.EtudiantCvNotification;
-import com.AL565.prose.model.notifications.GestionnaireCvNotification;
-import com.AL565.prose.model.notifications.NotificationType;
-import com.AL565.prose.model.notifications.PostulationNotification;
+import com.AL565.prose.model.notifications.*;
 import com.AL565.prose.repository.*;
 import com.AL565.prose.model.CV;
 import com.AL565.prose.model.CvStatus;
@@ -59,6 +56,7 @@ public class EtudiantService {
     private final NotificationRepository notificationRepository;
     private final GestionnaireCvNotificationRepository gestionnaireCvNotificationRepository;
     private final EtudiantCvNotificationRepository etudiantCvNotificationRepository;
+    private final ConvocationNotificationRepository convocationNotificationRepository;
     private final NotificationsHelper notificationsHelper;
 
     public void inscrireEtudiant(EtudiantPasswordDTO dto) {
@@ -232,7 +230,10 @@ public class EtudiantService {
         PostulationNotification notification = new PostulationNotification();
         notification.setFirstRecipientReadAt(null);
         notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
-        notification.setCandidature(candidature);
+        notification.setCandidaturePostulationId(candidature.getId());
+        notification.setEtudiantPostulationId(candidature.getEtudiant().getId());
+        notification.setStagePostulationId(candidature.getStage().getId());
+        notification.setEmployeurEmail(candidature.getStage().getEmployeurEmail());
         notification.setType(NotificationType.POSTULATION_NOTIFICATION);
         notification.setMessage(studentName + " a postulé pour le stage " + companyName);
         notificationRepository.save(notification);
@@ -261,10 +262,16 @@ public class EtudiantService {
                             null,
                             etudiantEmail);
 
+            List<ConvocationNotification> convocationNotifications = convocationNotificationRepository
+                    .findByFirstRecipientReadAtAndEtudiantConvocationEmail(null, etudiantEmail);
+
             NotificationGroupDTO cvGroup = NotificationGroupDTO
                     .toDTO(NotificationType.ETUDIANT_CV_NOTIFICATION.getDisplayName(), cvNotifications);
 
-            return NotificationsResponseDTO.toDTO(List.of(cvGroup));
+            NotificationGroupDTO convocationGroup = NotificationGroupDTO
+                    .toDTO(NotificationType.CONVOCATION_NOTIFICATION.getDisplayName(), convocationNotifications);
+
+            return NotificationsResponseDTO.toDTO(List.of(cvGroup, convocationGroup));
         } catch (Exception e) {
             throw new NotificationExceptions.NotificationFetchException();
         }
