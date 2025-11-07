@@ -156,6 +156,7 @@ const translations = {
     raisonRejetObligatoire: 'Raison de rejet (obligatoire pour rejeter le stage) :',
     expliquerRejetStage: 'Expliquez pourquoi ce stage est rejeté...',
     genererEntente: 'Générer entente',
+    genererEtTelechargerEntente: 'Générer et télécharger l\'entente de stage',
     generationPDF: 'Génération du PDF…',
     postuler: 'Postuler',
     veuillezFournirRaison: 'Veuillez fournir une raison de rejet',
@@ -460,6 +461,7 @@ const translations = {
     raisonRejetObligatoire: 'Rejection reason (required to reject the stage):',
     expliquerRejetStage: 'Explain why this stage is rejected...',
     genererEntente: 'Generate agreement',
+    genererEtTelechargerEntente: 'Generate and download the internship agreement',
     generationPDF: 'Generating PDF…',
     postuler: 'Apply',
     veuillezFournirRaison: 'Please provide a rejection reason',
@@ -675,5 +677,33 @@ export const useI18n = () => {
     throw new Error('useI18n must be used within an I18nProvider');
   }
   return context;
+};
+
+// Fonction utilitaire pour traduire les disciplines
+export const translateDiscipline = (discipline, locale = 'fr') => {
+  if (!discipline) return '';
+  
+  const disciplineUpper = discipline.toUpperCase();
+  
+  // Mapping des valeurs enum vers les clés de traduction
+  const disciplineMap = {
+    'INFORMATIQUE': 'informatique',
+    'INFIRMIER': 'infirmier',
+    'GENIE_CIVIL': 'genieCivil',
+    'GENIE CIVIL': 'genieCivil',
+    'COMPTABILITE': 'comptabilite',
+    'MARKETING': 'marketing',
+    'MECANIQUE': 'mecanique',
+    'AUTRE': 'autre',
+  };
+  
+  // Chercher dans le mapping (essayer d'abord avec la valeur en majuscules, puis la valeur originale)
+  const key = disciplineMap[disciplineUpper] || disciplineMap[discipline];
+  if (key && translations[locale] && translations[locale][key]) {
+    return translations[locale][key];
+  }
+  
+  // Si pas trouvé, retourner la valeur originale
+  return discipline;
 };
 

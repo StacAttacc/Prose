@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from "../../context/AuthContext.jsx";
-import { useI18n } from "../../context/I18nContext.jsx";
+import { useI18n, translateDiscipline } from "../../context/I18nContext.jsx";
 import { approveCv, fetchAllCVs, rejectCv } from "../../services/GestionnaireService.js";
 import { Worker, Viewer } from '@react-pdf-viewer/core';
 import {useLocation, useNavigate} from "react-router-dom";
@@ -13,7 +13,7 @@ const statusColors = {
 
 const GestionCV = () => {
     const { user } = useAuth();
-    const { t } = useI18n();
+    const { t, locale } = useI18n();
     const token = user?.token;
     const location = useLocation();
     const navigate = useNavigate();
@@ -188,7 +188,7 @@ const GestionCV = () => {
                             >
                                 <h4 className="font-bold text-center">{cv.etudiantPrenom} {cv.etudiantNom}</h4>
                                 <div className="border-b my-2"></div>
-                                <p className="text-gray-500">{t('discipline')}: {cv.discipline}</p>
+                                <p className="text-gray-500">{t('discipline')}: {translateDiscipline(cv.discipline, locale)}</p>
                                 <p className="text-gray-500">{t('email')}: {cv.etudiantEmail}</p>
                             </div>
                         ))}
@@ -209,7 +209,7 @@ const GestionCV = () => {
                                     >
                                         <h4 className="font-bold text-center">{cv.etudiantPrenom} {cv.etudiantNom}</h4>
                                         <div className="border-b my-2"></div>
-                                        <p className="text-gray-500">{t('discipline')}: {cv.discipline}</p>
+                                        <p className="text-gray-500">{t('discipline')}: {translateDiscipline(cv.discipline, locale)}</p>
                                         <p className="text-gray-500">{t('email')}: {cv.etudiantEmail}</p>
                                     </div>
                                 ))}
@@ -227,7 +227,7 @@ const GestionCV = () => {
                                     >
                                         <h4 className="font-bold text-center">{cv.etudiantPrenom} {cv.etudiantNom}</h4>
                                         <div className="border-b my-2"></div>
-                                        <p className="text-gray-500">{t('discipline')}: {cv.discipline}</p>
+                                        <p className="text-gray-500">{t('discipline')}: {translateDiscipline(cv.discipline, locale)}</p>
                                         <p className="text-gray-500">{t('email')}: {cv.etudiantEmail}</p>
                                     </div>
                                 ))}
@@ -260,7 +260,7 @@ const GestionCV = () => {
                             <span className="font-semibold">{t('nomFichier')}</span> {selectedCv.name}
                         </div>
                         <div className="mb-3">
-                            <span className="font-semibold">{t('discipline')}:</span> {selectedCv.discipline}
+                            <span className="font-semibold">{t('discipline')}:</span> {translateDiscipline(selectedCv.discipline, locale)}
                         </div>
                         <div className="mb-4">
                             {pdfUrl ? (
