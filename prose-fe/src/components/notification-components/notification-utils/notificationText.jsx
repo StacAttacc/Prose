@@ -58,5 +58,13 @@ export function translateNotificationMessage(message) {
         return t('cvRejete');
     }
     
+    // Traduire les messages de type "{nom} a soumis un nouveau CV"
+    const aSoumisPattern = /^(.+?)\s+a soumis un nouveau CV$/;
+    const match = message.match(aSoumisPattern);
+    if (match) {
+        const studentName = match[1];
+        return `${studentName} ${t('aSoumisNouveauCV')}`;
+    }
+    
     return message;
 }

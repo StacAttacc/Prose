@@ -121,6 +121,7 @@ const translations = {
     erreurChargementNotifications: 'Erreur lors du chargement des notifications',
     cvApprouve: 'Votre CV a été approuvé.',
     cvRejete: 'Votre CV a été rejeté.',
+    aSoumisNouveauCV: 'a soumis un nouveau CV',
     
     // GestionCV
     rechercherParNom: 'Rechercher par nom d\'étudiant...',
@@ -426,6 +427,7 @@ const translations = {
     erreurChargementNotifications: 'Error loading notifications',
     cvApprouve: 'Your CV has been approved.',
     cvRejete: 'Your CV has been rejected.',
+    aSoumisNouveauCV: 'has submitted a new CV',
     
     // GestionCV
     rechercherParNom: 'Search by student name...',
