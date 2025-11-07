@@ -41,6 +41,22 @@ public class EntenteService {
     private final StageRepository stageRepository;
 
     @Transactional
+    public EntenteDTO getEntenteByCandidatureId(Long candidatureId) throws Exception {
+        Candidature candidature = candidatureRepository.findById(candidatureId)
+                .orElseThrow(() -> new IllegalArgumentException("Candidature non trouvée"));
+
+        Optional<Entente> existingEntente = ententeRepository.findByCandidatureId(candidatureId);
+        if (existingEntente.isPresent()) {
+            Entente entente = existingEntente.get();
+            Stage stage = candidature.getStage();
+            Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(stage.getEmployeurEmail());
+            return EntenteDTO.toDTO(entente, employeur);
+        }
+
+        throw new IllegalArgumentException("Aucune entente trouvée pour cette candidature");
+    }
+
+    @Transactional
     public EntenteDTO genererEntente(Long candidatureId) throws Exception {
         Candidature candidature = candidatureRepository.findById(candidatureId)
                 .orElseThrow(() -> new IllegalArgumentException("Candidature non trouvée"));

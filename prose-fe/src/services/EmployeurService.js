@@ -75,6 +75,36 @@ export const markNotificationsRead = (notificationIds = [], token) => {
     return Promise.all(notificationIds.map(id => markNotificationRead(id, token)));
 };
 
+export async function checkEntenteExists(candidatureId, token) {
+    try {
+        const res = await http.get(`/employeur/candidatures/${candidatureId}/entente`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        return { exists: true, data: res.data?.data || res.data };
+    } catch (error) {
+        if (error.response?.status === 404) {
+            return { exists: false };
+        }
+        throw error;
+    }
+}
+
+export async function signEntente(ententeId, password, token) {
+    const res = await fetch(`${API}/employeur/ententes/${ententeId}/signer`, {
+        method: "PUT",
+        headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ password })
+    });
+    return await parseJsonOrThrow(res);
+}
+
 export async function convoquerEntrevue(candidatureId, interviewData, token) {
     const res = await fetch(`${API}/employeur/candidatures/${candidatureId}/convoquer`, {
         method: "PUT",
