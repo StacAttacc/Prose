@@ -1,7 +1,7 @@
 export function getDefaultNavigationPath(user) {
     if (user.role === "GESTIONNAIRE") return "/gestionnaire/candidatures";
     if (user.role === "EMPLOYEUR") return `/employeur/posted-stages`;
-    if (user.role === "ETUDIANT") return `etudiant/mon-cv`;
+    if (user.role === "ETUDIANT") return `/etudiant/mon-cv`;
     return "/";
 }
 
