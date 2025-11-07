@@ -147,7 +147,6 @@ export default function Notifications() {
                                         <ul className="mt-3 space-y-2">
                                             {(list || []).map((n) => (
                                                 <NotificationItem
-                                                    itemCount={count}
                                                     notification={n}
                                                     markAndNavigate={markAndNavigate}
                                                     typeKey={typeKey}
