@@ -4,12 +4,19 @@ import {getAllStages, submitStageDecision} from "../../services/GestionnaireServ
 import StageDetailsModal from "../display-components/StageDetailsModal";
 import ErrorBanner from "../display-components/ErrorBanner.jsx";
 import { useLocation, useNavigate } from "react-router-dom";
-import { getSessionFromDate, isSessionAnterieure } from "../../utils/dateUtils";
+import { useYear } from "../../context/YearContext";
 
 export default function GestRechercheStages() {
   const { user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const { selectedYear } = useYear();
+  
+  // Debug: vérifier si selectedYear change
+  useEffect(() => {
+    console.log('SelectedYear changed:', selectedYear);
+  }, [selectedYear]);
+  
   const [stages, setStages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -21,24 +28,29 @@ export default function GestRechercheStages() {
   const [locationFilter, setLocationFilter] = useState("");
   const [compensationFilter, setCompensationFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
-  const [sessionFilter, setSessionFilter] = useState("");
 
   useEffect(() => {
     async function fetchAllStages() {
       try {
-        // Le backend filtre par année, mais pour les sessions antérieures on veut toutes les années passées
-        // On ne passe pas de year pour obtenir l'année actuelle par défaut, puis on filtre côté front-end
-        // pour les dates passées (sessions antérieures)
-        const data = await getAllStages(user.token);
-        setStages(data.data);
+        setLoading(true);
+        console.log('Fetching stages for year:', selectedYear, 'type:', typeof selectedYear);
+        const data = await getAllStages(user.token, selectedYear);
+        console.log('Received stages count:', data?.data?.length);
+        if (data?.data) {
+          console.log('Sample stage dates:', data.data.slice(0, 3).map(s => ({ id: s.id, startDate: s.startDate })));
+        }
+        setStages(data.data || []);
       } catch (err) {
+        console.error('Error fetching stages:', err);
         setError(err.message);
       } finally {
         setLoading(false);
       }
     }
-    fetchAllStages();
-  }, [user.token]);
+    if (user.token && selectedYear) {
+      fetchAllStages();
+    }
+  }, [user.token, selectedYear]);
 
     useEffect(() => {
         const openStageId = location?.state?.openStageId;
@@ -54,9 +66,6 @@ export default function GestRechercheStages() {
     
     const filteredStages = useMemo(() => {
     return stages.filter(stage => {
-      const isAnterieure = isSessionAnterieure(stage.startDate);
-      if (!isAnterieure) return false;
-      
       const matchesSearch = stage.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           stage.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           stage.employeur?.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -72,12 +81,9 @@ export default function GestRechercheStages() {
       const matchesStatus = !statusFilter || 
                            stage.status.toLowerCase().includes(statusFilter.toLowerCase());
       
-      const matchesSession = !sessionFilter || 
-                            getSessionFromDate(stage.startDate) === sessionFilter;
-      
-      return matchesSearch && matchesLocation && matchesCompensation && matchesStatus && matchesSession;
+      return matchesSearch && matchesLocation && matchesCompensation && matchesStatus;
     });
-  }, [stages, searchTerm, locationFilter, compensationFilter, statusFilter, sessionFilter]);
+  }, [stages, searchTerm, locationFilter, compensationFilter, statusFilter]);
 
   const handleStageClick = (stage) => {
     setSelectedStage(stage);
@@ -124,7 +130,6 @@ export default function GestRechercheStages() {
     setLocationFilter("");
     setCompensationFilter("");
     setStatusFilter("");
-    setSessionFilter("");
   };
 
   const getStatusColor = (status) => {
@@ -161,7 +166,7 @@ export default function GestRechercheStages() {
       <h1 className="text-2xl font-bold mb-6 text-center">Recherche/Approbation de Stages</h1>
 
       <div className="mb-8 bg-white rounded-lg shadow-md border border-gray-200 p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Recherche
@@ -214,22 +219,6 @@ export default function GestRechercheStages() {
               <option value="SOUMISE">Soumise</option>
               <option value="APPROUVEE">Approuvée</option>
               <option value="REJETEE">Rejetée</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Session antérieure
-            </label>
-            <select
-              value={sessionFilter}
-              onChange={(e) => setSessionFilter(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-            >
-              <option value="">Toutes les sessions</option>
-              <option value="HIVER">Hiver</option>
-              <option value="ETE">Été</option>
-              <option value="AUTOMNE">Automne</option>
             </select>
           </div>
 

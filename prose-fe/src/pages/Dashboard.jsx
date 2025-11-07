@@ -4,11 +4,13 @@ import {Outlet} from "react-router";
 import {useAuth} from "../context/AuthContext.jsx";
 import {useCv} from "../context/CvContext.jsx";
 import Notifications from "../components/notification-components/Notifications.jsx";
+import {useYear} from "../context/YearContext.jsx";
 
 export default function Dashboard() {
     const { user } = useAuth();
     const { hasCV } = useCv();
     const nav = useNavigate();
+    const { selectedYear, setSelectedYear } = useYear();
 
     async function userLogout() {
         await logout();
@@ -33,7 +35,26 @@ export default function Dashboard() {
                                     <p className="text-white pl-4 text-2xl">Prose</p>
                                 </div>
                             </div>
-                            <div className="ml-auto">
+                            <div className="ml-auto flex items-center gap-4">
+                                {user.role === "GESTIONNAIRE" && (
+                                    <div className="flex items-center gap-2">
+                                        <label className="text-white text-sm font-medium">Année:</label>
+                                        <select
+                                            value={selectedYear}
+                                            onChange={(e) => setSelectedYear(e.target.value)}
+                                            className="px-3 py-2 border border-white/30 rounded-md bg-teal-600 text-white focus:ring-2 focus:ring-white focus:border-white"
+                                        >
+                                            {Array.from({ length: 8 }, (_, i) => {
+                                                const year = 2025 + i;
+                                                return (
+                                                    <option key={year} value={year.toString()}>
+                                                        {year}
+                                                    </option>
+                                                );
+                                            })}
+                                        </select>
+                                    </div>
+                                )}
                                 <p className="text-white text-lg">Bienvenue {user.firstName + " " + user.lastName}
                                     <button type="button"
                                             className="text-white bg-gradient-to-r
@@ -112,7 +133,7 @@ export default function Dashboard() {
             </header>
             <main className="flex">
                 <div className="mx-auto">
-                    <Outlet/>
+                    <Outlet />
                 </div>
                 {(user.role === "GESTIONNAIRE" || user.role === "EMPLOYEUR" || user.role === "ETUDIANT") && (
                     <div className="px-1 sm:px-1 lg:px-2">

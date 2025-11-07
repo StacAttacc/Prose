@@ -83,13 +83,23 @@ export const markNotificationsRead = (notificationIds = [], token) => {
 };
 
 export async function getAllStages(token, year = null) {
-    const params = year ? { year } : {};
-    const {data} = await axios.get(`${BASE_URL_GESTIONNAIRE}/stages`, {
+    const params = {};
+    if (year && year !== null && year !== undefined && year !== '') {
+        params.year = year.toString();
+    }
+    const url = `${BASE_URL_GESTIONNAIRE}/stages`;
+    console.log('Calling getAllStages - URL:', url, 'params:', params, 'year value:', year, 'year type:', typeof year);
+    const {data} = await axios.get(url, {
         headers: {
             'Authorization': `Bearer ${token}`
         },
         params: params
     });
+    console.log('Backend response - number of stages:', data?.data?.length);
+    if (data?.data && data.data.length > 0) {
+        const years = data.data.map(s => s.startDate ? new Date(s.startDate).getFullYear() : 'N/A');
+        console.log('Years in returned stages:', [...new Set(years)]);
+    }
     return data;
 }
 
