@@ -5,6 +5,36 @@ import StageDetailsModal from "../display-components/StageDetailsModal";
 import ErrorBanner from "../display-components/ErrorBanner.jsx";
 import { useLocation, useNavigate } from "react-router-dom";
 
+const getSessionFromDate = (startDate) => {
+  if (!startDate) return null;
+  
+  let date;
+  if (typeof startDate === 'string') {
+    date = new Date(startDate);
+  } else if (startDate instanceof Date) {
+    date = startDate;
+  } else {
+    return null;
+  }
+  
+  if (isNaN(date.getTime())) return null;
+  
+  const month = date.getMonth() + 1; 
+  
+  if (month >= 1 && month <= 4) {
+    return 'HIVER';
+  }
+  // Été: mai à août (mois 5-8)
+  else if (month >= 5 && month <= 8) {
+    return 'ETE';
+  }
+  // Automne: septembre à décembre (mois 9-12)
+  else if (month >= 9 && month <= 12) {
+    return 'AUTOMNE';
+  }
+  
+  return null;
+};
 
 export default function GestRechercheStages() {
   const { user } = useAuth();
@@ -21,6 +51,7 @@ export default function GestRechercheStages() {
   const [locationFilter, setLocationFilter] = useState("");
   const [compensationFilter, setCompensationFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [sessionFilter, setSessionFilter] = useState("");
 
   useEffect(() => {
     async function fetchAllStages() {
@@ -65,9 +96,12 @@ export default function GestRechercheStages() {
       const matchesStatus = !statusFilter || 
                            stage.status.toLowerCase().includes(statusFilter.toLowerCase());
       
-      return matchesSearch && matchesLocation && matchesCompensation && matchesStatus;
+      const matchesSession = !sessionFilter || 
+                            getSessionFromDate(stage.startDate) === sessionFilter;
+      
+      return matchesSearch && matchesLocation && matchesCompensation && matchesStatus && matchesSession;
     });
-  }, [stages, searchTerm, locationFilter, compensationFilter, statusFilter]);
+  }, [stages, searchTerm, locationFilter, compensationFilter, statusFilter, sessionFilter]);
 
   const handleStageClick = (stage) => {
     setSelectedStage(stage);
@@ -114,6 +148,7 @@ export default function GestRechercheStages() {
     setLocationFilter("");
     setCompensationFilter("");
     setStatusFilter("");
+    setSessionFilter("");
   };
 
   const getStatusColor = (status) => {
@@ -150,7 +185,7 @@ export default function GestRechercheStages() {
       <h1 className="text-2xl font-bold mb-6 text-center">Recherche/Approbation de Stages</h1>
 
       <div className="mb-8 bg-white rounded-lg shadow-md border border-gray-200 p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 mb-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Recherche
@@ -203,6 +238,22 @@ export default function GestRechercheStages() {
               <option value="SOUMISE">Soumise</option>
               <option value="APPROUVEE">Approuvée</option>
               <option value="REJETEE">Rejetée</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Session antérieure
+            </label>
+            <select
+              value={sessionFilter}
+              onChange={(e) => setSessionFilter(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+            >
+              <option value="">Toutes les sessions</option>
+              <option value="HIVER">Hiver</option>
+              <option value="ETE">Été</option>
+              <option value="AUTOMNE">Automne</option>
             </select>
           </div>
 
