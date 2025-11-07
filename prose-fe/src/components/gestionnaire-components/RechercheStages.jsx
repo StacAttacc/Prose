@@ -34,6 +34,24 @@ const getSessionFromDate = (startDate) => {
   return null;
 };
 
+const isSessionAnterieure = (stageDate) => {
+  if (!stageDate) return false;
+  
+  let date;
+  if (typeof stageDate === 'string') {
+    date = new Date(stageDate);
+  } else if (stageDate instanceof Date) {
+    date = stageDate;
+  } else {
+    return false;
+  }
+  
+  if (isNaN(date.getTime())) return false;
+  
+  const now = new Date();
+  return date < now;
+};
+
 export default function GestRechercheStages() {
   const { user } = useAuth();
   const location = useLocation();
@@ -79,6 +97,10 @@ export default function GestRechercheStages() {
 
     const filteredStages = useMemo(() => {
     return stages.filter(stage => {
+      // Filtrer d'abord par sessions antérieures (dates passées)
+      const isAnterieure = isSessionAnterieure(stage.startDate);
+      if (!isAnterieure) return false;
+      
       const matchesSearch = stage.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           stage.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           stage.employeur?.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
