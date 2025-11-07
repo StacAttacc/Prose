@@ -41,6 +41,7 @@ export default function GestionnaireEtuCandidature() {
         (async () => {
             try {
                 setLoading(true);
+                setNote(""); // Réinitialiser le message au début du chargement
                 const data = await getStageApplicantsManager(user?.token, selectedYear);
 
                 const arr = (Array.isArray(data) ? data : []).map((dto) => {
@@ -82,8 +83,15 @@ export default function GestionnaireEtuCandidature() {
                     };
                 });
 
-                if (mounted) setStudents(arr);
-                if (mounted && !arr.length) setNote(t('aucunEtudiantAnnee', { year: selectedYear }));
+                if (mounted) {
+                    setStudents(arr);
+                    // Réinitialiser le message si des étudiants sont trouvés, sinon afficher le message
+                    if (arr.length === 0) {
+                        setNote(t('aucunEtudiantAnnee', { year: selectedYear }));
+                    } else {
+                        setNote(""); // Réinitialiser le message s'il y a des étudiants
+                    }
+                }
             } catch (e) {
                 console.error("Erreur chargement candidatures:", e);
                 if (mounted) setNote(t('erreurChargement'));
@@ -92,7 +100,7 @@ export default function GestionnaireEtuCandidature() {
             }
         })();
         return () => (mounted = false);
-    }, [user?.token, selectedYear]);
+    }, [user?.token, selectedYear, t]);
 
     useEffect(() => {
         if (loading || modalStudent) return;
