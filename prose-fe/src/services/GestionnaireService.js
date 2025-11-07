@@ -82,11 +82,13 @@ export const markNotificationsRead = (notificationIds = [], token) => {
     return Promise.all(notificationIds.map(id => markNotificationRead(id, token)));
 };
 
-export async function getAllStages(token) {
+export async function getAllStages(token, year = null) {
+    const params = year ? { year } : {};
     const {data} = await axios.get(`${BASE_URL_GESTIONNAIRE}/stages`, {
         headers: {
             'Authorization': `Bearer ${token}`
-        }
+        },
+        params: params
     });
     return data;
 }

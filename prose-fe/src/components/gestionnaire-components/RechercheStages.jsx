@@ -4,53 +4,7 @@ import {getAllStages, submitStageDecision} from "../../services/GestionnaireServ
 import StageDetailsModal from "../display-components/StageDetailsModal";
 import ErrorBanner from "../display-components/ErrorBanner.jsx";
 import { useLocation, useNavigate } from "react-router-dom";
-
-const getSessionFromDate = (startDate) => {
-  if (!startDate) return null;
-  
-  let date;
-  if (typeof startDate === 'string') {
-    date = new Date(startDate);
-  } else if (startDate instanceof Date) {
-    date = startDate;
-  } else {
-    return null;
-  }
-  
-  if (isNaN(date.getTime())) return null;
-  
-  const month = date.getMonth() + 1; 
-  
-  if (month >= 1 && month <= 4) {
-    return 'HIVER';
-  }
-  else if (month >= 5 && month <= 8) {
-    return 'ETE';
-  }
-  else if (month >= 9 && month <= 12) {
-    return 'AUTOMNE';
-  }
-  
-  return null;
-};
-
-const isSessionAnterieure = (stageDate) => {
-  if (!stageDate) return false;
-  
-  let date;
-  if (typeof stageDate === 'string') {
-    date = new Date(stageDate);
-  } else if (stageDate instanceof Date) {
-    date = stageDate;
-  } else {
-    return false;
-  }
-  
-  if (isNaN(date.getTime())) return false;
-  
-  const now = new Date();
-  return date < now;
-};
+import { getSessionFromDate, isSessionAnterieure } from "../../utils/dateUtils";
 
 export default function GestRechercheStages() {
   const { user } = useAuth();
@@ -72,6 +26,9 @@ export default function GestRechercheStages() {
   useEffect(() => {
     async function fetchAllStages() {
       try {
+        // Le backend filtre par année, mais pour les sessions antérieures on veut toutes les années passées
+        // On ne passe pas de year pour obtenir l'année actuelle par défaut, puis on filtre côté front-end
+        // pour les dates passées (sessions antérieures)
         const data = await getAllStages(user.token);
         setStages(data.data);
       } catch (err) {
@@ -94,10 +51,9 @@ export default function GestRechercheStages() {
             navigate(location.pathname, { replace: true, state: {} });
         }
     }, [location?.state?.openStageId, stages, navigate, location?.pathname]);
-
+    
     const filteredStages = useMemo(() => {
     return stages.filter(stage => {
-      // Filtrer d'abord par sessions antérieures (dates passées)
       const isAnterieure = isSessionAnterieure(stage.startDate);
       if (!isAnterieure) return false;
       
