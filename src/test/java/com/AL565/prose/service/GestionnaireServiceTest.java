@@ -18,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.Collections;
@@ -111,7 +112,7 @@ class GestionnaireServiceTest {
         when(stageRepository.findByStatus(OfferStatus.SOUMISE)).thenReturn(List.of(stage1, stage2));
         when(employeurRepository.getEmployeurByCredentials_Username(anyString())).thenReturn(employeur);
 
-        List<StageDTO> result = gestionnaireService.getStagesByStatus("SOUMISE");
+        List<StageDTO> result = gestionnaireService.getStagesByStatus("SOUMISE", null);
 
         assertThat(result).hasSize(2);
         assertThat(result.getFirst().getId()).isEqualTo(1L);
@@ -212,6 +213,7 @@ class GestionnaireServiceTest {
                 .id(1L)
                 .title("Backend Java")
                 .employeurEmail("emp1@company.com")
+                .startDate(LocalDate.now())
                 .createdAt(OffsetDateTime.now())
                 .updatedAt(OffsetDateTime.now())
                 .build();
@@ -220,6 +222,7 @@ class GestionnaireServiceTest {
                 .id(2L)
                 .title("Frontend React")
                 .employeurEmail("emp2@company.com")
+                .startDate(LocalDate.now())
                 .createdAt(OffsetDateTime.now())
                 .updatedAt(OffsetDateTime.now())
                 .build();
@@ -249,7 +252,7 @@ class GestionnaireServiceTest {
         when(employeurRepository.getEmployeurByCredentials_Username("emp1@company.com")).thenReturn(e1);
         when(employeurRepository.getEmployeurByCredentials_Username("emp2@company.com")).thenReturn(e2);
 
-        List<StageDTO> result = gestionnaireService.getAllStages();
+        List<StageDTO> result = gestionnaireService.getAllStages(null);
 
         assertThat(result).hasSize(2);
         verify(stageRepository, times(1)).findAll();
@@ -263,7 +266,7 @@ class GestionnaireServiceTest {
     void getAllStages_returnsEmptyList_whenNoStages() {
         when(stageRepository.findAll()).thenReturn(Collections.emptyList());
 
-        List<StageDTO> result = gestionnaireService.getAllStages();
+        List<StageDTO> result = gestionnaireService.getAllStages(null);
 
         assertThat(result).isEmpty();
         verify(stageRepository, times(1)).findAll();
@@ -275,11 +278,60 @@ class GestionnaireServiceTest {
     void getAllStages_whenRepoFails_wrapsToCustomException() {
         when(stageRepository.findAll()).thenThrow(new RuntimeException("DB down"));
 
-        assertThatThrownBy(() -> gestionnaireService.getAllStages())
+        assertThatThrownBy(() -> gestionnaireService.getAllStages(null))
                 .isInstanceOf(FailedToRetrieveStagesException.class);
 
         verify(stageRepository, times(1)).findAll();
         verifyNoInteractions(employeurRepository);
+    }
+
+    @Test
+    void getAllStages2077() {
+        Stage s1 = Stage.builder()
+                .id(1L)
+                .title("Backend Java++")
+                .employeurEmail("emp1@company.com")
+                .startDate(LocalDate.of(2077, 1, 18))
+                .updatedAt(OffsetDateTime.now())
+                .build();
+
+        Stage s2 = Stage.builder()
+                .id(2L)
+                .title("VR/MR/HR QoL Creator")
+                .employeurEmail("emp1@company.com")
+                .startDate(LocalDate.of(2077, 2, 1))
+                .updatedAt(null)
+                .build();
+
+        Stage s3 = Stage.builder()
+                .id(3L)
+                .title("Assembly C++++++")
+                .employeurEmail("emp1@company.com")
+                .startDate(LocalDate.of(2078, 3, 11))
+                .updatedAt(OffsetDateTime.now())
+                .build();
+
+        when(stageRepository.findAll()).thenReturn(List.of(s1, s2, s3));
+
+        Employeur e1 = new Employeur();
+        e1.setCompany("Company 1");
+        e1.setCredentials(
+                com.AL565.prose.model.auth.Credentials.builder()
+                        .username("emp1@company.com")
+                        .password("x")        // peu importe pour le test
+                        .role(com.AL565.prose.model.auth.Role.EMPLOYEUR)
+                        .build()
+        );
+
+        when(employeurRepository.getEmployeurByCredentials_Username("emp1@company.com")).thenReturn(e1);
+
+        List<StageDTO> result2077 = gestionnaireService.getAllStages("2077");
+        List<StageDTO> result2078 = gestionnaireService.getAllStages("2078");
+        List<StageDTO> result2025 = gestionnaireService.getAllStages("2025");
+
+        assertThat(result2077).hasSize(2);
+        assertThat(result2078).hasSize(1);
+        assertThat(result2025).hasSize(0);
     }
 
     @Test

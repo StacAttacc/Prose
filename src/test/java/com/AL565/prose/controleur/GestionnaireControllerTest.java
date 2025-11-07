@@ -29,7 +29,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -80,7 +82,6 @@ class GestionnaireControllerTest {
 
     @Autowired
     ObjectMapper objectMapper;
-
     private record CvDecisionStub(Long id, String status, String comment) {}
 
     @Test
@@ -107,7 +108,7 @@ class GestionnaireControllerTest {
                 .employeur(employeurDTO2)
                 .build();
 
-        when(gestionnaireService.getStagesByStatus("SOUMISE")).thenReturn(List.of(stage1, stage2));
+        when(gestionnaireService.getStagesByStatus("SOUMISE", null)).thenReturn(List.of(stage1, stage2));
 
         MvcResult result = mockMvc.perform(get("/gestionnaire/stages/status/SOUMISE").with(csrf()))
                 .andReturn();
@@ -226,13 +227,59 @@ class GestionnaireControllerTest {
         StageDTO dto1 = StageDTO.builder().id(1L).title("Backend Java").build();
         StageDTO dto2 = StageDTO.builder().id(2L).title("Frontend React").build();
 
-        when(gestionnaireService.getAllStages()).thenReturn(List.of(dto1, dto2));
+        when(gestionnaireService.getAllStages(null)).thenReturn(List.of(dto1, dto2));
 
         mockMvc.perform(get("/gestionnaire/stages").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.message", is("Liste des stages")))
                 .andExpect(jsonPath("$.data", hasSize(2)));
+    }
+
+    @Test
+    void getAllStagesDated() throws Exception {
+        StageDTO dto1 = StageDTO.builder().id(1L).title("Backend Java")
+                .startDate(LocalDate.of(2077, 1, 18))
+                .build();
+        StageDTO dto2 = StageDTO.builder().id(2L).title("Frontend React")
+                .startDate(LocalDate.of(2078, 1, 18))
+                .build();
+
+        when(gestionnaireService.getAllStages("2077")).thenReturn(List.of(dto1));
+        when(gestionnaireService.getAllStages("2078")).thenReturn(List.of(dto2));
+        when(gestionnaireService.getAllStages("2025")).thenReturn(new ArrayList<>());
+
+        MvcResult result = mockMvc.perform(get("/gestionnaire/stages").param("year", "2077").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        ReturnEntityDTO<List<StageDTO>> resultString =  objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
+        });
+
+        List<StageDTO> data2077 = resultString.getData();
+
+        result = mockMvc.perform(get("/gestionnaire/stages").param("year", "2078").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        resultString =  objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
+        });
+
+        List<StageDTO> data2078 = resultString.getData();
+
+        result = mockMvc.perform(get("/gestionnaire/stages").param("year", "2025").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        resultString =  objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
+        });
+
+        List<StageDTO> data2025 = resultString.getData();
+
+        assertThat(data2077).hasSize(1);
+        assertThat(data2078).hasSize(1);
+        assertThat(data2025).hasSize(0);
+
     }
 
     @Test
