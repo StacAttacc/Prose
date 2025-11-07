@@ -1,8 +1,10 @@
 package com.AL565.prose.controller;
 
 import com.AL565.prose.security.exceptions.UserNotFoundException;
+import com.AL565.prose.security.JwtTokenProvider;
 import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.EmployeurService;
+import com.AL565.prose.service.EntenteService;
 import com.AL565.prose.service.dto.ReturnEntityDTO;
 import com.AL565.prose.service.dto.StageDTO;
 import com.AL565.prose.service.exceptions.CandidatureNotFoundException;
@@ -26,6 +28,9 @@ import java.util.NoSuchElementException;
 public class EmployeurController {
 
     private EmployeurService employeurService;
+    private final EntenteService ententeService;
+    private final JwtTokenProvider jwtTokenProvider;
+
 
     @PostMapping("/register")
     public ResponseEntity<String> enregistrer(@RequestBody EmployeurPasswordDTO employeurPasswordDTO) {
@@ -140,6 +145,19 @@ public class EmployeurController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ReturnEntityDTO<>("Erreur lors de la convocation de l'entrevue", null));
+        }
+    }
+
+    @PutMapping("/ententes/{ententeId}/signer")
+    public ResponseEntity<ReturnEntityDTO<String>> signEntente(@PathVariable Long ententeId, @RequestHeader("Authorization") String authHeader) {
+        try {
+            String token = authHeader.replace("Bearer ", "");
+            String email = jwtTokenProvider.getEmailFromJWT(token);
+            ententeService.signEntente(ententeId, email);
+            return ResponseEntity.ok(new ReturnEntityDTO<>("Entente signée avec succès", null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ReturnEntityDTO<>("Erreur interne du serveur lors de la signature de l'entente", null));
         }
     }
 

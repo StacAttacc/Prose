@@ -2,6 +2,7 @@ package com.AL565.prose.controller;
 
 import com.AL565.prose.security.JwtTokenProvider;
 import com.AL565.prose.service.EtudiantService;
+import com.AL565.prose.service.EntenteService;
 import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
 import com.AL565.prose.service.exceptions.AlreadyAppliedToStageException;
@@ -30,10 +31,12 @@ import org.springframework.web.multipart.MultipartFile;
 public class EtudiantController {
 
     private final EtudiantService etudiantService;
+    private final EntenteService ententeService;
     private final JwtTokenProvider jwtTokenProvider;
 
-    public EtudiantController(EtudiantService etudiantService, JwtTokenProvider jwtTokenProvider) {
+    public EtudiantController(EtudiantService etudiantService, EntenteService ententeService, JwtTokenProvider jwtTokenProvider) {
         this.etudiantService = etudiantService;
+        this.ententeService = ententeService;
         this.jwtTokenProvider = jwtTokenProvider;
     }
 
@@ -227,6 +230,19 @@ public class EtudiantController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ReturnEntityDTO<>("Erreur lors de la réponse à l'offre", null));
+        }
+    }
+
+    @PutMapping("/ententes/{ententeId}/signer")
+    public ResponseEntity<ReturnEntityDTO<String>> signEntente(@PathVariable Long ententeId, @RequestHeader("Authorization") String authHeader) {
+        try {
+            String token = authHeader.replace("Bearer ", "");
+            String email = jwtTokenProvider.getEmailFromJWT(token);
+            ententeService.signEntente(ententeId, email);
+            return ResponseEntity.ok(new ReturnEntityDTO<>("Entente signée avec succès", null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ReturnEntityDTO<>("Erreur interne du serveur lors de la signature de l'entente", null));
         }
     }
 }
