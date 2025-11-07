@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../context/AuthContext.jsx";
+import { useYear } from "../../context/YearContext";
 import ErrorBanner from "../display-components/ErrorBanner.jsx";
 import { getStageApplicantsManager } from "../../services/GestionnaireService.js";
 import StageDetailsModal from "../display-components/StageDetailsModal.jsx";
@@ -21,6 +22,7 @@ const APPROVED_STATUSES = new Set([
 
 export default function GestionnaireEtuCandidature() {
     const { user } = useAuth();
+    const { selectedYear } = useYear();
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -39,7 +41,7 @@ export default function GestionnaireEtuCandidature() {
         (async () => {
             try {
                 setLoading(true);
-                const data = await getStageApplicantsManager(user?.token);
+                const data = await getStageApplicantsManager(user?.token, selectedYear);
 
                 const arr = (Array.isArray(data) ? data : []).map((dto) => {
                     const stu = dto?.etudiant || {};
@@ -90,7 +92,7 @@ export default function GestionnaireEtuCandidature() {
             }
         })();
         return () => (mounted = false);
-    }, [user?.token]);
+    }, [user?.token, selectedYear]);
 
     useEffect(() => {
         if (loading || modalStudent) return;
