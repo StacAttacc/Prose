@@ -1,7 +1,7 @@
 import {labelForKey} from "../notification-utils/notificationText.jsx";
 import {NotificationItem} from "./NotificationItem.jsx";
 
-export function NotificationGroupDropdown ({dropdownId, list, typeKey, count, markAndNavigate, markAndClose, setOpenType}) {
+export function NotificationGroupDropdown ({dropdownId, list, typeKey, count, markAndNavigate, setOpenType, setReadCounter, markAndReload}) {
     return (
         <div id={dropdownId} className="origin-top absolute left-1/2 transform -translate-x-1/2 mt-2 w-80 z-50" role="menu">
             <div className="bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
@@ -16,10 +16,11 @@ export function NotificationGroupDropdown ({dropdownId, list, typeKey, count, ma
                             <NotificationItem
                                 itemCount={count}
                                 notification={n}
-                                markAndNavigate={markAndNavigate}
-                                markAndClose={markAndClose}
                                 typeKey={typeKey}
                                 key={n.id}
+                                setReadCounter={setReadCounter}
+                                markAndReload={markAndReload}
+                                markAndNavigate={markAndNavigate}
                             />
                         ))}
                     </ul>

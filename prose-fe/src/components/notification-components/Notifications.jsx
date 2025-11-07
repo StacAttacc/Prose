@@ -17,6 +17,7 @@ import { labelForKey } from "./notification-utils/notificationText.jsx";
 import ErrorBanner from "../display-components/ErrorBanner.jsx";
 import {NotificationItem} from "./notification-ui/NotificationItem.jsx";
 import {NotificationGroupDropdown} from "./notification-ui/NotificationGroupDropdown.jsx";
+import {NotificationCloseButton} from "./notification-ui/NotificationCloseButton.jsx";
 
 export default function Notifications() {
     const { user } = useAuth();
@@ -85,22 +86,25 @@ export default function Notifications() {
         }
     }, [navigate, user]);
 
+    async function markAndReload(notification, typeKey) {
+        await markSingleNotificationAsRead(notification.id, user);
+        setNotificationsByType(prev => {
+            const next = { ...prev };
+            const arr = (next[typeKey] || []).filter(n => n.id !== notification.id);
+            if (arr.length) next[typeKey] = arr;
+            else delete next[typeKey];
+            return next;
+        });
+        setReadCounter(c => c + 1);
+    }
+
     const markAndNavigate = useCallback(async (e, notification, typeKey) => {
         e?.stopPropagation?.();
         if (!notification?.id) return;
         setOpenType(null);
 
         try {
-            await markSingleNotificationAsRead(notification.id, user);
-            setNotificationsByType(prev => {
-                const next = { ...prev };
-                const arr = (next[typeKey] || []).filter(n => n.id !== notification.id);
-                if (arr.length) next[typeKey] = arr;
-                else delete next[typeKey];
-                return next;
-            });
-            setReadCounter(c => c + 1);
-
+            await markAndReload(notification, typeKey);
             const { path, state } = getNotificationNavigationPath(notification, user.role);
             navigate(path, state ? { state } : undefined);
         } catch (err) {
@@ -108,36 +112,6 @@ export default function Notifications() {
             navigate(getDefaultNavigationPath(user.role));
         }
     }, [navigate, user]);
-
-    const markAndClose = async (e, notification, typeKey) => {
-        e?.stopPropagation?.();
-        if (!notification?.id) return;
-        try {
-            await markSingleNotificationAsRead(notification.id, user);
-            setNotificationsByType(prev => {
-                const next = { ...prev };
-                const arr = (next[typeKey] || []).filter(n => n.id !== notification.id);
-                if (arr.length) next[typeKey] = arr;
-                else delete next[typeKey];
-                return next;
-            });
-            setReadCounter(c => c + 1);
-        } catch (err) {
-            console.error("Failed to mark single notification as read:", err);
-        }
-    };
-
-    const markGroupAndClose = useCallback(async (e, list) => {
-        e?.stopPropagation?.();
-        const ids = (list || []).map(n => n.id).filter(Boolean);
-        try {
-            await markManyNotifications(user, ids);
-            setReadCounter(c => c + ids.length);
-            setOpenType(null);
-        } catch (err) {
-            console.error("Failed to mark notifications as read (close type):", err);
-        }
-    }, [user]);
 
     const totalCount = Object.values(notificationsByType).reduce((acc, arr) => acc + (Array.isArray(arr) ? arr.length : 0), 0);
 
@@ -176,9 +150,10 @@ export default function Notifications() {
                                                     itemCount={count}
                                                     notification={n}
                                                     markAndNavigate={markAndNavigate}
-                                                    markAndClose={markAndClose}
                                                     typeKey={typeKey}
                                                     key={n.id}
+                                                    setReadCounter={setReadCounter}
+                                                    markAndReload={markAndReload}
                                                 />
                                             ))}
                                         </ul>
@@ -203,18 +178,15 @@ export default function Notifications() {
                                             {open ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                                         </button>
 
-                                        <button
-                                            type="button"
-                                            onClick={(e) => { e.stopPropagation(); markGroupAndClose(e, list); }}
-                                            className="inline-flex items-center py-1 px-2 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200"
-                                            aria-label={`Mark all ${count} ${typeKey} notifications as read`}
-                                            title="Mark all as read"
-                                        >
-                                            <svg className="m-0 w-4 h-4" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" role="img" aria-hidden>
-                                                <line x1="4" y1="4" x2="20" y2="20" stroke="#ff0000" strokeWidth="2.5" strokeLinecap="round"/>
-                                                <line x1="20" y1="4" x2="4" y2="20" stroke="#ff0000" strokeWidth="2.5" strokeLinecap="round"/>
-                                            </svg>
-                                        </button>
+                                        <NotificationCloseButton
+                                            isGroup={true}
+                                            list={list}
+                                            typeKey={typeKey}
+                                            count={count}
+                                            user={user}
+                                            setReadCounter={setReadCounter}
+                                            setOpenType={setOpenType}
+                                        />
                                     </>
                                 )}
                             </div>
@@ -227,7 +199,8 @@ export default function Notifications() {
                                 typeKey={typeKey}
                                 count={count}
                                 markAndNavigate={markAndNavigate}
-                                markAndClose={markAndClose}
+                                setReadCounter={setReadCounter}
+                                markAndReload={markAndReload}
                                 setOpenType={setOpenType}
                             />
                         )}
