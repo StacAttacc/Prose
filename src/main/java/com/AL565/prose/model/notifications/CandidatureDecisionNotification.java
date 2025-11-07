@@ -16,4 +16,5 @@ import lombok.Setter;
 public class CandidatureDecisionNotification extends Notification {
     private Long candidatureDecisionId;
     private String candidatureDecisionEtudiantEmail;
+    private Long candidatureDecisionEtudiantId;
 }

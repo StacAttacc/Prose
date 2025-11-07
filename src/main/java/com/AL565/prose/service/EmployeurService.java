@@ -156,6 +156,7 @@ public class EmployeurService {
         notification.setMessage(notifMessage);
         notification.setCandidatureDecisionId(candidature.getId());
         notification.setCandidatureDecisionEtudiantEmail(candidature.getEtudiant().getEmail());
+        notification.setCandidatureDecisionEtudiantId(candidature.getEtudiant().getId());
         notificationRepository.save(notification);
     }
 

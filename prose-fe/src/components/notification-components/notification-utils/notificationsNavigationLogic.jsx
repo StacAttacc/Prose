@@ -29,6 +29,7 @@ export function getNotificationNavigationPath(notification, role) {
         } else if (notification.type === "candidature_decision") {
             return {
                 path: `/etudiant/stages/candidatures`,
+                state: { openCandidatureId: notification.candidatureDecisionId}
             }
         }
     }
@@ -61,6 +62,7 @@ export function getNotificationNavigationPath(notification, role) {
         if (candidatureDecisionId) {
             return {
                 path: getDefaultNavigationPath(role),
+                state: { openEtudiantId: etudiantId }
             }
         }
     }

@@ -43,6 +43,7 @@ public class NotificationSummaryDTO {
             case CandidatureDecisionNotification cdn -> {
                 if (cdn.getCandidatureDecisionId() != null) {
                     candidatureDecisionId = cdn.getCandidatureDecisionId();
+                    etudiantId = cdn.getCandidatureDecisionEtudiantId();
                 }
             }
             case PostulationNotification pn -> {
