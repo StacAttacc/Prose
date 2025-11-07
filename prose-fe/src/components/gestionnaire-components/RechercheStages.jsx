@@ -32,8 +32,6 @@ export default function GestRechercheStages() {
       try {
         setLoading(true);
         const data = await getAllStages(user.token, selectedYear);
-        if (data?.data) {
-        }
         setStages(data.data || []);
       } catch (err) {
         setError(err.message);
