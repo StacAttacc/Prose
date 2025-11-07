@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { useAuth } from "../../context/AuthContext.jsx";
+import { useI18n } from "../../context/I18nContext.jsx";
 import { telechargerCv } from "../../services/EtudiantService.js";
 import { convoquerEntrevue } from "../../services/EmployeurService.js";
 import "@react-pdf-viewer/core/lib/styles/index.css";
@@ -43,6 +44,7 @@ function blobFromUnknownData(data, mime = "application/pdf") {
 
 export default function ApplicantRow({ applicant, onStatusUpdate, showActions = true, onApprove, onReject }) {
     const { user } = useAuth();
+    const { t } = useI18n();
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -98,21 +100,21 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
     const statusLabel = useMemo(() => {
         switch (status) {
             case "SOUMISE":
-                return "Soumise";
+                return t('soumise');
             case "ACCEPTEE":
-                return "En attente de réponse de l'étudiant";
+                return t('enAttenteReponseEtudiant');
             case "CONVOQUEE":
-                return "Convoquée";
+                return t('convoquee');
             case "REFUSEE":
-                return "Refusée";
+                return t('refusee');
             case "CONFIRMER":
-                return "Confirmée par l'étudiant";
+                return t('confirmeeParEtudiant');
             case "REFUSEE_ETUDIANT":
-                return "Refusée par l'étudiant";
+                return t('refuseeParEtudiant');
             default:
                 return status || "—";
         }
-    }, [status]);
+    }, [status, t]);
 
     const statusBadgeClass = useMemo(() => {
         switch (status) {
@@ -185,8 +187,8 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                 ...s,
                 error:
                     kind === "cv"
-                        ? "Impossible d'afficher le CV."
-                        : "Impossible d'afficher la lettre de motivation.",
+                        ? t('impossibleAfficherCV')
+                        : t('impossibleAfficherLettre'),
                 loading: false,
             }));
         }
@@ -259,7 +261,7 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                     {email ? (
                         <div className="text-xs text-gray-500">{email}</div>
                     ) : (
-                        <div className="text-xs text-gray-400">Email non disponible</div>
+                        <div className="text-xs text-gray-400">{t('emailNonDisponible')}</div>
                     )}
                 </td>
 
@@ -270,10 +272,10 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                             disabled={docState.loading && docState.kind === "cv"}
                             className="text-blue-600 hover:underline disabled:opacity-60"
                         >
-                            {docState.loading && docState.kind === "cv" ? "Ouverture…" : "Voir le CV"}
+                            {docState.loading && docState.kind === "cv" ? t('ouverture') : t('voirLeCV')}
                         </button>
                     ) : (
-                        <span className="text-gray-400">CV non disponible</span>
+                        <span className="text-gray-400">{t('cvNonDisponible')}</span>
                     )}
                 </td>
 
@@ -286,11 +288,11 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                             className="text-blue-600 hover:underline disabled:opacity-60"
                         >
                             {docState.loading && docState.kind === "letter"
-                                ? "Ouverture…"
-                                : "Voir la lettre"}
+                                ? t('ouverture')
+                                : t('voirLaLettre')}
                         </button>
                     ) : (
-                        <span className="text-gray-400">Aucune lettre de motivation</span>
+                        <span className="text-gray-400">{t('aucuneLettreMotivation')}</span>
                     )}
                 </td>
 
@@ -343,7 +345,7 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                                         className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 hover:bg-gradient-to-br transition-all"
                                         type="button"
                                     >
-                                        Convoquer
+                                        {t('convoquer')}
                                     </button>
                                     <button
                                         onClick={() => onReject && onReject(applicant)}
@@ -351,7 +353,7 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                                         disabled={!onReject || !user?.token}
                                         type="button"
                                     >
-                                        Refuser
+                                        {t('refuser')}
                                     </button>
                                 </>
                             )}
@@ -365,7 +367,7 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                                         disabled={!onApprove}
                                         type="button"
                                     >
-                                        Accepter
+                                        {t('accepter')}
                                     </button>
                                     <button
                                         onClick={() => onReject && onReject(applicant)}
@@ -373,14 +375,14 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                                         disabled={!onReject || !user?.token}
                                         type="button"
                                     >
-                                        Refuser
+                                        {t('refuser')}
                                     </button>
                                 </>
                             )}
 
                             {/* Pour candidatures ACCEPTEE ou REFUSEE : plus d'actions */}
                             {(localStatus === "ACCEPTEE" || localStatus === "REFUSEE") && (
-                                <span className="text-sm text-gray-400 italic px-4 py-2">Traité</span>
+                                <span className="text-sm text-gray-400 italic px-4 py-2">{t('traite')}</span>
                             )}
                         </div>
                     )}
@@ -390,7 +392,7 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
             {docState.open &&
                 createPortal(
                     <PdfModal
-                        title={docState.kind === "cv" ? `CV de ${fullName}` : "Lettre de motivation"}
+                        title={docState.kind === "cv" ? t('cvDe', { name: fullName }) : t('lettreMotivation')}
                         url={docState.url}
                         error={docState.error}
                         onClose={closeModal}

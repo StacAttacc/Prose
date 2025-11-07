@@ -187,7 +187,41 @@ const translations = {
     aucunCVTrouve: 'Aucun CV trouvé.',
     commentaire: 'Commentaire: ',
     enAttenteApprobation: 'En Attente d\'Approbation',
-    rejete: 'Rejeté'
+    rejete: 'Rejeté',
+    
+    // StageApplicants (Employeur)
+    candidaturesPourStage: 'Candidature(s) pour le stage',
+    nombreCandidatures: '{count} candidature{plural}',
+    rechercheNomEmail: 'Recherche (nom, email)',
+    candidat: 'Candidat',
+    cv: 'CV',
+    lettreMotivation: 'Lettre de motivation',
+    entrevue: 'entrevue',
+    impossibleChargerCandidatures: 'Impossible de charger les candidatures.',
+    aucuneCandidatureTrouvee: 'Aucune candidature trouvée.',
+    doitConvoquerAvantAccepter: 'Vous devez d\'abord convoquer l\'étudiant en entrevue avant de l\'accepter.',
+    erreurAcceptationCandidature: 'Erreur lors de l\'acceptation de la candidature.',
+    retourAuxOffres: 'Retour aux offres',
+    
+    // ApplicantRow (Employeur)
+    emailNonDisponible: 'Email non disponible',
+    voirLeCV: 'Voir le CV',
+    ouverture: 'Ouverture…',
+    cvNonDisponible: 'CV non disponible',
+    voirLaLettre: 'Voir la lettre',
+    aucuneLettreMotivation: 'Aucune lettre de motivation',
+    enAttenteReponseEtudiant: 'En attente de réponse de l\'étudiant',
+    convoquee: 'Convoquée',
+    refusee: 'Refusée',
+    confirmeeParEtudiant: 'Confirmée par l\'étudiant',
+    refuseeParEtudiant: 'Refusée par l\'étudiant',
+    convoquer: 'Convoquer',
+    refuser: 'Refuser',
+    accepter: 'Accepter',
+    traite: 'Traité',
+    cvDe: 'CV de {name}',
+    impossibleAfficherCV: 'Impossible d\'afficher le CV.',
+    impossibleAfficherLettre: 'Impossible d\'afficher la lettre de motivation.'
   },
   en: {
     // Dashboard
@@ -386,12 +420,69 @@ const translations = {
     aucunCVTrouve: 'No CV found.',
     commentaire: 'Comment: ',
     enAttenteApprobation: 'Pending Approval',
-    rejete: 'Rejected'
+    rejete: 'Rejected',
+    
+    // StageApplicants (Employeur)
+    candidaturesPourStage: 'Application(s) for the internship',
+    nombreCandidatures: '{count} application{plural}',
+    rechercheNomEmail: 'Search (name, email)',
+    candidat: 'Candidate',
+    cv: 'CV',
+    lettreMotivation: 'Motivation letter',
+    entrevue: 'interview',
+    impossibleChargerCandidatures: 'Unable to load applications.',
+    aucuneCandidatureTrouvee: 'No application found.',
+    doitConvoquerAvantAccepter: 'You must first invite the student for an interview before accepting them.',
+    erreurAcceptationCandidature: 'Error accepting the application.',
+    retourAuxOffres: 'Back to offers',
+    
+    // ApplicantRow (Employeur)
+    emailNonDisponible: 'Email not available',
+    voirLeCV: 'View CV',
+    ouverture: 'Opening…',
+    cvNonDisponible: 'CV not available',
+    voirLaLettre: 'View letter',
+    aucuneLettreMotivation: 'No motivation letter',
+    enAttenteReponseEtudiant: 'Waiting for student response',
+    convoquee: 'Invited',
+    refusee: 'Rejected',
+    confirmeeParEtudiant: 'Confirmed by student',
+    refuseeParEtudiant: 'Rejected by student',
+    convoquer: 'Invite',
+    refuser: 'Reject',
+    accepter: 'Accept',
+    traite: 'Processed',
+    cvDe: 'CV of {name}',
+    impossibleAfficherCV: 'Unable to display CV.',
+    impossibleAfficherLettre: 'Unable to display motivation letter.'
   }
 };
 
 export const I18nProvider = ({ children, defaultLocale = 'fr' }) => {
-  const [locale, setLocale] = useState(defaultLocale);
+  // Initialiser depuis localStorage ou utiliser defaultLocale
+  const getInitialLocale = () => {
+    try {
+      const savedLocale = localStorage.getItem('prose-locale');
+      if (savedLocale && (savedLocale === 'fr' || savedLocale === 'en')) {
+        return savedLocale;
+      }
+    } catch (e) {
+      console.warn('Could not read locale from localStorage:', e);
+    }
+    return defaultLocale;
+  };
+
+  const [locale, setLocale] = useState(() => getInitialLocale());
+
+  // Sauvegarder la langue dans localStorage quand elle change
+  const handleSetLocale = (newLocale) => {
+    try {
+      localStorage.setItem('prose-locale', newLocale);
+    } catch (e) {
+      console.warn('Could not save locale to localStorage:', e);
+    }
+    setLocale(newLocale);
+  };
 
   const t = useMemo(() => {
     return (key, params = {}) => {
@@ -407,7 +498,7 @@ export const I18nProvider = ({ children, defaultLocale = 'fr' }) => {
 
   const value = {
     locale,
-    setLocale,
+    setLocale: handleSetLocale,
     t
   };
 
