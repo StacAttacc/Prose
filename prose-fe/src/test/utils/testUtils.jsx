@@ -3,6 +3,7 @@ import { render } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from '../../context/AuthContext';
 import { CvProvider } from '../../context/CvContext';
+import { I18nProvider } from '../../context/I18nContext';
 import { vi } from 'vitest';
 
 const mockUser = {
@@ -42,7 +43,6 @@ export function renderWithProviders(
     ...renderOptions
   } = {}
 ) {
-  // Mock sessionStorage
   const mockSessionStorage = {
     getItem: vi.fn(() => JSON.stringify(user)),
     setItem: vi.fn(),
@@ -59,13 +59,15 @@ export function renderWithProviders(
     
     return (
       <BrowserRouter>
-        <AuthProvider>
-          <CvProvider>
-            <MockYearProvider initialYear={selectedYear}>
-              {children}
-            </MockYearProvider>
-          </CvProvider>
-        </AuthProvider>
+        <I18nProvider>
+          <AuthProvider>
+            <CvProvider>
+              <MockYearProvider initialYear={selectedYear}>
+                {children}
+              </MockYearProvider>
+            </CvProvider>
+          </AuthProvider>
+        </I18nProvider>
       </BrowserRouter>
     );
   }

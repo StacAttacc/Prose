@@ -109,6 +109,121 @@ export const handlers = [
       message: 'Stage rejeté avec succès',
       data: { id: stageId, status: 'REJETEE', rejectionReason: body.reason }
     });
+  }),
+
+  http.get(`${BASE_URL}/gestionnaire/getCandidatures`, ({ request }) => {
+    const url = new URL(request.url);
+    const year = url.searchParams.get('year');
+    
+    const mockEtudiants2025 = [
+      {
+        etudiant: {
+          id: 1,
+          firstName: 'Jean',
+          lastName: 'Dupont',
+          email: 'jean.dupont@example.com'
+        },
+        candidatures: [
+          {
+            id: 1,
+            status: 'SOUMISE',
+            stage: {
+              id: 1,
+              title: 'Stage Développeur 2025',
+              startDate: '2025-01-15'
+            },
+            datePostulation: '2024-12-01'
+          }
+        ]
+      },
+      {
+        etudiant: {
+          id: 2,
+          firstName: 'Marie',
+          lastName: 'Martin',
+          email: 'marie.martin@example.com'
+        },
+        candidatures: [
+          {
+            id: 2,
+            status: 'ACCEPTEE',
+            stage: {
+              id: 2,
+              title: 'Stage Analyste 2025',
+              startDate: '2025-05-01'
+            },
+            datePostulation: '2024-12-01'
+          }
+        ]
+      }
+    ];
+
+    const mockEtudiants2026 = [
+      {
+        etudiant: {
+          id: 3,
+          firstName: 'Pierre',
+          lastName: 'Bernard',
+          email: 'pierre.bernard@example.com'
+        },
+        candidatures: [
+          {
+            id: 3,
+            status: 'SOUMISE',
+            stage: {
+              id: 3,
+              title: 'Stage Développeur 2026',
+              startDate: '2026-01-15'
+            },
+            datePostulation: '2025-12-01'
+          }
+        ]
+      }
+    ];
+
+    const mockEtudiants2027 = [
+      {
+        etudiant: {
+          id: 4,
+          firstName: 'Sophie',
+          lastName: 'Lefebvre',
+          email: 'sophie.lefebvre@example.com'
+        },
+        candidatures: [
+          {
+            id: 4,
+            status: 'CONFIRMER',
+            stage: {
+              id: 4,
+              title: 'Stage Designer 2027',
+              startDate: '2027-01-15'
+            },
+            datePostulation: '2026-12-01'
+          }
+        ]
+      }
+    ];
+
+    // Fonction pour retourner les étudiants selon l'année
+    const getEtudiantsByYear = (year) => {
+      switch (year) {
+        case '2025':
+          return mockEtudiants2025;
+        case '2026':
+          return mockEtudiants2026;
+        case '2027':
+          return mockEtudiants2027;
+        default:
+          return [];
+      }
+    };
+
+    const etudiants = getEtudiantsByYear(year);
+    
+    return HttpResponse.json({
+      message: 'Trouvés',
+      data: etudiants
+    });
   })
 ];
 
