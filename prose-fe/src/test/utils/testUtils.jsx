@@ -5,7 +5,6 @@ import { AuthProvider } from '../../context/AuthContext';
 import { CvProvider } from '../../context/CvContext';
 import { vi } from 'vitest';
 
-// Mock user pour les tests
 const mockUser = {
   email: 'gestionnaire@test.com',
   firstName: 'Test',
@@ -14,10 +13,8 @@ const mockUser = {
   token: 'mock-token-123'
 };
 
-// Créer un YearContext pour les tests (identique au vrai)
 const YearContext = createContext(null);
 
-// Export useYear pour que les composants puissent l'utiliser
 export const useYear = () => {
   const context = React.useContext(YearContext);
   if (!context) {
@@ -26,7 +23,6 @@ export const useYear = () => {
   return context;
 };
 
-// Mock YearProvider avec selectedYear personnalisé
 const MockYearProvider = ({ children, initialYear = '2025' }) => {
   const [selectedYear, setSelectedYear] = useState(initialYear);
   
@@ -37,9 +33,7 @@ const MockYearProvider = ({ children, initialYear = '2025' }) => {
   );
 };
 
-// Mock AuthProvider pour les tests - utilise le vrai AuthProvider mais avec sessionStorage mocké
 
-// Fonction helper pour render avec tous les providers
 export function renderWithProviders(
   ui,
   {
@@ -61,7 +55,6 @@ export function renderWithProviders(
   });
 
   function Wrapper({ children }) {
-    // S'assurer que sessionStorage retourne l'utilisateur avant le rendu
     mockSessionStorage.getItem = vi.fn(() => JSON.stringify(user));
     
     return (
@@ -80,6 +73,5 @@ export function renderWithProviders(
   return render(ui, { wrapper: Wrapper, ...renderOptions });
 }
 
-// Re-export tout depuis @testing-library/react
 export * from '@testing-library/react';
 
