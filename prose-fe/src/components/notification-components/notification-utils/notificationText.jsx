@@ -28,3 +28,35 @@ export function shortText(text, max = 80) {
     if (!text) return "";
     return text.length > max ? text.slice(0, max - 3) + "..." : text;
 }
+
+export function translateNotificationMessage(message) {
+    if (!i18nInstance || !message) return message;
+    
+    const t = i18nInstance.t;
+    const locale = i18nInstance.locale;
+    
+    // Si on est déjà en français, pas besoin de traduire
+    if (locale === 'fr') return message;
+    
+    // Traductions des messages de notification de CV
+    const translations = {
+        'Votre CV a été approuvé.': t('cvApprouve'),
+        'Votre CV a été rejeté.': t('cvRejete'),
+        'Votre CV a été rejeté': t('cvRejete'),
+    };
+    
+    // Chercher une correspondance exacte
+    if (translations[message]) {
+        return translations[message];
+    }
+    
+    // Chercher une correspondance partielle pour les messages qui peuvent varier
+    if (message.includes('Votre CV a été approuvé')) {
+        return t('cvApprouve');
+    }
+    if (message.includes('Votre CV a été rejeté')) {
+        return t('cvRejete');
+    }
+    
+    return message;
+}

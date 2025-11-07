@@ -1,6 +1,6 @@
 import React from 'react';
 import { useI18n } from '../../../../context/I18nContext';
-import { shortText } from "../notification-utils/notificationText.jsx";
+import { shortText, translateNotificationMessage } from "../notification-utils/notificationText.jsx";
 
 export function NotificationItem({ notification, onItemClick, onMarkSingleClick, typeKey}) {
     const { t } = useI18n();
@@ -16,7 +16,7 @@ export function NotificationItem({ notification, onItemClick, onMarkSingleClick,
                 </div>
                 <div className="min-w-0">
                     <div className="text-sm font-medium text-gray-900 whitespace-normal break-words overflow-hidden line-clamp-2">
-                        {shortText(notification.message || notification.senderEmail || t('noMessage'), 200)}
+                        {shortText(translateNotificationMessage(notification.message) || notification.senderEmail || t('noMessage'), 200)}
                     </div>
                     <div className="text-xs text-gray-500">
                         {notification.createdAt ? new Date(notification.createdAt).toLocaleString() : notification.createdAtString || t('unknownTime')}
@@ -29,8 +29,8 @@ export function NotificationItem({ notification, onItemClick, onMarkSingleClick,
                     type="button"
                     onClick={(e) => onMarkSingleClick(e, notification, typeKey)}
                     className="inline-flex items-center ml-2 py-1 px-2 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200"
-                    aria-label="Mark this notification as read"
-                    title="Mark this notification as read"
+                    aria-label={t('markAsRead')}
+                    title={t('markAsRead')}
                 >
                     <svg className="m-0 w-4 h-4" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" role="img" aria-hidden>
                         <line x1="4" y1="4" x2="20" y2="20" stroke="#ff0000" strokeWidth="2.5" strokeLinecap="round"/>

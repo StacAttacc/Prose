@@ -130,7 +130,7 @@ describe('GestionnaireEtuCandidature - Filtrage par année', () => {
     await waitFor(() => {
       expect(screen.getByText('Jean Dupont')).toBeInTheDocument();
     });
-
+    
     vi.mocked(useYear).mockReturnValue({ selectedYear: '2026', setSelectedYear: vi.fn() });
     rerender(<GestionnaireEtuCandidature />);
 
