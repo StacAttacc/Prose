@@ -24,8 +24,7 @@ export default function Dashboard() {
                     <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
                         <div className="relative flex h-16 items-center justify-between">
                             <div className="flex items-center space-x-4">
-                                <div
-                                    className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
+                                <div className="flex items-center">
                                     <button className="relative flex rounded-full">
                                         <img
                                             src="/glaucon.png"
@@ -33,28 +32,28 @@ export default function Dashboard() {
                                             className="size-11 rounded-full outline -outline-offset-1 outline-white/10 h-19 w-10"/>
                                     </button>
                                     <p className="text-white pl-4 text-2xl">Prose</p>
+                                    {user.role === "GESTIONNAIRE" && (
+                                        <div className="flex items-center gap-2 ml-6">
+                                            <label className="text-white text-sm font-medium">Année:</label>
+                                            <select
+                                                value={selectedYear}
+                                                onChange={(e) => setSelectedYear(e.target.value)}
+                                                className="px-3 py-2 border border-white/30 rounded-md bg-teal-600 text-white focus:ring-2 focus:ring-white focus:border-white"
+                                            >
+                                                {Array.from({ length: 8 }, (_, i) => {
+                                                    const year = 2025 + i;
+                                                    return (
+                                                        <option key={year} value={year.toString()}>
+                                                            {year}
+                                                        </option>
+                                                    );
+                                                })}
+                                            </select>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
-                            <div className="ml-auto flex items-center gap-4">
-                                {user.role === "GESTIONNAIRE" && (
-                                    <div className="flex items-center gap-2">
-                                        <label className="text-white text-sm font-medium">Année:</label>
-                                        <select
-                                            value={selectedYear}
-                                            onChange={(e) => setSelectedYear(e.target.value)}
-                                            className="px-3 py-2 border border-white/30 rounded-md bg-teal-600 text-white focus:ring-2 focus:ring-white focus:border-white"
-                                        >
-                                            {Array.from({ length: 8 }, (_, i) => {
-                                                const year = 2025 + i;
-                                                return (
-                                                    <option key={year} value={year.toString()}>
-                                                        {year}
-                                                    </option>
-                                                );
-                                            })}
-                                        </select>
-                                    </div>
-                                )}
+                            <div className="ml-auto">
                                 <p className="text-white text-lg">Bienvenue {user.firstName + " " + user.lastName}
                                     <button type="button"
                                             className="text-white bg-gradient-to-r
