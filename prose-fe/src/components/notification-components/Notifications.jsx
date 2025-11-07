@@ -136,7 +136,7 @@ export default function Notifications() {
                             open={open}
                             dropdownId={dropdownId}
                             setOpenType={setOpenType}
-                            markAndNavigate={markAndReload}
+                            markAndNavigate={markAndNavigate}
                             setReadCounter={setReadCounter}
                             markAndReload={markAndReload}
                             user={user}
