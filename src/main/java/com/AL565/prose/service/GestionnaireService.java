@@ -149,7 +149,8 @@ public class GestionnaireService {
     }
 
     @Transactional
-    public List<EtudiantCandidaturesDTO> getAllEtudiantsCandidatures() {
+    public List<EtudiantCandidaturesDTO> getAllEtudiantsCandidatures(String year) {
+        int yearNumber =  year != null ? Integer.parseInt(year) : LocalDate.now().getYear();
         List<Etudiant> etudiants =  etudiantRepository.findAll();
 
         List <EtudiantCandidaturesDTO> etudiantCandidaturesDTO = new ArrayList<>();
@@ -168,6 +169,10 @@ public class GestionnaireService {
                         .dateDecision(candidature.getDateDecision())
                         .datePostulation(candidature.getDateCandidature())
                         .build();
+            }).filter(candidature -> {
+                StageSimpleDTO stage = candidature.getStage();
+                LocalDate startDate = stage.getStartDate();
+                return startDate.getYear() ==  yearNumber;
             }).toList();
 
             etudiantCandidaturesDTO.add(

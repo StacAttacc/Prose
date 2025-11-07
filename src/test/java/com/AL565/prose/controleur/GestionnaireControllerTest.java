@@ -329,7 +329,7 @@ class GestionnaireControllerTest {
                                 .status("En Attente")
                                 .build()
                 )).build();
-        when(gestionnaireService.getAllEtudiantsCandidatures()).thenReturn(List.of(candidatureJohn, candidaturesUmberto));
+        when(gestionnaireService.getAllEtudiantsCandidatures(null)).thenReturn(List.of(candidatureJohn, candidaturesUmberto));
 
         MvcResult result = mockMvc.perform(get("/gestionnaire/getCandidatures"))
                 .andExpect(status().isOk())
@@ -457,7 +457,7 @@ class GestionnaireControllerTest {
                                 .status("REFUSEE")
                                 .build()
                 )).build();
-        when(gestionnaireService.getAllEtudiantsCandidatures()).thenReturn(List.of(candidatureJohn, candidaturesUmberto));
+        when(gestionnaireService.getAllEtudiantsCandidatures(null)).thenReturn(List.of(candidatureJohn, candidaturesUmberto));
 
         MvcResult result = mockMvc.perform(get("/gestionnaire/getCandidatures"))
                 .andExpect(status().isOk())

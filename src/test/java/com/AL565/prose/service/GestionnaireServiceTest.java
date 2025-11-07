@@ -342,11 +342,13 @@ class GestionnaireServiceTest {
         Stage stage = new Stage();
         stage.setId(1L);
         stage.setTitle("Stage Test");
+        stage.setStartDate(LocalDate.now());
         stage.setStatus(OfferStatus.SOUMISE);
 
         Stage stage2 = new Stage();
         stage2.setId(2L);
         stage2.setTitle("Stage Test 2");
+        stage2.setStartDate(LocalDate.now());
         stage2.setStatus(OfferStatus.SOUMISE);
 
         stage.setEmployeurEmail("employer@company.com");
@@ -367,7 +369,7 @@ class GestionnaireServiceTest {
 
         when(stageRepository.findById(anyLong())).thenReturn(Optional.of(stage));
 
-        List<EtudiantCandidaturesDTO> candidatures =  gestionnaireService.getAllEtudiantsCandidatures();
+        List<EtudiantCandidaturesDTO> candidatures =  gestionnaireService.getAllEtudiantsCandidatures(null);
 
         assertThat(candidatures).hasSize(2);
         assertThat(candidatures.get(0).getCandidatures()).hasSize(1);
@@ -382,11 +384,13 @@ class GestionnaireServiceTest {
         Stage stage = new Stage();
         stage.setId(1L);
         stage.setTitle("Stage Test");
+        stage.setStartDate(LocalDate.now());
         stage.setStatus(OfferStatus.SOUMISE);
 
         Stage stage2 = new Stage();
         stage2.setId(2L);
         stage2.setTitle("Stage Test 2");
+        stage2.setStartDate(LocalDate.now());
         stage2.setStatus(OfferStatus.SOUMISE);
 
         stage.setEmployeurEmail("employer@company.com");
@@ -407,7 +411,7 @@ class GestionnaireServiceTest {
 
         when(stageRepository.findById(anyLong())).thenReturn(Optional.of(stage));
 
-        List<EtudiantCandidaturesDTO> candidatures =  gestionnaireService.getAllEtudiantsCandidatures();
+        List<EtudiantCandidaturesDTO> candidatures =  gestionnaireService.getAllEtudiantsCandidatures(null);
 
         List<EtudiantCandidatureDTO> candidaturesJohn = candidatures.getFirst().getCandidatures();
         List<EtudiantCandidatureDTO> candidaturesUmberto = candidatures.get(1).getCandidatures();

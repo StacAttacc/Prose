@@ -77,9 +77,9 @@ public class GestionnaireController {
     }
 
     @GetMapping("/getCandidatures")
-    public ResponseEntity<ReturnEntityDTO<List<EtudiantCandidaturesDTO>>> getAllEtudiantsCandidatures() {
+    public ResponseEntity<ReturnEntityDTO<List<EtudiantCandidaturesDTO>>> getAllEtudiantsCandidatures(@RequestParam(required = false) String year) {
         try {
-            List<EtudiantCandidaturesDTO> etudiants = gestionnaireService.getAllEtudiantsCandidatures();
+            List<EtudiantCandidaturesDTO> etudiants = gestionnaireService.getAllEtudiantsCandidatures(year);
             return ResponseEntity.ok(new ReturnEntityDTO<>("Trouvés", etudiants));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ReturnEntityDTO<>("Erreur interne du serveur", null));
