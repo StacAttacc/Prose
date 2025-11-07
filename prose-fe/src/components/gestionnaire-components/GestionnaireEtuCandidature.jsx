@@ -83,8 +83,7 @@ export default function GestionnaireEtuCandidature() {
                 });
 
                 if (mounted) setStudents(arr);
-                if (mounted && !arr.length) setNote("Aucune donnée reçue du serveur.");
-            } catch (e) {
+                if (mounted && !arr.length) setNote("Aucun étudiant trouvé pour l'année " + selectedYear + ".");            } catch (e) {
                 console.error("Erreur chargement candidatures:", e);
                 if (mounted) setNote("Erreur lors du chargement des candidatures.");
             } finally {
