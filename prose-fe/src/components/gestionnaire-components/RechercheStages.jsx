@@ -24,11 +24,9 @@ const getSessionFromDate = (startDate) => {
   if (month >= 1 && month <= 4) {
     return 'HIVER';
   }
-  // Été: mai à août (mois 5-8)
   else if (month >= 5 && month <= 8) {
     return 'ETE';
   }
-  // Automne: septembre à décembre (mois 9-12)
   else if (month >= 9 && month <= 12) {
     return 'AUTOMNE';
   }
