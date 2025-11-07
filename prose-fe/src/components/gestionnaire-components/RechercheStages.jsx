@@ -12,9 +12,7 @@ export default function GestRechercheStages() {
   const navigate = useNavigate();
   const { selectedYear } = useYear();
   
-  // Debug: vérifier si selectedYear change
   useEffect(() => {
-    console.log('SelectedYear changed:', selectedYear);
   }, [selectedYear]);
   
   const [stages, setStages] = useState([]);
@@ -33,15 +31,11 @@ export default function GestRechercheStages() {
     async function fetchAllStages() {
       try {
         setLoading(true);
-        console.log('Fetching stages for year:', selectedYear, 'type:', typeof selectedYear);
         const data = await getAllStages(user.token, selectedYear);
-        console.log('Received stages count:', data?.data?.length);
         if (data?.data) {
-          console.log('Sample stage dates:', data.data.slice(0, 3).map(s => ({ id: s.id, startDate: s.startDate })));
         }
         setStages(data.data || []);
       } catch (err) {
-        console.error('Error fetching stages:', err);
         setError(err.message);
       } finally {
         setLoading(false);
