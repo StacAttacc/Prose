@@ -475,4 +475,112 @@ class GestionnaireControllerTest {
         assertThat(candidaturesUmbertoDTO.getFirst().getStatus()).isEqualTo(String.valueOf(CandidatureStatus.ACCEPTEE));
         assertThat(candidaturesUmbertoDTO.get(1).getStatus()).isEqualTo(String.valueOf(CandidatureStatus.REFUSEE));
     }
+
+    @Test
+    void getCandidatures2077() throws Exception {
+        EtudiantDTO john = EtudiantDTO.toDTOTokenless(
+                new Etudiant("John", "Doe", Credentials.builder().username("email@email.com").password("1234567890").build(), Discipline.INFORMATIQUE)
+        );
+        EtudiantDTO umberto = EtudiantDTO.toDTOTokenless(
+                new Etudiant("Umberto", "Larrios", Credentials.builder().username("email2@email.com").password("1234567890").build(), Discipline.INFORMATIQUE)
+        );
+
+        Employeur jean = new Employeur("Jean", "Employeur", "JeanEmployeurs", "jemployeur@gmail.com", "1234567890");
+
+        Stage stage = new Stage();
+        stage.setId(1L);
+        stage.setStartDate(LocalDate.of(2077, 3, 4));
+        stage.setTitle("Stage Test");
+        stage.setStatus(OfferStatus.SOUMISE);
+
+        Stage stage2 = new Stage();
+        stage2.setId(2L);
+        stage2.setStartDate(LocalDate.of(2077, 12, 6));
+        stage2.setTitle("Stage Test 2");
+        stage2.setStatus(OfferStatus.SOUMISE);
+
+        Stage stage3 = new Stage();
+        stage3.setId(2L);
+        stage3.setStartDate(LocalDate.of(2078, 6, 6));
+        stage3.setTitle("Stage Test 2");
+        stage3.setStatus(OfferStatus.SOUMISE);
+
+
+        EtudiantCandidatureDTO candidatureJohn1 = EtudiantCandidatureDTO.builder()
+                .stage(StageSimpleDTO.toDTOfromStageDTO(StageDTO.fromModel(stage, jean)))
+                .dateDecision(LocalDateTime.now())
+                .datePostulation(LocalDateTime.now())
+                .status("En Attente")
+                .build();
+
+        EtudiantCandidatureDTO candidatureJohn2 = EtudiantCandidatureDTO.builder()
+                .stage(StageSimpleDTO.toDTOfromStageDTO(StageDTO.fromModel(stage3, jean)))
+                .dateDecision(LocalDateTime.now())
+                .datePostulation(LocalDateTime.now())
+                .status("Convoquee")
+                .build();
+
+        EtudiantCandidatureDTO candidatureUmberto1 = EtudiantCandidatureDTO.builder()
+                .stage(StageSimpleDTO.toDTOfromStageDTO(StageDTO.fromModel(stage, jean)))
+                .dateDecision(LocalDateTime.now())
+                .datePostulation(LocalDateTime.now())
+                .status("En Attente")
+                .build();
+
+        EtudiantCandidatureDTO candidatureUmberto2 = EtudiantCandidatureDTO.builder()
+                .stage(StageSimpleDTO.toDTOfromStageDTO(StageDTO.fromModel(stage2, jean)))
+                .dateDecision(LocalDateTime.now())
+                .datePostulation(LocalDateTime.now())
+                .status("En Attente")
+                .build();
+
+        EtudiantCandidaturesDTO candidaturesJohn2077 = EtudiantCandidaturesDTO.builder()
+                .etudiant(john)
+                .candidatures(List.of(candidatureJohn1)).build();
+        EtudiantCandidaturesDTO candidaturesUmberto = EtudiantCandidaturesDTO.builder()
+                .etudiant(umberto)
+                .candidatures(List.of(candidatureUmberto1, candidatureUmberto2)).build();
+
+        EtudiantCandidaturesDTO candidaturesJohn2078 = EtudiantCandidaturesDTO.builder()
+                .etudiant(john)
+                .candidatures(List.of(candidatureJohn2)).build();
+
+        when(gestionnaireService.getAllEtudiantsCandidatures("2077")).thenReturn(List.of(candidaturesJohn2077, candidaturesUmberto));
+        when(gestionnaireService.getAllEtudiantsCandidatures("2078")).thenReturn(List.of(candidaturesJohn2078));
+        when(gestionnaireService.getAllEtudiantsCandidatures("2025")).thenReturn(new ArrayList<>());
+
+        MvcResult result = mockMvc.perform(get("/gestionnaire/getCandidatures").param("year", "2077"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        ReturnEntityDTO<List<EtudiantCandidaturesDTO>> candidatures2077response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
+        });
+
+        List<EtudiantCandidaturesDTO> candidatures2077 = candidatures2077response.getData();
+
+        result = mockMvc.perform(get("/gestionnaire/getCandidatures").param("year", "2078"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        ReturnEntityDTO<List<EtudiantCandidaturesDTO>> candidatures2078response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+
+        result = mockMvc.perform(get("/gestionnaire/getCandidatures").param("year", "2025"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        ReturnEntityDTO<List<EtudiantCandidaturesDTO>> candidatures2025response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+
+        List<EtudiantCandidaturesDTO> candidatures2025 = candidatures2025response.getData();
+
+        List<EtudiantCandidaturesDTO> candidatures2078 = candidatures2078response.getData();
+
+        assertThat(candidatures2077).hasSize(2);
+        assertThat(candidatures2077.getFirst().getCandidatures()).hasSize(1);
+        assertThat(candidatures2077.get(1).getCandidatures()).hasSize(2);
+
+        assertThat(candidatures2078).hasSize(1);
+        assertThat(candidatures2078.getFirst().getCandidatures()).hasSize(1);
+
+        assertThat(candidatures2025).hasSize(0);
+    }
 }
