@@ -57,6 +57,7 @@ public class EtudiantService {
     private final GestionnaireCvNotificationRepository gestionnaireCvNotificationRepository;
     private final EtudiantCvNotificationRepository etudiantCvNotificationRepository;
     private final ConvocationNotificationRepository convocationNotificationRepository;
+    private final CandidatureDecisionNotificationRepository candidatureDecisionNotificationRepository;
     private final NotificationsHelper notificationsHelper;
 
     public void inscrireEtudiant(EtudiantPasswordDTO dto) {
@@ -259,19 +260,26 @@ public class EtudiantService {
         try {
             List<EtudiantCvNotification> cvNotifications = etudiantCvNotificationRepository
                     .findEtudiantCvNotificationsByFirstRecipientReadAtAndEtudiantEmail(
-                            null,
-                            etudiantEmail);
-
+                            null, etudiantEmail
+                    );
             List<ConvocationNotification> convocationNotifications = convocationNotificationRepository
-                    .findByFirstRecipientReadAtAndEtudiantConvocationEmail(null, etudiantEmail);
+                    .findByFirstRecipientReadAtAndEtudiantConvocationEmail(
+                            null, etudiantEmail
+                    );
+            List<CandidatureDecisionNotification> candidatureDecisionNotifications = candidatureDecisionNotificationRepository
+                    .findCandidatureDecisionNotificationsByFirstRecipientReadAtAndCandidatureDecisionEtudiantEmail(
+                            null, etudiantEmail
+                    );
 
             NotificationGroupDTO cvGroup = NotificationGroupDTO
                     .toDTO(NotificationType.ETUDIANT_CV_NOTIFICATION.getDisplayName(), cvNotifications);
-
             NotificationGroupDTO convocationGroup = NotificationGroupDTO
                     .toDTO(NotificationType.CONVOCATION_NOTIFICATION.getDisplayName(), convocationNotifications);
+            NotificationGroupDTO candidatureDecisionGroup = NotificationGroupDTO
+                    .toDTO(NotificationType.CANDIDATURE_DECISION_NOTIFICATION.getDisplayName(), candidatureDecisionNotifications);
 
-            return NotificationsResponseDTO.toDTO(List.of(cvGroup, convocationGroup));
+            return NotificationsResponseDTO
+                    .toDTO(List.of(cvGroup, convocationGroup, candidatureDecisionGroup));
         } catch (Exception e) {
             throw new NotificationExceptions.NotificationFetchException();
         }
