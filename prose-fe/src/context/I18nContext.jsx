@@ -21,7 +21,6 @@ const translations = {
     aucuneCandidature: 'Aucune Candidature',
     candidatureSoumise: 'Candidature Soumise',
     stageTrouve: 'Stage Trouvé',
-    etudiant: 'Étudiant',
     email: 'Email',
     candidatures: 'Candidatures',
     statut: 'Statut',
@@ -98,7 +97,6 @@ const translations = {
     // Statuts
     periode: 'Période',
     dateCreation: 'Date de création',
-    employeur: 'Employeur',
     
     // PageAuthentification
     proseTagline: 'La rencontre simple entre étudiants et employeurs.',
@@ -124,7 +122,6 @@ const translations = {
     aRefaire: 'À Refaire',
     nomEtudiant: 'Nom de l\'étudiant:',
     nomFichier: 'Nom du fichier:',
-    discipline: 'Discipline:',
     noPreviewAvailable: 'No preview available. (Check if the CV is uploaded and valid.)',
     traitement: 'Traitement...',
     approuver: 'Approuver',
@@ -160,8 +157,6 @@ const translations = {
     erreurInconnue: 'Erreur inconnue',
     
     // PostedStages (Employeur)
-    mesStages: 'Mes Stages',
-    voirCandidatures: 'Voir les candidatures',
     impossibleChargerStages: 'Impossible de charger les stages.',
     
     // StageListings (Étudiant)
@@ -188,14 +183,11 @@ const translations = {
     salairePlaceholder: '20$/h, 500$/semaine...',
     
     // MonCV (Étudiant)
-    monCV: 'Mon CV',
     votreCVCourrant: 'Votre CV courrant',
     aucunCVTrouve: 'Aucun CV trouvé.',
     commentaire: 'Commentaire: ',
     enAttenteApprobation: 'En Attente d\'Approbation',
-    accepte: 'Accepté',
-    rejete: 'Rejeté',
-    aucunCV: 'Aucun CV'
+    rejete: 'Rejeté'
   },
   en: {
     // Dashboard
@@ -215,7 +207,6 @@ const translations = {
     aucuneCandidature: 'No Application',
     candidatureSoumise: 'Application Submitted',
     stageTrouve: 'Stage Found',
-    etudiant: 'Student',
     email: 'Email',
     candidatures: 'Applications',
     statut: 'Status',
@@ -292,7 +283,6 @@ const translations = {
     // Statuts
     periode: 'Period',
     dateCreation: 'Creation date',
-    employeur: 'Employer',
     
     // PageAuthentification
     proseTagline: 'The simple meeting between students and employers.',
@@ -318,7 +308,6 @@ const translations = {
     aRefaire: 'To Redo',
     nomEtudiant: 'Student name:',
     nomFichier: 'File name:',
-    discipline: 'Discipline:',
     noPreviewAvailable: 'No preview available. (Check if the CV is uploaded and valid.)',
     traitement: 'Processing...',
     approuver: 'Approve',
@@ -354,8 +343,6 @@ const translations = {
     erreurInconnue: 'Unknown error',
     
     // PostedStages (Employeur)
-    mesStages: 'My Stages',
-    voirCandidatures: 'View applications',
     impossibleChargerStages: 'Unable to load stages.',
     publiee: 'Published',
     chargementStagesEmployeur: 'Loading stages...',
@@ -395,14 +382,11 @@ const translations = {
     retour: 'Back',
     
     // MonCV (Étudiant)
-    monCV: 'My CV',
     votreCVCourrant: 'Your Current CV',
     aucunCVTrouve: 'No CV found.',
     commentaire: 'Comment: ',
     enAttenteApprobation: 'Pending Approval',
-    accepte: 'Approved',
-    rejete: 'Rejected',
-    aucunCV: 'No CV'
+    rejete: 'Rejected'
   }
 };
 
