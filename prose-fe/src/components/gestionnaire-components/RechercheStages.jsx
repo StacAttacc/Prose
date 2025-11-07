@@ -31,7 +31,7 @@ export default function GestRechercheStages() {
     async function fetchAllStages() {
       try {
         setLoading(true);
-        const data = await getAllStages(user.token, selectedYear);
+        const data = await getAllStages(user?.token, selectedYear);
         setStages(data.data || []);
       } catch (err) {
         setError(err.message);
@@ -39,10 +39,10 @@ export default function GestRechercheStages() {
         setLoading(false);
       }
     }
-    if (user.token && selectedYear) {
+    if (user?.token && selectedYear) {
       fetchAllStages();
     }
-  }, [user.token, selectedYear]);
+  }, [user?.token, selectedYear]);
 
     useEffect(() => {
         const openStageId = location?.state?.openStageId;
