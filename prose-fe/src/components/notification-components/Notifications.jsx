@@ -13,8 +13,10 @@ import {
     getGroupedNotificationNavigation,
     getNotificationNavigationPath
 } from "./notification-utils/notificationsNavigationLogic.jsx";
-import { labelForKey, shortText } from "./notification-utils/notificationText.jsx";
+import { labelForKey } from "./notification-utils/notificationText.jsx";
 import ErrorBanner from "../display-components/ErrorBanner.jsx";
+import {NotificationItem} from "./notification-ui/NotificationItem.jsx";
+import {NotificationGroupDropdown} from "./notification-ui/NotificationGroupDropdown.jsx";
 
 export default function Notifications() {
     const { user } = useAuth();
@@ -70,7 +72,7 @@ export default function Notifications() {
         return () => document.removeEventListener("click", onClickOutside);
     }, []);
 
-    const handleGroupClick = useCallback(async (typeKey, list) => {
+    const markGroupAndNavigate = useCallback(async (typeKey, list) => {
         const ids = (list || []).map(n => n.id).filter(Boolean);
         try {
             await markManyNotifications(user, ids);
@@ -125,11 +127,11 @@ export default function Notifications() {
         }
     };
 
-    const handleCloseType = useCallback(async (e, typeKey, list) => {
+    const markGroupAndClose = useCallback(async (e, list) => {
         e?.stopPropagation?.();
         const ids = (list || []).map(n => n.id).filter(Boolean);
         try {
-            await markManyNotifications(typeKey, ids);
+            await markManyNotifications(user, ids);
             setReadCounter(c => c + ids.length);
             setOpenType(null);
         } catch (err) {
@@ -153,32 +155,13 @@ export default function Notifications() {
                 const showGrouped = count >= 4;
                 const dropdownId = `notif-dropdown-${typeKey}`;
                 const open = openType === typeKey;
-
-                function renderCompactItem(n) {
-                    return (
-                        <>
-                            <div className="w-7 h-7 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 text-xs">
-                                !
-                            </div>
-                            <div className="min-w-0">
-                                <div className="text-sm font-medium text-gray-900 whitespace-normal break-words overflow-hidden line-clamp-2">
-                                    {shortText(n.message || n.senderEmail || "No message", 200)}
-                                </div>
-                                <div className="text-xs text-gray-500">
-                                    {n.createdAt ? new Date(n.createdAt).toLocaleString() : n.createdAtString || "Unknown time"}
-                                </div>
-                            </div>
-                        </>
-                    );
-                }
-
                 return (
                     <div key={typeKey} className="relative w-full text-left flex justify-center">
                         <div
                             className="w-80 bg-white border border-gray-200 rounded-lg shadow-sm cursor-pointer hover:shadow-md transition p-3 flex items-center justify-between"
                             role="button"
                             tabIndex={0}
-                            onClick={() => handleGroupClick(typeKey, list)}
+                            onClick={() => markGroupAndNavigate(typeKey, list)}
                         >
                             <div className="flex items-start gap-3 flex-1">
                                 <div className="flex-1">
@@ -189,31 +172,14 @@ export default function Notifications() {
                                     {count <= 3 ? (
                                         <ul className="mt-3 space-y-2">
                                             {(list || []).map((n) => (
-                                                <li key={n.id} className="flex items-center gap-3 p-2 hover:bg-gray-100 rounded">
-                                                    <div
-                                                        className="flex items-start gap-3 flex-1"
-                                                        onClick={(e) => markAndNavigate(e, n, typeKey)}
-                                                    >
-                                                        {renderCompactItem(n)}
-                                                    </div>
-
-                                                    <div className="flex items-center gap-2">
-                                                        {count <= 3 && (
-                                                            <button
-                                                                type="button"
-                                                                onClick={(e) => markAndClose(e, n, typeKey)}
-                                                                className="inline-flex items-center ml-2 py-1 px-2 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200"
-                                                                aria-label="Mark this notification as read"
-                                                                title="Mark this notification as read"
-                                                            >
-                                                                <svg className="m-0 w-4 h-4" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" role="img" aria-hidden>
-                                                                    <line x1="4" y1="4" x2="20" y2="20" stroke="#ff0000" strokeWidth="2.5" strokeLinecap="round"/>
-                                                                    <line x1="20" y1="4" x2="4" y2="20" stroke="#ff0000" strokeWidth="2.5" strokeLinecap="round"/>
-                                                                </svg>
-                                                            </button>
-                                                        )}
-                                                    </div>
-                                                </li>
+                                                <NotificationItem
+                                                    itemCount={count}
+                                                    notification={n}
+                                                    markAndNavigate={markAndNavigate}
+                                                    markAndClose={markAndClose}
+                                                    typeKey={typeKey}
+                                                    key={n.id}
+                                                />
                                             ))}
                                         </ul>
                                     ) : null}
@@ -239,7 +205,7 @@ export default function Notifications() {
 
                                         <button
                                             type="button"
-                                            onClick={(e) => { e.stopPropagation(); handleCloseType(e, typeKey, list); }}
+                                            onClick={(e) => { e.stopPropagation(); markGroupAndClose(e, list); }}
                                             className="inline-flex items-center py-1 px-2 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200"
                                             aria-label={`Mark all ${count} ${typeKey} notifications as read`}
                                             title="Mark all as read"
@@ -255,55 +221,15 @@ export default function Notifications() {
                         </div>
 
                         {showGrouped && openType === typeKey && (
-                            <div id={dropdownId} className="origin-top absolute left-1/2 transform -translate-x-1/2 mt-2 w-80 z-50" role="menu">
-                                <div className="bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
-                                    <div className="p-2 flex flex-col">
-                                        <div className="px-3 py-2 border-b flex items-center justify-between">
-                                            <div className="text-sm font-semibold text-gray-800">
-                                                {labelForKey(typeKey)}
-                                            </div>
-                                        </div>
-                                        <ul className="space-y-2 overflow-y-auto max-h-64">
-                                            {(list || []).slice(0, 20).map((n) => (
-                                                <li key={n.id} className="flex items-center gap-3 p-2 hover:bg-gray-100 rounded">
-                                                    <div className="flex items-start gap-3 flex-1" onClick={(e) => markAndNavigate(e, n, typeKey)}>
-                                                        {renderCompactItem(n)}
-                                                    </div>
-                                                    <div className="flex items-center gap-2">
-                                                        {count >= 4 && (
-                                                            <>
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={(e) => { e.stopPropagation(); markAndClose(e, n, typeKey); }}
-                                                                    className="inline-flex items-center ml-2 py-1 px-2 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200"
-                                                                    aria-label="Mark this notification as read"
-                                                                    title="Mark this notification as read"
-                                                                >
-                                                                    <svg className="m-0 w-4 h-4" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" role="img" aria-hidden>
-                                                                        <line x1="4" y1="4" x2="20" y2="20" stroke="#ff0000" strokeWidth="2.5" strokeLinecap="round"/>
-                                                                        <line x1="20" y1="4" x2="4" y2="20" stroke="#ff0000" strokeWidth="2.5" strokeLinecap="round"/>
-                                                                    </svg>
-                                                                </button>
-                                                            </>
-                                                        )}
-                                                    </div>
-                                                </li>
-                                            ))}
-                                        </ul>
-
-                                        <div className="pt-2 mt-2 border-t flex justify-center">
-                                            <button
-                                                type="button"
-                                                onClick={(e) => { e.stopPropagation(); setOpenType(null); }}
-                                                className="inline-flex items-center py-1 px-3 text-sm font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200"
-                                                aria-label="Close notifications dropdown"
-                                            >
-                                                Fermer
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            <NotificationGroupDropdown
+                                dropdownId={dropdownId}
+                                list={list}
+                                typeKey={typeKey}
+                                count={count}
+                                markAndNavigate={markAndNavigate}
+                                markAndClose={markAndClose}
+                                setOpenType={setOpenType}
+                            />
                         )}
                     </div>
                 );
