@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { useI18n } from "../../context/I18nContext";
 import {getAllStages, submitStageDecision} from "../../services/GestionnaireService";
 import StageDetailsModal from "../display-components/StageDetailsModal";
 import ErrorBanner from "../display-components/ErrorBanner.jsx";
@@ -8,6 +9,7 @@ import { useYear } from "../../context/YearContext";
 
 export default function GestRechercheStages() {
   const { user } = useAuth();
+  const { t } = useI18n();
   const location = useLocation();
   const navigate = useNavigate();
   const { selectedYear } = useYear();
@@ -140,32 +142,32 @@ export default function GestRechercheStages() {
   const getStatusText = (status) => {
     switch (status) {
       case 'SOUMISE':
-        return 'Soumise';
+        return t('soumise');
       case 'APPROUVEE':
-        return 'Approuvée';
+        return t('approuvee');
       case 'REJETEE':
-        return 'Rejetée';
+        return t('rejetee');
       default:
         return status;
     }
   };
 
-  if (loading) return <p className="text-center mt-10">Chargement des stages...</p>;
+  if (loading) return <p className="text-center mt-10">{t('chargementStages')}</p>;
   if (error) return <ErrorBanner message={error} />;
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6 text-center">Recherche/Approbation de Stages</h1>
+      <h1 className="text-2xl font-bold mb-6 text-center">{t('rechercheApprobationStages')}</h1>
 
       <div className="mb-8 bg-white rounded-lg shadow-md border border-gray-200 p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Recherche
+              {t('recherche')}
             </label>
             <input
               type="text"
-              placeholder="Titre, description, employeur, entreprise..."
+              placeholder={t('recherchePlaceholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
@@ -174,11 +176,11 @@ export default function GestRechercheStages() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Lieu
+              {t('lieu')}
             </label>
             <input
               type="text"
-              placeholder="Montréal, Québec, Télétravail..."
+              placeholder={t('lieuPlaceholder')}
               value={locationFilter}
               onChange={(e) => setLocationFilter(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
@@ -187,11 +189,11 @@ export default function GestRechercheStages() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Compensation
+              {t('compensation')}
             </label>
             <input
               type="text"
-              placeholder="20$/h, 500$/semaine..."
+              placeholder={t('compensationPlaceholder')}
               value={compensationFilter}
               onChange={(e) => setCompensationFilter(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
@@ -200,32 +202,32 @@ export default function GestRechercheStages() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Statut
+              {t('statut')}
             </label>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
             >
-              <option value="">Tous les statuts</option>
-              <option value="SOUMISE">Soumise</option>
-              <option value="APPROUVEE">Approuvée</option>
-              <option value="REJETEE">Rejetée</option>
+              <option value="">{t('tousLesStatuts')}</option>
+              <option value="SOUMISE">{t('soumise')}</option>
+              <option value="APPROUVEE">{t('approuvee')}</option>
+              <option value="REJETEE">{t('rejetee')}</option>
             </select>
           </div>
 
           <div className="flex items-end">
             <button
-              onClick={clearFilters}
-              className="w-full px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
-            >
-              Effacer les filtres
-            </button>
+                    onClick={clearFilters}
+                    className="w-full px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
+                  >
+                    {t('effacerFiltres')}
+                  </button>
           </div>
         </div>
 
         <div className="text-sm text-gray-600">
-          {filteredStages.length} stage(s) trouvé(s) sur {stages.length} au total
+          {t('stagesTrouves', { count: filteredStages.length, total: stages.length })}
         </div>
       </div>
 
@@ -233,17 +235,17 @@ export default function GestRechercheStages() {
         <div className="text-center py-8">
           <p className="text-gray-500 text-lg">
             {stages.length === 0 
-              ? "Aucun stage disponible pour le moment."
-              : "Aucun stage ne correspond à vos critères de recherche."
+              ? t('aucunStageDisponible')
+              : t('aucunStageCritere')
             }
           </p>
           {stages.length > 0 && (
             <button
-              onClick={clearFilters}
-              className="mt-4 px-4 py-2 bg-teal-500 text-white rounded-md hover:bg-teal-600 transition-colors"
-            >
-              Effacer les filtres
-            </button>
+                    onClick={clearFilters}
+                    className="mt-4 px-4 py-2 bg-teal-500 text-white rounded-md hover:bg-teal-600 transition-colors"
+                  >
+                    {t('effacerFiltres')}
+                  </button>
           )}
         </div>
       ) : (
@@ -257,19 +259,19 @@ export default function GestRechercheStages() {
               <div className="mb-4">
                 <h3 className="text-xl font-semibold text-gray-800 mb-2">{stage.title}</h3>
                 <p className="text-gray-600 text-sm mb-2">
-                  <strong>Employeur:</strong> {stage.employeur?.company || stage.employeur?.email}
+                  <strong>{t('employeur')}:</strong> {stage.employeur?.company || stage.employeur?.email}
                 </p>
                 <p className="text-gray-600 text-sm mb-2">
-                  <strong>Lieu:</strong> {stage.location}
+                  <strong>{t('lieu')}:</strong> {stage.location}
                 </p>
                 <p className="text-gray-600 text-sm mb-2">
-                  <strong>Compensation:</strong> {stage.compensation}
+                  <strong>{t('compensation')}:</strong> {stage.compensation}
                 </p>
                 <p className="text-gray-600 text-sm mb-2">
-                  <strong>Période:</strong> {stage.startDate} - {stage.endDate}
+                  <strong>{t('periode')}:</strong> {stage.startDate} - {stage.endDate}
                 </p>
                 <p className="text-gray-600 text-sm">
-                  <strong>Date de création:</strong> {stage.createdAt ? new Date(stage.createdAt).toLocaleDateString('fr-FR') : '-'}
+                  <strong>{t('dateCreation')}:</strong> {stage.createdAt ? new Date(stage.createdAt).toLocaleDateString('fr-FR') : '-'}
                 </p>
               </div>
               

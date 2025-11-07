@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext.jsx";
+import { useI18n } from "../../context/I18nContext.jsx";
 import { Eye, EyeOff } from "lucide-react";
 import {
     markManyNotifications,
@@ -13,11 +14,12 @@ import {
     getGroupedNotificationNavigation,
     getNotificationNavigationPath
 } from "./notification-utils/notificationsNavigationLogic.jsx";
-import { labelForKey, shortText } from "./notification-utils/notificationText.jsx";
+import { labelForKey, shortText, setI18nInstance } from "./notification-utils/notificationText.jsx";
 import ErrorBanner from "../display-components/ErrorBanner.jsx";
 
 export default function Notifications() {
     const { user } = useAuth();
+    const { t, locale } = useI18n();
     const [notificationsByType, setNotificationsByType] = useState({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -26,6 +28,11 @@ export default function Notifications() {
     const mountedRef = useRef(true);
     const dropdownRef = useRef(null);
     const navigate = useNavigate();
+    
+    // Mettre à jour l'instance i18n pour notificationText
+    useEffect(() => {
+        setI18nInstance({ t, locale });
+    }, [t, locale]);
 
     useEffect(() => {
         mountedRef.current = true;
@@ -162,10 +169,10 @@ export default function Notifications() {
                             </div>
                             <div className="min-w-0">
                                 <div className="text-sm font-medium text-gray-900 whitespace-normal break-words overflow-hidden line-clamp-2">
-                                    {shortText(n.message || n.senderEmail || "No message", 200)}
+                                    {shortText(n.message || n.senderEmail || t('noMessage'), 200)}
                                 </div>
                                 <div className="text-xs text-gray-500">
-                                    {n.createdAt ? new Date(n.createdAt).toLocaleString() : n.createdAtString || "Unknown time"}
+                                    {n.createdAt ? new Date(n.createdAt).toLocaleString() : n.createdAtString || t('unknownTime')}
                                 </div>
                             </div>
                         </>

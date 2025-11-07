@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from "../../context/AuthContext.jsx";
+import { useI18n } from "../../context/I18nContext.jsx";
 import { approveCv, fetchAllCVs, rejectCv } from "../../services/GestionnaireService.js";
 import { Worker, Viewer } from '@react-pdf-viewer/core';
 import {useLocation, useNavigate} from "react-router-dom";
@@ -12,6 +13,7 @@ const statusColors = {
 
 const GestionCV = () => {
     const { user } = useAuth();
+    const { t } = useI18n();
     const token = user?.token;
     const location = useLocation();
     const navigate = useNavigate();
@@ -129,7 +131,7 @@ const GestionCV = () => {
                 <div className="relative">
                     <input
                         type="text"
-                        placeholder="Rechercher par nom d'étudiant..."
+                        placeholder={t('rechercherParNom')}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -164,13 +166,13 @@ const GestionCV = () => {
                     className={`px-4 py-2 rounded-t font-semibold border-b-2 ${tab === 'pending' ? 'border-blue-600 text-blue-700 bg-blue-50' : 'border-transparent text-gray-500 bg-gray-100 hover:bg-gray-200'}`}
                     onClick={() => setTab('pending')}
                 >
-                    CV en attente d'acceptation
+                    {t('cvEnAttente')}
                 </button>
                 <button
                     className={`px-4 py-2 rounded-t font-semibold border-b-2 ${tab === 'nonpending' ? 'border-blue-600 text-blue-700 bg-blue-50' : 'border-transparent text-gray-500 bg-gray-100 hover:bg-gray-200'}`}
                     onClick={() => setTab('nonpending')}
                 >
-                    CV Acceptés & À Refaire
+                    {t('cvAcceptesRefaire')}
                 </button>
             </div>
 
@@ -186,18 +188,18 @@ const GestionCV = () => {
                             >
                                 <h4 className="font-bold text-center">{cv.etudiantPrenom} {cv.etudiantNom}</h4>
                                 <div className="border-b my-2"></div>
-                                <p className="text-gray-500">Discipline: {cv.discipline}</p>
-                                <p className="text-gray-500">Email: {cv.etudiantEmail}</p>
+                                <p className="text-gray-500">{t('discipline')}: {cv.discipline}</p>
+                                <p className="text-gray-500">{t('email')}: {cv.etudiantEmail}</p>
                             </div>
                         ))}
-                        {pendingCvs.length === 0 && <div className="text-center text-gray-400">Aucun CV</div>}
+                        {pendingCvs.length === 0 && <div className="text-center text-gray-400">{t('aucunCV')}</div>}
                     </div>
                 </div>
             ) : (
                 <div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <h3 className="text-lg font-bold mb-4 text-center">Accepté</h3>
+                            <h3 className="text-lg font-bold mb-4 text-center">{t('accepte')}</h3>
                             <div className="flex flex-col gap-4">
                                 {approvedCvs.map(cv => (
                                     <div
@@ -207,15 +209,15 @@ const GestionCV = () => {
                                     >
                                         <h4 className="font-bold text-center">{cv.etudiantPrenom} {cv.etudiantNom}</h4>
                                         <div className="border-b my-2"></div>
-                                        <p className="text-gray-500">Discipline: {cv.discipline}</p>
-                                        <p className="text-gray-500">Email: {cv.etudiantEmail}</p>
+                                        <p className="text-gray-500">{t('discipline')}: {cv.discipline}</p>
+                                        <p className="text-gray-500">{t('email')}: {cv.etudiantEmail}</p>
                                     </div>
                                 ))}
-                                {approvedCvs.length === 0 && <div className="text-center text-gray-400">Aucun CV</div>}
+                                {approvedCvs.length === 0 && <div className="text-center text-gray-400">{t('aucunCV')}</div>}
                             </div>
                         </div>
                         <div>
-                            <h3 className="text-lg font-bold mb-4 text-center">À Refaire</h3>
+                            <h3 className="text-lg font-bold mb-4 text-center">{t('aRefaire')}</h3>
                             <div className="flex flex-col gap-4">
                                 {rejectedCvs.map(cv => (
                                     <div
@@ -225,11 +227,11 @@ const GestionCV = () => {
                                     >
                                         <h4 className="font-bold text-center">{cv.etudiantPrenom} {cv.etudiantNom}</h4>
                                         <div className="border-b my-2"></div>
-                                        <p className="text-gray-500">Discipline: {cv.discipline}</p>
-                                        <p className="text-gray-500">Email: {cv.etudiantEmail}</p>
+                                        <p className="text-gray-500">{t('discipline')}: {cv.discipline}</p>
+                                        <p className="text-gray-500">{t('email')}: {cv.etudiantEmail}</p>
                                     </div>
                                 ))}
-                                {rejectedCvs.length === 0 && <div className="text-center text-gray-400">Aucun CV</div>}
+                                {rejectedCvs.length === 0 && <div className="text-center text-gray-400">{t('aucunCV')}</div>}
                             </div>
                         </div>
                     </div>
@@ -252,13 +254,13 @@ const GestionCV = () => {
                         >&times;</button>
 
                         <div className="mb-3">
-                            <span className="font-semibold">Nom de l'étudiant:</span> {selectedCv.etudiantPrenom} {selectedCv.etudiantNom}
+                            <span className="font-semibold">{t('nomEtudiant')}</span> {selectedCv.etudiantPrenom} {selectedCv.etudiantNom}
                         </div>
                         <div className="mb-3">
-                            <span className="font-semibold">Nom du fichier:</span> {selectedCv.name}
+                            <span className="font-semibold">{t('nomFichier')}</span> {selectedCv.name}
                         </div>
                         <div className="mb-3">
-                            <span className="font-semibold">Discipline:</span> {selectedCv.discipline}
+                            <span className="font-semibold">{t('discipline')}:</span> {selectedCv.discipline}
                         </div>
                         <div className="mb-4">
                             {pdfUrl ? (
@@ -269,7 +271,7 @@ const GestionCV = () => {
                                 </div>
                             ) : (
                                 <div className="text-sm text-gray-500">
-                                    No preview available. (Check if the CV is uploaded and valid.)
+                                    {t('noPreviewAvailable')}
                                 </div>
                             )}
                         </div>
@@ -282,7 +284,7 @@ const GestionCV = () => {
                                         className="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-4 py-2 text-center disabled:opacity-50 mb-1"
                                         disabled={isProcessing || isRejecting}
                                     >
-                                        {isProcessing ? "Traitement..." : "Approuver"}
+                                        {isProcessing ? t('traitement') : t('approuver')}
                                     </button>
                                     <button
                                         onClick={() => {setIsRejecting(!isRejecting)}}
@@ -292,17 +294,17 @@ const GestionCV = () => {
                                     dark:focus:ring-red-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center disabled:opacity-50"
                                         disabled={isProcessing}
                                     >
-                                        Rejeter
+                                        {t('rejeter')}
                                     </button>
                                     {isRejecting && (
                                         <div className="mt-6 ">
                                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                Raison de rejet (obligatoire pour rejeter le CV) :
+                                                {t('raisonRejet')}
                                             </label>
                                             <textarea
                                                 value={rejectionReason}
                                                 onChange={(e) => setRejectionReason(e.target.value)}
-                                                placeholder="Expliquez pourquoi ce CV est rejeté..."
+                                                placeholder={t('expliquerRejet')}
                                                 className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                                 rows="3"
                                                 disabled={isProcessing}
@@ -316,7 +318,7 @@ const GestionCV = () => {
                                     dark:focus:ring-red-800 font-medium rounded-lg text-sm px-3 py-2.5 text-center disabled:opacity-50 mt-2"
                                                     disabled={isProcessing || !rejectionReason}
                                                 >
-                                                    {isProcessing ? "Traitement..." : "Confirmer"}
+                                                    {isProcessing ? t('traitement') : t('confirmer')}
                                                 </button>
                                             </div>
                                         </div>
@@ -328,7 +330,7 @@ const GestionCV = () => {
                                         className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 disabled:opacity-50 align-end"
                                         disabled={isProcessing}
                                     >
-                                        Fermer
+                                        {t('fermer')}
                                     </button>
                                 </div>
                             </div>

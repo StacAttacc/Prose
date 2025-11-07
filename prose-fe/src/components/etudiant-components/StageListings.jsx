@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { useI18n } from "../../context/I18nContext";
 import { getEtudiantStages } from "../../services/StageService";
 import StageDetailsModal from "../display-components/StageDetailsModal.jsx";
 import ErrorBanner from "../display-components/ErrorBanner.jsx";
 
 export default function StageListings() {
   const { user } = useAuth();
+  const { t } = useI18n();
   const [stages, setStages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -70,17 +72,17 @@ export default function StageListings() {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6 text-center">Stages Disponibles</h1>
+      <h1 className="text-2xl font-bold mb-6 text-center">{t('stagesDisponibles')}</h1>
 
       <div className="mb-8 bg-white rounded-lg shadow-md border border-gray-200 p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Recherche
+              {t('recherche')}
             </label>
             <input
               type="text"
-              placeholder="Titre, description, employeur, compétences..."
+              placeholder={t('recherchePlaceholderEtudiant')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
@@ -89,11 +91,11 @@ export default function StageListings() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Lieu
+              {t('lieu')}
             </label>
             <input
               type="text"
-              placeholder="Montréal, Québec, Télétravail..."
+              placeholder={t('lieuPlaceholder')}
               value={locationFilter}
               onChange={(e) => setLocationFilter(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
@@ -102,11 +104,11 @@ export default function StageListings() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Compensation
+              {t('compensation')}
             </label>
             <input
               type="text"
-              placeholder="20$/h, 500$/semaine..."
+              placeholder={t('compensationPlaceholder')}
               value={compensationFilter}
               onChange={(e) => setCompensationFilter(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
@@ -118,20 +120,20 @@ export default function StageListings() {
               onClick={clearFilters}
               className="w-full px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
             >
-              Effacer les filtres
+              {t('effacerFiltres')}
             </button>
           </div>
         </div>
 
         <div className="text-sm text-gray-600">
-          {filteredStages.length} stage(s) trouvé(s) sur {stages.length} au total
+          {t('stagesTrouves', { count: filteredStages.length, total: stages.length })}
         </div>
       </div>
       
       {/* Affichage du contenu selon l'état */}
       {loading ? (
         <div className="text-center py-12">
-          <p className="text-gray-600 text-lg">Chargement des stages...</p>
+          <p className="text-gray-600 text-lg">{t('chargementStages')}</p>
         </div>
       ) : error ? (
         <div className="text-center py-12">
@@ -141,8 +143,8 @@ export default function StageListings() {
         <div className="text-center py-8">
           <p className="text-gray-500 text-lg">
             {stages.length === 0 
-              ? "Aucun stage approuvé disponible pour le moment."
-              : "Aucun stage ne correspond à vos critères de recherche."
+              ? t('aucunStageApprouve')
+              : t('aucunStageCritereRecherche')
             }
           </p>
           {stages.length > 0 && (
@@ -150,7 +152,7 @@ export default function StageListings() {
               onClick={clearFilters}
               className="mt-4 px-4 py-2 bg-teal-500 text-white rounded-md hover:bg-teal-600 transition-colors"
             >
-              Effacer les filtres
+              {t('effacerFiltres')}
             </button>
           )}
         </div>
@@ -165,22 +167,22 @@ export default function StageListings() {
               <div className="mb-4">
                 <h3 className="text-xl font-semibold text-gray-800 mb-2">{stage.title}</h3>
                 <p className="text-gray-600 text-sm mb-2">
-                  <strong>Employeur:</strong> {stage.employeur?.company}
+                  <strong>{t('employeur')}:</strong> {stage.employeur?.company}
                 </p>
                 <p className="text-gray-600 text-sm mb-2">
-                  <strong>Lieu:</strong> {stage.location}
+                  <strong>{t('lieu')}:</strong> {stage.location}
                 </p>
                 <p className="text-gray-600 text-sm mb-2">
-                  <strong>Compensation:</strong> {stage.compensation}
+                  <strong>{t('compensation')}:</strong> {stage.compensation}
                 </p>
                 <p className="text-gray-600 text-sm">
-                  <strong>Période:</strong> {stage.startDate} - {stage.endDate}
+                  <strong>{t('periode')}:</strong> {stage.startDate} - {stage.endDate}
                 </p>
               </div>
               
               <div className="flex justify-end items-center">
                 <button className="text-teal-600 hover:text-teal-800 font-medium">
-                  Voir détails →
+                  {t('voirDetails')} →
                 </button>
               </div>
             </div>

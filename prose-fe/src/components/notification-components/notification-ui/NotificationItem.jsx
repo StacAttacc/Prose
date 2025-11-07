@@ -1,7 +1,9 @@
 import React from 'react';
+import { useI18n } from '../../../../context/I18nContext';
 import { shortText } from "../notification-utils/notificationText.jsx";
 
 export function NotificationItem({ notification, onItemClick, onMarkSingleClick, typeKey}) {
+    const { t } = useI18n();
 
     return (
         <li className="flex items-center gap-3 p-2 hover:bg-gray-100 rounded">
@@ -14,10 +16,10 @@ export function NotificationItem({ notification, onItemClick, onMarkSingleClick,
                 </div>
                 <div className="min-w-0">
                     <div className="text-sm font-medium text-gray-900 whitespace-normal break-words overflow-hidden line-clamp-2">
-                        {shortText(notification.message || notification.senderEmail || "No message", 200)}
+                        {shortText(notification.message || notification.senderEmail || t('noMessage'), 200)}
                     </div>
                     <div className="text-xs text-gray-500">
-                        {notification.createdAt ? new Date(notification.createdAt).toLocaleString() : notification.createdAtString || "Unknown time"}
+                        {notification.createdAt ? new Date(notification.createdAt).toLocaleString() : notification.createdAtString || t('unknownTime')}
                     </div>
                 </div>
             </div>

@@ -35,12 +35,12 @@ export default function Dashboard() {
                                     </button>
                                     <p className="text-white pl-4 text-2xl">Prose</p>
                                     <div className="flex items-center gap-4 ml-6">
-                                        <div className="flex items-center gap-2">
-                                            <label className="text-white text-sm font-medium">{t('language')}:</label>
+                                        <div className="flex items-center gap-2 bg-teal-600/50 px-3 py-1.5 rounded-lg border border-white/20">
+                                            <label className="text-white text-sm font-medium whitespace-nowrap">{t('language')}:</label>
                                             <select
                                                 value={locale}
                                                 onChange={(e) => setLocale(e.target.value)}
-                                                className="px-3 py-2 border border-white/30 rounded-md bg-teal-600 text-white focus:ring-2 focus:ring-white focus:border-white text-sm"
+                                                className="px-2 py-1 border border-white/30 rounded-md bg-teal-700 text-white focus:ring-2 focus:ring-white focus:border-white text-sm font-medium cursor-pointer hover:bg-teal-600 transition-colors"
                                             >
                                                 <option value="fr">Français</option>
                                                 <option value="en">English</option>
@@ -69,14 +69,14 @@ export default function Dashboard() {
                                 </div>
                             </div>
                             <div className="ml-auto">
-                                <p className="text-white text-lg">Bienvenue {user.firstName + " " + user.lastName}
+                                <p className="text-white text-lg">{t('welcome')} {user.firstName + " " + user.lastName}
                                     <button type="button"
                                             className="text-white bg-gradient-to-r
                                     from-red-400 via-red-500 to-red-600
                                     hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300
                                     dark:focus:ring-red-800 font-medium rounded-lg text-sm px-3 py-2.5 text-center me-2 ml-4"
                                             onClick={userLogout}
-                                    >Logout
+                                    >{t('logout')}
                                     </button>
                                 </p>
                             </div>
@@ -92,7 +92,7 @@ export default function Dashboard() {
                                         nav('employeur/creation-stage')
                                     }}
                                             className="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2">
-                                        Créer un stage
+                                        {t('creerStage')}
                                     </button>
                                 </>
                             ) : <></>}
@@ -102,14 +102,14 @@ export default function Dashboard() {
                                         nav('etudiant/mon-cv')
                                     }}
                                             className="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2">
-                                        Mon CV
+                                        {t('monCV')}
                                     </button>
                                     {hasCV && (
                                         <button onClick={() => {
                                             nav('etudiant/stages')
                                         }}
                                                 className="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2">
-                                            Mes Stages
+                                            {t('mesStages')}
                                         </button>
                                     )}
                                 </>
@@ -120,20 +120,20 @@ export default function Dashboard() {
                                         nav('gestionnaire/gestion-cv')
                                     }}
                                             className="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2">
-                                        Gestion des CVs
+                                        {t('gestionCVs')}
                                     </button>
 
                                     <button onClick={() => {
                                         nav('gestionnaire/candidatures')
                                     }}
                                             className="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2">
-                                        Voir les candidature(s)
+                                        {t('voirCandidaturesNav')}
                                     </button>
                                     <button onClick={() => {
                                         nav('gestionnaire/list-stages')
                                     }}
                                             className="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2">
-                                        Voir Stages
+                                        {t('voirStages')}
                                     </button>
                                 </>
                             ) : <></>}
