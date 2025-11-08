@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Viewer, Worker } from "@react-pdf-viewer/core";
 import { useAuth } from "../../context/AuthContext.jsx";
-import { checkEntenteExists } from "../../services/EmployeurService.js";
 
 function blobFromUnknownData(data, mime = "application/pdf") {
     if (!data) return null;
@@ -25,19 +24,47 @@ function blobFromUnknownData(data, mime = "application/pdf") {
     return null;
 }
 
-export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSign }) {
+export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSign, ententeData: initialEntenteData, loadEntenteFn }) {
     const { user } = useAuth();
     const [password, setPassword] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState("");
-    const [ententeData, setEntenteData] = useState(null);
+    const [ententeData, setEntenteData] = useState(initialEntenteData || null);
     const [loading, setLoading] = useState(false);
     const [pdfUrl, setPdfUrl] = useState(null);
     const [consentChecked, setConsentChecked] = useState(false);
 
+    // Vérifier si l'utilisateur actuel a déjà signé
+    const userHasSigned = useMemo(() => {
+        const isStudent = user?.role === "ETUDIANT" || user?.role === "Etudiant";
+        const isEmployeur = user?.role === "EMPLOYEUR" || user?.role === "Employeur";
+        return (isStudent && ententeData?.dateSignatureEtudiant) || 
+               (isEmployeur && ententeData?.dateSignatureEmployeur);
+    }, [user?.role, ententeData?.dateSignatureEtudiant, ententeData?.dateSignatureEmployeur]);
+
+    const userSignatureDate = useMemo(() => {
+        if (!userHasSigned) return null;
+        const isStudent = user?.role === "ETUDIANT" || user?.role === "Etudiant";
+        return isStudent ? ententeData?.dateSignatureEtudiant : ententeData?.dateSignatureEmployeur;
+    }, [userHasSigned, user?.role, ententeData?.dateSignatureEtudiant, ententeData?.dateSignatureEmployeur]);
+
     useEffect(() => {
-        if (isOpen && applicant?.id && user?.token) {
-            loadEntente();
+        if (isOpen) {
+            if (initialEntenteData) {
+                // Utiliser les données passées en prop
+                setEntenteData(initialEntenteData);
+                const pdfBlob = blobFromUnknownData(
+                    initialEntenteData.documentPdfBase64 || initialEntenteData.documentPdf,
+                    initialEntenteData.documentType || "application/pdf"
+                );
+                if (pdfBlob) {
+                    const url = URL.createObjectURL(pdfBlob);
+                    setPdfUrl(url);
+                }
+            } else if (loadEntenteFn && applicant?.id && user?.token) {
+                // Utiliser la fonction de chargement passée en prop
+                loadEntente();
+            }
         } else {
             if (pdfUrl) {
                 URL.revokeObjectURL(pdfUrl);
@@ -48,13 +75,14 @@ export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSi
             setError("");
             setConsentChecked(false);
         }
-    }, [isOpen, applicant?.id, user?.token]);
+    }, [isOpen, applicant?.id, user?.token, initialEntenteData, loadEntenteFn]);
 
     const loadEntente = async () => {
+        if (!loadEntenteFn) return;
         setLoading(true);
         setError("");
         try {
-            const result = await checkEntenteExists(applicant.id, user.token);
+            const result = await loadEntenteFn(applicant.id, user.token);
             if (result.exists && result.data) {
                 setEntenteData(result.data);
                 const pdfBlob = blobFromUnknownData(
@@ -163,64 +191,91 @@ export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSi
                             )}
                         </div>
 
-                        <form onSubmit={handleSign} className="border-t pt-6">
-                            <div className="mb-4">
-                                <label className="flex items-start">
-                                    <input
-                                        type="checkbox"
-                                        checked={consentChecked}
-                                        onChange={(e) => setConsentChecked(e.target.checked)}
-                                        className="mt-1 mr-2"
-                                        required
-                                    />
-                                    <span className="text-sm text-gray-700">
-                                        Je consens à cette entente de stage et je confirme avoir lu et compris tous les termes et conditions énoncés dans le document ci-dessus.
-                                    </span>
-                                </label>
-                            </div>
-
-                            <div className="mb-4">
-                                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                                    Mot de passe <span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                    type="password"
-                                    id="password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    placeholder="Entrez votre mot de passe pour confirmer"
-                                    required
-                                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                                />
-                                <p className="text-xs text-gray-500 mt-1">
-                                    Votre mot de passe est requis pour confirmer la signature
-                                </p>
-                            </div>
-
-                            {error && (
-                                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-                                    {error}
+                        {/* Formulaire de signature - seulement si l'utilisateur n'a pas encore signé */}
+                        {!userHasSigned && (
+                            <form onSubmit={handleSign} className="border-t pt-6">
+                                <div className="mb-4">
+                                    <label className="flex items-start">
+                                        <input
+                                            type="checkbox"
+                                            checked={consentChecked}
+                                            onChange={(e) => setConsentChecked(e.target.checked)}
+                                            className="mt-1 mr-2"
+                                            required
+                                        />
+                                        <span className="text-sm text-gray-700">
+                                            Je consens à cette entente de stage et je confirme avoir lu et compris tous les termes et conditions énoncés dans le document ci-dessus.
+                                        </span>
+                                    </label>
                                 </div>
-                            )}
 
-                            <div className="flex gap-3 justify-end">
-                                <button
-                                    type="button"
-                                    onClick={handleClose}
-                                    disabled={isSubmitting}
-                                    className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition disabled:opacity-50"
-                                >
-                                    Annuler
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={isSubmitting || !consentChecked || !password}
-                                    className="px-4 py-2 text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-green-300 rounded-lg transition disabled:opacity-50"
-                                >
-                                    {isSubmitting ? "Signature en cours..." : "Signer l'entente"}
-                                </button>
+                                <div className="mb-4">
+                                    <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                                        Mot de passe <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="password"
+                                        id="password"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        placeholder="Entrez votre mot de passe pour confirmer"
+                                        required
+                                        className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                                    />
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        Votre mot de passe est requis pour confirmer la signature
+                                    </p>
+                                </div>
+
+                                {error && (
+                                    <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                                        {error}
+                                    </div>
+                                )}
+
+                                <div className="flex gap-3 justify-end">
+                                    <button
+                                        type="button"
+                                        onClick={handleClose}
+                                        disabled={isSubmitting}
+                                        className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition disabled:opacity-50"
+                                    >
+                                        Annuler
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={isSubmitting || !consentChecked || !password}
+                                        className="px-4 py-2 text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-green-300 rounded-lg transition disabled:opacity-50"
+                                    >
+                                        {isSubmitting ? "Signature en cours..." : "Signer l'entente"}
+                                    </button>
+                                </div>
+                            </form>
+                        )}
+
+                        {/* Message si déjà signé */}
+                        {userHasSigned && userSignatureDate && (
+                            <div className="border-t pt-6">
+                                <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                                    <p className="text-sm text-green-700 font-medium">
+                                        ✓ Vous avez déjà signé cette entente le {new Date(userSignatureDate).toLocaleDateString('fr-FR', {
+                                            day: '2-digit',
+                                            month: 'long',
+                                            year: 'numeric'
+                                        })}
+                                    </p>
+                                </div>
+                                <div className="flex gap-3 justify-end">
+                                    <button
+                                        type="button"
+                                        onClick={handleClose}
+                                        className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition"
+                                    >
+                                        Fermer
+                                    </button>
+                                </div>
                             </div>
-                        </form>
+                        )}
                     </>
                 )}
             </div>

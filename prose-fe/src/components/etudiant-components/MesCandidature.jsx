@@ -1,6 +1,8 @@
 import { useState, useEffect, useMemo } from "react";
-import { getMesCandidatures, respondToOffer } from "../../services/EtudiantService.js";
+import { getMesCandidatures, respondToOffer, checkEntenteExists, signEntente } from "../../services/EtudiantService.js";
 import StageDetailsModal from "../display-components/StageDetailsModal.jsx";
+import EntenteSignatureModal from "../display-components/EntenteSignatureModal.jsx";
+import { useAuth } from "../../context/AuthContext.jsx";
 import {useLocation, useNavigate} from "react-router-dom";
 
 export default function MesCandidature() {
@@ -20,6 +22,11 @@ export default function MesCandidature() {
     const [errors, setErrors] = useState({});
     const [showingRefusalForm, setShowingRefusalForm] = useState({});
     const [notification, setNotification] = useState(null);
+    const [ententeDataMap, setEntenteDataMap] = useState({}); // Map candidatureId -> ententeData
+    const [checkingEntente, setCheckingEntente] = useState({}); // Map candidatureId -> boolean
+    const [showEntenteModal, setShowEntenteModal] = useState(false);
+    const [selectedCandidatureForEntente, setSelectedCandidatureForEntente] = useState(null);
+    const { user } = useAuth();
 
     useEffect(() => {
         const fetchCandidatures = async () => {
@@ -49,6 +56,40 @@ export default function MesCandidature() {
             }
         }
     }, [location.state?.openCandidatureId, candidatures, navigate, location]);
+
+    // Vérifier l'existence de l'entente pour les candidatures confirmées
+    useEffect(() => {
+        const checkEntentes = async () => {
+            const confirmedCandidatures = candidatures.filter(c => 
+                c.status === "CONFIRMER" || c.status === "CONFIRMEE"
+            );
+            
+            for (const candidature of confirmedCandidatures) {
+                if (!checkingEntente[candidature.id] && user?.token) {
+                    setCheckingEntente(prev => ({ ...prev, [candidature.id]: true }));
+                    try {
+                        const result = await checkEntenteExists(candidature.id, user.token);
+                        setEntenteDataMap(prev => ({
+                            ...prev,
+                            [candidature.id]: result.exists ? result.data : null
+                        }));
+                    } catch (error) {
+                        console.error(`Erreur lors de la vérification de l'entente pour candidature ${candidature.id}:`, error);
+                        setEntenteDataMap(prev => ({
+                            ...prev,
+                            [candidature.id]: null
+                        }));
+                    } finally {
+                        setCheckingEntente(prev => ({ ...prev, [candidature.id]: false }));
+                    }
+                }
+            }
+        };
+
+        if (candidatures.length > 0 && user?.token) {
+            checkEntentes();
+        }
+    }, [candidatures, user?.token]);
 
   const filteredCandidatures = useMemo(() => {
     return candidatures.filter(candidature => {
@@ -334,9 +375,96 @@ export default function MesCandidature() {
                                         <h3 className="text-xl font-semibold text-gray-800 mb-2">
                                             {candidature.stage?.title || 'Titre non disponible'}
                                         </h3>
-                                        <h4 className="text-3xl font-bold text-green-800 text-center">
+                                        <h4 className="text-3xl font-bold text-green-800 text-center mb-4">
                                             Stage Accepté
                                         </h4>
+                                        {checkingEntente[candidature.id] ? (
+                                            <div className="text-center text-gray-500">
+                                                Vérification de l'entente...
+                                            </div>
+                                        ) : ententeDataMap[candidature.id] ? (
+                                            <>
+                                                {ententeDataMap[candidature.id].status === "SIGNEE_ETUDIANT" ? (
+                                                    <div className="mt-4 flex flex-col items-center gap-2">
+                                                        <span className="text-sm text-gray-600">
+                                                            En attente de la signature de l'employeur
+                                                        </span>
+                                                        <button
+                                                            onClick={() => {
+                                                                setSelectedCandidatureForEntente(candidature);
+                                                                setShowEntenteModal(true);
+                                                            }}
+                                                            className="px-6 py-3 rounded-md font-medium text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br transition-all"
+                                                            type="button"
+                                                        >
+                                                            Voir l'entente de stage
+                                                        </button>
+                                                    </div>
+                                                ) : ententeDataMap[candidature.id].status === "SIGNEE_ETUDIANT_ET_EMPLOYEUR" ? (
+                                                    <div className="mt-4 flex flex-col items-center gap-2">
+                                                        <span className="text-sm text-gray-600">
+                                                            En attente de la signature du gestionnaire
+                                                        </span>
+                                                        <button
+                                                            onClick={() => {
+                                                                setSelectedCandidatureForEntente(candidature);
+                                                                setShowEntenteModal(true);
+                                                            }}
+                                                            className="px-6 py-3 rounded-md font-medium text-white bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 hover:bg-gradient-to-br transition-all"
+                                                            type="button"
+                                                        >
+                                                            Voir l'entente de stage
+                                                        </button>
+                                                    </div>
+                                                ) : ententeDataMap[candidature.id].status === "SIGNEE" ? (
+                                                    <div className="mt-4 flex flex-col items-center gap-2">
+                                                        <span className="text-sm text-green-600 font-medium">
+                                                            ✓ Entente signée par toutes les parties
+                                                        </span>
+                                                        <button
+                                                            onClick={() => {
+                                                                const ententeData = ententeDataMap[candidature.id];
+                                                                if (ententeData?.documentPdfBase64) {
+                                                                    const bin = atob(ententeData.documentPdfBase64);
+                                                                    const bytes = new Uint8Array(bin.length);
+                                                                    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+                                                                    const blob = new Blob([bytes], { type: "application/pdf" });
+                                                                    const url = URL.createObjectURL(blob);
+                                                                    const a = document.createElement("a");
+                                                                    a.href = url;
+                                                                    a.download = ententeData.documentName || "entente_stage.pdf";
+                                                                    document.body.appendChild(a);
+                                                                    a.click();
+                                                                    a.remove();
+                                                                    URL.revokeObjectURL(url);
+                                                                }
+                                                            }}
+                                                            className="px-6 py-3 rounded-md font-medium text-white bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 hover:bg-gradient-to-br transition-all"
+                                                            type="button"
+                                                        >
+                                                            Télécharger l'entente de stage
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <div className="mt-4 flex justify-center">
+                                                        <button
+                                                            onClick={() => {
+                                                                setSelectedCandidatureForEntente(candidature);
+                                                                setShowEntenteModal(true);
+                                                            }}
+                                                            className="px-6 py-3 rounded-md font-medium text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br transition-all"
+                                                            type="button"
+                                                        >
+                                                            Voir et signer l'entente de stage
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </>
+                                        ) : (
+                                            <div className="text-center text-gray-500 text-sm mt-4">
+                                                En attente du gestionnaire pour l'entente de stage
+                                            </div>
+                                        )}
                                     </div>
                                 ) : isRefusedByStudent ? (
                                     <div>
@@ -524,6 +652,34 @@ export default function MesCandidature() {
                 showManagementButtons={false}
                 showPostulerButton={false}
             />
+
+            {showEntenteModal && selectedCandidatureForEntente && (
+                <EntenteSignatureModal
+                    applicant={selectedCandidatureForEntente}
+                    isOpen={showEntenteModal}
+                    onClose={() => {
+                        setShowEntenteModal(false);
+                        setSelectedCandidatureForEntente(null);
+                    }}
+                    ententeData={ententeDataMap[selectedCandidatureForEntente.id]}
+                    loadEntenteFn={checkEntenteExists}
+                    onSign={async (ententeId, password) => {
+                        try {
+                            await signEntente(ententeId, password, user?.token);
+                            // Rafraîchir les données de l'entente après signature
+                            const result = await checkEntenteExists(selectedCandidatureForEntente.id, user?.token);
+                            if (result.exists) {
+                                setEntenteDataMap(prev => ({
+                                    ...prev,
+                                    [selectedCandidatureForEntente.id]: result.data
+                                }));
+                            }
+                        } catch (error) {
+                            throw new Error(error.message || "Erreur lors de la signature");
+                        }
+                    }}
+                />
+            )}
         </div>
     );
 }

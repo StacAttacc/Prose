@@ -415,11 +415,7 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                                         <span className="text-sm text-gray-500 italic px-4 py-2">Vérification...</span>
                                     ) : ententeExists ? (
                                         <>
-                                            {ententeData?.status === "SIGNEE_EMPLOYEUR" ? (
-                                                <span className="text-sm text-gray-600 px-4 py-2">
-                                                    En attente de la signature de l'étudiant
-                                                </span>
-                                            ) : ententeData?.status === "SIGNEE_ETUDIANT" ? (
+                                            {ententeData?.status === "SIGNEE_ETUDIANT" ? (
                                                 <button
                                                     onClick={() => setShowEntenteModal(true)}
                                                     className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br transition-all"
@@ -428,10 +424,14 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                                                     Voir et signer l'entente
                                                 </button>
                                             ) : ententeData?.status === "SIGNEE" ? (
-                                                <div className="flex flex-col gap-2">
-                                                    <span className="text-sm text-green-600 font-medium px-4 py-2">
-                                                        ✓ Entente signée
-                                                    </span>
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        onClick={() => setShowEntenteModal(true)}
+                                                        className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 hover:bg-gradient-to-br transition-all"
+                                                        type="button"
+                                                    >
+                                                        Voir l'entente
+                                                    </button>
                                                     <button
                                                         onClick={() => {
                                                             if (ententeData?.documentPdfBase64) {
@@ -449,19 +449,19 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                                                                 URL.revokeObjectURL(url);
                                                             }
                                                         }}
-                                                        className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 hover:bg-gradient-to-br transition-all"
+                                                        className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-purple-400 via-purple-500 to-purple-600 hover:bg-gradient-to-br transition-all"
                                                         type="button"
                                                     >
-                                                        Télécharger l'entente
+                                                        Télécharger
                                                     </button>
                                                 </div>
                                             ) : (
                                                 <button
                                                     onClick={() => setShowEntenteModal(true)}
-                                                    className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br transition-all"
+                                                    className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 hover:bg-gradient-to-br transition-all"
                                                     type="button"
                                                 >
-                                                    Voir et signer l'entente
+                                                    Voir l'entente
                                                 </button>
                                             )}
                                         </>
@@ -505,6 +505,8 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                         applicant={applicant}
                         isOpen={showEntenteModal}
                         onClose={() => setShowEntenteModal(false)}
+                        ententeData={ententeData}
+                        loadEntenteFn={checkEntenteExists}
                         onSign={async (ententeId, password) => {
                             try {
                                 await signEntente(ententeId, password, user?.token);
