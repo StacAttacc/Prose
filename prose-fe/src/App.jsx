@@ -2,6 +2,7 @@ import {StrictMode} from "react";
 import {BrowserRouter} from "react-router-dom";
 import {AuthProvider} from "./context/AuthContext.jsx";
 import {CvProvider} from "./context/CvContext.jsx";
+import {YearProvider} from "./context/YearContext.jsx";
 import AppRoutes from "./AppRoutes.jsx";
 
 function App() {
@@ -10,7 +11,9 @@ function App() {
             <BrowserRouter>
                 <AuthProvider>
                     <CvProvider>
-                        <AppRoutes />
+                        <YearProvider>
+                            <AppRoutes />
+                        </YearProvider>
                     </CvProvider>
                 </AuthProvider>
             </BrowserRouter>

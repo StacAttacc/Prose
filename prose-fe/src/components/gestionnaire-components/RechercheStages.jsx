@@ -4,12 +4,17 @@ import {getAllStages, submitStageDecision} from "../../services/GestionnaireServ
 import StageDetailsModal from "../display-components/StageDetailsModal";
 import ErrorBanner from "../display-components/ErrorBanner.jsx";
 import { useLocation, useNavigate } from "react-router-dom";
-
+import { useYear } from "../../context/YearContext";
 
 export default function GestRechercheStages() {
   const { user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const { selectedYear } = useYear();
+  
+  useEffect(() => {
+  }, [selectedYear]);
+  
   const [stages, setStages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -25,16 +30,19 @@ export default function GestRechercheStages() {
   useEffect(() => {
     async function fetchAllStages() {
       try {
-        const data = await getAllStages(user.token);
-        setStages(data.data);
+        setLoading(true);
+        const data = await getAllStages(user.token, selectedYear);
+        setStages(data.data || []);
       } catch (err) {
         setError(err.message);
       } finally {
         setLoading(false);
       }
     }
-    fetchAllStages();
-  }, [user.token]);
+    if (user.token && selectedYear) {
+      fetchAllStages();
+    }
+  }, [user.token, selectedYear]);
 
     useEffect(() => {
         const openStageId = location?.state?.openStageId;
@@ -47,7 +55,7 @@ export default function GestRechercheStages() {
             navigate(location.pathname, { replace: true, state: {} });
         }
     }, [location?.state?.openStageId, stages, navigate, location?.pathname]);
-
+    
     const filteredStages = useMemo(() => {
     return stages.filter(stage => {
       const matchesSearch = stage.title.toLowerCase().includes(searchTerm.toLowerCase()) ||

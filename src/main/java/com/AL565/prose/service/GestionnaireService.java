@@ -16,11 +16,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -36,6 +39,7 @@ public class GestionnaireService {
     private final CandidatureRepository candidatureRepository;
     private final NotificationRepository notificationRepository;
     private final PostulationNotificationRepository postulastionNotificationRepository;
+    private final EntenteRepository ententeRepository;
     private final NotificationsHelper notificationsHelper;
 
     public void saveGestionnaire(GestionnairePasswordDTO dto) {
@@ -49,14 +53,16 @@ public class GestionnaireService {
     }
 
 
-    public List<StageDTO> getStagesByStatus(String status) {
+    public List<StageDTO> getStagesByStatus(String status, String year) {
+        int yearNumber = year != null ? Integer.parseInt(year) : LocalDate.now().getYear();
+
         return stageRepository.findByStatus(OfferStatus.valueOf(status))
                 .stream()
                 .map(stage -> {
                     Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(stage.getEmployeurEmail());
                     return StageDTO.fromModel(stage, employeur);
-                })
-                .collect(Collectors.toList());
+                }).filter(stage -> stage.getCreatedAt().getYear() ==  yearNumber)
+                .toList();
     }
 
     @Transactional
@@ -113,12 +119,14 @@ public class GestionnaireService {
         }
     }
 
-    public List<StageDTO> getAllStages() throws FailedToRetrieveStagesException {
+    public List<StageDTO> getAllStages(String year) throws FailedToRetrieveStagesException {
+        int yearNumber = year != null ? Integer.parseInt(year) : LocalDate.now().getYear();
+
         try {
             return stageRepository.findAll().stream().map(stage -> {
                 Employeur emp = employeurRepository.getEmployeurByCredentials_Username(stage.getEmployeurEmail());
                 return StageDTO.fromModel(stage, emp);
-            }).toList();
+            }).filter(stage -> stage.getStartDate().getYear() ==  yearNumber).toList();
         } catch (Exception e) {
             throw new FailedToRetrieveStagesException("Échec lors de la récupération des stages.", e);
         }
