@@ -43,7 +43,6 @@ function buildSearchFields(app) {
 const StageApplicantsPage = () => {
     const {id} = useParams();
     const {user} = useAuth();
-    const ready = Boolean(user?.token);
 
     const [q, setQ] = useState("");
     const [applicants, setApplicants] = useState([]);
@@ -138,20 +137,20 @@ const StageApplicantsPage = () => {
                             <th className="py-3 px-4 font-medium text-gray-600">CV</th>
                             <th className="py-3 px-4 font-medium text-gray-600">Lettre de motivation</th>
                             <th className="py-3 px-4 font-medium text-gray-600">Statut</th>
-                            <th className="py-3 px-4 font-medium text-gray-600">entrevue</th>
+                            <th className="py-3 px-4 font-medium text-gray-600">Entrevue</th>
                             <th className="py-3 px-4 font-medium text-gray-600">Actions</th>
                         </tr>
                         </thead>
                         <tbody>
                         {loading ? (
                             <tr>
-                                <td className="py-8 px-4 text-gray-500 text-center" colSpan={5}>
+                                <td className="py-8 px-4 text-gray-500 text-center" colSpan={6}>
                                     Chargement…
                                 </td>
                             </tr>
                         ) : filtered.length === 0 ? (
                             <tr>
-                                <td className="py-8 px-4 text-gray-500 text-center" colSpan={5}>
+                                <td className="py-8 px-4 text-gray-500 text-center" colSpan={6}>
                                     Aucune candidature trouvée.
                                 </td>
                             </tr>

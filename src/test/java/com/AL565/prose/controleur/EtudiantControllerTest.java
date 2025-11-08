@@ -8,6 +8,7 @@ import com.AL565.prose.security.JwtTokenProvider;
 import com.AL565.prose.service.EmployeurService;
 import com.AL565.prose.service.EtudiantService;
 import com.AL565.prose.service.GestionnaireService;
+import com.AL565.prose.service.EntenteService;
 import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
@@ -52,6 +53,9 @@ class EtudiantControllerTest {
 
     @MockitoBean
     private GestionnaireService gestionnaireService;
+
+    @MockitoBean
+    private EntenteService ententeService;
 
     @MockitoBean
     private EtudiantRepository etudiantRepository;
@@ -628,5 +632,44 @@ class EtudiantControllerTest {
                 .andExpect(jsonPath("$.message").value("Offre acceptée avec succès"));
 
         verify(etudiantService, times(1)).respondToOffer(eq("test@test.com"), any(EtudiantResponseOfferDTO.class));
+    }
+
+    @Test
+    void signEntente_success() throws Exception {
+        Long ententeId = 1L;
+        String token = "Bearer token123";
+        String email = "etudiant@test.com";
+
+        when(jwtTokenProvider.getEmailFromJWT("token123")).thenReturn(email);
+        doNothing().when(ententeService).signEntente(ententeId, email);
+
+        mockMvc.perform(put("/etudiant/ententes/" + ententeId + "/signer")
+                        .header("Authorization", token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Entente signée avec succès"));
+
+        verify(ententeService, times(1)).signEntente(ententeId, email);
+    }
+
+    @Test
+    void signEntente_whenServiceThrows_returns500() throws Exception {
+        Long ententeId = 1L;
+        String token = "Bearer token123";
+        String email = "etudiant@test.com";
+
+        when(jwtTokenProvider.getEmailFromJWT("token123")).thenReturn(email);
+        doThrow(new RuntimeException("Erreur lors de la signature"))
+                .when(ententeService).signEntente(ententeId, email);
+
+        mockMvc.perform(put("/etudiant/ententes/" + ententeId + "/signer")
+                        .header("Authorization", token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf()))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.message").value("Erreur interne du serveur lors de la signature de l'entente"));
+
+        verify(ententeService, times(1)).signEntente(ententeId, email);
     }
 }

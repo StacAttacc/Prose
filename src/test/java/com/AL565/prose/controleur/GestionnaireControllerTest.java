@@ -13,6 +13,7 @@ import com.AL565.prose.service.EmployeurService;
 import com.AL565.prose.service.EtudiantService;
 import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.GestionnaireService;
+import com.AL565.prose.service.EntenteService;
 import com.AL565.prose.service.dto.notifications.NotificationGroupDTO;
 import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -39,8 +40,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -55,6 +55,9 @@ class GestionnaireControllerTest {
 
     @MockitoBean
     private GestionnaireService gestionnaireService;
+
+    @MockitoBean
+    private EntenteService ententeService;
 
     @MockitoBean
     private EmployeurService employeurService;
@@ -474,5 +477,61 @@ class GestionnaireControllerTest {
         assertThat(candidaturesJohnDTO.getFirst().getStatus()).isEqualTo(String.valueOf(CandidatureStatus.ACCEPTEE));
         assertThat(candidaturesUmbertoDTO.getFirst().getStatus()).isEqualTo(String.valueOf(CandidatureStatus.ACCEPTEE));
         assertThat(candidaturesUmbertoDTO.get(1).getStatus()).isEqualTo(String.valueOf(CandidatureStatus.REFUSEE));
+    }
+
+    @Test
+    @DisplayName("POST /gestionnaire/candidatures/{candidatureId}/generer-entente -> 200 avec EntenteDTO")
+    void genererEntente_success() throws Exception {
+        Long candidatureId = 1L;
+        EntenteDTO ententeDTO = EntenteDTO.builder()
+                .id(1L)
+                .candidatureId(candidatureId)
+                .build();
+
+        when(ententeService.genererEntente(candidatureId)).thenReturn(ententeDTO);
+
+        mockMvc.perform(post("/gestionnaire/candidatures/" + candidatureId + "/generer-entente")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.message", is("Entente générée avec succès")))
+                .andExpect(jsonPath("$.data.id", is(1)));
+
+        verify(ententeService, times(1)).genererEntente(candidatureId);
+    }
+
+    @Test
+    @DisplayName("POST /gestionnaire/candidatures/{candidatureId}/generer-entente -> 400 avec message d'erreur")
+    void genererEntente_whenIllegalArgument_returns400() throws Exception {
+        Long candidatureId = 1L;
+        String errorMessage = "La candidature doit être confirmée pour générer une entente";
+
+        when(ententeService.genererEntente(candidatureId))
+                .thenThrow(new IllegalArgumentException(errorMessage));
+
+        mockMvc.perform(post("/gestionnaire/candidatures/" + candidatureId + "/generer-entente")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.message", is(errorMessage)));
+
+        verify(ententeService, times(1)).genererEntente(candidatureId);
+    }
+
+    @Test
+    @DisplayName("POST /gestionnaire/candidatures/{candidatureId}/generer-entente -> 500 quand service lance exception")
+    void genererEntente_whenServiceThrows_returns500() throws Exception {
+        Long candidatureId = 1L;
+
+        when(ententeService.genererEntente(candidatureId))
+                .thenThrow(new RuntimeException("Erreur interne"));
+
+        mockMvc.perform(post("/gestionnaire/candidatures/" + candidatureId + "/generer-entente")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.message", is("Erreur interne du serveur lors de la génération de l'entente")));
+
+        verify(ententeService, times(1)).genererEntente(candidatureId);
     }
 }

@@ -2,7 +2,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { telechargerCv } from "../../services/EtudiantService.js";
-import { convoquerEntrevue } from "../../services/EmployeurService.js";
+import { convoquerEntrevue, checkEntenteExists, signEntente } from "../../services/EmployeurService.js";
+import EntenteSignatureModal from "./EntenteSignatureModal.jsx";
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import PdfModal from "./PdfModal.jsx";
 import InterviewConvocationModal from "./InterviewConvocationModal.jsx";
@@ -55,7 +56,11 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
     });
 
     const [showConvocationModal, setShowConvocationModal] = useState(false);
+    const [showEntenteModal, setShowEntenteModal] = useState(false);
     const [localStatus, setLocalStatus] = useState(applicant?.statut || applicant?.status || "EN_ATTENTE");
+    const [ententeExists, setEntenteExists] = useState(null); // null = pas encore vérifié, true/false = résultat
+    const [ententeData, setEntenteData] = useState(null); // Données complètes de l'entente
+    const [checkingEntente, setCheckingEntente] = useState(false);
 
     useEffect(() => {
         const newStatus = applicant?.statut || applicant?.status || "EN_ATTENTE";
@@ -86,7 +91,7 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
         const s =
             firstNonEmpty(
                 applicant?.status,
-                applicant?.candidatureStatus,     // au cas où le backend utilise ce nom
+                applicant?.candidatureStatus,
                 applicant?.statut,
                 typeof applicant?.status === "object" ? applicant?.status?.name : "" // enum sérialisé en objet
             );
@@ -94,6 +99,30 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
     }, [applicant]);
 
     const status = useMemo(() => (rawStatus || "").toString().trim().toUpperCase(), [rawStatus]);
+
+    useEffect(() => {
+        const checkEntente = async () => {
+            if (status === "CONFIRMER" && applicant?.id && user?.token) {
+                setCheckingEntente(true);
+                try {
+                    const result = await checkEntenteExists(applicant.id, user.token);
+                    setEntenteExists(result.exists);
+                    setEntenteData(result.exists ? result.data : null);
+                } catch (error) {
+                    console.error("Erreur lors de la vérification de l'entente:", error);
+                    setEntenteExists(false);
+                    setEntenteData(null);
+                } finally {
+                    setCheckingEntente(false);
+                }
+            } else {
+                setEntenteExists(null);
+                setEntenteData(null);
+            }
+        };
+
+        checkEntente();
+    }, [status, applicant?.id, user?.token]);
 
     const statusLabel = useMemo(() => {
         switch (status) {
@@ -335,7 +364,6 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                 <td className="py-3 px-4 align-top">
                     {showActions && (
                         <div className="flex gap-2">
-                            {/* Pour candidatures SOUMISE : proposer Convoquer ou Refuser directement */}
                             {localStatus === "SOUMISE" && (
                                 <>
                                     <button
@@ -356,7 +384,6 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                                 </>
                             )}
 
-                            {/* Pour candidatures CONVOQUEE : proposer Accepter ou Refuser */}
                             {localStatus === "CONVOQUEE" && (
                                 <>
                                     <button
@@ -378,9 +405,72 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                                 </>
                             )}
 
-                            {/* Pour candidatures ACCEPTEE ou REFUSEE : plus d'actions */}
                             {(localStatus === "ACCEPTEE" || localStatus === "REFUSEE") && (
                                 <span className="text-sm text-gray-400 italic px-4 py-2">Traité</span>
+                            )}
+
+                            {status === "CONFIRMER" && (
+                                <>
+                                    {checkingEntente ? (
+                                        <span className="text-sm text-gray-500 italic px-4 py-2">Vérification...</span>
+                                    ) : ententeExists ? (
+                                        <>
+                                            {ententeData?.status === "SIGNEE_EMPLOYEUR" ? (
+                                                <span className="text-sm text-gray-600 px-4 py-2">
+                                                    En attente de la signature de l'étudiant
+                                                </span>
+                                            ) : ententeData?.status === "SIGNEE_ETUDIANT" ? (
+                                                <button
+                                                    onClick={() => setShowEntenteModal(true)}
+                                                    className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br transition-all"
+                                                    type="button"
+                                                >
+                                                    Voir et signer l'entente
+                                                </button>
+                                            ) : ententeData?.status === "SIGNEE" ? (
+                                                <div className="flex flex-col gap-2">
+                                                    <span className="text-sm text-green-600 font-medium px-4 py-2">
+                                                        ✓ Entente signée
+                                                    </span>
+                                                    <button
+                                                        onClick={() => {
+                                                            if (ententeData?.documentPdfBase64) {
+                                                                const bin = atob(ententeData.documentPdfBase64);
+                                                                const bytes = new Uint8Array(bin.length);
+                                                                for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+                                                                const blob = new Blob([bytes], { type: "application/pdf" });
+                                                                const url = URL.createObjectURL(blob);
+                                                                const a = document.createElement("a");
+                                                                a.href = url;
+                                                                a.download = ententeData.documentName || "entente_stage.pdf";
+                                                                document.body.appendChild(a);
+                                                                a.click();
+                                                                a.remove();
+                                                                URL.revokeObjectURL(url);
+                                                            }
+                                                        }}
+                                                        className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 hover:bg-gradient-to-br transition-all"
+                                                        type="button"
+                                                    >
+                                                        Télécharger l'entente
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <button
+                                                    onClick={() => setShowEntenteModal(true)}
+                                                    className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br transition-all"
+                                                    type="button"
+                                                >
+                                                    Voir et signer l'entente
+                                                </button>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <span className="text-sm text-gray-500 italic px-4 py-2">
+                                            En attente du gestionnaire pour l'entente de stage
+                                        </span>
+                                    )}
+                                </>
                             )}
                         </div>
                     )}
@@ -405,6 +495,27 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                         isOpen={showConvocationModal}
                         onClose={() => setShowConvocationModal(false)}
                         onConfirm={handleConvoquerEntrevue}
+                    />,
+                    document.body
+                )}
+
+            {showEntenteModal &&
+                createPortal(
+                    <EntenteSignatureModal
+                        applicant={applicant}
+                        isOpen={showEntenteModal}
+                        onClose={() => setShowEntenteModal(false)}
+                        onSign={async (ententeId, password) => {
+                            try {
+                                await signEntente(ententeId, password, user?.token);
+                                const result = await checkEntenteExists(applicant.id, user?.token);
+                                if (result.exists) {
+                                    setEntenteData(result.data);
+                                }
+                            } catch (error) {
+                                throw new Error(error.message || "Erreur lors de la signature");
+                            }
+                        }}
                     />,
                     document.body
                 )}
