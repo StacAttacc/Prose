@@ -1,8 +1,6 @@
 import {http} from "./http";
 const API = "http://localhost:8080";
 
-
-// Fonction utilitaire pour parser les réponses JSON
 async function parseJsonOrThrow(response) {
     if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);

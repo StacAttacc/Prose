@@ -43,7 +43,6 @@ function buildSearchFields(app) {
 const StageApplicantsPage = () => {
     const {id} = useParams();
     const {user} = useAuth();
-    const ready = Boolean(user?.token);
 
     const [q, setQ] = useState("");
     const [applicants, setApplicants] = useState([]);

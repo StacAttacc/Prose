@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { Viewer, Worker } from "@react-pdf-viewer/core";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { checkEntenteExists } from "../../services/EmployeurService.js";
@@ -35,12 +35,10 @@ export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSi
     const [pdfUrl, setPdfUrl] = useState(null);
     const [consentChecked, setConsentChecked] = useState(false);
 
-    // Charger l'entente quand la modal s'ouvre
     useEffect(() => {
         if (isOpen && applicant?.id && user?.token) {
             loadEntente();
         } else {
-            // Nettoyer l'URL du PDF quand la modal se ferme
             if (pdfUrl) {
                 URL.revokeObjectURL(pdfUrl);
                 setPdfUrl(null);
@@ -59,7 +57,6 @@ export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSi
             const result = await checkEntenteExists(applicant.id, user.token);
             if (result.exists && result.data) {
                 setEntenteData(result.data);
-                // Créer l'URL du blob pour le PDF
                 const pdfBlob = blobFromUnknownData(
                     result.data.documentPdfBase64 || result.data.documentPdf,
                     result.data.documentType || "application/pdf"
@@ -149,7 +146,6 @@ export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSi
                     </div>
                 ) : (
                     <>
-                        {/* Affichage du PDF */}
                         <div className="mb-6">
                             <h3 className="text-lg font-semibold mb-3 text-gray-700">
                                 Document d'entente
@@ -167,7 +163,6 @@ export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSi
                             )}
                         </div>
 
-                        {/* Formulaire de signature */}
                         <form onSubmit={handleSign} className="border-t pt-6">
                             <div className="mb-4">
                                 <label className="flex items-start">

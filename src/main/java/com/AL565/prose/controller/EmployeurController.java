@@ -176,7 +176,6 @@ public class EmployeurController {
             String token = authHeader.replace("Bearer ", "");
             String email = jwtTokenProvider.getEmailFromJWT(token);
             
-            // Vérifier le mot de passe
             var employeurEntity = employeurRepository.getEmployeurByCredentials_Username(email);
             if (employeurEntity == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)

@@ -91,7 +91,7 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
         const s =
             firstNonEmpty(
                 applicant?.status,
-                applicant?.candidatureStatus,     // au cas où le backend utilise ce nom
+                applicant?.candidatureStatus,
                 applicant?.statut,
                 typeof applicant?.status === "object" ? applicant?.status?.name : "" // enum sérialisé en objet
             );
@@ -100,7 +100,6 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
 
     const status = useMemo(() => (rawStatus || "").toString().trim().toUpperCase(), [rawStatus]);
 
-    // Vérifier l'existence de l'entente si le statut est CONFIRMER
     useEffect(() => {
         const checkEntente = async () => {
             if (status === "CONFIRMER" && applicant?.id && user?.token) {
@@ -365,7 +364,6 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                 <td className="py-3 px-4 align-top">
                     {showActions && (
                         <div className="flex gap-2">
-                            {/* Pour candidatures SOUMISE : proposer Convoquer ou Refuser directement */}
                             {localStatus === "SOUMISE" && (
                                 <>
                                     <button
@@ -386,7 +384,6 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                                 </>
                             )}
 
-                            {/* Pour candidatures CONVOQUEE : proposer Accepter ou Refuser */}
                             {localStatus === "CONVOQUEE" && (
                                 <>
                                     <button
@@ -408,12 +405,10 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                                 </>
                             )}
 
-                            {/* Pour candidatures ACCEPTEE ou REFUSEE : plus d'actions */}
                             {(localStatus === "ACCEPTEE" || localStatus === "REFUSEE") && (
                                 <span className="text-sm text-gray-400 italic px-4 py-2">Traité</span>
                             )}
 
-                            {/* Pour candidatures CONFIRMER : vérifier si l'entente existe */}
                             {status === "CONFIRMER" && (
                                 <>
                                     {checkingEntente ? (
@@ -513,7 +508,6 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                         onSign={async (ententeId, password) => {
                             try {
                                 await signEntente(ententeId, password, user?.token);
-                                // Rafraîchir les données de l'entente après signature
                                 const result = await checkEntenteExists(applicant.id, user?.token);
                                 if (result.exists) {
                                     setEntenteData(result.data);

@@ -35,10 +35,8 @@ public class EntenteService {
 
     private final EntenteRepository ententeRepository;
     private final CandidatureRepository candidatureRepository;
-    private final EtudiantRepository etudiantRepository;
     private final EmployeurRepository employeurRepository;
     private final GestionnaireRepository gestionnaireRepository;
-    private final StageRepository stageRepository;
 
     @Transactional
     public EntenteDTO getEntenteByCandidatureId(Long candidatureId) throws Exception {
@@ -65,7 +63,6 @@ public class EntenteService {
             throw new IllegalArgumentException("La candidature doit être confirmée pour générer une entente");
         }
 
-        // Vérifier si une entente existe déjà, si oui la retourner
         Optional<Entente> existingEntente = ententeRepository.findByCandidatureId(candidatureId);
         if (existingEntente.isPresent()) {
             Entente entente = existingEntente.get();
@@ -74,7 +71,6 @@ public class EntenteService {
             return EntenteDTO.toDTO(entente, employeur);
         }
 
-        // Sinon, créer une nouvelle entente
         Etudiant etudiant = candidature.getEtudiant();
         Stage stage = candidature.getStage();
         Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(stage.getEmployeurEmail());
@@ -109,7 +105,6 @@ public class EntenteService {
         LocalDateTime now = LocalDateTime.now();
         
         if (etudiant.getEmail().equals(userEmail)) {
-            // C'est l'étudiant qui signe
             entente.setDateSignatureEtudiant(now);
             if (entente.getDateSignatureEmployeur() != null) {
                 entente.setStatus(EntenteStatus.SIGNEE);
@@ -118,7 +113,6 @@ public class EntenteService {
                 entente.setStatus(EntenteStatus.SIGNEE_ETUDIANT);
             }
         } else if (employeur.getEmail().equals(userEmail)) {
-            // C'est l'employeur qui signe
             entente.setDateSignatureEmployeur(now);
             if (entente.getDateSignatureEtudiant() != null) {
                 entente.setStatus(EntenteStatus.SIGNEE);
@@ -136,7 +130,6 @@ public class EntenteService {
             }
         }
         
-        // Régénérer le PDF avec les signatures mises à jour
         byte[] pdfData = generateContractPdfWithSignatures(
             candidature, 
             etudiant, 
@@ -144,7 +137,7 @@ public class EntenteService {
             stage,
             entente.getDateSignatureEtudiant(),
             entente.getDateSignatureEmployeur(),
-            null // Le gestionnaire ne signe pas dans le statut actuel
+            null
         );
         
         entente.setDocumentPdf(pdfData);
@@ -162,19 +155,16 @@ public class EntenteService {
             PdfDocument pdfDoc = new PdfDocument(writer);
             Document document = new Document(pdfDoc, PageSize.A4)) {
 
-            // Récupérer un gestionnaire (utiliser le premier disponible)
             Optional<Gestionnaire> gestionnaireOpt = gestionnaireRepository.findAll().stream().findFirst();
             String nomGestionnaire = gestionnaireOpt
                     .map(g -> g.getFirstName() + " " + g.getLastName())
                     .orElse("[nom_gestionnaire]");
 
-            // Calculer le nombre de semaines
             long nombreSemaines = 0;
             if (stage.getStartDate() != null && stage.getEndDate() != null) {
                 nombreSemaines = ChronoUnit.WEEKS.between(stage.getStartDate(), stage.getEndDate());
             }
 
-            // Extraire les données
             String nomEtudiant = etudiant.getFirstName() + " " + etudiant.getLastName();
             String nomEmployeur = employeur.getFirstName() + " " + employeur.getLastName();
             String nomEntreprise = employeur.getCompany() != null ? employeur.getCompany() : "[nom_entreprise]";
@@ -185,13 +175,11 @@ public class EntenteService {
             String descriptionStage = stage.getDescription() != null ? stage.getDescription() : "[offre_description]";
             String horaireTravail = stage.getWorkMode() != null ? stage.getWorkMode() : "xx";
 
-            // PAGE 1 : Page de couverture avec bordure noire
-            document.setMargins(72, 72, 72, 72); // Marges de 1 pouce
+            document.setMargins(72, 72, 72, 72);
             
-            // Bordure noire autour de la page avec "CONTRAT DE STAGE" à l'intérieur
             Table borderTable = new Table(UnitValue.createPercentArray(1)).useAllAvailableWidth();
             borderTable.setBorder(new SolidBorder(ColorConstants.BLACK, 2));
-            Cell borderCell = new Cell().setHeight(PageSize.A4.getHeight() - 150) // Hauteur totale moins marges
+            Cell borderCell = new Cell().setHeight(PageSize.A4.getHeight() - 150)
                     .setPadding(0)
                     .setBorder(Border.NO_BORDER)
                     .setVerticalAlignment(VerticalAlignment.MIDDLE)
@@ -206,11 +194,9 @@ public class EntenteService {
             borderTable.addCell(borderCell);
             document.add(borderTable);
 
-            // PAGE 2 : Entente de stage avec tableau
             document.add(new AreaBreak());
             document.setMargins(72, 72, 72, 72);
 
-            // Titre "ENTENTE DE STAGE..."
             Paragraph ententeTitle = new Paragraph("ENTENTE DE STAGE INTERVENUE ENTRE LES PARTIES SUIVANTES")
                     .setFontSize(14)
                     .setBold()
@@ -218,13 +204,11 @@ public class EntenteService {
                     .setMarginBottom(20);
             document.add(ententeTitle);
 
-            // Introduction (centré)
             Paragraph intro = new Paragraph("Dans le cadre de la formule ATE, les parties citées ci-dessous :")
                     .setTextAlignment(TextAlignment.CENTER)
                     .setMarginBottom(15);
             document.add(intro);
 
-            // Liste des parties (toutes centrées)
             Paragraph gestionnaireLine = new Paragraph("Le gestionnaire de stage, " + nomGestionnaire)
                     .setTextAlignment(TextAlignment.CENTER)
                     .setMarginBottom(5);
@@ -255,11 +239,9 @@ public class EntenteService {
                     .setMarginBottom(20);
             document.add(conviennent);
 
-            // Tableau des conditions
             Table conditionsTable = new Table(UnitValue.createPercentArray(1)).useAllAvailableWidth();
             conditionsTable.setMarginBottom(20);
 
-            // Section ENDROIT DU STAGE
             Cell cellEndroit = new Cell()
                     .setBackgroundColor(ColorConstants.LIGHT_GRAY)
                     .setPadding(8)
@@ -271,7 +253,6 @@ public class EntenteService {
                     .add(new Paragraph("Adresse : " + adresseStage));
             conditionsTable.addCell(cellAdresse);
 
-            // Section DUREE DU STAGE
             Cell cellDuree = new Cell()
                     .setBackgroundColor(ColorConstants.LIGHT_GRAY)
                     .setPadding(8)
@@ -285,7 +266,6 @@ public class EntenteService {
             cellDates.add(new Paragraph("Nombre total de semaines : " + nombreSemaines));
             conditionsTable.addCell(cellDates);
 
-            // Section HORAIRE DE TRAVAIL
             Cell cellHoraire = new Cell()
                     .setBackgroundColor(ColorConstants.LIGHT_GRAY)
                     .setPadding(8)
@@ -297,7 +277,6 @@ public class EntenteService {
             cellHoraireDetails.add(new Paragraph("Horaire de travail: " + horaireTravail));
             conditionsTable.addCell(cellHoraireDetails);
 
-            // Section SALAIRE
             Cell cellSalaire = new Cell()
                     .setBackgroundColor(ColorConstants.LIGHT_GRAY)
                     .setPadding(8)
@@ -311,11 +290,9 @@ public class EntenteService {
 
             document.add(conditionsTable);
 
-            // PAGE 3 : Tâches, responsabilités et signatures
             document.add(new AreaBreak());
             document.setMargins(72, 72, 72, 72);
 
-            // Section TACHES ET RESPONSABILITES DU STAGIAIRE
             Paragraph tachesTitle = new Paragraph("TACHES ET RESPONSABILITES DU STAGIAIRE")
                     .setFontSize(14)
                     .setBold()
@@ -323,7 +300,6 @@ public class EntenteService {
                     .setMarginBottom(15);
             document.add(tachesTitle);
 
-            // Zone de description
             Table descTable = new Table(UnitValue.createPercentArray(1)).useAllAvailableWidth();
             Cell descCell = new Cell()
                     .setPadding(10)
@@ -332,7 +308,6 @@ public class EntenteService {
             descTable.addCell(descCell);
             document.add(descTable);
 
-            // Section RESPONSABILITES
             Paragraph responsabilitesTitle = new Paragraph("RESPONSABILITES")
                     .setFontSize(14)
                     .setBold()
@@ -372,7 +347,6 @@ public class EntenteService {
             document.add(new Paragraph("• Communiquer rapidement toute difficulté à son superviseur ou au gestionnaire de stage."));
             document.add(new Paragraph("• Remettre les rapports et documents exigés dans les délais prescrits."));
 
-            // Section SIGNATURES
             Table signatureTable = new Table(UnitValue.createPercentArray(1)).useAllAvailableWidth();
             Cell signatureHeader = new Cell()
                     .setBackgroundColor(ColorConstants.LIGHT_GRAY)
@@ -391,7 +365,6 @@ public class EntenteService {
                     .setMarginBottom(20);
             document.add(foi);
 
-            // Signature Étudiant
             Paragraph etudiantSig = new Paragraph("L'étudiant(e):")
                     .setBold()
                     .setMarginBottom(10);
@@ -408,7 +381,6 @@ public class EntenteService {
                     .setMarginBottom(10);
             document.add(etudiantSignature);
 
-            // Signature Employeur
             Paragraph employeurSig = new Paragraph("L'employeur :")
                     .setBold()
                     .setMarginTop(20)
@@ -426,7 +398,6 @@ public class EntenteService {
                     .setMarginBottom(10);
             document.add(employeurSignature);
 
-            // Signature Gestionnaire
             Paragraph gestionnaireSig = new Paragraph("Le gestionnaire de stage :")
                     .setBold()
                     .setMarginTop(20)
