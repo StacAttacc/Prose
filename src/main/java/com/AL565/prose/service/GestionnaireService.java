@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -96,10 +97,16 @@ public class GestionnaireService {
         return StageDTO.fromModel(updatedStage, employeur);
     }
 
-    public List<GestionnaireCvDTO> getAllCvs() throws Exception {
+    public List<GestionnaireCvDTO> getAllCvs(String year) throws Exception {
+        int yearNumber = year != null ? Integer.parseInt(year) : LocalDate.now().getYear();
+
         try {
             return cvRepository.findAll()
                     .stream()
+                    .filter(cv -> {
+                        LocalDate cvDate = LocalDate.ofInstant(cv.getLastModifiedDate(), ZoneId.systemDefault());
+                        return cvDate.getYear() == yearNumber;
+                    })
                     .map(GestionnaireCvDTO::toDto)
                     .toList();
         } catch (Exception e) {

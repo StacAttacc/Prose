@@ -16,7 +16,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 
@@ -96,6 +100,7 @@ public class GestionnaireServiceCvTest {
                 .status(CvStatus.PENDING)
                 .comment(null)
                 .data(new byte[]{1, 2, 3})
+                .lastModifiedDate(Instant.now())
                 .build();
 
         CV cv2 = CV.builder()
@@ -105,12 +110,13 @@ public class GestionnaireServiceCvTest {
                 .status(CvStatus.PENDING)
                 .comment(null)
                 .data(new byte[]{1, 2, 3})
+                .lastModifiedDate(Instant.now())
                 .build();
 
 
         when(cvRepository.findAll()).thenReturn(Arrays.asList(cv1, cv2));
 
-        List<GestionnaireCvDTO> result = gestionnaireService.getAllCvs();
+        List<GestionnaireCvDTO> result = gestionnaireService.getAllCvs(null);
 
         assertThat(result).hasSize(2);
         assertThat(result.get(0).getStatus()).isEqualTo(CvStatus.PENDING.name());
@@ -120,7 +126,69 @@ public class GestionnaireServiceCvTest {
         verify(cvRepository).findAll();
     }
 
+    @Test
+    void getAllCvsYearFiltered() throws Exception {
+        Etudiant etudiant1 = new Etudiant();
+        etudiant1.setFirstName("John");
+        etudiant1.setLastName("Doe");
+        etudiant1.setCredentials(new Credentials());
+        etudiant1.setDiscipline(Discipline.INFORMATIQUE);
 
+
+        Etudiant etudiant2 = new Etudiant();
+        etudiant2.setFirstName("Jane");
+        etudiant2.setLastName("Smith");
+        etudiant2.setCredentials(new Credentials());
+        etudiant2.setDiscipline(Discipline.INFORMATIQUE);
+
+        CV cv1 = CV.builder()
+                .id(1L)
+                .name("CV1")
+                .etudiant(etudiant1)
+                .status(CvStatus.PENDING)
+                .comment(null)
+                .data(new byte[]{1, 2, 3})
+                .lastModifiedDate(LocalDateTime.of(2077, 5, 12, 7, 24).toInstant(ZoneOffset.ofHours(3)))
+                .build();
+
+        CV cv2 = CV.builder()
+                .id(2L)
+                .name("CV2")
+                .etudiant(etudiant2)
+                .status(CvStatus.PENDING)
+                .comment(null)
+                .data(new byte[]{1, 2, 3})
+                .lastModifiedDate(LocalDateTime.of(2077, 5, 18, 12, 57).toInstant(ZoneOffset.ofHours(3)))
+                .build();
+
+        CV cv3 = CV.builder()
+                .id(3L)
+                .name("CV3")
+                .etudiant(etudiant2)
+                .status(CvStatus.PENDING)
+                .comment(null)
+                .data(new byte[]{1, 2, 3})
+                .lastModifiedDate(LocalDateTime.of(2078, 3, 11, 18, 03).toInstant(ZoneOffset.ofHours(3)))
+                .build();
+
+
+        when(cvRepository.findAll()).thenReturn(Arrays.asList(cv1, cv2, cv3));
+
+        List<GestionnaireCvDTO> result2077 = gestionnaireService.getAllCvs("2077");
+        List<GestionnaireCvDTO> result2078 = gestionnaireService.getAllCvs("2078");
+        List<GestionnaireCvDTO> result2025 = gestionnaireService.getAllCvs("2025");
+
+        assertThat(result2077).hasSize(2);
+        assertThat(result2077.getFirst().getData()).isEqualTo(Base64.getEncoder().encodeToString(cv1.getData()));
+        assertThat(result2077.getLast().getData()).isEqualTo(Base64.getEncoder().encodeToString(cv2.getData()));
+
+        assertThat(result2078).hasSize(1);
+        assertThat(result2078.getFirst().getData()).isEqualTo(Base64.getEncoder().encodeToString(cv3.getData()));
+
+        assertThat(result2025).hasSize(0);
+
+
+    }
 
     @Test
     void approveCv_ShouldValidApproveCv() throws Exception {
