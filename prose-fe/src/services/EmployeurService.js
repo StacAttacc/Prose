@@ -52,6 +52,17 @@ export async function getEmployeurCandidatureNotifications(employeurEmail, token
     return await parseJsonOrThrow(res);
 }
 
+export async function getEmployeurResponseNotifications(employeurEmail, token) {
+    const res = await fetch(`${API}/employeur/notifications/responses/${encodeURIComponent(employeurEmail)}`, {
+        method: "GET",
+        headers: {
+            Accept: "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+    });
+    return await parseJsonOrThrow(res);
+}
+
 export async function markNotificationRead(notificationId, token) {
     if (!notificationId) return;
     const res = await fetch(`${API}/employeur/notifications/read/${notificationId}`, {
