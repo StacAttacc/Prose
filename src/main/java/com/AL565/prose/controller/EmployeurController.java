@@ -130,6 +130,17 @@ public class EmployeurController {
         }
     }
 
+    @GetMapping("/notifications/responses/{email}")
+    public ResponseEntity<ReturnEntityDTO<NotificationsResponseDTO>> getEmployeurResponseNotifications(@PathVariable String email) {
+        try {
+            NotificationsResponseDTO notifications = employeurService.getEmployeurResponseNotifications(email);
+            return ResponseEntity.ok(new ReturnEntityDTO<>("Notifications: ", notifications));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ReturnEntityDTO<>("Erreur lors de la récupération des notifications de réponse d'étudiant", null));
+        }
+    }
+
     @PutMapping("/notifications/read/{id}")
     public ResponseEntity<ReturnEntityDTO<Void>> markNotificationAsRead(@PathVariable Long id) {
         try {
