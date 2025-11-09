@@ -1,7 +1,8 @@
-export function getDefaultNavigationPath(user) {
-    if (user.role === "GESTIONNAIRE") return "/gestionnaire/candidatures";
-    if (user.role === "EMPLOYEUR") return `/employeur/posted-stages`;
-    if (user.role === "ETUDIANT") return `etudiant/mon-cv`;
+export function getDefaultNavigationPath(userOrRole) {
+    const role = typeof userOrRole === 'string' ? userOrRole : userOrRole?.role;
+    if (role === "GESTIONNAIRE") return "/gestionnaire/candidatures";
+    if (role === "EMPLOYEUR") return `/employeur/stages/posted-stages`;
+    if (role === "ETUDIANT") return `etudiant/mon-cv`;
     return "/";
 }
 
@@ -81,7 +82,7 @@ export function getGroupedNotificationNavigation(type, role) {
     if (role === "EMPLOYEUR") {
         if (type === "postulation")
         return {
-            path: `/employeur/posted-stages`,
+            path: `/employeur/stages/posted-stages`,
         };
         if (type === "employeur_response")
         return {
