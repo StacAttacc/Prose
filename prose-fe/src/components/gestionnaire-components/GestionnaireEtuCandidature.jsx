@@ -1,15 +1,15 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../context/AuthContext.jsx";
+import { useYear } from "../../context/YearContext";
+import { useI18n } from "../../context/I18nContext";
 import ErrorBanner from "../display-components/ErrorBanner.jsx";
 import { getStageApplicantsManager } from "../../services/GestionnaireService.js";
 import StageDetailsModal from "../display-components/StageDetailsModal.jsx";
 import ApplicationsModal from "../display-components/ApplicationsModal.jsx";
 import { useLocation, useNavigate } from "react-router-dom";
 
-// Statut qui détermine si un étudiant est dans "Stage Trouvé"
 const CONFIRMED_STATUS = "CONFIRMER";
 
-// Statuts qui excluent une candidature de "Candidature Soumise" (utilisé pour le filtre)
 const APPROVED_STATUSES = new Set([
     "ACCEPTEE",
     "ACCEPTÉE",
@@ -21,6 +21,8 @@ const APPROVED_STATUSES = new Set([
 
 export default function GestionnaireEtuCandidature() {
     const { user } = useAuth();
+    const { selectedYear } = useYear();
+    const { t } = useI18n();
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -39,7 +41,8 @@ export default function GestionnaireEtuCandidature() {
         (async () => {
             try {
                 setLoading(true);
-                const data = await getStageApplicantsManager(user?.token);
+                setNote(""); // Réinitialiser le message au début du chargement
+                const data = await getStageApplicantsManager(user?.token, selectedYear);
 
                 const arr = (Array.isArray(data) ? data : []).map((dto) => {
                     const stu = dto?.etudiant || {};
@@ -80,17 +83,24 @@ export default function GestionnaireEtuCandidature() {
                     };
                 });
 
-                if (mounted) setStudents(arr);
-                if (mounted && !arr.length) setNote("Aucune donnée reçue du serveur.");
+                if (mounted) {
+                    setStudents(arr);
+                    // Réinitialiser le message si des étudiants sont trouvés, sinon afficher le message
+                    if (arr.length === 0) {
+                        setNote(t('aucunEtudiantAnnee', { year: selectedYear }));
+                    } else {
+                        setNote(""); // Réinitialiser le message s'il y a des étudiants
+                    }
+                }
             } catch (e) {
                 console.error("Erreur chargement candidatures:", e);
-                if (mounted) setNote("Erreur lors du chargement des candidatures.");
+                if (mounted) setNote(t('erreurChargement'));
             } finally {
                 if (mounted) setLoading(false);
             }
         })();
         return () => (mounted = false);
-    }, [user?.token]);
+    }, [user?.token, selectedYear, t]);
 
     useEffect(() => {
         if (loading || modalStudent) return;
@@ -164,7 +174,7 @@ export default function GestionnaireEtuCandidature() {
         <div className="min-h-screen bg-white">
             <div className="mx-auto max-w-5xl px-4 pt-6 pb-16">
                 <h1 className="text-teal-700 text-2xl md:text-3xl font-semibold text-center">
-                    Statut des candidatures
+                    {t('statusCandidatures')}
                 </h1>
 
                 <div className="mt-6 grid grid-cols-3 gap-4 items-center">
@@ -177,7 +187,7 @@ export default function GestionnaireEtuCandidature() {
                                 : "bg-white text-gray-700 border-gray-300 hover:border-teal-600 hover:text-teal-700"
                         }`}
                     >
-                        Aucune Candidature ({counts.ZERO})
+                        {t('aucuneCandidature')} ({counts.ZERO})
                     </button>
 
                     <button
@@ -189,7 +199,7 @@ export default function GestionnaireEtuCandidature() {
                                 : "bg-white text-gray-700 border-gray-300 hover:border-teal-600 hover:text-teal-700"
                         }`}
                     >
-                        Candidature Soumise ({counts.APPLIED})
+                        {t('candidatureSoumise')} ({counts.APPLIED})
                     </button>
 
                     <button
@@ -201,7 +211,7 @@ export default function GestionnaireEtuCandidature() {
                                 : "bg-white text-gray-700 border-gray-300 hover:border-teal-600 hover:text-teal-700"
                         }`}
                     >
-                        Stage Trouvé ({counts.APPROVED})
+                        {t('stageTrouve')} ({counts.APPROVED})
                     </button>
                 </div>
 
@@ -213,10 +223,10 @@ export default function GestionnaireEtuCandidature() {
 
                 <div className="mt-8 rounded-xl bg-white ring-1 ring-gray-200 shadow-sm overflow-hidden">
                     {loading ? (
-                        <div className="py-10 text-center text-gray-700">Chargement…</div>
+                        <div className="py-10 text-center text-gray-700">{t('chargement')}</div>
                     ) : list.length === 0 ? (
                         <div className="py-10 text-center text-gray-700">
-                            Aucun étudiant dans cette catégorie.
+                            {t('aucunEtudiantCategorie')}
                         </div>
                     ) : (
                         <div className="w-full overflow-x-auto">
@@ -224,23 +234,23 @@ export default function GestionnaireEtuCandidature() {
                                 <thead className="bg-gray-50">
                                 <tr>
                                     <th className="text-left text-gray-800 font-semibold py-3 px-4">
-                                        Étudiant
+                                        {t('etudiant')}
                                     </th>
                                     <th className="text-left text-gray-800 font-semibold py-3 px-4">
-                                        Email
+                                        {t('email')}
                                     </th>
                                     <th className="text-left text-gray-800 font-semibold py-3 px-4">
-                                        {tab === "APPLIED" ? "Candidatures" : "Statut"}
+                                        {tab === "APPLIED" ? t('candidatures') : t('statut')}
                                     </th>
 
                                     {tab === "APPLIED" && (
                                         <th className="text-left text-gray-800 font-semibold py-3 px-4">
-                                            Action
+                                            {t('action')}
                                         </th>
                                     )}
                                     {tab === "APPROVED" && (
                                         <th className="text-left text-gray-800 font-semibold py-3 px-4">
-                                            Action
+                                            {t('action')}
                                         </th>
                                     )}
                                 </tr>
@@ -273,15 +283,15 @@ export default function GestionnaireEtuCandidature() {
                                         )
                                 ).length
                             }{" "}
-                                                    candidature(s)
+                                                    {t('candidatures')}
                           </span>
                                             ) : tab === "APPROVED" ? (
                                                 <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold bg-teal-100 text-teal-700">
-                            Stage trouvé
+                            {t('stageTrouve')}
                           </span>
                                             ) : (
                                                 <span className="text-gray-500">
-                            Aucune candidature
+                            {t('aucuneCandidature')}
                           </span>
                                             )}
                                         </td>
@@ -291,13 +301,13 @@ export default function GestionnaireEtuCandidature() {
                                                 <button
                                                     type="button"
                                                     className="text-blue-600 hover:underline"
-                                                    title="Voir les candidatures"
+                                                    title={t('voirCandidatures')}
                                                     onClick={() => {
                                                         setModalFilterStatuses(null);
                                                         setModalStudent(s);
                                                     }}
                                                 >
-                                                    Voir ses candidatures
+                                                    {t('voirCandidatures')}
                                                 </button>
                                             </td>
                                         )}
@@ -307,7 +317,7 @@ export default function GestionnaireEtuCandidature() {
                                                 <button
                                                     type="button"
                                                     className="text-teal-700 hover:underline"
-                                                    title="Détails & entente"
+                                                    title={t('detailsEntente')}
                                                     onClick={() => {
                                                         const app =
                                                             (s.applications || []).find((a) =>
@@ -316,7 +326,7 @@ export default function GestionnaireEtuCandidature() {
                                                         if (app) openStageModal(app);
                                                     }}
                                                 >
-                                                    Détails & entente
+                                                    {t('detailsEntente')}
                                                 </button>
                                             </td>
                                         )}

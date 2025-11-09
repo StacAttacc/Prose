@@ -4,8 +4,10 @@ import StageDetailsModal from "../display-components/StageDetailsModal.jsx";
 import EntenteSignatureModal from "../display-components/EntenteSignatureModal.jsx";
 import { useAuth } from "../../context/AuthContext.jsx";
 import {useLocation, useNavigate} from "react-router-dom";
+import { useI18n } from "../../context/I18nContext.jsx";
 
 export default function MesCandidature() {
+    const { t } = useI18n();
     const location = useLocation();
     const navigate = useNavigate();
     const [candidatures, setCandidatures] = useState([]);
@@ -34,7 +36,7 @@ export default function MesCandidature() {
                 const data = await getMesCandidatures();
                 setCandidatures(data);
             } catch (err) {
-                setError("Erreur lors du chargement des candidatures");
+                setError(t('erreurChargementCandidatures'));
                 console.error(err);
             } finally {
                 setLoading(false);
@@ -164,13 +166,13 @@ export default function MesCandidature() {
             
             setNotification({
                 type: 'success',
-                message: accepted ? "Vous avez accepté l'offre avec succès" : "Vous avez refusé l'offre avec succès"
+                message: accepted ? t('offreAccepteeSucces') : t('offreRefuseeSucces')
             });
 
             setTimeout(() => setNotification(null), 5000);
 
         } catch (err) {
-            const errorMessage = err.response?.data?.message || err.message || "Erreur lors de l'envoi de votre réponse. Veuillez réessayer.";
+            const errorMessage = err.response?.data?.message || err.message || t('erreurEnvoiReponse');
             setErrors(prev => ({
                 ...prev,
                 [candidatureId]: errorMessage
@@ -208,17 +210,17 @@ export default function MesCandidature() {
     const getStatusText = (status) => {
         switch (status) {
             case 'SOUMISE':
-                return 'En attente d\'approbation par l\'employeur';
+                return t('enAttenteApprobationEmployeur');
             case 'ACCEPTEE':
-                return 'Acceptée Par L\'Employeur';
+                return t('accepteeParEmployeur');
             case 'REFUSEE':
-                return 'Refusée Par L\'Employeur';
+                return t('refuseeParEmployeur');
             case 'CONVOQUEE':
-                return 'Convoquée à une entrevue';
+                return t('convoqueeEntrevue');
             case 'CONFIRMER':
-                return 'Confirmée';
+                return t('confirmee');
             case 'REFUSEE_ETUDIANT':
-                return 'Refusée';
+                return t('refusee');
             default:
                 return status;
         }
@@ -244,17 +246,17 @@ export default function MesCandidature() {
                 </div>
             )}
 
-            <h1 className="text-2xl font-bold mb-6 text-center">Mes Candidatures</h1>
+            <h1 className="text-2xl font-bold mb-6 text-center">{t('mesCandidatures')}</h1>
 
             <div className="mb-8 bg-white rounded-lg shadow-md border border-gray-200 p-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-4">
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Recherche
+                    {t('recherche')}
                     </label>
                     <input
                     type="text"
-                    placeholder="Titre, description, employeur, compétences..."
+                    placeholder={t('recherchePlaceholderEtudiant')}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
@@ -263,11 +265,11 @@ export default function MesCandidature() {
 
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Lieu
+                    {t('lieu')}
                     </label>
                     <input
                     type="text"
-                    placeholder="Montréal, Québec, Télétravail..."
+                    placeholder={t('lieuPlaceholder')}
                     value={locationFilter}
                     onChange={(e) => setLocationFilter(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
@@ -276,11 +278,11 @@ export default function MesCandidature() {
 
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Compensation
+                    {t('compensation')}
                     </label>
                     <input
                     type="text"
-                    placeholder="20$/h, 500$/semaine..."
+                    placeholder={t('compensationPlaceholder')}
                     value={compensationFilter}
                     onChange={(e) => setCompensationFilter(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
@@ -289,17 +291,17 @@ export default function MesCandidature() {
 
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Statut
+                    {t('statut')}
                     </label>
                     <select
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
                     >
-                        <option value="">Tous les statuts</option>
-                        <option value="SOUMISE">En attente</option>
-                        <option value="ACCEPTEE">Acceptée</option>
-                        <option value="REFUSEE">Refusée</option>
+                        <option value="">{t('tousLesStatuts')}</option>
+                        <option value="SOUMISE">{t('enAttente')}</option>
+                        <option value="ACCEPTEE">{t('acceptee')}</option>
+                        <option value="REFUSEE">{t('refusee')}</option>
                     </select>
                 </div>
 
@@ -308,19 +310,19 @@ export default function MesCandidature() {
                     onClick={clearFilters}
                     className="w-full px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
                     >
-                    Effacer les filtres
+                    {t('effacerFiltres')}
                     </button>
                 </div>
                 </div>
 
                 <div className="text-sm text-gray-600">
-                {filteredCandidatures.length} candidature(s) trouvée(s) sur {candidatures.length} au total
+                {t('candidaturesTrouvees', { count: filteredCandidatures.length, total: candidatures.length })}
                 </div>
             </div>
 
             {loading ? (
                 <div className="text-center py-12">
-                    <p className="text-gray-600 text-lg">Chargement de vos candidatures...</p>
+                    <p className="text-gray-600 text-lg">{t('chargementCandidatures')}</p>
                 </div>
             ) : error ? (
                 <div className="text-center py-12">
@@ -344,13 +346,13 @@ export default function MesCandidature() {
                         </svg>
                     </div>
                     <h3 className="text-lg font-medium text-gray-900 mb-2">
-                        Aucune candidature
+                        {t('aucuneCandidature')}
                     </h3>
                     <p className="text-gray-500 mb-6">
-                        Vous n'avez pas encore postulé à des stages.
+                        {t('pasEncorePostule')}
                     </p>
                     <p className="text-sm text-gray-400">
-                        Consultez les stages disponibles pour commencer à postuler.
+                        {t('consultezStagesDisponibles')}
                     </p>
                 </div>
             ) : (
@@ -373,10 +375,10 @@ export default function MesCandidature() {
                                 {isAcceptedByStudent ? (
                                     <div>
                                         <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                                            {candidature.stage?.title || 'Titre non disponible'}
+                                            {candidature.stage?.title || t('titreNonDisponible')}
                                         </h3>
-                                        <h4 className="text-3xl font-bold text-green-800 text-center mb-4">
-                                            Stage Accepté
+                                        <h4 className="text-3xl font-bold text-green-800 text-center">
+                                            {t('stageAccepte')}
                                         </h4>
                                         {checkingEntente[candidature.id] ? (
                                             <div className="text-center text-gray-500">
@@ -469,15 +471,15 @@ export default function MesCandidature() {
                                 ) : isRefusedByStudent ? (
                                     <div>
                                         <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                                            {candidature.stage?.title || 'Titre non disponible'}
+                                            {candidature.stage?.title || t('titreNonDisponible')}
                                         </h3>
                                         <h4 className="text-3xl font-bold text-red-800 text-center">
-                                            Offre Refusée
+                                            {t('offreRefusee')}
                                         </h4>
                                         {candidature.decision && candidature.decision.trim() !== "" && (
                                             <div className="mt-4 p-3 bg-red-50 border border-red-300 rounded">
                                                 <p className="text-sm text-gray-700">
-                                                    <strong>Raison du refus:</strong> {candidature.decision}
+                                                    <strong>{t('raisonRefus')}:</strong> {candidature.decision}
                                                 </p>
                                             </div>
                                         )}
@@ -487,23 +489,23 @@ export default function MesCandidature() {
                                         <div className="flex justify-between items-start mb-4">
                                             <div className="flex-1">
                                                 <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                                                    {candidature.stage?.title || 'Titre non disponible'}
+                                                    {candidature.stage?.title || t('titreNonDisponible')}
                                                 </h3>
                                                 <p className="text-gray-600 text-sm mb-2">
-                                                    <strong>Entreprise:</strong> {candidature.stage?.employeur?.company || 'N/A'}
+                                                    <strong>{t('entreprise')}:</strong> {candidature.stage?.employeur?.company || 'N/A'}
                                                 </p>
                                                 <p className="text-gray-600 text-sm mb-2">
-                                                    <strong>Lieu:</strong> {candidature.stage?.location || 'N/A'}
+                                                    <strong>{t('lieu')}:</strong> {candidature.stage?.location || 'N/A'}
                                                 </p>
                                                 <p className="text-gray-600 text-sm mb-2">
-                                                    <strong>Date de candidature:</strong>{' '}
+                                                    <strong>{t('dateCandidature')}:</strong>{' '}
                                                     {candidature.datePostulation
                                                         ? new Date(candidature.datePostulation).toLocaleDateString('fr-FR')
                                                         : 'N/A'}
                                                 </p>
                                                 {candidature.status === 'ACCEPTEE' && candidature.dateDecision && (
                                                     <p className="text-gray-600 text-sm mb-2">
-                                                        <strong>Décision prise le:</strong>{' '}
+                                                        <strong>{t('decisionPriseLe')}:</strong>{' '}
                                                         {new Date(candidature.dateDecision).toLocaleDateString('fr-FR')}
                                                     </p>
                                                 )}
@@ -522,7 +524,7 @@ export default function MesCandidature() {
                                         {candidature.decision && candidature.decision.trim() !== "" && (
                                             <div className="mt-4 p-3 bg-gray-50 border border-gray-200 rounded">
                                                 <p className="text-sm text-gray-700">
-                                                    <strong>Commentaire:</strong> {candidature.decision}
+                                                    <strong>{t('commentaire')}:</strong> {candidature.decision}
                                                 </p>
                                             </div>
                                         )}
@@ -530,7 +532,7 @@ export default function MesCandidature() {
                                         {candidature.status === 'CONVOQUEE' && candidature.dateDecision && (
                                             <div className="mt-4 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-lg shadow-sm">
                                                 <p className="text-base font-semibold text-yellow-900">
-                                                    <strong>Entrevue prévue le:</strong>{' '}
+                                                    <strong>{t('entrevuePrevueLe')}:</strong>{' '}
                                                     <span className="text-lg text-yellow-800">
                                                         {new Date(candidature.dateDecision).toLocaleDateString('fr-FR', {
                                                             year: 'numeric',
@@ -547,7 +549,7 @@ export default function MesCandidature() {
                                         {candidature.status === 'ACCEPTEE' && (
                                             <div className="mt-4 p-4 bg-green-50 border-l-4 border-green-400 rounded-lg shadow-sm">
                                                 <p className="text-sm text-gray-700 mb-3">
-                                                    <strong>Félicitations ! L'employeur vous a sélectionné pour ce stage.</strong> Vous avez maintenant reçu une offre officielle. Souhaitez-vous l'accepter ou la refuser ?
+                                                    <strong>{t('felicitationsEmployeurSelectionne')}</strong> {t('offreOfficielleRecue')}
                                                 </p>
 
                                                 {!showingRefusalForm[candidature.id] ? (
@@ -557,34 +559,34 @@ export default function MesCandidature() {
                                                             disabled={respondingTo === candidature.id}
                                                             className="flex-1 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
                                                         >
-                                                            {respondingTo === candidature.id ? 'Envoi...' : '✓ Accepter l\'offre'}
+                                                            {respondingTo === candidature.id ? t('envoi') : t('accepterOffre')}
                                                         </button>
                                                         <button
                                                             onClick={() => setShowingRefusalForm(prev => ({ ...prev, [candidature.id]: true }))}
                                                             disabled={respondingTo === candidature.id}
                                                             className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
                                                         >
-                                                            ✗ Refuser l'offre
+                                                            {t('refuserOffre')}
                                                         </button>
                                                     </div>
                                                 ) : (
                                                     <div className="space-y-3">
                                                         <div className="p-3 bg-red-50 border border-red-200 rounded-md">
                                                             <p className="text-sm text-red-800 font-medium mb-2">
-                                                                Vous êtes sur le point de refuser cette offre.
+                                                                {t('surPointRefuserOffre')}
                                                             </p>
                                                             <p className="text-xs text-red-600">
-                                                                Veuillez expliquer brièvement votre raison (optionnel mais recommandé pour maintenir une bonne relation professionnelle).
+                                                                {t('expliquerRaisonRefusOptionnel')}
                                                             </p>
                                                         </div>
                                                         <div>
                                                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                                Raison du refus (optionnel)
+                                                                {t('raisonRefusOptionnel')}
                                                             </label>
                                                             <textarea
                                                                 value={responseComments[candidature.id] || ""}
                                                                 onChange={(e) => handleCommentChange(candidature.id, e.target.value)}
-                                                                placeholder="Ex: J'ai accepté une autre opportunité, Les conditions ne correspondent pas à mes attentes..."
+                                                                placeholder={t('exempleRaisonRefus')}
                                                                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 resize-none"
                                                                 rows="3"
                                                                 disabled={respondingTo === candidature.id}
@@ -614,14 +616,14 @@ export default function MesCandidature() {
                                                                 disabled={respondingTo === candidature.id}
                                                                 className="flex-1 px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
                                                             >
-                                                                Annuler
+                                                                {t('annuler')}
                                                             </button>
                                                             <button
                                                                 onClick={() => handleRespondToOffer(candidature.id, false)}
                                                                 disabled={respondingTo === candidature.id}
                                                                 className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
                                                             >
-                                                                {respondingTo === candidature.id ? 'Envoi...' : 'Confirmer le refus'}
+                                                                {respondingTo === candidature.id ? t('envoi') : t('confirmerRefus')}
                                                             </button>
                                                         </div>
                                                     </div>
@@ -636,7 +638,7 @@ export default function MesCandidature() {
                                         onClick={() => handleViewDetails(candidature)}
                                         className="text-teal-600 hover:text-teal-800 font-medium"
                                     >
-                                        Voir détails →
+                                        {t('voirDetails')} →
                                     </button>
                                 </div>
                             </div>

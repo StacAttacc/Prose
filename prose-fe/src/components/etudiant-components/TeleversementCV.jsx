@@ -1,9 +1,11 @@
 import React, {useRef, useState} from 'react';
 import {televerserCv} from "../../services/EtudiantService.js";
 import {useAuth} from "../../context/AuthContext.jsx";
+import {useI18n} from "../../context/I18nContext.jsx";
 import ErrorBanner from "../display-components/ErrorBanner.jsx";
 
 const TeleversementCV = ({ onUploadSuccess }) => {
+    const { t } = useI18n();
     const [selectedFile, setSelectedFile] = useState(null);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
@@ -29,7 +31,7 @@ const TeleversementCV = ({ onUploadSuccess }) => {
         }
 
         if (!validerFichier(file)) {
-            setError('Veuillez sélectionner un fichier PDF valide');
+            setError(t('veuillezSelectionnerPDFValide'));
             setSelectedFile(null);
 
             if (fileInputRef.current) {
@@ -39,7 +41,7 @@ const TeleversementCV = ({ onUploadSuccess }) => {
         }
 
         if (file.size > 5 * 1024 * 1024) {
-            setError('Le fichier ne doit pas dépasser 5 MB');
+            setError(t('fichierNeDoitPasDepasser5MB'));
             setSelectedFile(null);
 
             if (fileInputRef.current) {
@@ -63,12 +65,12 @@ const TeleversementCV = ({ onUploadSuccess }) => {
             setSelectedFile(null);
             if (fileInputRef.current) fileInputRef.current.value = '';
             setError('');
-            setSuccess('Cv téléversé avec succès !');
+            setSuccess(t('cvTeleverseSucces'));
             if (onUploadSuccess) {
                 onUploadSuccess();
             }
         } catch (err) {
-            setError(err.message || 'Erreur lors du téléversement');
+            setError(err.message || t('erreurTeleversement'));
         } finally {
             setUploading(false);
         }
@@ -85,7 +87,7 @@ const TeleversementCV = ({ onUploadSuccess }) => {
 
     return (
         <div className="max-w-md mx-auto p-6">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Téléverser un CV</h2>
+            <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">{t('televerserCV')}</h2>
 
             <div className="mb-6">
                 <div className="relative">
@@ -103,15 +105,15 @@ const TeleversementCV = ({ onUploadSuccess }) => {
                     >
                         <div className="flex flex-col items-center justify-center pt-5 pb-6">
                             <span className="text-4xl mb-2">📁</span>
-                            <p className="text-sm text-gray-500 font-medium">Choisir un fichier</p>
+                            <p className="text-sm text-gray-500 font-medium">{t('choisirFichier')}</p>
                         </div>
                     </label>
                 </div>
 
                 <p className="text-xs text-gray-500 mt-2 text-center">
-                    Veuillez choisir un fichier au format PDF.
+                    {t('veuillezChoisirFichierPDF')}
                     <br/>
-                    Taille maximum : 5 MB
+                    {t('tailleMaximum5MB')}
                 </p>
             </div>
 
@@ -149,7 +151,7 @@ const TeleversementCV = ({ onUploadSuccess }) => {
                         disabled={uploading}
                         className="w-full text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2"
                     >
-                        {uploading ? 'Téléversement...' : 'Téléverser'}
+                        {uploading ? t('televersement') : t('televerser')}
                     </button>
                 </div>
             )}

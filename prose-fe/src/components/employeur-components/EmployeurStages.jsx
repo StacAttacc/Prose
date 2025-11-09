@@ -2,7 +2,7 @@ import { NavLink, Outlet } from "react-router-dom";
 import ScrollToTop from "../common/ScrollToTop.jsx";
 import { useI18n } from "../../context/I18nContext.jsx";
 
-export default function Stages() {
+export default function EmployeurStages() {
     const { t } = useI18n();
     
     return (
@@ -12,24 +12,24 @@ export default function Stages() {
                 <h2 className="text-xl font-bold mb-6 text-gray-800 text-center">{t('navigation')}</h2>
                 <nav className="space-y-3">
                     <NavLink
-                        to="/etudiant/stages/disponibles"
+                        to="/employeur/stages/posted-stages"
                         className={({ isActive }) =>
                             isActive
                                 ? "block text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
                                 : "block text-gray-700 bg-gray-100 hover:bg-teal-50 hover:text-teal-600 focus:ring-4 focus:outline-none focus:ring-teal-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center transition-colors"
                         }
                     >
-                        📋 {t('stagesDisponibles')}
+                        📋 {t('mesStages')}
                     </NavLink>
                     <NavLink
-                        to="/etudiant/stages/candidatures"
+                        to="/employeur/stages/mes-candidatures"
                         className={({ isActive }) =>
                             isActive
                                 ? "block text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
                                 : "block text-gray-700 bg-gray-100 hover:bg-teal-50 hover:text-teal-600 focus:ring-4 focus:outline-none focus:ring-teal-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center transition-colors"
                         }
                     >
-                        📝 {t('mesCandidatures')}
+                        📝 {t('mesCandidaturesEmployeur')}
                     </NavLink>
                 </nav>
             </aside>
@@ -44,3 +44,4 @@ export default function Stages() {
         </div>
     );
 }
+
