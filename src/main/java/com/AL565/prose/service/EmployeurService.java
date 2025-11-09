@@ -2,6 +2,7 @@ package com.AL565.prose.service;
 
 import com.AL565.prose.model.*;
 import com.AL565.prose.model.notifications.ConvocationNotification;
+import com.AL565.prose.model.notifications.EmployeurResponseNotification;
 import com.AL565.prose.model.notifications.NotificationType;
 import com.AL565.prose.model.notifications.PostulationNotification;
 import com.AL565.prose.model.notifications.StageNotification;
@@ -37,6 +38,7 @@ public class EmployeurService {
     private CandidatureRepository candidatureRepository;
     private NotificationsHelper notificationsHelper;
     private PostulationNotificationRepository postulationNotificationRepository;
+    private EmployeurResponseNotificationRepository employeurResponseNotificationRepository;
 
     public void enregistrer(EmployeurPasswordDTO employeurDTO) throws EmailAlreadyExistsException {
         if (proseUserRepository.findByCredentials_Username(employeurDTO.getEmail()).isPresent()) {
@@ -178,5 +180,18 @@ public class EmployeurService {
         notification.setEtudiantConvocationEmail(candidature.getEtudiant().getEmail());
         notification.setEtudiantConvocationId(candidature.getEtudiant().getId());
         notificationRepository.save(notification);
+    }
+
+    @Transactional
+    public NotificationsResponseDTO getEmployeurResponseNotifications(String employeurEmail) throws Exception {
+        try {
+            List<EmployeurResponseNotification> notifications =
+                    employeurResponseNotificationRepository
+                            .findByEmployeurResponseEmailAndFirstRecipientReadAt(employeurEmail, null);
+            NotificationGroupDTO group = NotificationGroupDTO.toDTO("employeur_response", notifications);
+            return NotificationsResponseDTO.toDTO(List.of(group));
+        } catch (Exception e) {
+            throw new NotificationExceptions.NotificationFetchException();
+        }
     }
 }
