@@ -410,7 +410,7 @@ export default function MesCandidature() {
                                                                 setSelectedCandidatureForEntente(candidature);
                                                                 setShowEntenteModal(true);
                                                             }}
-                                                            className="px-6 py-3 rounded-md font-medium text-white bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 hover:bg-gradient-to-br transition-all"
+                                                            className="px-6 py-3 rounded-md font-medium text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br transition-all"
                                                             type="button"
                                                         >
                                                             Voir l'entente de stage
