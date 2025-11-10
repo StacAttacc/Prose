@@ -6,6 +6,7 @@ import { getEmployeurStages } from "../../services/StageService.js";
 import ErrorBanner from "../display-components/ErrorBanner.jsx";
 import StageDetailsModal from "../display-components/StageDetailsModal.jsx";
 import ScrollToTop from "../common/ScrollToTop.jsx";
+import { isSessionAnterieure } from "../../utils/dateUtils.js";
 
 export default function PostedStages() {
     const { user } = useAuth();
@@ -23,12 +24,14 @@ export default function PostedStages() {
     const [locationFilter, setLocationFilter] = useState("");
     const [compensationFilter, setCompensationFilter] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
+    const [includePreviousSessions, setIncludePreviousSessions] = useState(false);
 
 
     useEffect(() => {
         async function fetchAllStages() {
             try {
-                const data = await getEmployeurStages(user.email, user.token);
+                setLoading(true);
+                const data = await getEmployeurStages(user.email, user.token, includePreviousSessions);
                 const list = Array.isArray(data)
                     ? data
                     : Array.isArray(data?.data)
@@ -42,7 +45,7 @@ export default function PostedStages() {
             }
         }
         fetchAllStages();
-    }, [user.email, user.token]);
+    }, [user.email, user.token, includePreviousSessions]);
 
     const filteredStages = useMemo(() => {
         return stages.filter((stage) => {
@@ -68,14 +71,18 @@ export default function PostedStages() {
                 !statusFilter ||
                 stage.status?.toLowerCase?.().includes(statusFilter.toLowerCase());
 
+            // Filtrer par session antérieure si le checkbox n'est pas coché
+            const matchesSession = includePreviousSessions || !isSessionAnterieure(stage.startDate);
+
             return (
                 matchesSearch &&
                 matchesLocation &&
                 matchesCompensation &&
-                matchesStatus
+                matchesStatus &&
+                matchesSession
             );
         });
-    }, [stages, searchTerm, locationFilter, compensationFilter, statusFilter]);
+    }, [stages, searchTerm, locationFilter, compensationFilter, statusFilter, includePreviousSessions]);
 
     const handleStageClick = (stage) => {
         setSelectedStage(stage);
@@ -92,6 +99,7 @@ export default function PostedStages() {
         setLocationFilter("");
         setCompensationFilter("");
         setStatusFilter("");
+        setIncludePreviousSessions(false);
     };
 
     const getStatusColor = (status) => {
@@ -133,7 +141,7 @@ export default function PostedStages() {
             <h1 className="text-2xl font-bold mb-6 text-center">{t('mesStages')}</h1>
 
             <div className="mb-8 bg-white rounded-lg shadow-md border border-gray-200 p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 mb-4">
                     <FilterInput
                         label={t('recherche')}
                         value={searchTerm}
@@ -156,6 +164,11 @@ export default function PostedStages() {
                         label={t('statut')}
                         value={statusFilter}
                         onChange={setStatusFilter}
+                    />
+                    <FilterSelectSession
+                        label={t('sessionsAnterieures')}
+                        value={includePreviousSessions ? 'all' : 'current'}
+                        onChange={(value) => setIncludePreviousSessions(value === 'all')}
                     />
                     <div className="flex items-end">
                         <button
@@ -284,6 +297,25 @@ function FilterSelect({ label, value, onChange }) {
                 <option value="SOUMISE">{t('soumise')}</option>
                 <option value="APPROUVEE">{t('approuvee')}</option>
                 <option value="REJETEE">{t('rejetee')}</option>
+            </select>
+        </div>
+    );
+}
+
+function FilterSelectSession({ label, value, onChange }) {
+    const { t } = useI18n();
+    return (
+        <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+                {label}
+            </label>
+            <select
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+            >
+                <option value="current">{t('sessionsActuellesFutures')}</option>
+                <option value="all">{t('toutesLesSessions')}</option>
             </select>
         </div>
     );

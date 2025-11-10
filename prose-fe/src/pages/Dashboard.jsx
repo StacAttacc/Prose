@@ -6,6 +6,7 @@ import {useCv} from "../context/CvContext.jsx";
 import Notifications from "../components/notification-components/Notifications.jsx";
 import {useYear} from "../context/YearContext.jsx";
 import {useI18n} from "../context/I18nContext.jsx";
+import ErrorBoundary from "../components/common/ErrorBoundary.jsx";
 
 export default function Dashboard() {
     const { user } = useAuth();
@@ -151,7 +152,9 @@ export default function Dashboard() {
                 </div>
                 {(user.role === "GESTIONNAIRE" || user.role === "EMPLOYEUR" || user.role === "ETUDIANT") && (
                     <div className="px-1 sm:px-1 lg:px-2">
-                        <Notifications/>
+                        <ErrorBoundary silent={true}>
+                            <Notifications/>
+                        </ErrorBoundary>
                     </div>)
                 }
             </main>

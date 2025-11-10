@@ -11,11 +11,17 @@ export async function createStage(stage, token) {
     });
 }
 
-export async function getEmployeurStages(email, token) {
+export async function getEmployeurStages(email, token, includePreviousSessions = false) {
+    const params = {};
+    if (includePreviousSessions) {
+        params.includePreviousSessions = 'true';
+    }
+    
     const {data} = await axios.get(`${url}/employeur/${email}/stages`, {
         headers: {
             'Authorization': `Bearer ${token}`
-        }
+        },
+        params: params
     })
 
     return data;
