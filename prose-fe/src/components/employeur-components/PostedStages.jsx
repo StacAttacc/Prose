@@ -5,6 +5,7 @@ import { useI18n } from "../../context/I18nContext.jsx";
 import { getEmployeurStages } from "../../services/StageService.js";
 import ErrorBanner from "../display-components/ErrorBanner.jsx";
 import StageDetailsModal from "../display-components/StageDetailsModal.jsx";
+import ScrollToTop from "../common/ScrollToTop.jsx";
 
 export default function PostedStages() {
     const { user } = useAuth();
@@ -244,6 +245,7 @@ export default function PostedStages() {
                 isOpen={isModalOpen}
                 onClose={closeModal}
             />
+            <ScrollToTop />
         </div>
     );
 }
