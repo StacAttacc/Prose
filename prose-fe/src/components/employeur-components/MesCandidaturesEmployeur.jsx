@@ -6,6 +6,7 @@ import { getEmployeurStages } from "../../services/StageService.js";
 import { getStageApplicants } from "../../services/EmployeurService.js";
 import ErrorBanner from "../display-components/ErrorBanner.jsx";
 import ApplicantRow from "../display-components/ApplicantRow.jsx";
+import ScrollToTop from "../common/ScrollToTop.jsx";
 
 export default function MesCandidaturesEmployeur() {
     const { user } = useAuth();
@@ -269,6 +270,7 @@ export default function MesCandidaturesEmployeur() {
                     </div>
                 </div>
             )}
+            <ScrollToTop />
         </div>
     );
 }

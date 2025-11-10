@@ -8,7 +8,7 @@ const translations = {
     year: 'Année',
     language: 'Langue',
     welcome: 'Bienvenue',
-    logout: 'Logout',
+    logout: 'Quitter',
     creerStage: 'Créer un stage',
     monCV: 'Mon CV',
     mesStages: 'Mes Stages',
@@ -122,6 +122,10 @@ const translations = {
     cvApprouve: 'Votre CV a été approuvé.',
     cvRejete: 'Votre CV a été rejeté.',
     aSoumisNouveauCV: 'a soumis un nouveau CV',
+    aPostulePourLeStage: 'a postulé pour le stage',
+    aConvouquePourEntrevue: 'a convoqué',
+    pourUneEntrevue: 'pour une entrevue',
+    aCreeLeStage: 'a créé le stage',
     
     // GestionCV
     rechercherParNom: 'Rechercher par nom d\'étudiant...',
@@ -317,7 +321,7 @@ const translations = {
     logout: 'Logout',
     creerStage: 'Create a stage',
     monCV: 'My CV',
-    mesStages: 'My Stages',
+    mesStages: 'My Internships',
     gestionCVs: 'CV Management',
     voirCandidaturesNav: 'View application(s)',
     voirStages: 'View Stages',
@@ -348,7 +352,7 @@ const translations = {
     compensation: 'Compensation',
     tousLesStatuts: 'All statuses',
     effacerFiltres: 'Clear filters',
-    stagesTrouves: '{count} stage(s) found out of {total} total',
+    stagesTrouves: '{count} internships found out of {total} total',
     aucunStageDisponible: 'No stage available at the moment.',
     aucunStageCritere: 'No stage matches your search criteria.',
     chargementStages: 'Loading stages...',
@@ -428,6 +432,10 @@ const translations = {
     cvApprouve: 'Your CV has been approved.',
     cvRejete: 'Your CV has been rejected.',
     aSoumisNouveauCV: 'has submitted a new CV',
+    aPostulePourLeStage: 'applied for the internship',
+    aConvouquePourEntrevue: 'invited',
+    pourUneEntrevue: 'for an interview',
+    aCreeLeStage: 'created the internship',
     
     // GestionCV
     rechercherParNom: 'Search by student name...',

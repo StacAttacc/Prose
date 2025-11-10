@@ -67,10 +67,37 @@ export function translateNotificationMessage(message) {
     
     // Traduire les messages de type "{nom} a soumis un nouveau CV"
     const aSoumisPattern = /^(.+?)\s+a soumis un nouveau CV$/;
-    const match = message.match(aSoumisPattern);
+    let match = message.match(aSoumisPattern);
     if (match) {
         const studentName = match[1];
         return `${studentName} ${t('aSoumisNouveauCV')}`;
+    }
+    
+    // Traduire les messages de type "{nom} a postulé pour le stage {titre}"
+    const aPostulePattern = /^(.+?)\s+a postulé pour le stage (.+)$/;
+    match = message.match(aPostulePattern);
+    if (match) {
+        const studentName = match[1];
+        const stageTitle = match[2];
+        return `${studentName} ${t('aPostulePourLeStage')} ${stageTitle}`;
+    }
+    
+    // Traduire les messages de type "{entreprise} a convoqué {nom} pour une entrevue"
+    const aConvouquePattern = /^(.+?)\s+a convoqué (.+?)\s+pour une entrevue$/;
+    match = message.match(aConvouquePattern);
+    if (match) {
+        const companyName = match[1];
+        const studentName = match[2];
+        return `${companyName} ${t('aConvouquePourEntrevue')} ${studentName} ${t('pourUneEntrevue')}`;
+    }
+    
+    // Traduire les messages de type "{nom} a créé le stage {titre}"
+    const aCreeLeStagePattern = /^(.+?)\s+a créé le stage (.+)$/;
+    match = message.match(aCreeLeStagePattern);
+    if (match) {
+        const employerName = match[1];
+        const stageTitle = match[2];
+        return `${employerName} ${t('aCreeLeStage')} ${stageTitle}`;
     }
     
     return message;
