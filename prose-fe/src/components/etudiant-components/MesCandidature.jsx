@@ -386,39 +386,7 @@ export default function MesCandidature() {
                                             </div>
                                         ) : ententeDataMap[candidature.id] ? (
                                             <>
-                                                {ententeDataMap[candidature.id].status === "SIGNEE_ETUDIANT" ? (
-                                                    <div className="mt-4 flex flex-col items-center gap-2">
-                                                        <span className="text-sm text-gray-600">
-                                                            En attente de la signature de l'employeur
-                                                        </span>
-                                                        <button
-                                                            onClick={() => {
-                                                                setSelectedCandidatureForEntente(candidature);
-                                                                setShowEntenteModal(true);
-                                                            }}
-                                                            className="px-6 py-3 rounded-md font-medium text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br transition-all"
-                                                            type="button"
-                                                        >
-                                                            Voir l'entente de stage
-                                                        </button>
-                                                    </div>
-                                                ) : ententeDataMap[candidature.id].status === "SIGNEE_ETUDIANT_ET_EMPLOYEUR" ? (
-                                                    <div className="mt-4 flex flex-col items-center gap-2">
-                                                        <span className="text-sm text-gray-600">
-                                                            En attente de la signature du gestionnaire
-                                                        </span>
-                                                        <button
-                                                            onClick={() => {
-                                                                setSelectedCandidatureForEntente(candidature);
-                                                                setShowEntenteModal(true);
-                                                            }}
-                                                            className="px-6 py-3 rounded-md font-medium text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br transition-all"
-                                                            type="button"
-                                                        >
-                                                            Voir l'entente de stage
-                                                        </button>
-                                                    </div>
-                                                ) : ententeDataMap[candidature.id].status === "SIGNEE" ? (
+                                                {ententeDataMap[candidature.id].status === "SIGNEE" ? (
                                                     <div className="mt-4 flex flex-col items-center gap-2">
                                                         <span className="text-sm text-green-600 font-medium">
                                                             ✓ Entente signée par toutes les parties

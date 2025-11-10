@@ -32,7 +32,7 @@ import java.util.Optional;
 @Transactional
 @RequiredArgsConstructor
 public class EntenteService {
-
+    
     private final EntenteRepository ententeRepository;
     private final CandidatureRepository candidatureRepository;
     private final EmployeurRepository employeurRepository;

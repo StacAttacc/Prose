@@ -1,5 +1,5 @@
 import React from 'react';
-import { useI18n } from '../../../../context/I18nContext';
+import { useI18n } from '../../../context/I18nContext';
 import { shortText, translateNotificationMessage } from "../notification-utils/notificationText.jsx";
 
 export function NotificationItem({ notification, onItemClick, onMarkSingleClick, typeKey}) {

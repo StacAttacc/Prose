@@ -48,6 +48,61 @@ export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSi
         return isStudent ? ententeData?.dateSignatureEtudiant : ententeData?.dateSignatureEmployeur;
     }, [userHasSigned, user?.role, ententeData?.dateSignatureEtudiant, ententeData?.dateSignatureEmployeur]);
 
+    // Vérifier si l'utilisateur est un gestionnaire
+    const isGestionnaire = useMemo(() => {
+        return user?.role === "GESTIONNAIRE" || user?.role === "Gestionnaire";
+    }, [user?.role]);
+
+    // Obtenir le message de statut pour le gestionnaire
+    const getStatusMessage = useMemo(() => {
+        if (!isGestionnaire || !ententeData?.status) return null;
+        
+        const status = ententeData.status;
+        switch (status) {
+            case "A_SIGNER":
+                return "En attente de la signature de l'étudiant et de l'employeur";
+            case "SIGNEE_ETUDIANT":
+                return "En attente de la signature de l'employeur";
+            case "SIGNEE_EMPLOYEUR":
+                return "En attente de la signature de l'étudiant";
+            case "SIGNEE_ETUDIANT_ET_EMPLOYEUR":
+                return "En attente de votre signature (gestionnaire)";
+            case "SIGNEE":
+                return "✓ Entente signée par toutes les parties";
+            default:
+                return null;
+        }
+    }, [isGestionnaire, ententeData?.status]);
+
+    // Obtenir le message de statut pour l'employeur et l'étudiant
+    const getStatusMessageForUser = useMemo(() => {
+        if (isGestionnaire || !ententeData?.status) return null;
+        
+        const status = ententeData.status;
+        const isStudent = user?.role === "ETUDIANT" || user?.role === "Etudiant";
+        const isEmployeur = user?.role === "EMPLOYEUR" || user?.role === "Employeur";
+        
+        if (status === "SIGNEE") {
+            return "✓ Entente signée par toutes les parties";
+        } else if (status === "SIGNEE_ETUDIANT_ET_EMPLOYEUR") {
+            return "En attente de la signature du gestionnaire";
+        } else if (status === "SIGNEE_ETUDIANT" && isStudent) {
+            // L'étudiant a signé, on attend l'employeur
+            return "En attente de la signature de l'employeur";
+        } else if (status === "SIGNEE_EMPLOYEUR" && isEmployeur) {
+            // L'employeur a signé, on attend l'étudiant
+            return "En attente de la signature de l'étudiant";
+        } else if (status === "A_SIGNER") {
+            // Cas théorique où l'utilisateur a signé mais le statut est encore A_SIGNER
+            if (isStudent) {
+                return "En attente de la signature de l'employeur";
+            } else if (isEmployeur) {
+                return "En attente de la signature de l'étudiant";
+            }
+        }
+        return null;
+    }, [isGestionnaire, ententeData?.status, user?.role]);
+
     useEffect(() => {
         if (isOpen) {
             if (initialEntenteData) {
@@ -174,6 +229,36 @@ export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSi
                     </div>
                 ) : (
                     <>
+                        {/* Message si déjà signé - affiché en premier */}
+                        {userHasSigned && userSignatureDate && (
+                            <div className="mb-6">
+                                <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                                    <p className="text-sm text-green-700 font-medium">
+                                        ✓ Vous avez déjà signé cette entente le {new Date(userSignatureDate).toLocaleDateString('fr-FR', {
+                                            day: '2-digit',
+                                            month: 'long',
+                                            year: 'numeric'
+                                        })}
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Statut de l'entente - affiché après le message de signature */}
+                        {(isGestionnaire && getStatusMessage) || (!isGestionnaire && getStatusMessageForUser) ? (
+                            <div className="mb-6">
+                                <div className={`p-3 border rounded-lg ${
+                                    ententeData?.status === "SIGNEE" 
+                                        ? "bg-green-50 border-green-200 text-green-700"
+                                        : "bg-yellow-50 border-yellow-200 text-yellow-700"
+                                }`}>
+                                    <p className="text-sm font-medium">
+                                        {isGestionnaire ? getStatusMessage : getStatusMessageForUser}
+                                    </p>
+                                </div>
+                            </div>
+                        ) : null}
+
                         <div className="mb-6">
                             <h3 className="text-lg font-semibold mb-3 text-gray-700">
                                 Document d'entente
@@ -192,7 +277,8 @@ export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSi
                         </div>
 
                         {/* Formulaire de signature - seulement si l'utilisateur n'a pas encore signé */}
-                        {!userHasSigned && (
+                        {/* Pour le gestionnaire, afficher le formulaire seulement si c'est son tour (SIGNEE_ETUDIANT_ET_EMPLOYEUR) */}
+                        {!userHasSigned && (!isGestionnaire || ententeData?.status === "SIGNEE_ETUDIANT_ET_EMPLOYEUR") && (
                             <form onSubmit={handleSign} className="border-t pt-6">
                                 <div className="mb-4">
                                     <label className="flex items-start">
@@ -253,18 +339,9 @@ export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSi
                             </form>
                         )}
 
-                        {/* Message si déjà signé */}
-                        {userHasSigned && userSignatureDate && (
+                        {/* Bouton Fermer si pas de formulaire de signature */}
+                        {!(!userHasSigned && (!isGestionnaire || ententeData?.status === "SIGNEE_ETUDIANT_ET_EMPLOYEUR")) && (
                             <div className="border-t pt-6">
-                                <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-                                    <p className="text-sm text-green-700 font-medium">
-                                        ✓ Vous avez déjà signé cette entente le {new Date(userSignatureDate).toLocaleDateString('fr-FR', {
-                                            day: '2-digit',
-                                            month: 'long',
-                                            year: 'numeric'
-                                        })}
-                                    </p>
-                                </div>
                                 <div className="flex gap-3 justify-end">
                                     <button
                                         type="button"
