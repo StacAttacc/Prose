@@ -1,11 +1,7 @@
 package com.AL565.prose.service;
 
 import com.AL565.prose.model.*;
-import com.AL565.prose.model.notifications.ConvocationNotification;
-import com.AL565.prose.model.notifications.EmployeurResponseNotification;
-import com.AL565.prose.model.notifications.NotificationType;
-import com.AL565.prose.model.notifications.PostulationNotification;
-import com.AL565.prose.model.notifications.StageNotification;
+import com.AL565.prose.model.notifications.*;
 import com.AL565.prose.repository.*;
 import com.AL565.prose.security.exceptions.NotificationExceptions;
 import com.AL565.prose.security.exceptions.UserNotFoundException;
@@ -16,6 +12,7 @@ import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import com.AL565.prose.service.exceptions.InvalidCandidatureModificationException;
 import com.AL565.prose.service.exceptions.StageNotFoundException;
+import com.AL565.prose.utils.NotificationsHelper;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -129,7 +126,40 @@ public class EmployeurService {
         }
 
         candidature.setStatus(candidatureStatus);
-        candidatureRepository.save(candidature);
+        Candidature savedCanidature = candidatureRepository.save(candidature);
+        Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(savedCanidature.getStage().getEmployeurEmail());
+        createNotificationForCandidatureDecision(savedCanidature, employeur);
+    }
+
+    private void createNotificationForCandidatureDecision(Candidature candidature, Employeur employeur) {
+        if (candidature == null || employeur == null) {
+            throw new IllegalArgumentException("candidature must not be null");
+        }
+
+        String status = "";
+        if (candidature.getStatus() == CandidatureStatus.ACCEPTEE) {
+            status = "acceptée";
+        } else if (candidature.getStatus() == CandidatureStatus.REFUSEE) {
+            status = "rejectée";
+        }
+
+        String etudiantName = candidature.getEtudiant().getFirstName()
+                + " " + candidature.getEtudiant().getLastName();
+
+        String notifMessage = employeur.getCompany()
+                + " a " + status + " " + etudiantName
+                + " pour le stage " + candidature.getStage().getTitle();
+
+        CandidatureDecisionNotification notification = new CandidatureDecisionNotification();
+        notification.setFirstRecipientReadAt(null);
+        notification.setSecondRecipientReadAt(null);
+        notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
+        notification.setType(NotificationType.CANDIDATURE_DECISION_NOTIFICATION);
+        notification.setMessage(notifMessage);
+        notification.setCandidatureDecisionId(candidature.getId());
+        notification.setCandidatureDecisionEtudiantEmail(candidature.getEtudiant().getEmail());
+        notification.setCandidatureDecisionEtudiantId(candidature.getEtudiant().getId());
+        notificationRepository.save(notification);
     }
 
     @Transactional

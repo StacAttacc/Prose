@@ -9,6 +9,7 @@ import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import com.AL565.prose.service.exceptions.CandidatureNotFoundException;
 import com.AL565.prose.service.exceptions.InvalidCandidatureModificationException;
 import com.AL565.prose.security.JwtTokenProvider;
+import com.AL565.prose.utils.NotificationsHelper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

@@ -5,6 +5,7 @@ function makeKeyForItem(item = {}, groupKey) {
     else if (item?.stageId) return "stage";
     else if (item?.cvId) return "gestionnaire_cv";
     else if (item?.etudiantId) return "etudiant_cv";
+    else if (item?.candidatureDecisionId) return "candidature_decision";
     else if (groupKey && typeof groupKey === "string" && !/\s/.test(groupKey)) return groupKey.toLowerCase();
     else if (item?.type) {
         return String(item.type)

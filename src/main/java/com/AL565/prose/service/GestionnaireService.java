@@ -11,6 +11,7 @@ import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import com.AL565.prose.service.exceptions.FailedToRetrieveStagesException;
 
+import com.AL565.prose.utils.NotificationsHelper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -39,8 +40,6 @@ public class GestionnaireService {
     private final PasswordEncoder passwordEncoder;
     private final CandidatureRepository candidatureRepository;
     private final NotificationRepository notificationRepository;
-    private final PostulationNotificationRepository postulastionNotificationRepository;
-    private final EntenteRepository ententeRepository;
     private final NotificationsHelper notificationsHelper;
 
     public void saveGestionnaire(GestionnairePasswordDTO dto) {
@@ -191,6 +190,8 @@ public class GestionnaireService {
                         .findNotificationsByTypeAndFirstRecipientReadAt(NotificationType.GESTIONNAIRE_CV_NOTIFICATION, null);
                 List<Notification> convocations = notificationRepository
                         .findNotificationsByTypeAndSecondRecipientReadAt(NotificationType.CONVOCATION_NOTIFICATION, null);
+                List<Notification> candidatureDecisions = notificationRepository
+                        .findNotificationsByTypeAndSecondRecipientReadAt(NotificationType.CANDIDATURE_DECISION_NOTIFICATION, null);
 
                 NotificationGroupDTO stagesGroup = NotificationGroupDTO
                         .toDTO(NotificationType.STAGE_NOTIFICATION.getDisplayName(), stages);
@@ -200,9 +201,15 @@ public class GestionnaireService {
                         .toDTO(NotificationType.GESTIONNAIRE_CV_NOTIFICATION.getDisplayName(), cvs);
                 NotificationGroupDTO convocationsGroup = NotificationGroupDTO
                         .toDTO(NotificationType.CONVOCATION_NOTIFICATION.getDisplayName(), convocations);
+                NotificationGroupDTO candidatureDecisionsGroup = NotificationGroupDTO
+                        .toDTO(NotificationType.CANDIDATURE_DECISION_NOTIFICATION.getDisplayName(), candidatureDecisions);
 
             return NotificationsResponseDTO
-                    .toDTO(List.of(stagesGroup, postulationGroup, cvsGroup, convocationsGroup));
+                    .toDTO(List.of(stagesGroup,
+                            postulationGroup,
+                            cvsGroup,
+                            convocationsGroup,
+                            candidatureDecisionsGroup));
         } catch (Exception e) {
             throw new NotificationExceptions.NotificationFetchException();
         }
@@ -211,12 +218,12 @@ public class GestionnaireService {
     public void markNotificationAsRead(Long notificationId) throws Exception {
         Notification notification = notificationRepository.findById(notificationId)
                 .orElseThrow(NotificationExceptions.NotificationFetchException::new);
-        if (notification.getType() == NotificationType.POSTULATION_NOTIFICATION) {
-            markPostulationAsReadBySecondRecipient(notificationId);
-        } else if (notification.getType() == NotificationType.CONVOCATION_NOTIFICATION) {
-            markPostulationAsReadBySecondRecipient(notificationId);
-        } else {
-            notificationsHelper.markNotificationAsReadByFirstRecipient(notificationId);
+
+        switch(notification.getType()) {
+            case POSTULATION_NOTIFICATION,
+                 CONVOCATION_NOTIFICATION,
+                 CANDIDATURE_DECISION_NOTIFICATION -> markPostulationAsReadBySecondRecipient(notificationId);
+            default-> notificationsHelper.markNotificationAsReadByFirstRecipient(notificationId);
         }
     }
 

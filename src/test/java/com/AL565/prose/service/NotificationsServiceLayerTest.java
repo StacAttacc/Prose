@@ -5,6 +5,7 @@ import com.AL565.prose.repository.*;
 import com.AL565.prose.security.JwtTokenProvider;
 import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
 import com.AL565.prose.security.exceptions.NotificationExceptions;
+import com.AL565.prose.utils.NotificationsHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

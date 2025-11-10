@@ -1,8 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext.jsx";
-import { useI18n } from "../../context/I18nContext.jsx";
-import { Eye, EyeOff } from "lucide-react";
 import {
     markManyNotifications,
     fetchNotifications,
@@ -14,13 +12,12 @@ import {
     getGroupedNotificationNavigation,
     getNotificationNavigationPath
 } from "./notification-utils/notificationsNavigationLogic.jsx";
-import { labelForKey, shortText } from "./notification-utils/notificationText.jsx";
-import { NotificationItem } from "./notification-ui/NotificationItem.jsx";
 import ErrorBanner from "../display-components/ErrorBanner.jsx";
+import {NotificationGroupDropdown} from "./notification-ui/NotificationGroupDropdown.jsx";
+import {NotificationCard} from "./notification-ui/NotificationCard.jsx";
 
 export default function Notifications() {
     const { user } = useAuth();
-    const { t, locale } = useI18n();
     const [notificationsByType, setNotificationsByType] = useState({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -29,11 +26,6 @@ export default function Notifications() {
     const mountedRef = useRef(true);
     const dropdownRef = useRef(null);
     const navigate = useNavigate();
-    
-    // Mettre à jour l'instance i18n pour notificationText
-    useEffect(() => {
-        setI18nInstance({ t, locale });
-    }, [t, locale]);
 
     useEffect(() => {
         mountedRef.current = true;
@@ -58,7 +50,7 @@ export default function Notifications() {
             } catch (err) {
                 console.error("Failed to load notifications:", err);
                 if (mountedRef.current) {
-                    setError(err?.message || t('erreurChargementNotifications'));
+                    setError(err?.message || "Failed to load notifications");
                     setNotificationsByType({});
                 }
             } finally {
@@ -66,7 +58,7 @@ export default function Notifications() {
             }
         }
         fetchData();
-    }, [user, readCounter, t]);
+    }, [user, readCounter]);
 
     useEffect(() => {
         function onClickOutside(e) {
@@ -78,7 +70,7 @@ export default function Notifications() {
         return () => document.removeEventListener("click", onClickOutside);
     }, []);
 
-    const handleGroupClick = useCallback(async (typeKey, list) => {
+    const markGroupAndNavigate = useCallback(async (typeKey, list) => {
         const ids = (list || []).map(n => n.id).filter(Boolean);
         try {
             await markManyNotifications(user, ids);
@@ -91,22 +83,25 @@ export default function Notifications() {
         }
     }, [navigate, user]);
 
+    async function markAndReload(notification, typeKey) {
+        await markSingleNotificationAsRead(notification.id, user);
+        setNotificationsByType(prev => {
+            const next = { ...prev };
+            const arr = (next[typeKey] || []).filter(n => n.id !== notification.id);
+            if (arr.length) next[typeKey] = arr;
+            else delete next[typeKey];
+            return next;
+        });
+        setReadCounter(c => c + 1);
+    }
+
     const markAndNavigate = useCallback(async (e, notification, typeKey) => {
         e?.stopPropagation?.();
         if (!notification?.id) return;
         setOpenType(null);
 
         try {
-            await markSingleNotificationAsRead(notification.id, user);
-            setNotificationsByType(prev => {
-                const next = { ...prev };
-                const arr = (next[typeKey] || []).filter(n => n.id !== notification.id);
-                if (arr.length) next[typeKey] = arr;
-                else delete next[typeKey];
-                return next;
-            });
-            setReadCounter(c => c + 1);
-
+            await markAndReload(notification, typeKey);
             const { path, state } = getNotificationNavigationPath(notification, user.role);
             navigate(path, state ? { state } : undefined);
         } catch (err) {
@@ -114,36 +109,6 @@ export default function Notifications() {
             navigate(getDefaultNavigationPath(user.role));
         }
     }, [navigate, user]);
-
-    const markAndClose = async (e, notification, typeKey) => {
-        e?.stopPropagation?.();
-        if (!notification?.id) return;
-        try {
-            await markSingleNotificationAsRead(notification.id, user);
-            setNotificationsByType(prev => {
-                const next = { ...prev };
-                const arr = (next[typeKey] || []).filter(n => n.id !== notification.id);
-                if (arr.length) next[typeKey] = arr;
-                else delete next[typeKey];
-                return next;
-            });
-            setReadCounter(c => c + 1);
-        } catch (err) {
-            console.error("Failed to mark single notification as read:", err);
-        }
-    };
-
-    const handleCloseType = useCallback(async (e, typeKey, list) => {
-        e?.stopPropagation?.();
-        const ids = (list || []).map(n => n.id).filter(Boolean);
-        try {
-            await markManyNotifications(typeKey, ids);
-            setReadCounter(c => c + ids.length);
-            setOpenType(null);
-        } catch (err) {
-            console.error("Failed to mark notifications as read (close type):", err);
-        }
-    }, [user]);
 
     const totalCount = Object.values(notificationsByType).reduce((acc, arr) => acc + (Array.isArray(arr) ? arr.length : 0), 0);
 
@@ -161,112 +126,33 @@ export default function Notifications() {
                 const showGrouped = count >= 4;
                 const dropdownId = `notif-dropdown-${typeKey}`;
                 const open = openType === typeKey;
-
-                function renderCompactItem(n) {
-                    return (
-                        <>
-                            <div className="w-7 h-7 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 text-xs">
-                                !
-                            </div>
-                            <div className="min-w-0">
-                                <div className="text-sm font-medium text-gray-900 whitespace-normal break-words overflow-hidden line-clamp-2">
-                                    {shortText(translateNotificationMessage(n.message) || n.senderEmail || t('noMessage'), 200)}
-                                </div>
-                                <div className="text-xs text-gray-500">
-                                    {n.createdAt ? new Date(n.createdAt).toLocaleString(locale === 'en' ? 'en-US' : 'fr-FR') : n.createdAtString || t('unknownTime')}
-                                </div>
-                            </div>
-                        </>
-                    );
-                }
-
                 return (
                     <div key={typeKey} className="relative w-full text-left flex justify-center">
-                        <div
-                            className="w-80 bg-white border border-gray-200 rounded-lg shadow-sm cursor-pointer hover:shadow-md transition p-3 flex items-center justify-between"
-                            role="button"
-                            tabIndex={0}
-                            onClick={() => handleGroupClick(typeKey, list)}
-                        >
-                            <div className="flex items-start gap-3 flex-1">
-                                <div className="flex-1">
-                                    <div className="text-xs text-gray-500" aria-live="polite">
-                                        {count} {labelForKey(typeKey)}
-                                    </div>
-
-                                    {count <= 3 ? (
-                                        <ul className="mt-3 space-y-2">
-                                            {(list || []).map((n) => (
-                                                <NotificationItem
-                                                    key={n.id}
-                                                    notification={n}
-                                                    onItemClick={markAndNavigate}
-                                                    onMarkSingleClick={markAndClose}
-                                                    typeKey={typeKey}
-                                                />
-                                            ))}
-                                        </ul>
-                                    ) : null}
-                                </div>
-                            </div>
-
-                            <div className="flex flex-row items-center gap-2">
-                                {count >= 4 && (
-                                    <>
-                                        <button
-                                            type="button"
-                                            onClick={(e) => { e.stopPropagation(); setOpenType(open ? null : typeKey); }}
-                                            className="inline-flex items-center justify-center py-1 px-2 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200"
-                                            aria-haspopup="true"
-                                            aria-expanded={open}
-                                            aria-controls={dropdownId}
-                                            aria-label={t('toggleNotifications')}
-                                            aria-pressed={open}
-                                            title={open ? t('closeNotifications') : t('openNotifications')}
-                                        >
-                                            {open ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            onClick={(e) => { e.stopPropagation(); handleCloseType(e, typeKey, list); }}
-                                            className="inline-flex items-center py-1 px-2 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200"
-                                            aria-label={t('markAllAsRead')}
-                                            title={t('markAllAsRead')}
-                                        >
-                                            <svg className="m-0 w-4 h-4" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" role="img" aria-hidden>
-                                                <line x1="4" y1="4" x2="20" y2="20" stroke="#ff0000" strokeWidth="2.5" strokeLinecap="round"/>
-                                                <line x1="20" y1="4" x2="4" y2="20" stroke="#ff0000" strokeWidth="2.5" strokeLinecap="round"/>
-                                            </svg>
-                                        </button>
-                                    </>
-                                )}
-                            </div>
-                        </div>
+                        <NotificationCard
+                            markGroupAndNavigate={markGroupAndNavigate}
+                            list={list}
+                            typeKey={typeKey}
+                            count={count}
+                            open={open}
+                            dropdownId={dropdownId}
+                            setOpenType={setOpenType}
+                            markAndNavigate={markAndNavigate}
+                            setReadCounter={setReadCounter}
+                            markAndReload={markAndReload}
+                            user={user}
+                        />
 
                         {showGrouped && openType === typeKey && (
-                            <div id={dropdownId} className="origin-top absolute left-1/2 transform -translate-x-1/2 mt-2 w-80 z-50" role="menu">
-                                <div className="bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
-                                    <div className="p-2 flex flex-col">
-                                        <div className="px-3 py-2 border-b flex items-center justify-between">
-                                            <div className="text-sm font-semibold text-gray-800">
-                                                {labelForKey(typeKey)}
-                                            </div>
-                                        </div>
-                                        <ul className="space-y-2 overflow-y-auto max-h-64">
-                                            {(list || []).slice(0, 20).map((n) => (
-                                                <NotificationItem
-                                                    key={n.id}
-                                                    notification={n}
-                                                    onItemClick={markAndNavigate}
-                                                    onMarkSingleClick={markAndClose}
-                                                    typeKey={typeKey}
-                                                />
-                                            ))}
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
+                            <NotificationGroupDropdown
+                                dropdownId={dropdownId}
+                                list={list}
+                                typeKey={typeKey}
+                                count={count}
+                                markAndNavigate={markAndNavigate}
+                                setReadCounter={setReadCounter}
+                                markAndReload={markAndReload}
+                                setOpenType={setOpenType}
+                            />
                         )}
                     </div>
                 );

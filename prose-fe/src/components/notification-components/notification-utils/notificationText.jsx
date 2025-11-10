@@ -11,6 +11,7 @@ export function labelForKey(key) {
     if (key === "gestionnaire_cv") return `nouveau(x) CV(s) à examiner`;
     if (key === "etudiant_cv") return `changement sur votre CV`;
     if (key === "convocation") return `nouvelle(s) convocation(s)`;
+    if (key === "candidature_decision") return `nouvelles(s) candidatures mise(s) à jour`;
     return `${key} notification(s)`;
     if (!i18nInstance) {
         // Fallback si i18n n'est pas encore initialisé
