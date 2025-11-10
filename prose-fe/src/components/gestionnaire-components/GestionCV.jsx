@@ -4,6 +4,7 @@ import { useI18n, translateDiscipline } from "../../context/I18nContext.jsx";
 import { approveCv, fetchAllCVs, rejectCv } from "../../services/GestionnaireService.js";
 import { Worker, Viewer } from '@react-pdf-viewer/core';
 import {useLocation, useNavigate} from "react-router-dom";
+import { useYear } from "../../context/YearContext";
 
 const statusColors = {
     APPROVED: "bg-green-100 border-green-300",
@@ -17,6 +18,7 @@ const GestionCV = () => {
     const token = user?.token;
     const location = useLocation();
     const navigate = useNavigate();
+    const { selectedYear } = useYear();
 
     const [allCvs, setAllCvs] = useState([]);
     const [selectedCv, setSelectedCv] = useState(null);
@@ -30,15 +32,14 @@ const GestionCV = () => {
     const [searchTerm, setSearchTerm] = useState("");
 
     useEffect(() => {
-        if (token) loadAllCvs();
-    }, [token]);
+        if (token && selectedYear) loadAllCvs();
+    }, [token, selectedYear]);
 
     const loadAllCvs = async () => {
-        const cvs = await fetchAllCVs(token);
+        const cvs = await fetchAllCVs(token, selectedYear);
         setAllCvs(cvs || []);
     };
 
-    // Fonction de filtrage par nom
     const filterByName = (cvs) => {
         if (!searchTerm.trim()) return cvs;
         const term = searchTerm.toLowerCase();

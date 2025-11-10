@@ -1,19 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
-import { renderWithProviders } from '../../utils/testUtils';
-import GestRechercheStages from '../../../components/gestionnaire-components/RechercheStages';
-import { server } from '../../mocks/server';
+import { renderWithProviders } from '../../test/utils/testUtils';
+import GestRechercheStages from './RechercheStages';
+import { server } from '../../test/mocks/server';
 import { http, HttpResponse } from 'msw';
-import { useYear } from '../../../context/YearContext';
-import { useAuth } from '../../../context/AuthContext';
+import { useYear } from '../../context/YearContext';
+import { useAuth } from '../../context/AuthContext';
 
-// Mock du YearContext pour utiliser notre mock depuis testUtils
-vi.mock('../../../context/YearContext', () => ({
+vi.mock('../../context/YearContext', () => ({
   useYear: vi.fn()
 }));
 
-// Mock du AuthContext - garder AuthProvider mais mocker useAuth
-vi.mock('../../../context/AuthContext', async (importOriginal) => {
+vi.mock('../../context/AuthContext', async (importOriginal) => {
   const actual = await importOriginal();
   return {
     ...actual,
@@ -21,12 +19,11 @@ vi.mock('../../../context/AuthContext', async (importOriginal) => {
   };
 });
 
-// Mock des composants enfants qui ne sont pas nécessaires pour ces tests
-vi.mock('../../../components/display-components/StageDetailsModal', () => ({
+vi.mock('../display-components/StageDetailsModal', () => ({
   default: () => <div data-testid="stage-details-modal">Stage Details Modal</div>
 }));
 
-vi.mock('../../../components/display-components/ErrorBanner', () => ({
+vi.mock('../display-components/ErrorBanner', () => ({
   default: ({ message }) => <div data-testid="error-banner">{message}</div>
 }));
 
@@ -41,7 +38,6 @@ describe('RechercheStages - Filtrage par année', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    // Mock useAuth pour retourner un utilisateur par défaut
     vi.mocked(useAuth).mockReturnValue({
       user: mockUser,
       isAuthed: true,
@@ -56,16 +52,13 @@ describe('RechercheStages - Filtrage par année', () => {
     vi.mocked(useYear).mockReturnValue({ selectedYear: '2025', setSelectedYear: vi.fn() });
     renderWithProviders(<GestRechercheStages />, { selectedYear: '2025' });
 
-    // Attendre que les stages soient chargés
     await waitFor(() => {
       expect(screen.getByText('Stage Développeur 2025')).toBeInTheDocument();
     });
 
-    // Vérifier que les stages de 2025 sont affichés
     expect(screen.getByText('Stage Développeur 2025')).toBeInTheDocument();
     expect(screen.getByText('Stage Analyste 2025')).toBeInTheDocument();
     
-    // Vérifier que les stages d'autres années ne sont pas affichés
     expect(screen.queryByText('Stage Développeur 2026')).not.toBeInTheDocument();
   });
 
@@ -73,12 +66,10 @@ describe('RechercheStages - Filtrage par année', () => {
     vi.mocked(useYear).mockReturnValue({ selectedYear: '2026', setSelectedYear: vi.fn() });
     renderWithProviders(<GestRechercheStages />, { selectedYear: '2026' });
 
-    // Attendre que les stages soient chargés
     await waitFor(() => {
       expect(screen.getByText('Stage Développeur 2026')).toBeInTheDocument();
     });
 
-    // Vérifier que seuls les stages de 2026 sont affichés
     expect(screen.getByText('Stage Développeur 2026')).toBeInTheDocument();
     expect(screen.queryByText('Stage Développeur 2025')).not.toBeInTheDocument();
     expect(screen.queryByText('Stage Analyste 2025')).not.toBeInTheDocument();
@@ -88,7 +79,6 @@ describe('RechercheStages - Filtrage par année', () => {
     vi.mocked(useYear).mockReturnValue({ selectedYear: '2027', setSelectedYear: vi.fn() });
     renderWithProviders(<GestRechercheStages />, { selectedYear: '2027' });
 
-    // Attendre que les stages soient chargés
     await waitFor(() => {
       expect(screen.getByText('Stage Designer 2027')).toBeInTheDocument();
     });
@@ -113,7 +103,6 @@ describe('RechercheStages - Filtrage par année', () => {
     vi.mocked(useYear).mockReturnValue({ selectedYear: '2030', setSelectedYear: vi.fn() });
     renderWithProviders(<GestRechercheStages />, { selectedYear: '2030' });
 
-    // Attendre que le message soit affiché
     await waitFor(() => {
       expect(screen.getByText(/Aucun stage disponible pour le moment/i)).toBeInTheDocument();
     });
@@ -123,16 +112,13 @@ describe('RechercheStages - Filtrage par année', () => {
     vi.mocked(useYear).mockReturnValue({ selectedYear: '2025', setSelectedYear: vi.fn() });
     const { rerender } = renderWithProviders(<GestRechercheStages />, { selectedYear: '2025' });
 
-    // Attendre les stages de 2025
     await waitFor(() => {
       expect(screen.getByText('Stage Développeur 2025')).toBeInTheDocument();
     });
 
-    // Changer l'année à 2026
     vi.mocked(useYear).mockReturnValue({ selectedYear: '2026', setSelectedYear: vi.fn() });
     rerender(<GestRechercheStages />);
 
-    // Attendre les stages de 2026
     await waitFor(() => {
       expect(screen.getByText('Stage Développeur 2026')).toBeInTheDocument();
       expect(screen.queryByText('Stage Développeur 2025')).not.toBeInTheDocument();
