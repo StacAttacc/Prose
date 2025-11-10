@@ -58,6 +58,8 @@ public class EtudiantService {
     private final GestionnaireCvNotificationRepository gestionnaireCvNotificationRepository;
     private final EtudiantCvNotificationRepository etudiantCvNotificationRepository;
     private final ConvocationNotificationRepository convocationNotificationRepository;
+    private final PostulationNotificationRepository postulationNotificationRepository;
+    private final EmployeurResponseNotificationRepository employeurResponseNotificationRepository;
     private final CandidatureDecisionNotificationRepository candidatureDecisionNotificationRepository;
     private final NotificationsHelper notificationsHelper;
 
@@ -317,5 +319,32 @@ public class EtudiantService {
         candidature.setDateDecision(java.time.LocalDateTime.now());
 
         candidatureRepository.save(candidature);
+
+        createNotificationForEmployeurResponse(candidature, responseDTO.isAccepted(), responseDTO.getComment());
+    }
+
+    private void createNotificationForEmployeurResponse(Candidature candidature, boolean accepted, String comment) {
+        String studentName = candidature.getEtudiant().getFirstName() + " " + candidature.getEtudiant().getLastName();
+        String stageTitle = candidature.getStage().getTitle();
+        String decision = accepted ? "accepté" : "refusé";
+
+        String message = studentName + " a " + decision + " l'offre pour le stage " + stageTitle;
+        if (comment != null && !comment.trim().isEmpty()) {
+            message += " - Commentaire: " + comment;
+        }
+
+        EmployeurResponseNotification notification = new EmployeurResponseNotification();
+        notification.setFirstRecipientReadAt(null);
+        notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
+        notification.setCandidatureResponseId(candidature.getId());
+        notification.setEtudiantResponseId(candidature.getEtudiant().getId());
+        notification.setStageResponseId(candidature.getStage().getId());
+        notification.setEmployeurResponseEmail(candidature.getStage().getEmployeurEmail());
+        notification.setAccepted(accepted);
+        notification.setComment(comment);
+        notification.setType(NotificationType.EMPLOYEUR_RESPONSE_NOTIFICATION);
+        notification.setMessage(message);
+
+        employeurResponseNotificationRepository.save(notification);
     }
 }

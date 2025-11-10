@@ -13,6 +13,7 @@ import com.AL565.prose.service.EmployeurService;
 import com.AL565.prose.service.EtudiantService;
 import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.GestionnaireService;
+import com.AL565.prose.service.EntenteService;
 import com.AL565.prose.service.dto.notifications.NotificationGroupDTO;
 import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -29,7 +30,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,8 +40,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -53,6 +55,9 @@ class GestionnaireControllerTest {
 
     @MockitoBean
     private GestionnaireService gestionnaireService;
+
+    @MockitoBean
+    private EntenteService ententeService;
 
     @MockitoBean
     private EmployeurService employeurService;
@@ -80,7 +85,6 @@ class GestionnaireControllerTest {
 
     @Autowired
     ObjectMapper objectMapper;
-
     private record CvDecisionStub(Long id, String status, String comment) {}
 
     @Test
@@ -107,7 +111,7 @@ class GestionnaireControllerTest {
                 .employeur(employeurDTO2)
                 .build();
 
-        when(gestionnaireService.getStagesByStatus("SOUMISE")).thenReturn(List.of(stage1, stage2));
+        when(gestionnaireService.getStagesByStatus("SOUMISE", null)).thenReturn(List.of(stage1, stage2));
 
         MvcResult result = mockMvc.perform(get("/gestionnaire/stages/status/SOUMISE").with(csrf()))
                 .andReturn();
@@ -199,10 +203,66 @@ class GestionnaireControllerTest {
         dto.setEtudiantEmail("john@doe.com");
         dto.setData("data");
 
-        when(gestionnaireService.getAllCvs()).thenReturn(List.of(dto));
+        when(gestionnaireService.getAllCvs(anyString())).thenReturn(List.of(dto));
 
         mockMvc.perform(get("/gestionnaire/cv/all").contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void getAllCvsYearFiltered() throws Exception {
+        GestionnaireCvDTO dto = new GestionnaireCvDTO();
+        dto.setId(1L);
+        dto.setName("CV1");
+        dto.setStatus(CvStatus.PENDING.name());
+        dto.setEtudiantPrenom("John");
+        dto.setEtudiantNom("Doe");
+        dto.setEtudiantEmail("john@doe.com");
+        dto.setData("data");
+
+        GestionnaireCvDTO dto2 = new GestionnaireCvDTO();
+        dto.setId(2L);
+        dto.setName("CV2");
+        dto.setStatus(CvStatus.PENDING.name());
+        dto.setEtudiantPrenom("Jane");
+        dto.setEtudiantNom("Doe");
+        dto.setEtudiantEmail("jane@doe.com");
+        dto.setData("data");
+
+        GestionnaireCvDTO dto3 = new GestionnaireCvDTO();
+        dto.setId(3L);
+        dto.setName("CV3");
+        dto.setStatus(CvStatus.PENDING.name());
+        dto.setEtudiantPrenom("Jane");
+        dto.setEtudiantNom("Doe");
+        dto.setEtudiantEmail("jane@doe.com");
+        dto.setData("data");
+
+        when(gestionnaireService.getAllCvs("2077")).thenReturn(List.of(dto, dto2));
+        when(gestionnaireService.getAllCvs("2078")).thenReturn(List.of(dto3));
+        when(gestionnaireService.getAllCvs("2025")).thenReturn(new ArrayList<>());
+
+        MvcResult result = mockMvc.perform(get("/gestionnaire/cv/all").param("year", "2077").contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        List<GestionnaireCvDTO> data2077 = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+
+        result = mockMvc.perform(get("/gestionnaire/cv/all").param("year", "2078").contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        List<GestionnaireCvDTO> data2078 = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+
+        result = mockMvc.perform(get("/gestionnaire/cv/all").param("year", "2025").contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        List<GestionnaireCvDTO> data2025 = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+
+        assertThat(data2077).hasSize(2);
+        assertThat(data2078).hasSize(1);
+        assertThat(data2025).hasSize(0);
     }
 
     @Test
@@ -226,13 +286,59 @@ class GestionnaireControllerTest {
         StageDTO dto1 = StageDTO.builder().id(1L).title("Backend Java").build();
         StageDTO dto2 = StageDTO.builder().id(2L).title("Frontend React").build();
 
-        when(gestionnaireService.getAllStages()).thenReturn(List.of(dto1, dto2));
+        when(gestionnaireService.getAllStages(null)).thenReturn(List.of(dto1, dto2));
 
         mockMvc.perform(get("/gestionnaire/stages").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.message", is("Liste des stages")))
                 .andExpect(jsonPath("$.data", hasSize(2)));
+    }
+
+    @Test
+    void getAllStagesDated() throws Exception {
+        StageDTO dto1 = StageDTO.builder().id(1L).title("Backend Java")
+                .startDate(LocalDate.of(2077, 1, 18))
+                .build();
+        StageDTO dto2 = StageDTO.builder().id(2L).title("Frontend React")
+                .startDate(LocalDate.of(2078, 1, 18))
+                .build();
+
+        when(gestionnaireService.getAllStages("2077")).thenReturn(List.of(dto1));
+        when(gestionnaireService.getAllStages("2078")).thenReturn(List.of(dto2));
+        when(gestionnaireService.getAllStages("2025")).thenReturn(new ArrayList<>());
+
+        MvcResult result = mockMvc.perform(get("/gestionnaire/stages").param("year", "2077").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        ReturnEntityDTO<List<StageDTO>> resultString =  objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
+        });
+
+        List<StageDTO> data2077 = resultString.getData();
+
+        result = mockMvc.perform(get("/gestionnaire/stages").param("year", "2078").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        resultString =  objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
+        });
+
+        List<StageDTO> data2078 = resultString.getData();
+
+        result = mockMvc.perform(get("/gestionnaire/stages").param("year", "2025").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        resultString =  objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
+        });
+
+        List<StageDTO> data2025 = resultString.getData();
+
+        assertThat(data2077).hasSize(1);
+        assertThat(data2078).hasSize(1);
+        assertThat(data2025).hasSize(0);
+
     }
 
     @Test
@@ -282,7 +388,7 @@ class GestionnaireControllerTest {
                                 .status("En Attente")
                                 .build()
                 )).build();
-        when(gestionnaireService.getAllEtudiantsCandidatures()).thenReturn(List.of(candidatureJohn, candidaturesUmberto));
+        when(gestionnaireService.getAllEtudiantsCandidatures("2025")).thenReturn(List.of(candidatureJohn, candidaturesUmberto));
 
         MvcResult result = mockMvc.perform(get("/gestionnaire/getCandidatures"))
                 .andExpect(status().isOk())
@@ -410,7 +516,7 @@ class GestionnaireControllerTest {
                                 .status("REFUSEE")
                                 .build()
                 )).build();
-        when(gestionnaireService.getAllEtudiantsCandidatures()).thenReturn(List.of(candidatureJohn, candidaturesUmberto));
+        when(gestionnaireService.getAllEtudiantsCandidatures("2025")).thenReturn(List.of(candidatureJohn, candidaturesUmberto));
 
         MvcResult result = mockMvc.perform(get("/gestionnaire/getCandidatures"))
                 .andExpect(status().isOk())
@@ -427,5 +533,61 @@ class GestionnaireControllerTest {
         assertThat(candidaturesJohnDTO.getFirst().getStatus()).isEqualTo(String.valueOf(CandidatureStatus.ACCEPTEE));
         assertThat(candidaturesUmbertoDTO.getFirst().getStatus()).isEqualTo(String.valueOf(CandidatureStatus.ACCEPTEE));
         assertThat(candidaturesUmbertoDTO.get(1).getStatus()).isEqualTo(String.valueOf(CandidatureStatus.REFUSEE));
+    }
+
+    @Test
+    @DisplayName("POST /gestionnaire/candidatures/{candidatureId}/generer-entente -> 200 avec EntenteDTO")
+    void genererEntente_success() throws Exception {
+        Long candidatureId = 1L;
+        EntenteDTO ententeDTO = EntenteDTO.builder()
+                .id(1L)
+                .candidatureId(candidatureId)
+                .build();
+
+        when(ententeService.genererEntente(candidatureId)).thenReturn(ententeDTO);
+
+        mockMvc.perform(post("/gestionnaire/candidatures/" + candidatureId + "/generer-entente")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.message", is("Entente générée avec succès")))
+                .andExpect(jsonPath("$.data.id", is(1)));
+
+        verify(ententeService, times(1)).genererEntente(candidatureId);
+    }
+
+    @Test
+    @DisplayName("POST /gestionnaire/candidatures/{candidatureId}/generer-entente -> 400 avec message d'erreur")
+    void genererEntente_whenIllegalArgument_returns400() throws Exception {
+        Long candidatureId = 1L;
+        String errorMessage = "La candidature doit être confirmée pour générer une entente";
+
+        when(ententeService.genererEntente(candidatureId))
+                .thenThrow(new IllegalArgumentException(errorMessage));
+
+        mockMvc.perform(post("/gestionnaire/candidatures/" + candidatureId + "/generer-entente")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.message", is(errorMessage)));
+
+        verify(ententeService, times(1)).genererEntente(candidatureId);
+    }
+
+    @Test
+    @DisplayName("POST /gestionnaire/candidatures/{candidatureId}/generer-entente -> 500 quand service lance exception")
+    void genererEntente_whenServiceThrows_returns500() throws Exception {
+        Long candidatureId = 1L;
+
+        when(ententeService.genererEntente(candidatureId))
+                .thenThrow(new RuntimeException("Erreur interne"));
+
+        mockMvc.perform(post("/gestionnaire/candidatures/" + candidatureId + "/generer-entente")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.message", is("Erreur interne du serveur lors de la génération de l'entente")));
+
+        verify(ententeService, times(1)).genererEntente(candidatureId);
     }
 }

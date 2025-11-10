@@ -1,0 +1,719 @@
+import React, { createContext, useContext, useState, useMemo } from 'react';
+
+const I18nContext = createContext(null);
+
+const translations = {
+  fr: {
+    // Dashboard
+    year: 'Année',
+    language: 'Langue',
+    welcome: 'Bienvenue',
+    logout: 'Quitter',
+    creerStage: 'Créer un stage',
+    monCV: 'Mon CV',
+    mesStages: 'Mes Stages',
+    gestionCVs: 'Gestion des CVs',
+    voirCandidaturesNav: 'Voir les candidature(s)',
+    voirStages: 'Voir Stages',
+    
+    // GestionnaireEtuCandidature
+    statusCandidatures: 'Statut des candidatures',
+    aucuneCandidature: 'Aucune Candidature',
+    candidatureSoumise: 'Candidature Soumise',
+    stageTrouve: 'Stage Trouvé',
+    email: 'Email',
+    candidatures: 'Candidatures',
+    statut: 'Statut',
+    action: 'Action',
+    voirCandidatures: 'Voir ses candidatures',
+    detailsEntente: 'Détails & entente',
+    aucunEtudiantCategorie: 'Aucun étudiant dans cette catégorie.',
+    aucunEtudiantAnnee: 'Aucun étudiant trouvé pour l\'année {year}.',
+    chargement: 'Chargement…',
+    erreurChargement: 'Erreur lors du chargement des candidatures.',
+    aucuneDonnee: 'Aucune donnée reçue du serveur.',
+    
+    // RechercheStages
+    rechercheApprobationStages: 'Recherche/Approbation de Stages',
+    rechercheStages: 'Recherche de stages',
+    recherche: 'Recherche',
+    lieu: 'Lieu',
+    localisation: 'Localisation',
+    compensation: 'Compensation',
+    tousLesStatuts: 'Tous les statuts',
+    effacerFiltres: 'Effacer les filtres',
+    stagesTrouves: '{count} stage(s) trouvé(s) sur {total} au total',
+    aucunStageDisponible: 'Aucun stage disponible pour le moment.',
+    aucunStageCritere: 'Aucun stage ne correspond à vos critères de recherche.',
+    chargementStages: 'Chargement des stages...',
+    soumise: 'Soumise',
+    approuvee: 'Approuvée',
+    rejetee: 'Rejetée',
+    recherchePlaceholder: 'Titre, description, employeur, entreprise...',
+    lieuPlaceholder: 'Montréal, Québec, Télétravail...',
+    compensationPlaceholder: '20$/h, 500$/semaine...',
+    
+    // Login
+    connexion: 'Connexion',
+    adresseCourriel: 'Adresse courriel',
+    motDePasse: 'Mot de passe',
+    seConnecter: 'Se connecter',
+    connexionEnCours: 'Connexion...',
+    pasEncoreCompte: 'Pas encore de compte ?',
+    sinscrire: 'S\'inscrire',
+    emailPlaceholder: 'Nom@exemple.com',
+    passwordPlaceholder: 'Minimum 10 caractères',
+    erreurConnexionInternet: 'Connexion Internet instable. Veuillez vérifier votre connexion.',
+    emailDejaUtilise: 'Cet email est déjà utilisé. Veuillez en choisir un autre',
+    serviceIndisponible: 'Service indisponible. Veuillez réessayer plus tard.',
+    
+    // SignUp
+    creerCompte: 'Créez votre compte',
+    employeur: 'Employeur',
+    etudiant: 'Étudiant',
+    prenom: 'Prénom',
+    nom: 'Nom',
+    entreprise: 'Entreprise',
+    discipline: 'Discipline',
+    selectionner: '— Sélectionner —',
+    informatique: 'Informatique',
+    infirmier: 'Infirmier',
+    genieCivil: 'Génie Civil',
+    comptabilite: 'Comptabilité',
+    marketing: 'Marketing',
+    mecanique: 'Mécanique',
+    autre: 'Autre',
+    prenomPlaceholder: 'Veuillez écrire votre prénom',
+    nomPlaceholder: 'Veuillez écrire votre nom de famille',
+    entreprisePlaceholder: 'Ma Compagnie Inc.',
+    emailPlaceholderSignup: 'name@example.com',
+    passwordPlaceholderSignup: 'Min 10 caractères',
+    motDePasseRespecte: 'Mot de passe respecté!',
+    min10Caracteres: 'Min 10 characters',
+    creation: 'Création...',
+    souscrire: 'Souscrire',
+    dejaUnCompte: 'Déjà un compte ?',
+    
+    // Statuts
+    periode: 'Période',
+    dateCreation: 'Date de création',
+    
+    // PageAuthentification
+    proseTagline: 'La rencontre simple entre étudiants et employeurs.',
+    glauconQuote: 'La justice d\'un homme se mesure moins à ses actes publics qu\'à ce qu\'il ferait s\'il était certain de n\'être jamais vu.',
+    glauconAuthor: 'Glaucon',
+    
+    // Notifications
+    nouvellesOffresStage: 'nouvelles offre(s) de stage à approuver',
+    nouvellesCandidatures: 'nouvelles candidature(s) reçue(s)',
+    nouveauxCVs: 'nouveau(x) CV(s) à examiner',
+    changementCV: 'changement sur votre CV',
+    nouvellesConvocations: 'nouvelle(s) convocation(s)',
+    notifications: 'notification(s)',
+    noMessage: 'No message',
+    unknownTime: 'Unknown time',
+    markAsRead: 'Marquer comme lu',
+    markAllAsRead: 'Marquer tout comme lu',
+    closeNotifications: 'Fermer les notifications',
+    openNotifications: 'Ouvrir les notifications',
+    toggleNotifications: 'Basculer les notifications',
+    closeNotificationsDropdown: 'Fermer le menu des notifications',
+    erreurChargementNotifications: 'Erreur lors du chargement des notifications',
+    cvApprouve: 'Votre CV a été approuvé.',
+    cvRejete: 'Votre CV a été rejeté.',
+    aSoumisNouveauCV: 'a soumis un nouveau CV',
+    aPostulePourLeStage: 'a postulé pour le stage',
+    aConvouquePourEntrevue: 'a convoqué',
+    pourUneEntrevue: 'pour une entrevue',
+    aCreeLeStage: 'a créé le stage',
+    
+    // GestionCV
+    rechercherParNom: 'Rechercher par nom d\'étudiant...',
+    cvEnAttente: 'CV en attente d\'acceptation',
+    cvAcceptesRefaire: 'CV Acceptés & À Refaire',
+    aucunCV: 'Aucun CV',
+    accepte: 'Accepté',
+    aRefaire: 'À Refaire',
+    nomEtudiant: 'Nom de l\'étudiant:',
+    nomFichier: 'Nom du fichier:',
+    noPreviewAvailable: 'Aucun aperçu disponible. (Vérifiez si le CV est téléversé et valide.)',
+    traitement: 'Traitement...',
+    approuver: 'Approuver',
+    rejeter: 'Rejeter',
+    raisonRejet: 'Raison de rejet (obligatoire pour rejeter le CV) :',
+    expliquerRejet: 'Expliquez pourquoi ce CV est rejeté...',
+    confirmer: 'Confirmer',
+    fermer: 'Fermer',
+    
+    // StageDetailsModal
+    detailsStage: 'Détails du Stage',
+    candidatureEnvoyee: 'Votre candidature a été envoyée avec succès !',
+    employeurNotifie: 'L\'employeur sera notifié de votre intérêt pour ce stage.',
+    informationsGenerales: 'Informations générales',
+    titre: 'Titre :',
+    dateDebut: 'Date de début :',
+    dateFin: 'Date de fin :',
+    modeTravail: 'Mode de travail :',
+    description: 'Description',
+    exigences: 'Exigences',
+    competencesRequises: 'Compétences requises',
+    raisonRejetStage: 'Raison du rejet',
+    raisonRejetObligatoire: 'Raison de rejet (obligatoire pour rejeter le stage) :',
+    expliquerRejetStage: 'Expliquez pourquoi ce stage est rejeté...',
+    genererEntente: 'Générer entente',
+    genererEtTelechargerEntente: 'Générer et télécharger l\'entente de stage',
+    generationPDF: 'Génération du PDF…',
+    postuler: 'Postuler',
+    veuillezFournirRaison: 'Veuillez fournir une raison de rejet',
+    erreurRejet: 'Erreur lors du rejet:',
+    aucunIdCandidature: 'Aucun ID de candidature valide n\'a été fourni.',
+    ententeGenereeSucces: 'Entente générée avec succès.',
+    erreurGenerationEntente: 'Erreur lors de la génération de l\'entente:',
+    erreurInconnue: 'Erreur inconnue',
+    
+    // PostedStages (Employeur)
+    impossibleChargerStages: 'Impossible de charger les stages.',
+    publiee: 'Publiée',
+    chargementStagesEmployeur: 'Chargement des stages...',
+    recherchePlaceholderEmployeur: 'Titre, description...',
+    voirCandidaturesBtn: 'Voir les candidatures',
+    voirDetails: 'Voir détails',
+    aucunStageApprouve: 'Aucun stage approuvé disponible pour le moment.',
+    aucunStageEmployeur: 'Vous n\'avez aucun stage.',
+    
+    // StageListings (Étudiant)
+    stagesDisponibles: 'Stages Disponibles',
+    aucunStageTrouve: 'Aucun stage trouvé',
+    aucunStageCritereRecherche: 'Aucun stage ne correspond à vos critères de recherche.',
+    recherchePlaceholderEtudiant: 'Titre, description, employeur, compétences...',
+    
+    // Navigation
+    navigation: 'Navigation',
+    mesCandidatures: 'Mes Candidatures',
+    mesCandidaturesEmployeur: 'Mes Candidatures',
+    
+    // MesCandidature (Étudiant)
+    erreurChargementCandidatures: 'Erreur lors du chargement des candidatures',
+    candidaturesTrouvees: '{count} candidature(s) trouvée(s) sur {total} au total',
+    chargementCandidatures: 'Chargement de vos candidatures...',
+    pasEncorePostule: 'Vous n\'avez pas encore postulé à des stages.',
+    consultezStagesDisponibles: 'Consultez les stages disponibles pour commencer à postuler.',
+    enAttenteApprobationEmployeur: 'En attente d\'approbation par l\'employeur',
+    accepteeParEmployeur: 'Acceptée Par L\'Employeur',
+    refuseeParEmployeur: 'Refusée Par L\'Employeur',
+    convoqueeEntrevue: 'Convoquée à une entrevue',
+    confirmee: 'Confirmée',
+    enAttente: 'En attente',
+    acceptee: 'Acceptée',
+    stageAccepte: 'Stage Accepté',
+    offreRefusee: 'Offre Refusée',
+    raisonRefus: 'Raison du refus',
+    titreNonDisponible: 'Titre non disponible',
+    dateCandidature: 'Date de candidature',
+    decisionPriseLe: 'Décision prise le',
+    entrevuePrevueLe: 'Entrevue prévue le',
+    felicitationsEmployeurSelectionne: 'Félicitations ! L\'employeur vous a sélectionné pour ce stage.',
+    offreOfficielleRecue: 'Vous avez maintenant reçu une offre officielle. Souhaitez-vous l\'accepter ou la refuser ?',
+    accepterOffre: '✓ Accepter l\'offre',
+    refuserOffre: '✗ Refuser l\'offre',
+    surPointRefuserOffre: 'Vous êtes sur le point de refuser cette offre.',
+    expliquerRaisonRefusOptionnel: 'Veuillez expliquer brièvement votre raison (optionnel mais recommandé pour maintenir une bonne relation professionnelle).',
+    raisonRefusOptionnel: 'Raison du refus (optionnel)',
+    exempleRaisonRefus: 'Ex: J\'ai accepté une autre opportunité, Les conditions ne correspondent pas à mes attentes...',
+    confirmerRefus: 'Confirmer le refus',
+    offreAccepteeSucces: 'Vous avez accepté l\'offre avec succès',
+    offreRefuseeSucces: 'Vous avez refusé l\'offre avec succès',
+    erreurEnvoiReponse: 'Erreur lors de l\'envoi de votre réponse. Veuillez réessayer.',
+    
+    // TeleversementCV (Étudiant)
+    televerserCV: 'Téléverser un CV',
+    choisirFichier: 'Choisir un fichier',
+    veuillezChoisirFichierPDF: 'Veuillez choisir un fichier au format PDF.',
+    tailleMaximum5MB: 'Taille maximum : 5 MB',
+    veuillezSelectionnerPDFValide: 'Veuillez sélectionner un fichier PDF valide',
+    fichierNeDoitPasDepasser5MB: 'Le fichier ne doit pas dépasser 5 MB',
+    cvTeleverseSucces: 'CV téléversé avec succès !',
+    erreurTeleversement: 'Erreur lors du téléversement',
+    televersement: 'Téléversement...',
+    televerser: 'Téléverser',
+    erreurChargementStatutCV: 'Impossible de récupérer le statut du CV.',
+    
+    // MesCandidaturesEmployeur
+    aucuneCandidatureEmployeur: 'Vous n\'avez reçu aucune candidature pour vos stages.',
+    aucuneCandidatureCritere: 'Aucune candidature ne correspond à vos critères de recherche.',
+    
+    // StageCreation (Employeur)
+    creationStage: 'Création de stage',
+    titreEmploi: 'Titre d\'emploi',
+    descriptionEmploi: 'Description de l\'emploi',
+    prerequisNecessaires: 'Prérequis nécéssaires',
+    competencesDemandees: 'Compétences demandées',
+    ajouter: 'Ajouter',
+    retirer: 'Retirer',
+    creer: 'Créer',
+    titreEmploiPlaceholder: 'Conducteur de camion',
+    descriptionEmploiPlaceholder: 'Conduit des camions pour transporter de la marchandise, remplir l\'essence si nécessaire et changer un pneu si nécessaire.',
+    prerequisPlaceholder: 'Diplômes d\'études Secondaires, Permis de Conduite',
+    competencePlaceholder: 'assiduite',
+    lieuPlaceholderEmployeur: 'Montréal, Québec, Télétravail...',
+    modeTravailPlaceholder: 'Télétravail, Hybride, Présentiel',
+    salairePlaceholder: '20$/h, 500$/semaine...',
+    annuler: 'Annuler',
+    
+    // MonCV (Étudiant)
+    votreCVCourrant: 'Votre CV courrant',
+    aucunCVTrouve: 'Aucun CV trouvé.',
+    commentaire: 'Commentaire: ',
+    enAttenteApprobation: 'En Attente d\'Approbation',
+    rejete: 'Rejeté',
+    
+    // StageApplicants (Employeur)
+    candidaturesPourStage: 'Candidature(s) pour le stage',
+    nombreCandidatures: '{count} candidature{plural}',
+    rechercheNomEmail: 'Recherche (nom, email)',
+    candidat: 'Candidat',
+    cv: 'CV',
+    lettreMotivation: 'Lettre de motivation',
+    entrevue: 'entrevue',
+    impossibleChargerCandidatures: 'Impossible de charger les candidatures.',
+    aucuneCandidatureTrouvee: 'Aucune candidature trouvée.',
+    doitConvoquerAvantAccepter: 'Vous devez d\'abord convoquer l\'étudiant en entrevue avant de l\'accepter.',
+    erreurAcceptationCandidature: 'Erreur lors de l\'acceptation de la candidature.',
+    retourAuxOffres: 'Retour aux offres',
+    
+    // ApplicantRow (Employeur)
+    emailNonDisponible: 'Email non disponible',
+    voirLeCV: 'Voir le CV',
+    ouverture: 'Ouverture…',
+    cvNonDisponible: 'CV non disponible',
+    voirLaLettre: 'Voir la lettre',
+    aucuneLettreMotivation: 'Aucune lettre de motivation',
+    enAttenteReponseEtudiant: 'En attente de réponse de l\'étudiant',
+    convoquee: 'Convoquée',
+    refusee: 'Refusée',
+    confirmeeParEtudiant: 'Confirmée par l\'étudiant',
+    refuseeParEtudiant: 'Refusée par l\'étudiant',
+    convoquer: 'Convoquer',
+    refuser: 'Refuser',
+    accepter: 'Accepter',
+    traite: 'Traité',
+    cvDe: 'CV de {name}',
+    impossibleAfficherCV: 'Impossible d\'afficher le CV.',
+    impossibleAfficherLettre: 'Impossible d\'afficher la lettre de motivation.',
+    
+    // InterviewConvocationModal (Employeur)
+    convoquerEnEntrevue: 'Convoquer en entrevue',
+    vousEtesSurPointConvoquer: 'Vous êtes sur le point de convoquer',
+    aUneEntrevue: 'à une entrevue',
+    dateEntrevue: 'Date de l\'entrevue',
+    heureEntrevue: 'Heure de l\'entrevue',
+    veuillezSaisirDateHeure: 'Veuillez saisir la date et l\'heure de l\'entrevue',
+    dateHeureDoiventEtreFutur: 'La date et l\'heure doivent être dans le futur',
+    erreurLorsConvocation: 'Erreur lors de la convocation',
+    cetEtudiant: 'Cet étudiant',
+    envoi: 'Envoi...'
+  },
+  en: {
+    // Dashboard
+    year: 'Year',
+    language: 'Language',
+    welcome: 'Welcome',
+    logout: 'Logout',
+    creerStage: 'Create a stage',
+    monCV: 'My CV',
+    mesStages: 'My Internships',
+    gestionCVs: 'CV Management',
+    voirCandidaturesNav: 'View application(s)',
+    voirStages: 'View Stages',
+    
+    // GestionnaireEtuCandidature
+    statusCandidatures: 'Application Status',
+    aucuneCandidature: 'No Application',
+    candidatureSoumise: 'Application Submitted',
+    stageTrouve: 'Stage Found',
+    email: 'Email',
+    candidatures: 'Applications',
+    statut: 'Status',
+    action: 'Action',
+    voirCandidatures: 'View applications',
+    detailsEntente: 'Details & agreement',
+    aucunEtudiantCategorie: 'No student in this category.',
+    aucunEtudiantAnnee: 'No student found for year {year}.',
+    chargement: 'Loading…',
+    erreurChargement: 'Error loading applications.',
+    aucuneDonnee: 'No data received from server.',
+    
+    // RechercheStages
+    rechercheApprobationStages: 'Stage Search/Approval',
+    rechercheStages: 'Stage Search',
+    recherche: 'Search',
+    lieu: 'Location',
+    localisation: 'Location',
+    compensation: 'Compensation',
+    tousLesStatuts: 'All statuses',
+    effacerFiltres: 'Clear filters',
+    stagesTrouves: '{count} internships found out of {total} total',
+    aucunStageDisponible: 'No stage available at the moment.',
+    aucunStageCritere: 'No stage matches your search criteria.',
+    chargementStages: 'Loading stages...',
+    soumise: 'Submitted',
+    approuvee: 'Approved',
+    rejetee: 'Rejected',
+    recherchePlaceholder: 'Title, description, employer, company...',
+    lieuPlaceholder: 'Montreal, Quebec, Remote...',
+    compensationPlaceholder: '20$/h, 500$/week...',
+    
+    // Login
+    connexion: 'Login',
+    adresseCourriel: 'Email address',
+    motDePasse: 'Password',
+    seConnecter: 'Sign in',
+    connexionEnCours: 'Connecting...',
+    pasEncoreCompte: 'Don\'t have an account yet?',
+    sinscrire: 'Sign up',
+    emailPlaceholder: 'Name@example.com',
+    passwordPlaceholder: 'Minimum 10 characters',
+    erreurConnexionInternet: 'Unstable Internet connection. Please check your connection.',
+    emailDejaUtilise: 'This email is already in use. Please choose another one',
+    serviceIndisponible: 'Service unavailable. Please try again later.',
+    
+    // SignUp
+    creerCompte: 'Create your account',
+    employeur: 'Employer',
+    etudiant: 'Student',
+    prenom: 'First name',
+    nom: 'Last name',
+    entreprise: 'Company',
+    discipline: 'Discipline',
+    selectionner: '— Select —',
+    informatique: 'Computer Science',
+    infirmier: 'Nursing',
+    genieCivil: 'Civil Engineering',
+    comptabilite: 'Accounting',
+    marketing: 'Marketing',
+    mecanique: 'Mechanical',
+    autre: 'Other',
+    prenomPlaceholder: 'Please enter your first name',
+    nomPlaceholder: 'Please enter your last name',
+    entreprisePlaceholder: 'My Company Inc.',
+    emailPlaceholderSignup: 'name@example.com',
+    passwordPlaceholderSignup: 'Min 10 characters',
+    motDePasseRespecte: 'Password meets requirements!',
+    min10Caracteres: 'Min 10 characters',
+    creation: 'Creating...',
+    souscrire: 'Subscribe',
+    dejaUnCompte: 'Already have an account?',
+    
+    // Statuts
+    periode: 'Period',
+    dateCreation: 'Creation date',
+    
+    // PageAuthentification
+    proseTagline: 'The simple meeting between students and employers.',
+    glauconQuote: 'A man\'s justice is measured less by his public acts than by what he would do if he were certain he would never be seen.',
+    glauconAuthor: 'Glaucon',
+    
+    // Notifications
+    nouvellesOffresStage: 'new internship offer(s) to approve',
+    nouvellesCandidatures: 'new application(s) received',
+    nouveauxCVs: 'new CV(s) to review',
+    changementCV: 'change on your CV',
+    nouvellesConvocations: 'new interview invitation(s)',
+    notifications: 'notification(s)',
+    noMessage: 'No message',
+    unknownTime: 'Unknown time',
+    markAsRead: 'Mark as read',
+    markAllAsRead: 'Mark all as read',
+    closeNotifications: 'Close notifications',
+    openNotifications: 'Open notifications',
+    toggleNotifications: 'Toggle notifications',
+    closeNotificationsDropdown: 'Close notifications dropdown',
+    erreurChargementNotifications: 'Error loading notifications',
+    cvApprouve: 'Your CV has been approved.',
+    cvRejete: 'Your CV has been rejected.',
+    aSoumisNouveauCV: 'has submitted a new CV',
+    aPostulePourLeStage: 'applied for the internship',
+    aConvouquePourEntrevue: 'invited',
+    pourUneEntrevue: 'for an interview',
+    aCreeLeStage: 'created the internship',
+    
+    // GestionCV
+    rechercherParNom: 'Search by student name...',
+    cvEnAttente: 'CVs Pending Approval',
+    cvAcceptesRefaire: 'Approved & To Redo CVs',
+    aucunCV: 'No CV',
+    accepte: 'Approved',
+    aRefaire: 'To Redo',
+    nomEtudiant: 'Student name:',
+    nomFichier: 'File name:',
+    noPreviewAvailable: 'No preview available. (Check if the CV is uploaded and valid.)',
+    traitement: 'Processing...',
+    approuver: 'Approve',
+    rejeter: 'Reject',
+    raisonRejet: 'Rejection reason (required to reject the CV):',
+    expliquerRejet: 'Explain why this CV is rejected...',
+    confirmer: 'Confirm',
+    fermer: 'Close',
+    
+    // StageDetailsModal
+    detailsStage: 'Stage Details',
+    candidatureEnvoyee: 'Your application has been sent successfully!',
+    employeurNotifie: 'The employer will be notified of your interest in this internship.',
+    informationsGenerales: 'General Information',
+    titre: 'Title:',
+    dateDebut: 'Start date:',
+    dateFin: 'End date:',
+    modeTravail: 'Work mode:',
+    description: 'Description',
+    exigences: 'Requirements',
+    competencesRequises: 'Required Skills',
+    raisonRejetStage: 'Rejection Reason',
+    raisonRejetObligatoire: 'Rejection reason (required to reject the stage):',
+    expliquerRejetStage: 'Explain why this stage is rejected...',
+    genererEntente: 'Generate agreement',
+    genererEtTelechargerEntente: 'Generate and download the internship agreement',
+    generationPDF: 'Generating PDF…',
+    postuler: 'Apply',
+    veuillezFournirRaison: 'Please provide a rejection reason',
+    erreurRejet: 'Error during rejection:',
+    aucunIdCandidature: 'No valid application ID was provided.',
+    ententeGenereeSucces: 'Agreement generated successfully.',
+    erreurGenerationEntente: 'Error generating agreement:',
+    erreurInconnue: 'Unknown error',
+    
+    // PostedStages (Employeur)
+    impossibleChargerStages: 'Unable to load stages.',
+    publiee: 'Published',
+    chargementStagesEmployeur: 'Loading stages...',
+    recherchePlaceholderEmployeur: 'Title, description...',
+    voirCandidaturesBtn: 'View applications',
+    voirDetails: 'View details',
+    aucunStageApprouve: 'No approved stage available at the moment.',
+    aucunStageEmployeur: 'You have no stages.',
+    
+    // StageListings (Étudiant)
+    stagesDisponibles: 'Available Stages',
+    aucunStageTrouve: 'No stage found',
+    aucunStageCritereRecherche: 'No stage matches your search criteria.',
+    recherchePlaceholderEtudiant: 'Title, description, employer, skills...',
+    
+    // Navigation
+    navigation: 'Navigation',
+    mesCandidatures: 'My Applications',
+    mesCandidaturesEmployeur: 'My Applications',
+    
+    // MesCandidature (Étudiant)
+    erreurChargementCandidatures: 'Error loading applications',
+    candidaturesTrouvees: '{count} application(s) found out of {total} total',
+    chargementCandidatures: 'Loading your applications...',
+    pasEncorePostule: 'You have not yet applied to any internships.',
+    consultezStagesDisponibles: 'Browse available internships to start applying.',
+    enAttenteApprobationEmployeur: 'Pending employer approval',
+    accepteeParEmployeur: 'Accepted By Employer',
+    refuseeParEmployeur: 'Rejected By Employer',
+    convoqueeEntrevue: 'Invited to interview',
+    confirmee: 'Confirmed',
+    enAttente: 'Pending',
+    acceptee: 'Accepted',
+    stageAccepte: 'Internship Accepted',
+    offreRefusee: 'Offer Rejected',
+    raisonRefus: 'Rejection reason',
+    titreNonDisponible: 'Title not available',
+    dateCandidature: 'Application date',
+    decisionPriseLe: 'Decision made on',
+    entrevuePrevueLe: 'Interview scheduled for',
+    felicitationsEmployeurSelectionne: 'Congratulations! The employer has selected you for this internship.',
+    offreOfficielleRecue: 'You have now received an official offer. Would you like to accept or reject it?',
+    accepterOffre: '✓ Accept offer',
+    refuserOffre: '✗ Reject offer',
+    surPointRefuserOffre: 'You are about to reject this offer.',
+    expliquerRaisonRefusOptionnel: 'Please briefly explain your reason (optional but recommended to maintain a good professional relationship).',
+    raisonRefusOptionnel: 'Rejection reason (optional)',
+    exempleRaisonRefus: 'Ex: I accepted another opportunity, The conditions do not meet my expectations...',
+    confirmerRefus: 'Confirm rejection',
+    offreAccepteeSucces: 'You have successfully accepted the offer',
+    offreRefuseeSucces: 'You have successfully rejected the offer',
+    erreurEnvoiReponse: 'Error sending your response. Please try again.',
+    
+    // TeleversementCV (Étudiant)
+    televerserCV: 'Upload a CV',
+    choisirFichier: 'Choose a file',
+    veuillezChoisirFichierPDF: 'Please choose a file in PDF format.',
+    tailleMaximum5MB: 'Maximum size: 5 MB',
+    veuillezSelectionnerPDFValide: 'Please select a valid PDF file',
+    fichierNeDoitPasDepasser5MB: 'The file must not exceed 5 MB',
+    cvTeleverseSucces: 'CV uploaded successfully!',
+    erreurTeleversement: 'Error during upload',
+    televersement: 'Uploading...',
+    televerser: 'Upload',
+    erreurChargementStatutCV: 'Could not fetch CV status.',
+    
+    // MesCandidaturesEmployeur
+    aucuneCandidatureEmployeur: 'You have not received any applications for your internships.',
+    aucuneCandidatureCritere: 'No application matches your search criteria.',
+    
+    // StageCreation (Employeur)
+    creationStage: 'Stage Creation',
+    titreEmploi: 'Job Title',
+    descriptionEmploi: 'Job Description',
+    prerequisNecessaires: 'Required Prerequisites',
+    competencesDemandees: 'Required Skills',
+    ajouter: 'Add',
+    retirer: 'Remove',
+    creer: 'Create',
+    titreEmploiPlaceholder: 'Truck Driver',
+    descriptionEmploiPlaceholder: 'Drives trucks to transport goods, refuel if necessary and change a tire if necessary.',
+    prerequisPlaceholder: 'High School Diploma, Driver\'s License',
+    competencePlaceholder: 'diligence',
+    lieuPlaceholderEmployeur: 'Montreal, Quebec, Remote...',
+    modeTravailPlaceholder: 'Remote, Hybrid, On-site',
+    salairePlaceholder: '20$/h, 500$/week...',
+    location: 'Location',
+    typeTravail: 'Work Type',
+    remuneration: 'Compensation',
+    annuler: 'Cancel',
+    presentiel: 'on-site',
+    retour: 'Back',
+    
+    // MonCV (Étudiant)
+    votreCVCourrant: 'Your Current CV',
+    aucunCVTrouve: 'No CV found.',
+    commentaire: 'Comment: ',
+    enAttenteApprobation: 'Pending Approval',
+    rejete: 'Rejected',
+    
+    // StageApplicants (Employeur)
+    candidaturesPourStage: 'Application(s) for the internship',
+    nombreCandidatures: '{count} application{plural}',
+    rechercheNomEmail: 'Search (name, email)',
+    candidat: 'Candidate',
+    cv: 'CV',
+    lettreMotivation: 'Motivation letter',
+    entrevue: 'interview',
+    impossibleChargerCandidatures: 'Unable to load applications.',
+    aucuneCandidatureTrouvee: 'No application found.',
+    doitConvoquerAvantAccepter: 'You must first invite the student for an interview before accepting them.',
+    erreurAcceptationCandidature: 'Error accepting the application.',
+    retourAuxOffres: 'Back to offers',
+    
+    // ApplicantRow (Employeur)
+    emailNonDisponible: 'Email not available',
+    voirLeCV: 'View CV',
+    ouverture: 'Opening…',
+    cvNonDisponible: 'CV not available',
+    voirLaLettre: 'View letter',
+    aucuneLettreMotivation: 'No motivation letter',
+    enAttenteReponseEtudiant: 'Waiting for student response',
+    convoquee: 'Invited',
+    refusee: 'Rejected',
+    confirmeeParEtudiant: 'Confirmed by student',
+    refuseeParEtudiant: 'Rejected by student',
+    convoquer: 'Invite',
+    refuser: 'Reject',
+    accepter: 'Accept',
+    traite: 'Processed',
+    cvDe: 'CV of {name}',
+    impossibleAfficherCV: 'Unable to display CV.',
+    impossibleAfficherLettre: 'Unable to display motivation letter.',
+    
+    // InterviewConvocationModal (Employeur)
+    convoquerEnEntrevue: 'Invite to interview',
+    vousEtesSurPointConvoquer: 'You are about to invite',
+    aUneEntrevue: 'to an interview',
+    dateEntrevue: 'Interview date',
+    heureEntrevue: 'Interview time',
+    veuillezSaisirDateHeure: 'Please enter the interview date and time',
+    dateHeureDoiventEtreFutur: 'The date and time must be in the future',
+    erreurLorsConvocation: 'Error during invitation',
+    cetEtudiant: 'This student',
+    envoi: 'Sending...'
+  }
+};
+
+export const I18nProvider = ({ children, defaultLocale = 'fr' }) => {
+  // Initialiser depuis localStorage ou utiliser defaultLocale
+  const getInitialLocale = () => {
+    try {
+      const savedLocale = localStorage.getItem('prose-locale');
+      if (savedLocale && (savedLocale === 'fr' || savedLocale === 'en')) {
+        return savedLocale;
+      }
+    } catch (e) {
+      console.warn('Could not read locale from localStorage:', e);
+    }
+    return defaultLocale;
+  };
+
+  const [locale, setLocale] = useState(() => getInitialLocale());
+
+  // Sauvegarder la langue dans localStorage quand elle change
+  const handleSetLocale = (newLocale) => {
+    try {
+      localStorage.setItem('prose-locale', newLocale);
+    } catch (e) {
+      console.warn('Could not save locale to localStorage:', e);
+    }
+    setLocale(newLocale);
+  };
+
+  const t = useMemo(() => {
+    return (key, params = {}) => {
+      let translation = translations[locale]?.[key] || key;
+      
+      Object.keys(params).forEach(param => {
+        translation = translation.replace(`{${param}}`, params[param]);
+      });
+      
+      return translation;
+    };
+  }, [locale]);
+
+  const value = {
+    locale,
+    setLocale: handleSetLocale,
+    t
+  };
+
+  return (
+    <I18nContext.Provider value={value}>
+      {children}
+    </I18nContext.Provider>
+  );
+};
+
+export const useI18n = () => {
+  const context = useContext(I18nContext);
+  if (!context) {
+    throw new Error('useI18n must be used within an I18nProvider');
+  }
+  return context;
+};
+
+// Fonction utilitaire pour traduire les disciplines
+export const translateDiscipline = (discipline, locale = 'fr') => {
+  if (!discipline) return '';
+  
+  const disciplineUpper = discipline.toUpperCase();
+  
+  // Mapping des valeurs enum vers les clés de traduction
+  const disciplineMap = {
+    'INFORMATIQUE': 'informatique',
+    'INFIRMIER': 'infirmier',
+    'GENIE_CIVIL': 'genieCivil',
+    'GENIE CIVIL': 'genieCivil',
+    'COMPTABILITE': 'comptabilite',
+    'MARKETING': 'marketing',
+    'MECANIQUE': 'mecanique',
+    'AUTRE': 'autre',
+  };
+  
+  // Chercher dans le mapping (essayer d'abord avec la valeur en majuscules, puis la valeur originale)
+  const key = disciplineMap[disciplineUpper] || disciplineMap[discipline];
+  if (key && translations[locale] && translations[locale][key]) {
+    return translations[locale][key];
+  }
+  
+  // Si pas trouvé, retourner la valeur originale
+  return discipline;
+};
+

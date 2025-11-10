@@ -1,10 +1,14 @@
 package com.AL565.prose.controller;
 
 import com.AL565.prose.security.exceptions.UserNotFoundException;
+import com.AL565.prose.security.JwtTokenProvider;
 import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.EmployeurService;
+import com.AL565.prose.service.EntenteService;
 import com.AL565.prose.service.dto.ReturnEntityDTO;
 import com.AL565.prose.service.dto.StageDTO;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import com.AL565.prose.repository.EmployeurRepository;
 import com.AL565.prose.service.exceptions.CandidatureNotFoundException;
 import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
@@ -26,6 +30,11 @@ import java.util.NoSuchElementException;
 public class EmployeurController {
 
     private EmployeurService employeurService;
+    private final EntenteService ententeService;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final PasswordEncoder passwordEncoder;
+    private final EmployeurRepository employeurRepository;
+
 
     @PostMapping("/register")
     public ResponseEntity<String> enregistrer(@RequestBody EmployeurPasswordDTO employeurPasswordDTO) {
@@ -121,6 +130,17 @@ public class EmployeurController {
         }
     }
 
+    @GetMapping("/notifications/responses/{email}")
+    public ResponseEntity<ReturnEntityDTO<NotificationsResponseDTO>> getEmployeurResponseNotifications(@PathVariable String email) {
+        try {
+            NotificationsResponseDTO notifications = employeurService.getEmployeurResponseNotifications(email);
+            return ResponseEntity.ok(new ReturnEntityDTO<>("Notifications: ", notifications));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ReturnEntityDTO<>("Erreur lors de la récupération des notifications de réponse d'étudiant", null));
+        }
+    }
+
     @PutMapping("/notifications/read/{id}")
     public ResponseEntity<ReturnEntityDTO<Void>> markNotificationAsRead(@PathVariable Long id) {
         try {
@@ -140,6 +160,51 @@ public class EmployeurController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ReturnEntityDTO<>("Erreur lors de la convocation de l'entrevue", null));
+        }
+    }
+
+    @GetMapping("/candidatures/{candidatureId}/entente")
+    public ResponseEntity<ReturnEntityDTO<EntenteDTO>> getEntente(@PathVariable Long candidatureId) {
+        try {
+            EntenteDTO entente = ententeService.getEntenteByCandidatureId(candidatureId);
+            return ResponseEntity.ok(new ReturnEntityDTO<>("Entente trouvée", entente));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ReturnEntityDTO<>(e.getMessage(), null));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ReturnEntityDTO<>("Erreur lors de la récupération de l'entente", null));
+        }
+    }
+
+    @PutMapping("/ententes/{ententeId}/signer")
+    public ResponseEntity<ReturnEntityDTO<String>> signEntente(
+            @PathVariable Long ententeId,
+            @RequestBody SignEntenteRequestDTO request,
+            @RequestHeader("Authorization") String authHeader) {
+        try {
+            String token = authHeader.replace("Bearer ", "");
+            String email = jwtTokenProvider.getEmailFromJWT(token);
+            
+            var employeurEntity = employeurRepository.getEmployeurByCredentials_Username(email);
+            if (employeurEntity == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(new ReturnEntityDTO<>("Employeur non trouvé", null));
+            }
+            if (!passwordEncoder.matches(request.getPassword(), employeurEntity.getCredentials().getPassword())) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new ReturnEntityDTO<>("Mot de passe incorrect", null));
+            }
+            
+            ententeService.signEntente(ententeId, email);
+            return ResponseEntity.ok(new ReturnEntityDTO<>("Entente signée avec succès", null));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ReturnEntityDTO<>(e.getMessage(), null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ReturnEntityDTO<>("Erreur interne du serveur lors de la signature de l'entente", null));
         }
     }
 

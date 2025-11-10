@@ -43,6 +43,9 @@ public class Entente {
     @Column(name = "date_signature_employeur")
     private LocalDateTime dateSignatureEmployeur;
 
+    @Column(name = "date_signature_gestionnaire")
+    private LocalDateTime dateSignatureGestionnaire;
+
     @Column(name = "date_signature_complete")
     private LocalDateTime dateSignatureComplete;
 }

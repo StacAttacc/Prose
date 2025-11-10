@@ -1,6 +1,7 @@
 package com.AL565.prose.controller;
 
 import com.AL565.prose.service.GestionnaireService;
+import com.AL565.prose.service.EntenteService;
 import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
 import lombok.RequiredArgsConstructor;
@@ -16,11 +17,12 @@ import java.util.List;
 public class GestionnaireController {
 
     private final GestionnaireService gestionnaireService;
+    private final EntenteService ententeService;
 
     @GetMapping("/stages")
-    public ResponseEntity<ReturnEntityDTO<List<StageDTO>>> getAllStages() {
+    public ResponseEntity<ReturnEntityDTO<List<StageDTO>>> getAllStagesOfSession(@RequestParam(required = false) String year) {
         try {
-            List<StageDTO> stages = gestionnaireService.getAllStages();
+            List<StageDTO> stages = gestionnaireService.getAllStages(year);
             return ResponseEntity.ok(new ReturnEntityDTO<>("Liste des stages", stages));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ReturnEntityDTO<>("Erreur lors de la récupération des stages", null));
@@ -28,9 +30,9 @@ public class GestionnaireController {
     }
 
     @GetMapping("/stages/status/{status}")
-    public ResponseEntity<ReturnEntityDTO<List<StageDTO>>> getStagesByStatus(@PathVariable String status) {
+    public ResponseEntity<ReturnEntityDTO<List<StageDTO>>> getStagesByStatus(@PathVariable String status, @RequestParam(required = false) String year) {
         try {
-            List<StageDTO> stages = gestionnaireService.getStagesByStatus(status);
+            List<StageDTO> stages = gestionnaireService.getStagesByStatus(status, year);
             return ResponseEntity.ok(new ReturnEntityDTO<>("Liste des stages " + status, stages));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ReturnEntityDTO<>("Erreur lors de la récupération des stages", null));
@@ -71,15 +73,15 @@ public class GestionnaireController {
     }
 
     @GetMapping("/cv/all")
-    public ResponseEntity<List<GestionnaireCvDTO>> getAllCvs() throws Exception {
-        List<GestionnaireCvDTO> cvs = gestionnaireService.getAllCvs();
+    public ResponseEntity<List<GestionnaireCvDTO>> getAllCvs(@RequestParam(required = false) String year) throws Exception {
+        List<GestionnaireCvDTO> cvs = gestionnaireService.getAllCvs(year);
         return ResponseEntity.ok(cvs);
     }
 
     @GetMapping("/getCandidatures")
-    public ResponseEntity<ReturnEntityDTO<List<EtudiantCandidaturesDTO>>> getAllEtudiantsCandidatures() {
+    public ResponseEntity<ReturnEntityDTO<List<EtudiantCandidaturesDTO>>> getAllEtudiantsCandidatures(@RequestParam(required = false) String year) {
         try {
-            List<EtudiantCandidaturesDTO> etudiants = gestionnaireService.getAllEtudiantsCandidatures();
+            List<EtudiantCandidaturesDTO> etudiants = gestionnaireService.getAllEtudiantsCandidatures(year);
             return ResponseEntity.ok(new ReturnEntityDTO<>("Trouvés", etudiants));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ReturnEntityDTO<>("Erreur interne du serveur", null));
@@ -111,7 +113,7 @@ public class GestionnaireController {
     @PostMapping("/candidatures/{candidatureId}/generer-entente")
     public ResponseEntity<ReturnEntityDTO<EntenteDTO>> genererEntente(@PathVariable Long candidatureId) {
         try {
-            EntenteDTO entente = gestionnaireService.genererEntente(candidatureId);
+            EntenteDTO entente = ententeService.genererEntente(candidatureId);
             return ResponseEntity.ok(new ReturnEntityDTO<>("Entente générée avec succès", entente));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -119,7 +121,7 @@ public class GestionnaireController {
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ReturnEntityDTO<>("Erreur lors de la génération de l'entente", null));
+                    .body(new ReturnEntityDTO<>("Erreur interne du serveur lors de la génération de l'entente", null));
         }
     }
 }

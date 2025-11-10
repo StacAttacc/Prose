@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { telechargerCv } from "../../services/EtudiantService.js";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useCv } from "../../context/CvContext.jsx";
+import { useI18n } from "../../context/I18nContext.jsx";
 import TeleversementCV from "./TeleversementCV.jsx";
 import { Worker, Viewer } from '@react-pdf-viewer/core';
 import ErrorBanner from "../display-components/ErrorBanner.jsx";
@@ -16,6 +17,7 @@ const statusColors = {
 export default function MonCV() {
     const { user } = useAuth();
     const { refreshCV } = useCv();
+    const { t } = useI18n();
     const [status, setStatus] = useState("loading");
     const [cv, setCv] = useState(null);
     const [error, setError] = useState(null);
@@ -31,19 +33,19 @@ export default function MonCV() {
                 if (cvData.status) setStatus(cvData.status);
                 else setStatus("NONE");
             } catch (e) {
-                setError("Could not fetch CV status.");
+                setError(t('erreurChargementStatutCV'));
                 setStatus("NONE");
             }
         }
         fetchCvStatus();
-    }, [user, refreshTrigger]);
+    }, [user, refreshTrigger, t]);
 
     const handleCvUpload = () => {
         setRefreshTrigger(prev => prev + 1);
         refreshCV();
     };
 
-    if (status === "loading") return <div>Loading...</div>;
+    if (status === "loading") return <div>{t('chargement')}</div>;
     if (error) return <ErrorBanner message={error} />;
 
     function openPdfModal(cv) {
@@ -91,7 +93,7 @@ export default function MonCV() {
                     {cv && status !== "none" ? (
                         <div className="space-y-4">
                             <h2 className="text-2xl font-bold mb-6 text-gray-800 text-center">
-                                Votre CV courrant
+                                {t('votreCVCourrant')}
                             </h2>
                             <button
                                 className="flex flex-col items-center justify-center w-full h-32 border-2 border-blue-300 border-dashed rounded-lg cursor-pointer bg-blue-50 hover:bg-blue-100 transition-colors"
@@ -104,12 +106,12 @@ export default function MonCV() {
                             </button>
                             {cv && cv.comment && (
                                 <div>
-                                    <p><span className="text-sm font-medium">Commentaire: </span>{cv.comment}</p>
+                                    <p><span className="text-sm font-medium">{t('commentaire')} </span>{cv.comment}</p>
                                 </div>
                             )}
                         </div>
                     ) : (
-                        <div className="text-gray-500 text-center">Aucun CV trouvé.</div>
+                        <div className="text-gray-500 text-center">{t('aucunCVTrouve')}</div>
                     )}
                 </div>
             </div>
@@ -120,15 +122,15 @@ export default function MonCV() {
                     <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
                         <div>
                             <span className="inline-block w-4 h-4 rounded bg-green-300 mr-2"></span>
-                            <span className="whitespace-nowrap">Accepté</span>
+                            <span className="whitespace-nowrap">{t('accepte')}</span>
                         </div>
                         <div>
                             <span className="inline-block w-4 h-4 rounded bg-yellow-300 ml-4 mr-2"></span>
-                            <span className="whitespace-nowrap">En Attente d'Approbation</span>
+                            <span className="whitespace-nowrap">{t('enAttenteApprobation')}</span>
                         </div>
                         <div>
                             <span className="inline-block w-4 h-4 rounded bg-red-300 ml-4 mr-2"></span>
-                            <span className="whitespace-nowrap">À Refaire</span>
+                            <span className="whitespace-nowrap">{t('aRefaire')}</span>
                         </div>
                     </div>
                 </div>
@@ -158,7 +160,7 @@ export default function MonCV() {
                                     </div>
                                 ) : (
                                     <div className="text-sm text-gray-500">
-                                        No preview available. (Check if the CV is uploaded and valid.)
+                                        {t('noPreviewAvailable')}
                                     </div>
                                 )}
                             </div>

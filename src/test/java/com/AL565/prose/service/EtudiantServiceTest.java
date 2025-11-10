@@ -9,6 +9,7 @@ import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import com.AL565.prose.service.exceptions.CandidatureNotFoundException;
 import com.AL565.prose.service.exceptions.InvalidCandidatureModificationException;
 import com.AL565.prose.security.JwtTokenProvider;
+import com.AL565.prose.utils.NotificationsHelper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -43,6 +44,18 @@ class EtudiantServiceTest {
     private StageRepository stageRepository;
     @Mock
     private NotificationRepository notificationRepository;
+    @Mock
+    private GestionnaireCvNotificationRepository gestionnaireCvNotificationRepository;
+    @Mock
+    private EtudiantCvNotificationRepository etudiantCvNotificationRepository;
+    @Mock
+    private ConvocationNotificationRepository convocationNotificationRepository;
+    @Mock
+    private PostulationNotificationRepository postulationNotificationRepository;
+    @Mock
+    private EmployeurResponseNotificationRepository employeurResponseNotificationRepository;
+    @Mock
+    private NotificationsHelper notificationsHelper;
     @Mock
     private PasswordEncoder passwordEncoder;
     @Mock

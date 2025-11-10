@@ -5,10 +5,13 @@ import com.AL565.prose.model.CandidatureStatus;
 import com.AL565.prose.model.Employeur;
 import com.AL565.prose.model.OfferStatus;
 import com.AL565.prose.model.Stage;
+import com.AL565.prose.model.notifications.EmployeurResponseNotification;
 import com.AL565.prose.model.notifications.PostulationNotification;
 import com.AL565.prose.repository.*;
 import com.AL565.prose.service.EtudiantService;
 import com.AL565.prose.service.GestionnaireService;
+import com.AL565.prose.service.EntenteService;
+import com.AL565.prose.security.JwtTokenProvider;
 import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.dto.EmployeurPasswordDTO;
 import com.AL565.prose.service.EmployeurService;
@@ -65,6 +68,12 @@ class EmployeurControllerTest {
     private GestionnaireService gestionnaireService;
 
     @MockitoBean
+    private EntenteService ententeService;
+
+    @MockitoBean
+    private JwtTokenProvider jwtTokenProvider;
+
+    @MockitoBean
     private EmployeurRepository employeurRepository;
 
     @MockitoBean
@@ -87,6 +96,9 @@ class EmployeurControllerTest {
 
     @MockitoBean
     private GestionnaireCvNotificationRepository gestionnaireCvNotificationRepository;
+
+    @MockitoBean
+    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
     @Autowired
     ObjectMapper objectMapper;
@@ -311,5 +323,90 @@ class EmployeurControllerTest {
         mockMvc.perform(put("/employeur/candidatures/" + candidatureDTO.getId() + "/update")
                         .param("status", "Acceptee"))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void signEntente_success() throws Exception {
+        Long ententeId = 1L;
+        String token = "Bearer token123";
+        String email = "employeur@test.com";
+
+        when(jwtTokenProvider.getEmailFromJWT("token123")).thenReturn(email);
+        doNothing().when(ententeService).signEntente(ententeId, email);
+
+        mockMvc.perform(put("/employeur/ententes/" + ententeId + "/signer")
+                        .header("Authorization", token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Entente signée avec succès"));
+
+        verify(ententeService, times(1)).signEntente(ententeId, email);
+    }
+
+    @Test
+    void signEntente_whenServiceThrows_returns500() throws Exception {
+        Long ententeId = 1L;
+        String token = "Bearer token123";
+        String email = "employeur@test.com";
+
+        when(jwtTokenProvider.getEmailFromJWT("token123")).thenReturn(email);
+        doThrow(new RuntimeException("Erreur lors de la signature"))
+                .when(ententeService).signEntente(ententeId, email);
+
+        mockMvc.perform(put("/employeur/ententes/" + ententeId + "/signer")
+                        .header("Authorization", token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf()))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.message").value("Erreur interne du serveur lors de la signature de l'entente"));
+
+        verify(ententeService, times(1)).signEntente(ententeId, email);
+    }
+
+    @Test
+    void getEmployeurResponseNotifications_success() throws Exception {
+        String email = "employer@company.com";
+
+        EmployeurResponseNotification notification1 = new EmployeurResponseNotification();
+        notification1.setId(1L);
+        notification1.setEmployeurResponseEmail(email);
+        notification1.setCandidatureResponseId(10L);
+        notification1.setAccepted(true);
+        notification1.setComment("Je suis ravi d'accepter!");
+        notification1.setMessage("Jean Dupont a accepté l'offre pour le stage Développeur Java");
+        notification1.setCreatedAt(LocalDateTime.now());
+
+        EmployeurResponseNotification notification2 = new EmployeurResponseNotification();
+        notification2.setId(2L);
+        notification2.setEmployeurResponseEmail(email);
+        notification2.setCandidatureResponseId(11L);
+        notification2.setAccepted(false);
+        notification2.setComment("J'ai accepté une autre offre");
+        notification2.setMessage("Marie Tremblay a refusé l'offre pour le stage Développeur Java");
+        notification2.setCreatedAt(LocalDateTime.now());
+
+        NotificationGroupDTO group = NotificationGroupDTO.toDTO("employeur_response", List.of(notification1, notification2));
+        NotificationsResponseDTO notifications = NotificationsResponseDTO.toDTO(List.of(group));
+
+        when(employeurService.getEmployeurResponseNotifications(email)).thenReturn(notifications);
+
+        MvcResult result = mockMvc.perform(get("/employeur/notifications/responses/" + email)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        TypeReference<ReturnEntityDTO<NotificationsResponseDTO>> tr = new TypeReference<>() { };
+        ReturnEntityDTO<NotificationsResponseDTO> response =
+                objectMapper.readValue(result.getResponse().getContentAsString(), tr);
+
+        assertThat(response.getMessage()).isEqualTo("Notifications: ");
+        assertThat(response.getData()).isNotNull();
+        assertThat(response.getData().getTotalCount()).isEqualTo(2);
+        assertThat(response.getData().getGroups()).hasSize(1);
+        assertThat(response.getData().getGroups().getFirst().getTypeKey()).isEqualTo("employeur_response");
+        assertThat(response.getData().getGroups().getFirst().getItems()).hasSize(2);
+
+        verify(employeurService, times(1)).getEmployeurResponseNotifications(email);
     }
 }

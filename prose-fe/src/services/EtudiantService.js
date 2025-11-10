@@ -1,5 +1,4 @@
 import { http } from "./http.js";
-import axios from "axios";
 
 const CV_UPLOAD_URL = "/etudiant/televerser-cv";
 const CV_DOWNLOAD_URL = "/etudiant/telecharger-cv";
@@ -98,6 +97,40 @@ export const submitCandidature = async (formData) => {
         throw e;
     }
 };
+
+export async function checkEntenteExists(candidatureId, token) {
+    try {
+        const res = await http.get(`/etudiant/candidatures/${candidatureId}/entente`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        return { exists: true, data: res.data?.data || res.data };
+    } catch (error) {
+        if (error.response?.status === 404) {
+            return { exists: false };
+        }
+        throw error;
+    }
+}
+
+export async function signEntente(ententeId, password, token) {
+    const res = await fetch(`${BASE_URL_ETUDIANT}/ententes/${ententeId}/signer`, {
+        method: "PUT",
+        headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ password })
+    });
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP error! status: ${res.status}`);
+    }
+    return await res.json();
+}
 
 export const getMesCandidatures = async () => {
     try {

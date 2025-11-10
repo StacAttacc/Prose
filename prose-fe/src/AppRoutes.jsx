@@ -6,6 +6,7 @@ import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import PageAuthentification from "./pages/PageAuthentification.jsx";
 import StageCreation from "./components/employeur-components/StageCreation.jsx";
 import PostedStages from "./components/employeur-components/PostedStages.jsx";
+import MesCandidaturesEmployeur from "./components/employeur-components/MesCandidaturesEmployeur.jsx";
 import StageListings from "./components/etudiant-components/StageListings.jsx";
 import Stages from "./components/etudiant-components/Stages.jsx";
 import MesCandidature from "./components/etudiant-components/MesCandidature.jsx";
@@ -35,7 +36,7 @@ export default function AppRoutes() {
         user?.role === "ETUDIANT"
             ? defaultPathStudent()
             : user?.role === "EMPLOYEUR"
-                ? <PostedStages/>
+                ? <Navigate to="/employeur/stages/posted-stages" replace/>
                 : user?.role === "PROFESSEUR"
                     ? <div>Bienvenue Professeur</div>
                     : user?.role === "GESTIONNAIRE"
@@ -49,7 +50,10 @@ export default function AppRoutes() {
                     <Route index element={loading ? <div>Loading...</div> : defaultElement}/>
 
                     <Route path="employeur/creation-stage" element={<StageCreation/>}/>
-                    <Route path="employeur/posted-stages" element={<PostedStages/>}/>
+                    <Route path="employeur/stages/posted-stages" element={<PostedStages/>}/>
+                    <Route path="employeur/stages/mes-candidatures" element={<MesCandidaturesEmployeur/>}/>
+                    <Route path="employeur/stages" element={<Navigate to="/employeur/stages/posted-stages" replace/>}/>
+                    <Route path="employeur/posted-stages" element={<Navigate to="/employeur/stages/posted-stages" replace/>}/>
                     <Route path="employeur/stages/:id/candidatures" element={<StageApplicants/>}/>
                     <Route path="employeur/modifier-stage/:id" element={<StageCreation mode="edit"/>}/>
 

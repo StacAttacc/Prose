@@ -18,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.Collections;
@@ -111,7 +112,7 @@ class GestionnaireServiceTest {
         when(stageRepository.findByStatus(OfferStatus.SOUMISE)).thenReturn(List.of(stage1, stage2));
         when(employeurRepository.getEmployeurByCredentials_Username(anyString())).thenReturn(employeur);
 
-        List<StageDTO> result = gestionnaireService.getStagesByStatus("SOUMISE");
+        List<StageDTO> result = gestionnaireService.getStagesByStatus("SOUMISE", null);
 
         assertThat(result).hasSize(2);
         assertThat(result.getFirst().getId()).isEqualTo(1L);
@@ -212,6 +213,7 @@ class GestionnaireServiceTest {
                 .id(1L)
                 .title("Backend Java")
                 .employeurEmail("emp1@company.com")
+                .startDate(LocalDate.now())
                 .createdAt(OffsetDateTime.now())
                 .updatedAt(OffsetDateTime.now())
                 .build();
@@ -220,6 +222,7 @@ class GestionnaireServiceTest {
                 .id(2L)
                 .title("Frontend React")
                 .employeurEmail("emp2@company.com")
+                .startDate(LocalDate.now())
                 .createdAt(OffsetDateTime.now())
                 .updatedAt(OffsetDateTime.now())
                 .build();
@@ -249,7 +252,7 @@ class GestionnaireServiceTest {
         when(employeurRepository.getEmployeurByCredentials_Username("emp1@company.com")).thenReturn(e1);
         when(employeurRepository.getEmployeurByCredentials_Username("emp2@company.com")).thenReturn(e2);
 
-        List<StageDTO> result = gestionnaireService.getAllStages();
+        List<StageDTO> result = gestionnaireService.getAllStages(null);
 
         assertThat(result).hasSize(2);
         verify(stageRepository, times(1)).findAll();
@@ -263,7 +266,7 @@ class GestionnaireServiceTest {
     void getAllStages_returnsEmptyList_whenNoStages() {
         when(stageRepository.findAll()).thenReturn(Collections.emptyList());
 
-        List<StageDTO> result = gestionnaireService.getAllStages();
+        List<StageDTO> result = gestionnaireService.getAllStages(null);
 
         assertThat(result).isEmpty();
         verify(stageRepository, times(1)).findAll();
@@ -275,11 +278,60 @@ class GestionnaireServiceTest {
     void getAllStages_whenRepoFails_wrapsToCustomException() {
         when(stageRepository.findAll()).thenThrow(new RuntimeException("DB down"));
 
-        assertThatThrownBy(() -> gestionnaireService.getAllStages())
+        assertThatThrownBy(() -> gestionnaireService.getAllStages(null))
                 .isInstanceOf(FailedToRetrieveStagesException.class);
 
         verify(stageRepository, times(1)).findAll();
         verifyNoInteractions(employeurRepository);
+    }
+
+    @Test
+    void getAllStages2077() {
+        Stage s1 = Stage.builder()
+                .id(1L)
+                .title("Backend Java++")
+                .employeurEmail("emp1@company.com")
+                .startDate(LocalDate.of(2077, 1, 18))
+                .updatedAt(OffsetDateTime.now())
+                .build();
+
+        Stage s2 = Stage.builder()
+                .id(2L)
+                .title("VR/MR/HR QoL Creator")
+                .employeurEmail("emp1@company.com")
+                .startDate(LocalDate.of(2077, 2, 1))
+                .updatedAt(null)
+                .build();
+
+        Stage s3 = Stage.builder()
+                .id(3L)
+                .title("Assembly C++++++")
+                .employeurEmail("emp1@company.com")
+                .startDate(LocalDate.of(2078, 3, 11))
+                .updatedAt(OffsetDateTime.now())
+                .build();
+
+        when(stageRepository.findAll()).thenReturn(List.of(s1, s2, s3));
+
+        Employeur e1 = new Employeur();
+        e1.setCompany("Company 1");
+        e1.setCredentials(
+                com.AL565.prose.model.auth.Credentials.builder()
+                        .username("emp1@company.com")
+                        .password("x")        // peu importe pour le test
+                        .role(com.AL565.prose.model.auth.Role.EMPLOYEUR)
+                        .build()
+        );
+
+        when(employeurRepository.getEmployeurByCredentials_Username("emp1@company.com")).thenReturn(e1);
+
+        List<StageDTO> result2077 = gestionnaireService.getAllStages("2077");
+        List<StageDTO> result2078 = gestionnaireService.getAllStages("2078");
+        List<StageDTO> result2025 = gestionnaireService.getAllStages("2025");
+
+        assertThat(result2077).hasSize(2);
+        assertThat(result2078).hasSize(1);
+        assertThat(result2025).hasSize(0);
     }
 
     @Test
@@ -290,11 +342,15 @@ class GestionnaireServiceTest {
         Stage stage = new Stage();
         stage.setId(1L);
         stage.setTitle("Stage Test");
+        stage.setEmployeurEmail("employer@company.com");
+        stage.setStartDate(LocalDate.now());
         stage.setStatus(OfferStatus.SOUMISE);
 
         Stage stage2 = new Stage();
         stage2.setId(2L);
         stage2.setTitle("Stage Test 2");
+        stage2.setEmployeurEmail("employer@company.com");
+        stage2.setStartDate(LocalDate.now());
         stage2.setStatus(OfferStatus.SOUMISE);
 
         stage.setEmployeurEmail("employer@company.com");
@@ -313,9 +369,10 @@ class GestionnaireServiceTest {
                 new  Employeur("Jean", "Employeur", "JeanEmployeurs", "jemployeur@gmail.com", "1234567890")
         );
 
-        when(stageRepository.findById(anyLong())).thenReturn(Optional.of(stage));
+        when(stageRepository.findById(stage.getId())).thenReturn(Optional.of(stage));
+        when(stageRepository.findById(stage2.getId())).thenReturn(Optional.of(stage2));
 
-        List<EtudiantCandidaturesDTO> candidatures =  gestionnaireService.getAllEtudiantsCandidatures();
+        List<EtudiantCandidaturesDTO> candidatures =  gestionnaireService.getAllEtudiantsCandidatures(null);
 
         assertThat(candidatures).hasSize(2);
         assertThat(candidatures.get(0).getCandidatures()).hasSize(1);
@@ -330,14 +387,17 @@ class GestionnaireServiceTest {
         Stage stage = new Stage();
         stage.setId(1L);
         stage.setTitle("Stage Test");
+        stage.setEmployeurEmail("employer@company.com");
+        stage.setStartDate(LocalDate.now());
         stage.setStatus(OfferStatus.SOUMISE);
 
         Stage stage2 = new Stage();
         stage2.setId(2L);
         stage2.setTitle("Stage Test 2");
+        stage2.setEmployeurEmail("employer@company.com");
+        stage2.setStartDate(LocalDate.now());
         stage2.setStatus(OfferStatus.SOUMISE);
 
-        stage.setEmployeurEmail("employer@company.com");
         when(etudiantRepository.findAll()).thenReturn(List.of(john, umberto));
 
         when(candidatureRepository.findByEtudiant_Credentials_Username(john.getEmail())).thenReturn(List.of(
@@ -353,9 +413,10 @@ class GestionnaireServiceTest {
                 new  Employeur("Jean", "Employeur", "JeanEmployeurs", "jemployeur@gmail.com", "1234567890")
         );
 
-        when(stageRepository.findById(anyLong())).thenReturn(Optional.of(stage));
+        when(stageRepository.findById(stage.getId())).thenReturn(Optional.of(stage));
+        when(stageRepository.findById(stage2.getId())).thenReturn(Optional.of(stage2));
 
-        List<EtudiantCandidaturesDTO> candidatures =  gestionnaireService.getAllEtudiantsCandidatures();
+        List<EtudiantCandidaturesDTO> candidatures =  gestionnaireService.getAllEtudiantsCandidatures(null);
 
         List<EtudiantCandidatureDTO> candidaturesJohn = candidatures.getFirst().getCandidatures();
         List<EtudiantCandidatureDTO> candidaturesUmberto = candidatures.get(1).getCandidatures();
@@ -363,5 +424,65 @@ class GestionnaireServiceTest {
         assertThat(candidaturesJohn.getFirst().getStatus()).isEqualTo(String.valueOf(CandidatureStatus.ACCEPTEE));
         assertThat(candidaturesUmberto.getFirst().getStatus()).isEqualTo(String.valueOf(CandidatureStatus.ACCEPTEE));
         assertThat(candidaturesUmberto.get(1).getStatus()).isEqualTo(String.valueOf(CandidatureStatus.REFUSEE));
+    }
+
+    @Test
+    void getAllEtudiantsCandidatures2077() {
+        Etudiant john = new Etudiant("John", "Doe", Credentials.builder().username("email@email.com").password("1234567890").build(), Discipline.INFORMATIQUE);
+        Etudiant umberto = new Etudiant("Umberto", "Larrios", Credentials.builder().username("email2@email.com").password("1234567890").build(), Discipline.INFORMATIQUE);
+
+        Stage stage = new Stage();
+        stage.setId(1L);
+        stage.setTitle("Stage Test");
+        stage.setStartDate(LocalDate.of(2077, 5, 25));
+        stage.setEmployeurEmail("employer@company.com");
+        stage.setStatus(OfferStatus.SOUMISE);
+
+        Stage stage2 = new Stage();
+        stage2.setId(2L);
+        stage2.setTitle("Stage Test 2");
+        stage2.setEmployeurEmail("employer@company.com");
+        stage2.setStartDate(LocalDate.of(2077, 7, 1));
+        stage2.setStatus(OfferStatus.SOUMISE);
+
+        Stage stage3 = new Stage();
+        stage3.setId(3L);
+        stage3.setTitle("Stage Test 3");
+        stage3.setEmployeurEmail("employer@company.com");
+        stage3.setStartDate(LocalDate.of(2078, 3, 12));
+        stage3.setStatus(OfferStatus.SOUMISE);
+
+        when(etudiantRepository.findAll()).thenReturn(List.of(john, umberto));
+
+        when(candidatureRepository.findByEtudiant_Credentials_Username(john.getEmail())).thenReturn(List.of(
+                new Candidature(1L, john, null, null, stage, LocalDateTime.now(), CandidatureStatus.SOUMISE, null, "Pending"),
+                new Candidature(4L, john, null, null, stage3, LocalDateTime.now(), CandidatureStatus.SOUMISE, null, "Pending")
+        ));
+
+        when(candidatureRepository.findByEtudiant_Credentials_Username(umberto.getEmail())).thenReturn(List.of(
+                new Candidature(2L, umberto, null, null, stage, LocalDateTime.now(), CandidatureStatus.SOUMISE, null, "Pending"),
+                new Candidature(3L, umberto, null, null, stage2, LocalDateTime.now(), CandidatureStatus.SOUMISE, null, "Pending")
+        ));
+
+        when(employeurRepository.getEmployeurByCredentials_Username(anyString())).thenReturn(
+                new  Employeur("Jean", "Employeur", "JeanEmployeurs", "jemployeur@gmail.com", "1234567890")
+        );
+
+        when(stageRepository.findById(stage.getId())).thenReturn(Optional.of(stage));
+        when(stageRepository.findById(stage2.getId())).thenReturn(Optional.of(stage2));
+        when(stageRepository.findById(stage3.getId())).thenReturn(Optional.of(stage3));
+
+        List<EtudiantCandidaturesDTO> candidatures2077 =  gestionnaireService.getAllEtudiantsCandidatures("2077");
+        List<EtudiantCandidaturesDTO> candidatures2078 = gestionnaireService.getAllEtudiantsCandidatures("2078");
+        List<EtudiantCandidaturesDTO> candidatures2025 = gestionnaireService.getAllEtudiantsCandidatures("2025");
+
+        assertThat(candidatures2077).hasSize(2);
+        assertThat(candidatures2077.getFirst().getCandidatures()).hasSize(1);
+        assertThat(candidatures2077.get(1).getCandidatures()).hasSize(2);
+
+        assertThat(candidatures2078).hasSize(1);
+        assertThat(candidatures2078.getFirst().getCandidatures()).hasSize(1);
+
+        assertThat(candidatures2025).hasSize(0);
     }
 }

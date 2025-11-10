@@ -1,8 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { useAuth } from "../../context/AuthContext.jsx";
+import { useI18n } from "../../context/I18nContext.jsx";
 import { telechargerCv } from "../../services/EtudiantService.js";
-import { convoquerEntrevue } from "../../services/EmployeurService.js";
+import { convoquerEntrevue, checkEntenteExists, signEntente } from "../../services/EmployeurService.js";
+import EntenteSignatureModal from "./EntenteSignatureModal.jsx";
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import PdfModal from "./PdfModal.jsx";
 import InterviewConvocationModal from "./InterviewConvocationModal.jsx";
@@ -43,6 +45,7 @@ function blobFromUnknownData(data, mime = "application/pdf") {
 
 export default function ApplicantRow({ applicant, onStatusUpdate, showActions = true, onApprove, onReject }) {
     const { user } = useAuth();
+    const { t } = useI18n();
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -55,7 +58,11 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
     });
 
     const [showConvocationModal, setShowConvocationModal] = useState(false);
+    const [showEntenteModal, setShowEntenteModal] = useState(false);
     const [localStatus, setLocalStatus] = useState(applicant?.statut || applicant?.status || "EN_ATTENTE");
+    const [ententeExists, setEntenteExists] = useState(null); // null = pas encore vérifié, true/false = résultat
+    const [ententeData, setEntenteData] = useState(null); // Données complètes de l'entente
+    const [checkingEntente, setCheckingEntente] = useState(false);
 
     useEffect(() => {
         const newStatus = applicant?.statut || applicant?.status || "EN_ATTENTE";
@@ -86,7 +93,7 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
         const s =
             firstNonEmpty(
                 applicant?.status,
-                applicant?.candidatureStatus,     // au cas où le backend utilise ce nom
+                applicant?.candidatureStatus,
                 applicant?.statut,
                 typeof applicant?.status === "object" ? applicant?.status?.name : "" // enum sérialisé en objet
             );
@@ -95,24 +102,48 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
 
     const status = useMemo(() => (rawStatus || "").toString().trim().toUpperCase(), [rawStatus]);
 
+    useEffect(() => {
+        const checkEntente = async () => {
+            if (status === "CONFIRMER" && applicant?.id && user?.token) {
+                setCheckingEntente(true);
+                try {
+                    const result = await checkEntenteExists(applicant.id, user.token);
+                    setEntenteExists(result.exists);
+                    setEntenteData(result.exists ? result.data : null);
+                } catch (error) {
+                    console.error("Erreur lors de la vérification de l'entente:", error);
+                    setEntenteExists(false);
+                    setEntenteData(null);
+                } finally {
+                    setCheckingEntente(false);
+                }
+            } else {
+                setEntenteExists(null);
+                setEntenteData(null);
+            }
+        };
+
+        checkEntente();
+    }, [status, applicant?.id, user?.token]);
+
     const statusLabel = useMemo(() => {
         switch (status) {
             case "SOUMISE":
-                return "Soumise";
+                return t('soumise');
             case "ACCEPTEE":
-                return "En attente de réponse de l'étudiant";
+                return t('enAttenteReponseEtudiant');
             case "CONVOQUEE":
-                return "Convoquée";
+                return t('convoquee');
             case "REFUSEE":
-                return "Refusée";
+                return t('refusee');
             case "CONFIRMER":
-                return "Confirmée par l'étudiant";
+                return t('confirmeeParEtudiant');
             case "REFUSEE_ETUDIANT":
-                return "Refusée par l'étudiant";
+                return t('refuseeParEtudiant');
             default:
                 return status || "—";
         }
-    }, [status]);
+    }, [status, t]);
 
     const statusBadgeClass = useMemo(() => {
         switch (status) {
@@ -185,8 +216,8 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                 ...s,
                 error:
                     kind === "cv"
-                        ? "Impossible d'afficher le CV."
-                        : "Impossible d'afficher la lettre de motivation.",
+                        ? t('impossibleAfficherCV')
+                        : t('impossibleAfficherLettre'),
                 loading: false,
             }));
         }
@@ -259,7 +290,7 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                     {email ? (
                         <div className="text-xs text-gray-500">{email}</div>
                     ) : (
-                        <div className="text-xs text-gray-400">Email non disponible</div>
+                        <div className="text-xs text-gray-400">{t('emailNonDisponible')}</div>
                     )}
                 </td>
 
@@ -270,10 +301,10 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                             disabled={docState.loading && docState.kind === "cv"}
                             className="text-blue-600 hover:underline disabled:opacity-60"
                         >
-                            {docState.loading && docState.kind === "cv" ? "Ouverture…" : "Voir le CV"}
+                            {docState.loading && docState.kind === "cv" ? t('ouverture') : t('voirLeCV')}
                         </button>
                     ) : (
-                        <span className="text-gray-400">CV non disponible</span>
+                        <span className="text-gray-400">{t('cvNonDisponible')}</span>
                     )}
                 </td>
 
@@ -286,11 +317,11 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                             className="text-blue-600 hover:underline disabled:opacity-60"
                         >
                             {docState.loading && docState.kind === "letter"
-                                ? "Ouverture…"
-                                : "Voir la lettre"}
+                                ? t('ouverture')
+                                : t('voirLaLettre')}
                         </button>
                     ) : (
-                        <span className="text-gray-400">Aucune lettre de motivation</span>
+                        <span className="text-gray-400">{t('aucuneLettreMotivation')}</span>
                     )}
                 </td>
 
@@ -335,7 +366,6 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                 <td className="py-3 px-4 align-top">
                     {showActions && (
                         <div className="flex gap-2">
-                            {/* Pour candidatures SOUMISE : proposer Convoquer ou Refuser directement */}
                             {localStatus === "SOUMISE" && (
                                 <>
                                     <button
@@ -343,7 +373,7 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                                         className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 hover:bg-gradient-to-br transition-all"
                                         type="button"
                                     >
-                                        Convoquer
+                                        {t('convoquer')}
                                     </button>
                                     <button
                                         onClick={() => onReject && onReject(applicant)}
@@ -351,12 +381,11 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                                         disabled={!onReject || !user?.token}
                                         type="button"
                                     >
-                                        Refuser
+                                        {t('refuser')}
                                     </button>
                                 </>
                             )}
 
-                            {/* Pour candidatures CONVOQUEE : proposer Accepter ou Refuser */}
                             {localStatus === "CONVOQUEE" && (
                                 <>
                                     <button
@@ -365,7 +394,7 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                                         disabled={!onApprove}
                                         type="button"
                                     >
-                                        Accepter
+                                        {t('accepter')}
                                     </button>
                                     <button
                                         onClick={() => onReject && onReject(applicant)}
@@ -373,14 +402,77 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                                         disabled={!onReject || !user?.token}
                                         type="button"
                                     >
-                                        Refuser
+                                        {t('refuser')}
                                     </button>
                                 </>
                             )}
 
-                            {/* Pour candidatures ACCEPTEE ou REFUSEE : plus d'actions */}
                             {(localStatus === "ACCEPTEE" || localStatus === "REFUSEE") && (
-                                <span className="text-sm text-gray-400 italic px-4 py-2">Traité</span>
+                                <span className="text-sm text-gray-400 italic px-4 py-2">{t('traite')}</span>
+                            )}
+
+                            {status === "CONFIRMER" && (
+                                <>
+                                    {checkingEntente ? (
+                                        <span className="text-sm text-gray-500 italic px-4 py-2">Vérification...</span>
+                                    ) : ententeExists ? (
+                                        <>
+                                            {ententeData?.status === "SIGNEE_ETUDIANT" ? (
+                                                <button
+                                                    onClick={() => setShowEntenteModal(true)}
+                                                    className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br transition-all"
+                                                    type="button"
+                                                >
+                                                    Voir et signer l'entente
+                                                </button>
+                                            ) : ententeData?.status === "SIGNEE" ? (
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        onClick={() => setShowEntenteModal(true)}
+                                                        className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 hover:bg-gradient-to-br transition-all"
+                                                        type="button"
+                                                    >
+                                                        Voir l'entente
+                                                    </button>
+                                                    <button
+                                                        onClick={() => {
+                                                            if (ententeData?.documentPdfBase64) {
+                                                                const bin = atob(ententeData.documentPdfBase64);
+                                                                const bytes = new Uint8Array(bin.length);
+                                                                for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+                                                                const blob = new Blob([bytes], { type: "application/pdf" });
+                                                                const url = URL.createObjectURL(blob);
+                                                                const a = document.createElement("a");
+                                                                a.href = url;
+                                                                a.download = ententeData.documentName || "entente_stage.pdf";
+                                                                document.body.appendChild(a);
+                                                                a.click();
+                                                                a.remove();
+                                                                URL.revokeObjectURL(url);
+                                                            }
+                                                        }}
+                                                        className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-purple-400 via-purple-500 to-purple-600 hover:bg-gradient-to-br transition-all"
+                                                        type="button"
+                                                    >
+                                                        Télécharger
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <button
+                                                    onClick={() => setShowEntenteModal(true)}
+                                                    className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 hover:bg-gradient-to-br transition-all"
+                                                    type="button"
+                                                >
+                                                    Voir l'entente
+                                                </button>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <span className="text-sm text-gray-500 italic px-4 py-2">
+                                            En attente du gestionnaire pour l'entente de stage
+                                        </span>
+                                    )}
+                                </>
                             )}
                         </div>
                     )}
@@ -390,7 +482,7 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
             {docState.open &&
                 createPortal(
                     <PdfModal
-                        title={docState.kind === "cv" ? `CV de ${fullName}` : "Lettre de motivation"}
+                        title={docState.kind === "cv" ? t('cvDe', { name: fullName }) : t('lettreMotivation')}
                         url={docState.url}
                         error={docState.error}
                         onClose={closeModal}
@@ -405,6 +497,29 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                         isOpen={showConvocationModal}
                         onClose={() => setShowConvocationModal(false)}
                         onConfirm={handleConvoquerEntrevue}
+                    />,
+                    document.body
+                )}
+
+            {showEntenteModal &&
+                createPortal(
+                    <EntenteSignatureModal
+                        applicant={applicant}
+                        isOpen={showEntenteModal}
+                        onClose={() => setShowEntenteModal(false)}
+                        ententeData={ententeData}
+                        loadEntenteFn={checkEntenteExists}
+                        onSign={async (ententeId, password) => {
+                            try {
+                                await signEntente(ententeId, password, user?.token);
+                                const result = await checkEntenteExists(applicant.id, user?.token);
+                                if (result.exists) {
+                                    setEntenteData(result.data);
+                                }
+                            } catch (error) {
+                                throw new Error(error.message || "Erreur lors de la signature");
+                            }
+                        }}
                     />,
                     document.body
                 )}

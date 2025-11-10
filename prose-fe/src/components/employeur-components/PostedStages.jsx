@@ -1,12 +1,15 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext.jsx";
+import { useI18n } from "../../context/I18nContext.jsx";
 import { getEmployeurStages } from "../../services/StageService.js";
 import ErrorBanner from "../display-components/ErrorBanner.jsx";
 import StageDetailsModal from "../display-components/StageDetailsModal.jsx";
+import ScrollToTop from "../common/ScrollToTop.jsx";
 
 export default function PostedStages() {
     const { user } = useAuth();
+    const { t, locale } = useI18n();
     const navigate = useNavigate();
 
     const [stages, setStages] = useState([]);
@@ -33,7 +36,7 @@ export default function PostedStages() {
                         : [];
                 setStages(list);
             } catch (err) {
-                setError(err?.message || "Impossible de charger les stages.");
+                setError(err?.message || t('impossibleChargerStages'));
             } finally {
                 setLoading(false);
             }
@@ -109,48 +112,48 @@ export default function PostedStages() {
     const getStatusText = (status) => {
         switch (status) {
             case "SOUMISE":
-                return "Soumise";
+                return t('soumise');
             case "APPROUVEE":
-                return "Approuvée";
+                return t('approuvee');
             case "REJETEE":
-                return "Rejetée";
+                return t('rejetee');
             case "PUBLIEE":
-                return "Publiée";
+                return t('publiee');
             default:
                 return status;
         }
     };
 
     if (loading)
-        return <p className="text-center mt-10">Chargement des stages...</p>;
+        return <p className="text-center mt-10">{t('chargementStagesEmployeur')}</p>;
     if (error) return <ErrorBanner message={error} />;
 
     return (
         <div className="p-6">
-            <h1 className="text-2xl font-bold mb-6 text-center">Mes Stages</h1>
+            <h1 className="text-2xl font-bold mb-6 text-center">{t('mesStages')}</h1>
 
             <div className="mb-8 bg-white rounded-lg shadow-md border border-gray-200 p-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
                     <FilterInput
-                        label="Recherche"
+                        label={t('recherche')}
                         value={searchTerm}
                         onChange={setSearchTerm}
-                        placeholder="Titre, description..."
+                        placeholder={t('recherchePlaceholderEmployeur')}
                     />
                     <FilterInput
-                        label="Lieu"
+                        label={t('lieu')}
                         value={locationFilter}
                         onChange={setLocationFilter}
-                        placeholder="Montréal, Québec, Télétravail..."
+                        placeholder={t('lieuPlaceholder')}
                     />
                     <FilterInput
-                        label="Compensation"
+                        label={t('compensation')}
                         value={compensationFilter}
                         onChange={setCompensationFilter}
-                        placeholder="20$/h, 500$/semaine..."
+                        placeholder={t('compensationPlaceholder')}
                     />
                     <FilterSelect
-                        label="Statut"
+                        label={t('statut')}
                         value={statusFilter}
                         onChange={setStatusFilter}
                     />
@@ -159,14 +162,13 @@ export default function PostedStages() {
                             onClick={clearFilters}
                             className="w-full px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
                         >
-                            Effacer les filtres
+                            {t('effacerFiltres')}
                         </button>
                     </div>
                 </div>
 
                 <div className="text-sm text-gray-600">
-                    {filteredStages.length} stage(s) trouvé(s) sur {stages.length} au
-                    total
+                    {t('stagesTrouves', { count: filteredStages.length, total: stages.length })}
                 </div>
             </div>
 
@@ -189,18 +191,18 @@ export default function PostedStages() {
                                         {stage.title}
                                     </h3>
                                     <p className="text-gray-600 text-sm mb-2">
-                                        <strong>Lieu:</strong> {stage.location}
+                                        <strong>{t('lieu')}:</strong> {stage.location}
                                     </p>
                                     <p className="text-gray-600 text-sm mb-2">
-                                        <strong>Compensation:</strong> {stage.compensation}
+                                        <strong>{t('compensation')}:</strong> {stage.compensation}
                                     </p>
                                     <p className="text-gray-600 text-sm mb-2">
-                                        <strong>Période:</strong> {stage.startDate} - {stage.endDate}
+                                        <strong>{t('periode')}:</strong> {stage.startDate} - {stage.endDate}
                                     </p>
                                     <p className="text-gray-600 text-sm">
-                                        <strong>Date de création:</strong>{" "}
+                                        <strong>{t('dateCreation')}:</strong>{" "}
                                         {stage.createdAt
-                                            ? new Date(stage.createdAt).toLocaleDateString("fr-FR")
+                                            ? new Date(stage.createdAt).toLocaleDateString(locale === 'en' ? 'en-US' : 'fr-FR')
                                             : "-"}
                                     </p>
                                 </div>
@@ -215,7 +217,7 @@ export default function PostedStages() {
                                         onClick={() => handleStageClick(stage)}
                                         className="text-teal-600 hover:text-teal-800 font-medium"
                                     >
-                                        Voir détails →
+                                        {t('voirDetails')} →
                                     </button>
                                 </div>
 
@@ -228,7 +230,7 @@ export default function PostedStages() {
                                             }
                                             className="w-full px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br transition-all"
                                         >
-                                            Voir les candidatures
+                                            {t('voirCandidaturesBtn')}
                                         </button>
                                     </>
                                 )}
@@ -243,6 +245,7 @@ export default function PostedStages() {
                 isOpen={isModalOpen}
                 onClose={closeModal}
             />
+            <ScrollToTop />
         </div>
     );
 }
@@ -266,6 +269,7 @@ function FilterInput({ label, value, onChange, placeholder }) {
 }
 
 function FilterSelect({ label, value, onChange }) {
+    const { t } = useI18n();
     return (
         <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -276,29 +280,30 @@ function FilterSelect({ label, value, onChange }) {
                 onChange={(e) => onChange(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
             >
-                <option value="">Tous les statuts</option>
-                <option value="SOUMISE">Soumise</option>
-                <option value="APPROUVEE">Approuvée</option>
-                <option value="REJETEE">Rejetée</option>
+                <option value="">{t('tousLesStatuts')}</option>
+                <option value="SOUMISE">{t('soumise')}</option>
+                <option value="APPROUVEE">{t('approuvee')}</option>
+                <option value="REJETEE">{t('rejetee')}</option>
             </select>
         </div>
     );
 }
 
 function EmptyState({ stages, onClear }) {
+    const { t } = useI18n();
     return (
         <div className="text-center py-8">
             <p className="text-gray-500 text-lg">
                 {stages.length === 0
-                    ? "Vous n'avez aucun stage."
-                    : "Aucun stage ne correspond à vos critères de recherche."}
+                    ? t('aucunStageEmployeur')
+                    : t('aucunStageCritereRecherche')}
             </p>
             {stages.length > 0 && (
                 <button
                     onClick={onClear}
                     className="mt-4 px-4 py-2 bg-teal-500 text-white rounded-md hover:bg-teal-600 transition-colors"
                 >
-                    Effacer les filtres
+                    {t('effacerFiltres')}
                 </button>
             )}
         </div>

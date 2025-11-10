@@ -1,5 +1,6 @@
 function makeKeyForItem(item = {}, groupKey) {
     if (item?.convocation) return "convocation";
+    else if (item?.candidatureResponseId || (item?.candidatureId && item?.hasOwnProperty('accepted'))) return "employeur_response";
     else if (item?.candidatureId) return "postulation";
     else if (item?.stageId) return "stage";
     else if (item?.cvId) return "gestionnaire_cv";

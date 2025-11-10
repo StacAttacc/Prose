@@ -2,6 +2,7 @@ package com.AL565.prose.controller;
 
 import com.AL565.prose.security.JwtTokenProvider;
 import com.AL565.prose.service.EtudiantService;
+import com.AL565.prose.service.EntenteService;
 import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
 import com.AL565.prose.service.exceptions.AlreadyAppliedToStageException;
@@ -22,19 +23,27 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import com.AL565.prose.repository.EtudiantRepository;
 
 @RestController
 @RequestMapping("/etudiant")
 public class EtudiantController {
 
     private final EtudiantService etudiantService;
+    private final EntenteService ententeService;
     private final JwtTokenProvider jwtTokenProvider;
+    private final PasswordEncoder passwordEncoder;
+    private final EtudiantRepository etudiantRepository;
 
-    public EtudiantController(EtudiantService etudiantService, JwtTokenProvider jwtTokenProvider) {
+    public EtudiantController(EtudiantService etudiantService, EntenteService ententeService, JwtTokenProvider jwtTokenProvider, PasswordEncoder passwordEncoder, EtudiantRepository etudiantRepository) {
         this.etudiantService = etudiantService;
+        this.ententeService = ententeService;
         this.jwtTokenProvider = jwtTokenProvider;
+        this.passwordEncoder = passwordEncoder;
+        this.etudiantRepository = etudiantRepository;
     }
 
     @PostMapping("/register")
@@ -227,6 +236,52 @@ public class EtudiantController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ReturnEntityDTO<>("Erreur lors de la réponse à l'offre", null));
+        }
+    }
+
+    @GetMapping("/candidatures/{candidatureId}/entente")
+    public ResponseEntity<ReturnEntityDTO<EntenteDTO>> getEntente(@PathVariable Long candidatureId) {
+        try {
+            EntenteDTO entente = ententeService.getEntenteByCandidatureId(candidatureId);
+            return ResponseEntity.ok(new ReturnEntityDTO<>("Entente trouvée", entente));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ReturnEntityDTO<>(e.getMessage(), null));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ReturnEntityDTO<>("Erreur lors de la récupération de l'entente", null));
+        }
+    }
+
+    @PutMapping("/ententes/{ententeId}/signer")
+    public ResponseEntity<ReturnEntityDTO<String>> signEntente(
+            @PathVariable Long ententeId,
+            @RequestBody SignEntenteRequestDTO request,
+            @RequestHeader("Authorization") String authHeader) {
+        try {
+            String token = authHeader.replace("Bearer ", "");
+            String email = jwtTokenProvider.getEmailFromJWT(token);
+            
+            // Vérifier le mot de passe
+            var etudiant = etudiantRepository.findEtudiantByCredentials_Username(email);
+            if (etudiant.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(new ReturnEntityDTO<>("Étudiant non trouvé", null));
+            }
+            if (!passwordEncoder.matches(request.getPassword(), etudiant.get().getCredentials().getPassword())) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new ReturnEntityDTO<>("Mot de passe incorrect", null));
+            }
+            
+            ententeService.signEntente(ententeId, email);
+            return ResponseEntity.ok(new ReturnEntityDTO<>("Entente signée avec succès", null));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ReturnEntityDTO<>(e.getMessage(), null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ReturnEntityDTO<>("Erreur interne du serveur lors de la signature de l'entente", null));
         }
     }
 }

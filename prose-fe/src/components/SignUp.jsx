@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useI18n } from "../context/I18nContext";
 import ErrorBanner from "./display-components/ErrorBanner.jsx";
 
 export default function SignUp({ onSwitchToLogin }) {
     const { registerEmployeur, registerEtudiant } = useAuth();
+    const { t } = useI18n();
     const navigate = useNavigate();
 
     const [accountType, setAccountType] = useState("employer");
@@ -14,13 +16,13 @@ export default function SignUp({ onSwitchToLogin }) {
     const [company, setCompany] = useState("");
     const [discipline, setDiscipline] = useState("");
     const DISCIPLINES = [
-        { label: "Informatique", value: "INFORMATIQUE" },
-        { label: "Infirmier", value: "INFIRMIER" },
-        { label: "Génie Civil", value: "GENIE_CIVIL" },
-        { label: "Comptabilité", value: "COMPTABILITE" },
-        { label: "Marketing", value: "MARKETING" },
-        { label: "Mécanique", value: "MECANIQUE" },
-        { label: "Autre", value: "AUTRE" },
+        { label: t('informatique'), value: "INFORMATIQUE" },
+        { label: t('infirmier'), value: "INFIRMIER" },
+        { label: t('genieCivil'), value: "GENIE_CIVIL" },
+        { label: t('comptabilite'), value: "COMPTABILITE" },
+        { label: t('marketing'), value: "MARKETING" },
+        { label: t('mecanique'), value: "MECANIQUE" },
+        { label: t('autre'), value: "AUTRE" },
     ];
     const [pwd, setPwd] = useState("");
     const [showPwd, setShowPwd] = useState(false);
@@ -28,7 +30,7 @@ export default function SignUp({ onSwitchToLogin }) {
     const [errorMsg, setErrorMsg] = useState("");
 
     const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-    const pwdHint = pwd.length < 10 ? "Min 10 characters" : "Mot de passe respecté!";
+    const pwdHint = pwd.length < 10 ? t('min10Caracteres') : t('motDePasseRespecte');
 
     const canSubmit =
         emailOk &&
@@ -63,10 +65,10 @@ export default function SignUp({ onSwitchToLogin }) {
         } catch (err) {
             console.error(err);
             if (err?.response?.status === 409) {
-                setErrorMsg("Cet email est déjà utilisé. Veuillez en choisir un autre");
+                setErrorMsg(t('emailDejaUtilise'));
             } else {
                 setErrorMsg(
-                    err?.response?.data?.message || "Service indisponible. Veuillez réessayer plus tard."
+                    err?.response?.data?.message || t('serviceIndisponible')
                 );
             }
 
@@ -78,7 +80,7 @@ export default function SignUp({ onSwitchToLogin }) {
     return (
         <>
             <h2 className="text-3xl font-bold text-center mb-8">
-                Créez votre compte
+                {t('creerCompte')}
             </h2>
 
             {/* Onglets type de compte */}
@@ -91,7 +93,7 @@ export default function SignUp({ onSwitchToLogin }) {
                             : "bg-slate-300 text-gray-400 hover:bg-slate-600 text-sm px-5 py-2.5 font-medium rounded-lg text-center"
                         }`}
                 >
-                    Employeur
+                    {t('employeur')}
                 </button>
                 <button
                     type="button"
@@ -101,7 +103,7 @@ export default function SignUp({ onSwitchToLogin }) {
                             : "bg-slate-300 text-gray-400 hover:bg-slate-600 text-sm px-5 py-2.5 font-medium rounded-lg text-center"
                         }`}
                 >
-                    Étudiant
+                    {t('etudiant')}
                 </button>
             </div>
 
@@ -113,12 +115,12 @@ export default function SignUp({ onSwitchToLogin }) {
             <form onSubmit={onSubmit} className="space-y-4">
                 {/* Prénom */}
                 <label className="block">
-                    <span className="block text-sm mb-1 text-gray-800">Prénom</span>
+                    <span className="block text-sm mb-1 text-gray-800">{t('prenom')}</span>
                     <input
                         type="text"
                         className={`w-full rounded-xl bg-transparent border px-4 py-3 outline-none focus:border-teal-500 ${!firstName.trim() ? "border-rose-600" : "border-slate-700"
                             }`}
-                        placeholder="Veuillez écrire votre prénom"
+                        placeholder={t('prenomPlaceholder')}
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}
                     />
@@ -126,12 +128,12 @@ export default function SignUp({ onSwitchToLogin }) {
 
                 {/* Nom */}
                 <label className="block">
-                    <span className="block text-sm mb-1 text-gray-800">Nom</span>
+                    <span className="block text-sm mb-1 text-gray-800">{t('nom')}</span>
                     <input
                         type="text"
                         className={`w-full rounded-xl bg-transparent border px-4 py-3 outline-none focus:border-teal-500 ${!lastName.trim() ? "border-rose-600" : "border-slate-700"
                             }`}
-                        placeholder="Veuillez écrire votre nom de famille"
+                        placeholder={t('nomPlaceholder')}
                         value={lastName}
                         onChange={(e) => setLastName(e.target.value)}
                     />
@@ -140,12 +142,12 @@ export default function SignUp({ onSwitchToLogin }) {
                 {/* Entreprise / Discipline */}
                 {accountType === "employer" ? (
                     <label className="block">
-                        <span className="block text-sm mb-1 text-gray-800">Entreprise</span>
+                        <span className="block text-sm mb-1 text-gray-800">{t('entreprise')}</span>
                         <input
                             type="text"
                             className={`w-full rounded-xl bg-transparent border px-4 py-3 outline-none focus:border-teal-500 ${!company.trim() ? "border-rose-600" : "border-slate-700"
                                 }`}
-                            placeholder="Ma Compagnie Inc."
+                            placeholder={t('entreprisePlaceholder')}
                             value={company}
                             onChange={(e) => setCompany(e.target.value)}
                         />
@@ -153,7 +155,7 @@ export default function SignUp({ onSwitchToLogin }) {
                 ) : (
                     <div>
                         <label className="block text-sm mb-1 text-gray-800" htmlFor="discipline">
-                            Discipline
+                            {t('discipline')}
                         </label>
                         <select
                             id="discipline"
@@ -163,7 +165,7 @@ export default function SignUp({ onSwitchToLogin }) {
                             className={`w-full rounded-xl bg-transparent border px-4 py-3 outline-none focus:border-teal-500 ${!discipline ? "border-rose-600" : "border-slate-700"
                                 }`}
                         >
-                            <option value="">— Sélectionner —</option>
+                            <option value="">{t('selectionner')}</option>
                             {DISCIPLINES.map((d) => (
                                 <option key={d.value} value={d.value}>
                                     {d.label}
@@ -175,13 +177,13 @@ export default function SignUp({ onSwitchToLogin }) {
 
                 {/* Email */}
                 <label className="block">
-                    <span className="block text-sm mb-1 text-gray-800">Adresse courriel</span>
+                    <span className="block text-sm mb-1 text-gray-800">{t('adresseCourriel')}</span>
                     <div className="relative">
                         <input
                             type="email"
                             className={`w-full rounded-xl bg-transparent border px-4 py-3 outline-none transition ${!email ? "border-rose-600" : emailOk ? "border-emerald-500" : "border-slate-700 focus:border-teal-500"
                                 }`}
-                            placeholder="name@example.com"
+                            placeholder={t('emailPlaceholderSignup')}
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                         />
@@ -190,13 +192,13 @@ export default function SignUp({ onSwitchToLogin }) {
 
                 {/* Mot de passe */}
                 <label className="block">
-                    <span className="block text-sm mb-1 text-gray-800">Mot de passe</span>
+                    <span className="block text-sm mb-1 text-gray-800">{t('motDePasse')}</span>
                     <div className="relative">
                         <input
                             type={showPwd ? "text" : "password"}
                             className={`w-full rounded-xl bg-transparent border px-4 py-3 pr-11 outline-none focus:border-teal-500 ${!pwd ? "border-rose-600" : "border-slate-700"
                                 }`}
-                            placeholder="Min 10 caractères"
+                            placeholder={t('passwordPlaceholderSignup')}
                             value={pwd}
                             onChange={(e) => setPwd(e.target.value)}
                         />
@@ -218,18 +220,18 @@ export default function SignUp({ onSwitchToLogin }) {
                     disabled={!canSubmit || loading}
                     className="w-full transition disabled:opacity-60 text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
                 >
-                    {loading ? "Création..." : "Souscrire"}
+                    {loading ? t('creation') : t('souscrire')}
                 </button>
 
                 {/* Retour vers Login */}
                 <div className="text-center mt-4">
-                    <span className="text-gray-800">Déjà un compte ? </span>
+                    <span className="text-gray-800">{t('dejaUnCompte')} </span>
                     <button
                         type="button"
                         onClick={onSwitchToLogin}
                         className="text-teal-500 hover:underline"
                     >
-                        Se connecter
+                        {t('seConnecter')}
                     </button>
                 </div>
             </form>

@@ -2,6 +2,7 @@ import React, {useEffect, useMemo, useState} from "react";
 import {NavLink, useParams} from "react-router-dom";
 import ApplicantRow from "../display-components/ApplicantRow";
 import {useAuth} from "../../context/AuthContext.jsx";
+import {useI18n} from "../../context/I18nContext.jsx";
 import {approveApplicant, getStageApplicants, rejectApplicant} from "../../services/EmployeurService.js";
 import {getEmployeurStages} from "../../services/StageService.js";
 import ErrorBanner from "../display-components/ErrorBanner.jsx";
@@ -43,6 +44,7 @@ function buildSearchFields(app) {
 const StageApplicantsPage = () => {
     const {id} = useParams();
     const {user} = useAuth();
+    const {t} = useI18n();
     const ready = Boolean(user?.token);
 
     const [q, setQ] = useState("");
@@ -62,7 +64,7 @@ const StageApplicantsPage = () => {
             setError(null);
         } catch (e) {
             console.debug("getStageApplicants error:", e);
-            setError("Impossible de charger les candidatures.");
+            setError(t('impossibleChargerCandidatures'));
             setApplicants([]);
         } finally {
             setLoading(false);
@@ -104,21 +106,21 @@ const StageApplicantsPage = () => {
         <div className="p-4 md:p-6 flex flex-col items-center">
             <div className="flex flex-col items-center text-center mb-6">
                 <h1 className="text-2xl font-bold">
-                    Candidature(s) pour le stage {stageTitle ? `"${stageTitle}"` : `#${id}`}
+                    {t('candidaturesPourStage')} {stageTitle ? `"${stageTitle}"` : `#${id}`}
                 </h1>
                 <p className="text-sm text-gray-500 mt-1">
-                    {filtered.length} candidature{filtered.length > 1 ? "s" : ""}
+                    {t('nombreCandidatures', { count: filtered.length, plural: filtered.length > 1 ? 's' : '' })}
                 </p>
             </div>
 
             <div className="w-full max-w-xl mb-8">
                 <div className="relative">
                     <input
-                        placeholder="Recherche (nom, email)"
+                        placeholder={t('rechercheNomEmail')}
                         className="w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition"
                         value={q}
                         onChange={(e) => setQ(e.target.value)}
-                        aria-label="Recherche"
+                        aria-label={t('recherche')}
                     />
                     <div
                         className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-gray-400 text-base">
@@ -134,25 +136,25 @@ const StageApplicantsPage = () => {
                     <table className="min-w-full text-sm">
                         <thead>
                         <tr className="bg-gray-50 text-left border-b">
-                            <th className="py-3 px-4 font-medium text-gray-600">Candidat</th>
-                            <th className="py-3 px-4 font-medium text-gray-600">CV</th>
-                            <th className="py-3 px-4 font-medium text-gray-600">Lettre de motivation</th>
-                            <th className="py-3 px-4 font-medium text-gray-600">Statut</th>
-                            <th className="py-3 px-4 font-medium text-gray-600">entrevue</th>
-                            <th className="py-3 px-4 font-medium text-gray-600">Actions</th>
+                            <th className="py-3 px-4 font-medium text-gray-600">{t('candidat')}</th>
+                            <th className="py-3 px-4 font-medium text-gray-600">{t('cv')}</th>
+                            <th className="py-3 px-4 font-medium text-gray-600">{t('lettreMotivation')}</th>
+                            <th className="py-3 px-4 font-medium text-gray-600">{t('statut')}</th>
+                            <th className="py-3 px-4 font-medium text-gray-600">{t('entrevue')}</th>
+                            <th className="py-3 px-4 font-medium text-gray-600">{t('action')}</th>
                         </tr>
                         </thead>
                         <tbody>
                         {loading ? (
                             <tr>
                                 <td className="py-8 px-4 text-gray-500 text-center" colSpan={5}>
-                                    Chargement…
+                                    {t('chargement')}
                                 </td>
                             </tr>
                         ) : filtered.length === 0 ? (
                             <tr>
                                 <td className="py-8 px-4 text-gray-500 text-center" colSpan={5}>
-                                    Aucune candidature trouvée.
+                                    {t('aucuneCandidatureTrouvee')}
                                 </td>
                             </tr>
                         ) : (
@@ -210,16 +212,16 @@ const StageApplicantsPage = () => {
                                                     prev.filter(x => Number(x?.id ?? x?.candidatureId ?? x?.applicationId) !== id)
                                                 );
                                             } else if (res.status === 403) {
-                                                setError("Vous devez d'abord convoquer l'étudiant en entrevue avant de l'accepter.");
+                                                setError(t('doitConvoquerAvantAccepter'));
                                             } else {
-                                                setError("Erreur lors de l'acceptation de la candidature.");
+                                                setError(t('erreurAcceptationCandidature'));
                                             }
                                         } catch (e) {
                                             console.debug("approve error:", e?.response?.status, e?.response?.data);
                                             if (e?.response?.status === 403) {
-                                                setError("Vous devez d'abord convoquer l'étudiant en entrevue avant de l'accepter.");
+                                                setError(t('doitConvoquerAvantAccepter'));
                                             } else {
-                                                setError("Erreur lors de l'acceptation de la candidature.");
+                                                setError(t('erreurAcceptationCandidature'));
                                             }
                                         }
                                     }}
@@ -232,10 +234,10 @@ const StageApplicantsPage = () => {
 
             <div className="mt-6">
                 <NavLink
-                    to="/employeur/posted-stages"
+                    to="/employeur/stages/posted-stages"
                     className="text-white bg-gradient-to-r from-red-400 via-red-500 to-red-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
                 >
-                    Retour aux offres
+                    {t('retourAuxOffres')}
                 </NavLink>
             </div>
         </div>
