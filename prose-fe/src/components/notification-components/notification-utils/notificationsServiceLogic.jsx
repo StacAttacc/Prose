@@ -5,6 +5,7 @@ import {
 } from "../../../services/GestionnaireService.js";
 import {
     getEmployeurCandidatureNotifications,
+    getEmployeurResponseNotifications,
     markNotificationRead as markNotificationReadEmployeur,
     markNotificationsRead as markNotificationsReadEmployeur
 } from "../../../services/EmployeurService.js";
@@ -18,7 +19,24 @@ export async function fetchNotifications(user) {
     if (user.role === "GESTIONNAIRE") {
         return await getGestionnaireNotifications(user.token);
     } else if (user.role === "EMPLOYEUR") {
-        return await getEmployeurCandidatureNotifications(user.email, user.token);
+        const [candidatureNotifs, responseNotifs] = await Promise.all([
+            getEmployeurCandidatureNotifications(user.email, user.token),
+            getEmployeurResponseNotifications(user.email, user.token)
+        ]);
+
+        const allGroups = [
+            ...(candidatureNotifs?.data?.groups || []),
+            ...(responseNotifs?.data?.groups || [])
+        ];
+
+        const totalCount = allGroups.reduce((sum, group) => sum + (group?.items?.length || 0), 0);
+
+        return {
+            data: {
+                groups: allGroups,
+                totalCount: totalCount
+            }
+        };
     } else if (user.role === "ETUDIANT") {
         return await getEtudiantNotifications(user.token);
     } else return null;

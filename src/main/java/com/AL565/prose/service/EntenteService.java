@@ -107,16 +107,16 @@ public class EntenteService {
         if (etudiant.getEmail().equals(userEmail)) {
             entente.setDateSignatureEtudiant(now);
             if (entente.getDateSignatureEmployeur() != null) {
-                entente.setStatus(EntenteStatus.SIGNEE);
-                entente.setDateSignatureComplete(now);
+                // Les deux (étudiant et employeur) ont signé, mais pas encore le gestionnaire
+                entente.setStatus(EntenteStatus.SIGNEE_ETUDIANT_ET_EMPLOYEUR);
             } else {
                 entente.setStatus(EntenteStatus.SIGNEE_ETUDIANT);
             }
         } else if (employeur.getEmail().equals(userEmail)) {
             entente.setDateSignatureEmployeur(now);
             if (entente.getDateSignatureEtudiant() != null) {
-                entente.setStatus(EntenteStatus.SIGNEE);
-                entente.setDateSignatureComplete(now);
+                // Les deux (étudiant et employeur) ont signé, mais pas encore le gestionnaire
+                entente.setStatus(EntenteStatus.SIGNEE_ETUDIANT_ET_EMPLOYEUR);
             } else {
                 entente.setStatus(EntenteStatus.SIGNEE_EMPLOYEUR);
             }
@@ -128,6 +128,10 @@ public class EntenteService {
             if (entente.getDateSignatureEtudiant() == null || entente.getDateSignatureEmployeur() == null) {
                 throw new IllegalArgumentException("Le gestionnaire ne peut signer que lorsque l'étudiant et l'employeur ont déjà signé l'entente");
             }
+            // Le gestionnaire signe en dernier
+            entente.setDateSignatureGestionnaire(now);
+            entente.setStatus(EntenteStatus.SIGNEE);
+            entente.setDateSignatureComplete(now);
         }
         
         byte[] pdfData = generateContractPdfWithSignatures(
@@ -137,7 +141,7 @@ public class EntenteService {
             stage,
             entente.getDateSignatureEtudiant(),
             entente.getDateSignatureEmployeur(),
-            null
+            entente.getDateSignatureGestionnaire()
         );
         
         entente.setDocumentPdf(pdfData);

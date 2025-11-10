@@ -48,6 +48,16 @@ public class NotificationSummaryDTO {
                     if (candidatueEtudiantId != null) etudiantId = candidatueEtudiantId;
                 }
             }
+            case EmployeurResponseNotification ern -> {
+                Long candidatureResponseId = ern.getCandidatureResponseId();
+                Long stageResponseId = ern.getStageResponseId();
+                Long etudiantResponseId = ern.getEtudiantResponseId();
+                if (candidatureResponseId != null) {
+                    candidatureId = candidatureResponseId;
+                    if (stageResponseId != null) stageId = stageResponseId;
+                    if (etudiantResponseId != null) etudiantId = etudiantResponseId;
+                }
+            }
             case GestionnaireCvNotification gcn -> {
                 if (gcn.getCv() != null) {
                     cvId = gcn.getCv().getId();

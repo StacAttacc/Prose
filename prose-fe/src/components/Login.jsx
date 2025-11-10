@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import { useI18n } from "../context/I18nContext";
 import { Eye, EyeOff } from "lucide-react";
 import {useNavigate} from "react-router-dom";
 import ErrorBanner from "./display-components/ErrorBanner.jsx";
 
 export default function Login({ onSwitchToSignup }) {
     const { login } = useAuth();
+    const { t } = useI18n();
 
     const [email, setEmail] = useState("");
     const [pwd, setPwd] = useState("");
@@ -31,11 +33,11 @@ export default function Login({ onSwitchToSignup }) {
         } catch (err) {
             console.error(err);
             if (!navigator.onLine) {
-                setErrorMsg("Connexion Internet instable. Veuillez vérifier votre connexion.");
+                setErrorMsg(t('erreurConnexionInternet'));
             } else if (err?.response?.status === 409) {
-                setErrorMsg("Cet email est déjà utilisé. Veuillez en choisir un autre");
+                setErrorMsg(t('emailDejaUtilise'));
             } else {
-                setErrorMsg(err?.response?.data?.message || "Service indisponible. Veuillez réessayer plus tard.");
+                setErrorMsg(err?.response?.data?.message || t('serviceIndisponible'));
             }
 
         } finally {
@@ -51,7 +53,7 @@ export default function Login({ onSwitchToSignup }) {
 
     return (
         <>
-            <h2 className="text-3xl font-bold text-center mb-8">Connexion</h2>
+            <h2 className="text-3xl font-bold text-center mb-8">{t('connexion')}</h2>
 
             {errorMsg && (
                 <ErrorBanner message={errorMsg} />
@@ -60,7 +62,7 @@ export default function Login({ onSwitchToSignup }) {
             <form onSubmit={onSubmit} className="space-y-4">
                 {/* Email */}
                 <label className="block">
-                    <span className="block text-sm mb-1 text-gray-800">Adresse courriel</span>
+                    <span className="block text-sm mb-1 text-gray-800">{t('adresseCourriel')}</span>
                     <div className="relative">
                         <input
                             type="email"
@@ -68,7 +70,7 @@ export default function Login({ onSwitchToSignup }) {
                                 email,
                                 emailOk
                             )}`}
-                            placeholder="Nom@exemple.com"
+                            placeholder={t('emailPlaceholder')}
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             autoComplete="email"
@@ -78,7 +80,7 @@ export default function Login({ onSwitchToSignup }) {
 
                 {/* Mot de passe */}
                 <label className="block">
-                    <span className="block text-sm mb-1 text-gray-800">Mot de passe</span>
+                    <span className="block text-sm mb-1 text-gray-800">{t('motDePasse')}</span>
                     <div className="relative">
                         <input
                             type={showPwd ? "text" : "password"}
@@ -86,7 +88,7 @@ export default function Login({ onSwitchToSignup }) {
                                 pwd,
                                 pwdOk
                             )}`}
-                            placeholder="Minimum 10 caractères"
+                            placeholder={t('passwordPlaceholder')}
                             value={pwd}
                             onChange={(e) => setPwd(e.target.value)}
                             autoComplete="current-password"
@@ -108,18 +110,18 @@ export default function Login({ onSwitchToSignup }) {
                     disabled={!canSubmit || loading}
                     className="w-full transition disabled:opacity-60 text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
                 >
-                    {loading ? "Connexion..." : "Se connecter"}
+                    {loading ? t('connexionEnCours') : t('seConnecter')}
                 </button>
 
                 {/* Basculer vers SignUp */}
                 <div className="text-center mt-4">
-                    <span className="text-slate-400">Pas encore de compte ? </span>
+                    <span className="text-slate-400">{t('pasEncoreCompte')} </span>
                     <button
                         type="button"
                         onClick={onSwitchToSignup}
                         className="text-teal-500 hover:underline"
                     >
-                        S'inscrire
+                        {t('sinscrire')}
                     </button>
                 </div>
             </form>

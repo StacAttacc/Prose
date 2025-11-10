@@ -8,7 +8,8 @@ public enum NotificationType {
     GESTIONNAIRE_CV_NOTIFICATION("gestionnaire_cv"),
     ETUDIANT_CV_NOTIFICATION("etudiant_cv"),
     POSTULATION_NOTIFICATION("postulation"),
-    CONVOCATION_NOTIFICATION("convocation");
+    CONVOCATION_NOTIFICATION("convocation"),
+    EMPLOYEUR_RESPONSE_NOTIFICATION("employeur_response");
 
     private final String displayName;
 

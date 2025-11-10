@@ -19,6 +19,7 @@ public class EntenteDTO {
     private LocalDateTime dateCreation;
     private LocalDateTime dateSignatureEtudiant;
     private LocalDateTime dateSignatureEmployeur;
+    private LocalDateTime dateSignatureGestionnaire;
     private LocalDateTime dateSignatureComplete;
     
     private EtudiantDTO etudiant;
@@ -38,6 +39,7 @@ public class EntenteDTO {
                 .dateCreation(entente.getDateCreation())
                 .dateSignatureEtudiant(entente.getDateSignatureEtudiant())
                 .dateSignatureEmployeur(entente.getDateSignatureEmployeur())
+                .dateSignatureGestionnaire(entente.getDateSignatureGestionnaire())
                 .dateSignatureComplete(entente.getDateSignatureComplete())
                 .documentName(entente.getDocumentName())
                 .build();

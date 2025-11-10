@@ -130,15 +130,20 @@ export async function getStageDetailsByApplication(applicationId, token) {
     return res.json();
 }
 
-export async function getStageApplicantsManager(token) {
+export async function getStageApplicantsManager(token, year = null) {
     try {
+        const params = {};
+        if (year && year !== null && year !== undefined && year !== '') {
+            params.year = year.toString();
+        }
+        
         const res = await axios.get(`${BASE_URL_GESTIONNAIRE}/getCandidatures`, {
             headers: {
                 Authorization: `Bearer ${token}`,
                 Accept: "application/json",
             },
+            params: params
         });
-
 
         const data = res.data?.data;
         return Array.isArray(data) ? data : [];

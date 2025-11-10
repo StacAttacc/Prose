@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { useAuth } from "../../context/AuthContext.jsx";
+import { useI18n } from "../../context/I18nContext.jsx";
 import { telechargerCv } from "../../services/EtudiantService.js";
 import { convoquerEntrevue, checkEntenteExists, signEntente } from "../../services/EmployeurService.js";
 import EntenteSignatureModal from "./EntenteSignatureModal.jsx";
@@ -44,6 +45,7 @@ function blobFromUnknownData(data, mime = "application/pdf") {
 
 export default function ApplicantRow({ applicant, onStatusUpdate, showActions = true, onApprove, onReject }) {
     const { user } = useAuth();
+    const { t } = useI18n();
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -127,21 +129,21 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
     const statusLabel = useMemo(() => {
         switch (status) {
             case "SOUMISE":
-                return "Soumise";
+                return t('soumise');
             case "ACCEPTEE":
-                return "En attente de réponse de l'étudiant";
+                return t('enAttenteReponseEtudiant');
             case "CONVOQUEE":
-                return "Convoquée";
+                return t('convoquee');
             case "REFUSEE":
-                return "Refusée";
+                return t('refusee');
             case "CONFIRMER":
-                return "Confirmée par l'étudiant";
+                return t('confirmeeParEtudiant');
             case "REFUSEE_ETUDIANT":
-                return "Refusée par l'étudiant";
+                return t('refuseeParEtudiant');
             default:
                 return status || "—";
         }
-    }, [status]);
+    }, [status, t]);
 
     const statusBadgeClass = useMemo(() => {
         switch (status) {
@@ -214,8 +216,8 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                 ...s,
                 error:
                     kind === "cv"
-                        ? "Impossible d'afficher le CV."
-                        : "Impossible d'afficher la lettre de motivation.",
+                        ? t('impossibleAfficherCV')
+                        : t('impossibleAfficherLettre'),
                 loading: false,
             }));
         }
@@ -288,7 +290,7 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                     {email ? (
                         <div className="text-xs text-gray-500">{email}</div>
                     ) : (
-                        <div className="text-xs text-gray-400">Email non disponible</div>
+                        <div className="text-xs text-gray-400">{t('emailNonDisponible')}</div>
                     )}
                 </td>
 
@@ -299,10 +301,10 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                             disabled={docState.loading && docState.kind === "cv"}
                             className="text-blue-600 hover:underline disabled:opacity-60"
                         >
-                            {docState.loading && docState.kind === "cv" ? "Ouverture…" : "Voir le CV"}
+                            {docState.loading && docState.kind === "cv" ? t('ouverture') : t('voirLeCV')}
                         </button>
                     ) : (
-                        <span className="text-gray-400">CV non disponible</span>
+                        <span className="text-gray-400">{t('cvNonDisponible')}</span>
                     )}
                 </td>
 
@@ -315,11 +317,11 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                             className="text-blue-600 hover:underline disabled:opacity-60"
                         >
                             {docState.loading && docState.kind === "letter"
-                                ? "Ouverture…"
-                                : "Voir la lettre"}
+                                ? t('ouverture')
+                                : t('voirLaLettre')}
                         </button>
                     ) : (
-                        <span className="text-gray-400">Aucune lettre de motivation</span>
+                        <span className="text-gray-400">{t('aucuneLettreMotivation')}</span>
                     )}
                 </td>
 
@@ -371,7 +373,7 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                                         className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 hover:bg-gradient-to-br transition-all"
                                         type="button"
                                     >
-                                        Convoquer
+                                        {t('convoquer')}
                                     </button>
                                     <button
                                         onClick={() => onReject && onReject(applicant)}
@@ -379,7 +381,7 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                                         disabled={!onReject || !user?.token}
                                         type="button"
                                     >
-                                        Refuser
+                                        {t('refuser')}
                                     </button>
                                 </>
                             )}
@@ -392,7 +394,7 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                                         disabled={!onApprove}
                                         type="button"
                                     >
-                                        Accepter
+                                        {t('accepter')}
                                     </button>
                                     <button
                                         onClick={() => onReject && onReject(applicant)}
@@ -400,13 +402,13 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                                         disabled={!onReject || !user?.token}
                                         type="button"
                                     >
-                                        Refuser
+                                        {t('refuser')}
                                     </button>
                                 </>
                             )}
 
                             {(localStatus === "ACCEPTEE" || localStatus === "REFUSEE") && (
-                                <span className="text-sm text-gray-400 italic px-4 py-2">Traité</span>
+                                <span className="text-sm text-gray-400 italic px-4 py-2">{t('traite')}</span>
                             )}
 
                             {status === "CONFIRMER" && (
@@ -415,11 +417,7 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                                         <span className="text-sm text-gray-500 italic px-4 py-2">Vérification...</span>
                                     ) : ententeExists ? (
                                         <>
-                                            {ententeData?.status === "SIGNEE_EMPLOYEUR" ? (
-                                                <span className="text-sm text-gray-600 px-4 py-2">
-                                                    En attente de la signature de l'étudiant
-                                                </span>
-                                            ) : ententeData?.status === "SIGNEE_ETUDIANT" ? (
+                                            {ententeData?.status === "SIGNEE_ETUDIANT" ? (
                                                 <button
                                                     onClick={() => setShowEntenteModal(true)}
                                                     className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br transition-all"
@@ -428,10 +426,14 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                                                     Voir et signer l'entente
                                                 </button>
                                             ) : ententeData?.status === "SIGNEE" ? (
-                                                <div className="flex flex-col gap-2">
-                                                    <span className="text-sm text-green-600 font-medium px-4 py-2">
-                                                        ✓ Entente signée
-                                                    </span>
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        onClick={() => setShowEntenteModal(true)}
+                                                        className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 hover:bg-gradient-to-br transition-all"
+                                                        type="button"
+                                                    >
+                                                        Voir l'entente
+                                                    </button>
                                                     <button
                                                         onClick={() => {
                                                             if (ententeData?.documentPdfBase64) {
@@ -449,19 +451,19 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                                                                 URL.revokeObjectURL(url);
                                                             }
                                                         }}
-                                                        className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 hover:bg-gradient-to-br transition-all"
+                                                        className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-purple-400 via-purple-500 to-purple-600 hover:bg-gradient-to-br transition-all"
                                                         type="button"
                                                     >
-                                                        Télécharger l'entente
+                                                        Télécharger
                                                     </button>
                                                 </div>
                                             ) : (
                                                 <button
                                                     onClick={() => setShowEntenteModal(true)}
-                                                    className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br transition-all"
+                                                    className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 hover:bg-gradient-to-br transition-all"
                                                     type="button"
                                                 >
-                                                    Voir et signer l'entente
+                                                    Voir l'entente
                                                 </button>
                                             )}
                                         </>
@@ -480,7 +482,7 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
             {docState.open &&
                 createPortal(
                     <PdfModal
-                        title={docState.kind === "cv" ? `CV de ${fullName}` : "Lettre de motivation"}
+                        title={docState.kind === "cv" ? t('cvDe', { name: fullName }) : t('lettreMotivation')}
                         url={docState.url}
                         error={docState.error}
                         onClose={closeModal}
@@ -505,6 +507,8 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                         applicant={applicant}
                         isOpen={showEntenteModal}
                         onClose={() => setShowEntenteModal(false)}
+                        ententeData={ententeData}
+                        loadEntenteFn={checkEntenteExists}
                         onSign={async (ententeId, password) => {
                             try {
                                 await signEntente(ententeId, password, user?.token);
