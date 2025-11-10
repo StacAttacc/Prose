@@ -172,7 +172,7 @@ export default function Notifications() {
                                     {shortText(translateNotificationMessage(n.message) || n.senderEmail || t('noMessage'), 200)}
                                 </div>
                                 <div className="text-xs text-gray-500">
-                                    {n.createdAt ? new Date(n.createdAt).toLocaleString() : n.createdAtString || t('unknownTime')}
+                                    {n.createdAt ? new Date(n.createdAt).toLocaleString(locale === 'en' ? 'en-US' : 'fr-FR') : n.createdAtString || t('unknownTime')}
                                 </div>
                             </div>
                         </>

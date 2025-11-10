@@ -8,7 +8,7 @@ import StageDetailsModal from "../display-components/StageDetailsModal.jsx";
 
 export default function PostedStages() {
     const { user } = useAuth();
-    const { t } = useI18n();
+    const { t, locale } = useI18n();
     const navigate = useNavigate();
 
     const [stages, setStages] = useState([]);
@@ -190,18 +190,18 @@ export default function PostedStages() {
                                         {stage.title}
                                     </h3>
                                     <p className="text-gray-600 text-sm mb-2">
-                                        <strong>Lieu:</strong> {stage.location}
+                                        <strong>{t('lieu')}:</strong> {stage.location}
                                     </p>
                                     <p className="text-gray-600 text-sm mb-2">
-                                        <strong>Compensation:</strong> {stage.compensation}
+                                        <strong>{t('compensation')}:</strong> {stage.compensation}
                                     </p>
                                     <p className="text-gray-600 text-sm mb-2">
-                                        <strong>Période:</strong> {stage.startDate} - {stage.endDate}
+                                        <strong>{t('periode')}:</strong> {stage.startDate} - {stage.endDate}
                                     </p>
                                     <p className="text-gray-600 text-sm">
-                                        <strong>Date de création:</strong>{" "}
+                                        <strong>{t('dateCreation')}:</strong>{" "}
                                         {stage.createdAt
-                                            ? new Date(stage.createdAt).toLocaleDateString("fr-FR")
+                                            ? new Date(stage.createdAt).toLocaleDateString(locale === 'en' ? 'en-US' : 'fr-FR')
                                             : "-"}
                                     </p>
                                 </div>
