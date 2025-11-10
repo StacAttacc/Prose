@@ -1,19 +1,19 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
-import { renderWithProviders } from '../../test/utils/testUtils';
-import GestRechercheStages from './RechercheStages';
-import { server } from '../../test/mocks/server';
+import { renderWithProviders } from '../../utils/testUtils';
+import GestRechercheStages from '../../../components/gestionnaire-components/RechercheStages';
+import { server } from '../../mocks/server';
 import { http, HttpResponse } from 'msw';
-import { useYear } from '../../context/YearContext';
-import { useAuth } from '../../context/AuthContext';
+import { useYear } from '../../../context/YearContext';
+import { useAuth } from '../../../context/AuthContext';
 
 // Mock du YearContext pour utiliser notre mock depuis testUtils
-vi.mock('../../context/YearContext', () => ({
+vi.mock('../../../context/YearContext', () => ({
   useYear: vi.fn()
 }));
 
 // Mock du AuthContext - garder AuthProvider mais mocker useAuth
-vi.mock('../../context/AuthContext', async (importOriginal) => {
+vi.mock('../../../context/AuthContext', async (importOriginal) => {
   const actual = await importOriginal();
   return {
     ...actual,
@@ -22,11 +22,11 @@ vi.mock('../../context/AuthContext', async (importOriginal) => {
 });
 
 // Mock des composants enfants qui ne sont pas nécessaires pour ces tests
-vi.mock('../display-components/StageDetailsModal', () => ({
+vi.mock('../../../components/display-components/StageDetailsModal', () => ({
   default: () => <div data-testid="stage-details-modal">Stage Details Modal</div>
 }));
 
-vi.mock('../display-components/ErrorBanner', () => ({
+vi.mock('../../../components/display-components/ErrorBanner', () => ({
   default: ({ message }) => <div data-testid="error-banner">{message}</div>
 }));
 

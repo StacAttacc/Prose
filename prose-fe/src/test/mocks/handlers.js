@@ -224,6 +224,116 @@ export const handlers = [
       message: 'Trouvés',
       data: etudiants
     });
+  }),
+
+  // Handlers pour MesCandidature
+  // GET /etudiant/candidatures
+  http.get(`${BASE_URL}/etudiant/candidatures`, () => {
+    return HttpResponse.json({
+      data: [
+        {
+          id: 1,
+          status: 'SOUMISE',
+          datePostulation: '2025-01-15T10:00:00Z',
+          stage: {
+            id: 10,
+            title: 'Développeur Web Full Stack',
+            description: 'Stage en développement web',
+            location: 'Montréal',
+            compensation: '25$/h',
+            employeur: {
+              company: 'Tech Corp'
+            },
+            skills: ['React', 'Node.js']
+          }
+        },
+        {
+          id: 2,
+          status: 'ACCEPTEE',
+          datePostulation: '2025-01-10T10:00:00Z',
+          dateDecision: '2025-01-20T10:00:00Z',
+          stage: {
+            id: 11,
+            title: 'Stage en Data Science',
+            description: 'Stage en analyse de données',
+            location: 'Québec',
+            compensation: '30$/h',
+            employeur: {
+              company: 'Data Inc'
+            },
+            skills: ['Python', 'Machine Learning']
+          }
+        },
+        {
+          id: 3,
+          status: 'CONFIRMER',
+          datePostulation: '2025-01-05T10:00:00Z',
+          stage: {
+            id: 12,
+            title: 'Stage Accepté',
+            description: 'Stage confirmé',
+            location: 'Montréal',
+            compensation: '28$/h',
+            employeur: {
+              company: 'Success Corp'
+            },
+            skills: ['Java', 'Spring']
+          }
+        }
+      ]
+    });
+  }),
+
+  // GET /etudiant/candidatures/:id/entente
+  http.get(`${BASE_URL}/etudiant/candidatures/:id/entente`, ({ params }) => {
+    const { id } = params;
+    if (id === '3') {
+      return HttpResponse.json({
+        data: {
+          id: 1,
+          status: 'A_SIGNER',
+          dateSignatureEtudiant: null,
+          dateSignatureEmployeur: null,
+          documentPdfBase64: 'JVBERi0xLjQKJeLjz9MKMSAwIG9iago8PAovVHlwZSAvQ2F0YWxvZwovUGFnZXMgMiAwIFIKPj4KZW5kb2JqCjIgMCBvYmoKPDwKL1R5cGUgL1BhZ2VzCi9LaWRzIFszIDAgUl0KL0NvdW50IDEKPD4KZW5kb2JqCjMgMCBvYmoKPDwKL1R5cGUgL1BhZ2UKL1BhcmVudCAyIDAgUgovTWVkaWFCb3ggWzAgMCA2MTIgNzkyXQovUmVzb3VyY2VzIDw8Ci9Gb250IDw8Ci9GMSA0IDAgUgo+Pgo+PgovQ29udGVudHMgNSAwIFIKPj4KZW5kb2JqCjQgMCBvYmoKPDwKL1R5cGUgL0ZvbnQKL1N1YnR5cGUgL1R5cGUxCi9CYXNlRm9udCAvSGVsdmV0aWNhCj4+CmVuZG9iago1IDAgb2JqCjw8Ci9MZW5ndGggNDQKPj4Kc3RyZWFtCkJUCi9GMSAxMiBUZgo1MCA3MDAgVGQKKEhlbGxvIFdvcmxkKSBUagpFVApzdHJlYW0KZW5kb2JqCnhyZWYKMCA2CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAwOSAwMDAwMCBuIAowMDAwMDAwMDU4IDAwMDAwIG4gCjAwMDAwMDAxMTUgMDAwMDAgbiAKMDAwMDAwMDI2OCAwMDAwMCBuIAowMDAwMDAwMzQxIDAwMDAwIG4gCnRyYWlsZXIKPDwKL1NpemUgNgovUm9vdCAxIDAgUgo+PgpzdGFydHhyZWYKNDI3CiUlRU9G'
+        }
+      });
+    }
+    return HttpResponse.json({ message: 'Entente non trouvée' }, { status: 404 });
+  }),
+
+  // PUT /etudiant/candidatures/respond
+  http.put(`${BASE_URL}/etudiant/candidatures/respond`, async ({ request }) => {
+    const body = await request.json();
+    return HttpResponse.json({
+      message: body.accepted ? 'Offre acceptée avec succès' : 'Offre refusée avec succès',
+      data: {
+        id: body.candidatureId,
+        status: body.accepted ? 'CONFIRMER' : 'REFUSEE_ETUDIANT',
+        decision: body.comment || ''
+      }
+    });
+  }),
+
+  // PUT /etudiant/ententes/:id/signer (utilisé par fetch dans signEntente)
+  http.put(`${BASE_URL}/etudiant/ententes/:id/signer`, async ({ request }) => {
+    const body = await request.json();
+    if (body.password === 'wrong') {
+      return HttpResponse.json({ message: 'Mot de passe incorrect' }, { status: 401 });
+    }
+    return HttpResponse.json({
+      message: 'Entente signée avec succès'
+    });
+  }),
+
+  // GET /etudiant/telecharger-cv/:email (utilisé par CvContext)
+  http.get(`${BASE_URL}/etudiant/telecharger-cv/:email`, () => {
+    return HttpResponse.json({
+      data: {
+        fileName: 'cv.pdf',
+        fileData: 'JVBERi0xLjQKJeLjz9MKMSAwIG9iago8PAovVHlwZSAvQ2F0YWxvZwovUGFnZXMgMiAwIFIKPj4KZW5kb2JqCjIgMCBvYmoKPDwKL1R5cGUgL1BhZ2VzCi9LaWRzIFszIDAgUl0KL0NvdW50IDEKPD4KZW5kb2JqCjMgMCBvYmoKPDwKL1R5cGUgL1BhZ2UKL1BhcmVudCAyIDAgUgovTWVkaWFCb3ggWzAgMCA2MTIgNzkyXQovUmVzb3VyY2VzIDw8Ci9Gb250IDw8Ci9GMSA0IDAgUgo+Pgo+PgovQ29udGVudHMgNSAwIFIKPj4KZW5kb2JqCjQgMCBvYmoKPDwKL1R5cGUgL0ZvbnQKL1N1YnR5cGUgL1R5cGUxCi9CYXNlRm9udCAvSGVsdmV0aWNhCj4+CmVuZG9iago1IDAgb2JqCjw8Ci9MZW5ndGggNDQKPj4Kc3RyZWFtCkJUCi9GMSAxMiBUZgo1MCA3MDAgVGQKKEhlbGxvIFdvcmxkKSBUagpFVApzdHJlYW0KZW5kb2JqCnhyZWYKMCA2CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAwOSAwMDAwMCBuIAowMDAwMDAwMDU4IDAwMDAwIG4gCjAwMDAwMDAxMTUgMDAwMDAgbiAKMDAwMDAwMDI2OCAwMDAwMCBuIAowMDAwMDAwMzQxIDAwMDAwIG4gCnRyYWlsZXIKPDwKL1NpemUgNgovUm9vdCAxIDAgUgo+PgpzdGFydHhyZWYKNDI3CiUlRU9G',
+        contentType: 'application/pdf'
+      }
+    });
   })
 ];
 

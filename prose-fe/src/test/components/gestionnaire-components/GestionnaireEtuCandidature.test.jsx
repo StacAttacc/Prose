@@ -1,18 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { renderWithProviders } from '../../test/utils/testUtils';
-import GestionnaireEtuCandidature from './GestionnaireEtuCandidature';
-import { server } from '../../test/mocks/server';
+import { renderWithProviders } from '../../utils/testUtils';
+import GestionnaireEtuCandidature from '../../../components/gestionnaire-components/GestionnaireEtuCandidature';
+import { server } from '../../mocks/server';
 import { http, HttpResponse } from 'msw';
-import { useYear } from '../../context/YearContext';
-import { useAuth } from '../../context/AuthContext';
+import { useYear } from '../../../context/YearContext';
+import { useAuth } from '../../../context/AuthContext';
 
-vi.mock('../../context/YearContext', () => ({
+vi.mock('../../../context/YearContext', () => ({
   useYear: vi.fn()
 }));
 
-vi.mock('../../context/AuthContext', async (importOriginal) => {
+vi.mock('../../../context/AuthContext', async (importOriginal) => {
   const actual = await importOriginal();
   return {
     ...actual,
@@ -20,15 +20,15 @@ vi.mock('../../context/AuthContext', async (importOriginal) => {
   };
 });
 
-vi.mock('../display-components/StageDetailsModal', () => ({
+vi.mock('../../../components/display-components/StageDetailsModal', () => ({
   default: () => <div data-testid="stage-details-modal">Stage Details Modal</div>
 }));
 
-vi.mock('../display-components/ApplicationsModal', () => ({
+vi.mock('../../../components/display-components/ApplicationsModal', () => ({
   default: () => <div data-testid="applications-modal">Applications Modal</div>
 }));
 
-vi.mock('../display-components/ErrorBanner', () => ({
+vi.mock('../../../components/display-components/ErrorBanner', () => ({
   default: ({ message }) => message ? <div data-testid="error-banner">{message}</div> : null
 }));
 
