@@ -12,6 +12,7 @@ import com.AL565.prose.service.dto.notifications.NotificationGroupDTO;
 import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import com.AL565.prose.service.exceptions.FailedToRetrieveStagesException;
+import com.AL565.prose.utils.NotificationsHelper;
 import com.itextpdf.io.source.ByteArrayOutputStream;
 import com.itextpdf.kernel.colors.ColorConstants;
 import com.itextpdf.kernel.geom.PageSize;

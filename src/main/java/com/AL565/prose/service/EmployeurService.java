@@ -12,6 +12,7 @@ import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import com.AL565.prose.service.exceptions.InvalidCandidatureModificationException;
 import com.AL565.prose.service.exceptions.StageNotFoundException;
+import com.AL565.prose.utils.NotificationsHelper;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
