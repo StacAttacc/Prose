@@ -2,7 +2,6 @@ import { http, HttpResponse } from 'msw';
 
 const BASE_URL = 'http://localhost:8080';
 
-// Mock data pour les stages de différentes années
 const mockStages2025 = [
   {
     id: 1,
@@ -64,7 +63,6 @@ const mockStages2027 = [
   }
 ];
 
-// Fonction pour retourner les stages selon l'année
 const getStagesByYear = (year) => {
   switch (year) {
     case '2025':
@@ -79,7 +77,6 @@ const getStagesByYear = (year) => {
 };
 
 export const handlers = [
-  // Handler pour GET /gestionnaire/stages avec paramètre year
   http.get(`${BASE_URL}/gestionnaire/stages`, ({ request }) => {
     const url = new URL(request.url);
     const year = url.searchParams.get('year');
@@ -92,7 +89,6 @@ export const handlers = [
     });
   }),
 
-  // Handler pour PUT /gestionnaire/stages/:id/approuver
   http.put(`${BASE_URL}/gestionnaire/stages/:id/approuver`, ({ params }) => {
     const stageId = params.id;
     return HttpResponse.json({
@@ -101,7 +97,6 @@ export const handlers = [
     });
   }),
 
-  // Handler pour PUT /gestionnaire/stages/:id/rejeter
   http.put(`${BASE_URL}/gestionnaire/stages/:id/rejeter`, async ({ params, request }) => {
     const stageId = params.id;
     const body = await request.json();
@@ -204,7 +199,6 @@ export const handlers = [
       }
     ];
 
-    // Fonction pour retourner les étudiants selon l'année
     const getEtudiantsByYear = (year) => {
       switch (year) {
         case '2025':
@@ -226,8 +220,7 @@ export const handlers = [
     });
   }),
 
-  // Handlers pour MesCandidature
-  // GET /etudiant/candidatures
+
   http.get(`${BASE_URL}/etudiant/candidatures`, () => {
     return HttpResponse.json({
       data: [
@@ -284,7 +277,6 @@ export const handlers = [
     });
   }),
 
-  // GET /etudiant/candidatures/:id/entente
   http.get(`${BASE_URL}/etudiant/candidatures/:id/entente`, ({ params }) => {
     const { id } = params;
     if (id === '3') {
@@ -301,7 +293,6 @@ export const handlers = [
     return HttpResponse.json({ message: 'Entente non trouvée' }, { status: 404 });
   }),
 
-  // PUT /etudiant/candidatures/respond
   http.put(`${BASE_URL}/etudiant/candidatures/respond`, async ({ request }) => {
     const body = await request.json();
     return HttpResponse.json({
@@ -314,7 +305,6 @@ export const handlers = [
     });
   }),
 
-  // PUT /etudiant/ententes/:id/signer (utilisé par fetch dans signEntente)
   http.put(`${BASE_URL}/etudiant/ententes/:id/signer`, async ({ request }) => {
     const body = await request.json();
     if (body.password === 'wrong') {
@@ -325,7 +315,6 @@ export const handlers = [
     });
   }),
 
-  // GET /etudiant/telecharger-cv/:email (utilisé par CvContext)
   http.get(`${BASE_URL}/etudiant/telecharger-cv/:email`, () => {
     return HttpResponse.json({
       data: {
@@ -333,6 +322,87 @@ export const handlers = [
         fileData: 'JVBERi0xLjQKJeLjz9MKMSAwIG9iago8PAovVHlwZSAvQ2F0YWxvZwovUGFnZXMgMiAwIFIKPj4KZW5kb2JqCjIgMCBvYmoKPDwKL1R5cGUgL1BhZ2VzCi9LaWRzIFszIDAgUl0KL0NvdW50IDEKPD4KZW5kb2JqCjMgMCBvYmoKPDwKL1R5cGUgL1BhZ2UKL1BhcmVudCAyIDAgUgovTWVkaWFCb3ggWzAgMCA2MTIgNzkyXQovUmVzb3VyY2VzIDw8Ci9Gb250IDw8Ci9GMSA0IDAgUgo+Pgo+PgovQ29udGVudHMgNSAwIFIKPj4KZW5kb2JqCjQgMCBvYmoKPDwKL1R5cGUgL0ZvbnQKL1N1YnR5cGUgL1R5cGUxCi9CYXNlRm9udCAvSGVsdmV0aWNhCj4+CmVuZG9iago1IDAgb2JqCjw8Ci9MZW5ndGggNDQKPj4Kc3RyZWFtCkJUCi9GMSAxMiBUZgo1MCA3MDAgVGQKKEhlbGxvIFdvcmxkKSBUagpFVApzdHJlYW0KZW5kb2JqCnhyZWYKMCA2CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAwOSAwMDAwMCBuIAowMDAwMDAwMDU4IDAwMDAwIG4gCjAwMDAwMDAxMTUgMDAwMDAgbiAKMDAwMDAwMDI2OCAwMDAwMCBuIAowMDAwMDAwMzQxIDAwMDAwIG4gCnRyYWlsZXIKPDwKL1NpemUgNgovUm9vdCAxIDAgUgo+PgpzdGFydHhyZWYKNDI3CiUlRU9G',
         contentType: 'application/pdf'
       }
+    });
+  }),
+
+  http.get(`${BASE_URL}/employeur/:email/stages`, ({ request, params }) => {
+    const url = new URL(request.url);
+    const includePreviousSessions = url.searchParams.get('includePreviousSessions') === 'true';
+    const email = params.email;
+
+    const currentStages = [
+      {
+        id: 1,
+        title: 'Stage Développeur Web',
+        description: 'Développement d\'applications web modernes',
+        location: 'Montréal',
+        compensation: '25$/h',
+        status: 'APPROUVEE',
+        startDate: '2026-06-01',
+        endDate: '2026-08-31',
+        skills: ['React', 'Node.js', 'TypeScript'],
+        createdAt: '2025-01-15T00:00:00Z'
+      },
+      {
+        id: 2,
+        title: 'Stage Analyste Données',
+        description: 'Analyse de données et machine learning',
+        location: 'Québec',
+        compensation: '22$/h',
+        status: 'PUBLIEE',
+        startDate: '2026-09-01',
+        endDate: '2026-12-31',
+        skills: ['Python', 'SQL', 'Pandas'],
+        createdAt: '2025-02-01T00:00:00Z'
+      },
+      {
+        id: 3,
+        title: 'Stage Designer UI/UX',
+        description: 'Design d\'interfaces utilisateur',
+        location: 'Montréal',
+        compensation: '24$/h',
+        status: 'SOUMISE',
+        startDate: '2026-05-01',
+        endDate: '2026-07-31',
+        skills: ['Figma', 'Adobe XD'],
+        createdAt: '2025-03-10T00:00:00Z'
+      }
+    ];
+
+    const previousStages = [
+      {
+        id: 4,
+        title: 'Stage Développeur Backend',
+        description: 'Développement backend avec Spring Boot',
+        location: 'Montréal',
+        compensation: '23$/h',
+        status: 'PUBLIEE',
+        startDate: '2024-01-15',
+        endDate: '2024-04-30',
+        skills: ['Java', 'Spring Boot', 'PostgreSQL'],
+        createdAt: '2023-12-01T00:00:00Z'
+      },
+      {
+        id: 5,
+        title: 'Stage Data Analyst',
+        description: 'Analyse de données business',
+        location: 'Québec',
+        compensation: '21$/h',
+        status: 'APPROUVEE',
+        startDate: '2024-05-01',
+        endDate: '2024-08-31',
+        skills: ['Excel', 'SQL', 'Tableau'],
+        createdAt: '2024-01-15T00:00:00Z'
+      }
+    ];
+
+    const allStages = includePreviousSessions 
+      ? [...currentStages, ...previousStages]
+      : currentStages;
+
+    return HttpResponse.json({
+      message: 'Trouvés',
+      data: allStages
     });
   })
 ];

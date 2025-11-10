@@ -49,7 +49,7 @@ export default function PostedStages() {
 
     const filteredStages = useMemo(() => {
         return stages.filter((stage) => {
-            const matchesSearch =
+            const matchesSearch = !searchTerm ||
                 stage.title?.toLowerCase?.().includes(searchTerm.toLowerCase()) ||
                 stage.description?.toLowerCase?.().includes(searchTerm.toLowerCase()) ||
                 (Array.isArray(stage.skills) &&
