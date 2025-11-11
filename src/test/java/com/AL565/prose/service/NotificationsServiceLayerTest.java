@@ -49,12 +49,20 @@ class NotificationsServiceLayerTest {
     @Mock
     private GestionnaireCvNotificationRepository gestionnaireCvNotificationRepository;
     @Mock
+    private EtudiantOffreDecisionNotificationRepository etudiantOffreDecisionNotificationRepository;
+    @Mock
+    private ConvocationNotificationRepository convocationNotificationRepository;
+    @Mock
+    private CandidatureDecisionNotificationRepository candidatureDecisionNotificationRepository;
+    @Mock
     private NotificationsHelper notificationsHelper;
 
     @InjectMocks
     private GestionnaireService gestionnaireService;
     @InjectMocks
     private EtudiantService etudiantService;
+    @InjectMocks
+    private EmployeurService employeurService;
 
     @BeforeEach
     void setUpNotificationsHelper() {
@@ -89,6 +97,21 @@ class NotificationsServiceLayerTest {
         n5.setMessage("CV processed");
         n5.setCreatedAt(LocalDateTime.now());
 
+        EtudiantOffreDecisionNotification n6 = new EtudiantOffreDecisionNotification();
+        n6.setType(NotificationType.ETUDIANT_OFFRE_DECCISION_NOTIFICATION);
+        n6.setMessage("Offer decision made");
+        n6.setCreatedAt(LocalDateTime.now());
+
+        ConvocationNotification n7 = new ConvocationNotification();
+        n7.setType(NotificationType.CONVOCATION_NOTIFICATION);
+        n7.setMessage("New convocation");
+        n7.setCreatedAt(LocalDateTime.now());
+
+        CandidatureDecisionNotification n8 = new CandidatureDecisionNotification();
+        n8.setType(NotificationType.CANDIDATURE_DECISION_NOTIFICATION);
+        n8.setMessage("Candidature decision made");
+        n8.setCreatedAt(LocalDateTime.now());
+
         when(notificationRepository.findNotificationsByTypeAndFirstRecipientReadAt(NotificationType.STAGE_NOTIFICATION, null))
                 .thenReturn(List.of(n1, n2));
 
@@ -103,29 +126,46 @@ class NotificationsServiceLayerTest {
                 "dummy@email.com"
         )).thenReturn(List.of(n5));
 
+        when(etudiantOffreDecisionNotificationRepository.findByEmployeurResponseEmailAndFirstRecipientReadAt(
+                "dummy@email.com",
+                null
+        )).thenReturn(List.of(n6));
+
+        when(convocationNotificationRepository.findByFirstRecipientReadAtAndEtudiantConvocationEmail(
+                null,
+                "dummy@email.com"
+        )).thenReturn(List.of(n7));
+
+        when(candidatureDecisionNotificationRepository.findCandidatureDecisionNotificationsByFirstRecipientReadAtAndCandidatureDecisionEtudiantEmail(
+                null,
+                "dummy@email.com"
+        )).thenReturn(List.of(n8));
+
         NotificationsResponseDTO gestionnaireResult = gestionnaireService.getGestionnaireNotifications();
         NotificationsResponseDTO etudiantResult = etudiantService.getStudentsNotifications("dummy@email.com");
+        NotificationsResponseDTO etudiantOffreDecision = employeurService.getEmployeurResponseNotifications("dummy@email.com");
 
         assertThat(gestionnaireResult).isNotNull();
         assertThat(gestionnaireResult.getTotalCount()).isEqualTo(4);
-        assertThat(gestionnaireResult.getGroups()).hasSize(3);
+        assertThat(gestionnaireResult.getGroups()).hasSize(6);
         assertThat(gestionnaireResult.getGroups().get(0).getItems()).hasSize(2);
         assertThat(gestionnaireResult.getGroups().get(0).getItems().getFirst().getMessage()).isEqualTo("Stage submitted");
         assertThat(gestionnaireResult.getGroups().get(1).getItems().getFirst().getMessage()).isEqualTo("New application");
         assertThat(gestionnaireResult.getGroups().get(2).getItems().getFirst().getMessage()).isEqualTo("New CV uploaded");
 
         assertThat(etudiantResult).isNotNull();
-        assertThat(etudiantResult.getTotalCount()).isEqualTo(1);
-        assertThat(etudiantResult.getGroups()).hasSize(1);
+        assertThat(etudiantResult.getTotalCount()).isEqualTo(3);
+        assertThat(etudiantResult.getGroups()).hasSize(3);
         assertThat(etudiantResult.getGroups().getFirst().getItems()).hasSize(1);
         assertThat(etudiantResult.getGroups().getFirst().getItems().getFirst().getMessage()).isEqualTo("CV processed");
+        assertThat(etudiantResult.getGroups().get(1).getItems().getFirst().getMessage()).isEqualTo("New convocation");
+        assertThat(etudiantResult.getGroups().get(2).getItems().getFirst().getMessage()).isEqualTo("Candidature decision made");
 
-        verify(etudiantCvNotificationRepository, times(1))
-                .findEtudiantCvNotificationsByFirstRecipientReadAtAndEtudiantEmail(
-                        null,
-                        "dummy@email.com");
-        verify(notificationRepository, times(1))
-                .findNotificationsByTypeAndFirstRecipientReadAt(NotificationType.STAGE_NOTIFICATION, null);
+        assertThat(etudiantOffreDecision).isNotNull();
+        assertThat(etudiantOffreDecision.getTotalCount()).isEqualTo(1);
+        assertThat(etudiantOffreDecision.getGroups()).hasSize(1);
+        assertThat(etudiantOffreDecision.getGroups().getFirst().getItems()).hasSize(1);
+        assertThat(etudiantOffreDecision.getGroups().getFirst().getItems().getFirst().getMessage()).isEqualTo("Offer decision made");
     }
 
     @Test
@@ -143,23 +183,23 @@ class NotificationsServiceLayerTest {
 
     @Test
     @DisplayName("markPostulationAsReadBySecondRecipient() sets secondRecipientReadAt and saves")
-    void markPostulationAsReadBySecondRecipient_setsReadAtAndSaves() throws Exception {
-        PostulationNotification notification = new PostulationNotification();
+    void markNotificationAsReadBySecondRecipient_setsReadAtAndSaves() throws Exception {
+        Notification notification = new PostulationNotification();
         notification.setId(1L);
 
-        when(postulationNotificationRepository.findById(1L)).thenReturn(java.util.Optional.of(notification));
+        when(notificationRepository.findById(1L)).thenReturn(java.util.Optional.of(notification));
 
         gestionnaireService.markPostulationAsReadBySecondRecipient(1L);
 
         assertThat(notification.getSecondRecipientReadAt()).isNotNull();
-        verify(postulationNotificationRepository, times(1)).findById(1L);
+        verify(notificationRepository, times(1)).findById(1L);
         verify(notificationRepository, times(1)).save(notification);
     }
 
     @Test
     @DisplayName("markPostulationAsReadBySecondRecipient() throws NotificationFetchException when not found")
-    void markPostulationAsReadBySecondRecipient_notFound_throws() {
-        when(postulationNotificationRepository.findById(1L)).thenReturn(java.util.Optional.empty());
+    void markNotificationAsReadBySecondRecipient_notFound_throws() {
+        when(notificationRepository.findById(1L)).thenReturn(java.util.Optional.empty());
 
         assertThatThrownBy(() -> gestionnaireService.markPostulationAsReadBySecondRecipient(1L))
                 .isInstanceOf(NotificationExceptions.NotificationFetchException.class);
@@ -169,17 +209,17 @@ class NotificationsServiceLayerTest {
 
     @Test
     @DisplayName("markPostulationAsReadBySecondRecipient() wraps save failures into NotificationFetchException")
-    void markPostulationAsReadBySecondRecipient_saveThrows_wrapsException() {
-        PostulationNotification notification = new PostulationNotification();
+    void markNotificationAsReadBySecondRecipient_saveThrows_wrapsException() {
+        Notification notification = new PostulationNotification();
         notification.setId(1L);
 
-        when(postulationNotificationRepository.findById(1L)).thenReturn(java.util.Optional.of(notification));
+        when(notificationRepository.findById(1L)).thenReturn(java.util.Optional.of(notification));
         doThrow(new RuntimeException("DB error")).when(notificationRepository).save(any());
 
         assertThatThrownBy(() -> gestionnaireService.markPostulationAsReadBySecondRecipient(1L))
                 .isInstanceOf(NotificationExceptions.NotificationFetchException.class);
 
-        verify(postulationNotificationRepository, times(1)).findById(1L);
+        verify(notificationRepository, times(1)).findById(1L);
         verify(notificationRepository, times(1)).save(any());
     }
 

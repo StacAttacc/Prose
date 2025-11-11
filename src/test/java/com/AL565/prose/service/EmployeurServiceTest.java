@@ -4,7 +4,7 @@ import com.AL565.prose.model.Employeur;
 import com.AL565.prose.model.Stage;
 import com.AL565.prose.model.*;
 import com.AL565.prose.model.auth.Credentials;
-import com.AL565.prose.model.notifications.EmployeurResponseNotification;
+import com.AL565.prose.model.notifications.EtudiantOffreDecisionNotification;
 import com.AL565.prose.repository.*;
 import com.AL565.prose.service.dto.CandidatureDTO;
 import com.AL565.prose.service.dto.EmployeurDTO;
@@ -52,7 +52,7 @@ class EmployeurServiceTest {
     @Mock
     private PostulationNotificationRepository postulationNotificationRepository;
     @Mock
-    private EmployeurResponseNotificationRepository employeurResponseNotificationRepository;
+    private EtudiantOffreDecisionNotificationRepository etudiantOffreDecisionNotificationRepository;
     @Mock
     private NotificationsHelper notificationsHelper;
 
@@ -207,33 +207,33 @@ class EmployeurServiceTest {
     void getEmployeurResponseNotifications_success() throws Exception {
         String employeurEmail = "employeur@test.com";
 
-        EmployeurResponseNotification notification1 = new EmployeurResponseNotification();
+        EtudiantOffreDecisionNotification notification1 = new EtudiantOffreDecisionNotification();
         notification1.setId(1L);
         notification1.setEmployeurResponseEmail(employeurEmail);
         notification1.setCandidatureResponseId(10L);
         notification1.setEtudiantResponseId(5L);
         notification1.setStageResponseId(3L);
-        notification1.setAccepted(true);
+        notification1.setOffreAcceptedByStudent(true);
         notification1.setComment("Je suis ravi d'accepter!");
         notification1.setMessage("Jean Dupont a accepté l'offre pour le stage Développeur Java");
         notification1.setCreatedAt(LocalDateTime.now());
         notification1.setFirstRecipientReadAt(null);
 
-        EmployeurResponseNotification notification2 = new EmployeurResponseNotification();
+        EtudiantOffreDecisionNotification notification2 = new EtudiantOffreDecisionNotification();
         notification2.setId(2L);
         notification2.setEmployeurResponseEmail(employeurEmail);
         notification2.setCandidatureResponseId(11L);
         notification2.setEtudiantResponseId(6L);
         notification2.setStageResponseId(3L);
-        notification2.setAccepted(false);
+        notification2.setOffreAcceptedByStudent(false);
         notification2.setComment("J'ai accepté une autre offre");
         notification2.setMessage("Marie Tremblay a refusé l'offre pour le stage Développeur Java");
         notification2.setCreatedAt(LocalDateTime.now());
         notification2.setFirstRecipientReadAt(null);
 
-        List<EmployeurResponseNotification> notifications = List.of(notification1, notification2);
+        List<EtudiantOffreDecisionNotification> notifications = List.of(notification1, notification2);
 
-        when(employeurResponseNotificationRepository.findByEmployeurResponseEmailAndFirstRecipientReadAt(employeurEmail, null))
+        when(etudiantOffreDecisionNotificationRepository.findByEmployeurResponseEmailAndFirstRecipientReadAt(employeurEmail, null))
                 .thenReturn(notifications);
 
         NotificationsResponseDTO result = employeurService.getEmployeurResponseNotifications(employeurEmail);
@@ -244,7 +244,7 @@ class EmployeurServiceTest {
         assertThat(result.getGroups().get(0).getTypeKey()).isEqualTo("employeur_response");
         assertThat(result.getGroups().get(0).getItems().size()).isEqualTo(2);
 
-        verify(employeurResponseNotificationRepository, times(1))
+        verify(etudiantOffreDecisionNotificationRepository, times(1))
                 .findByEmployeurResponseEmailAndFirstRecipientReadAt(employeurEmail, null);
     }
 }

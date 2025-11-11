@@ -53,7 +53,7 @@ class EtudiantServiceTest {
     @Mock
     private PostulationNotificationRepository postulationNotificationRepository;
     @Mock
-    private EmployeurResponseNotificationRepository employeurResponseNotificationRepository;
+    private EtudiantOffreDecisionNotificationRepository etudiantOffreDecisionNotificationRepository;
     @Mock
     private NotificationsHelper notificationsHelper;
     @Mock
