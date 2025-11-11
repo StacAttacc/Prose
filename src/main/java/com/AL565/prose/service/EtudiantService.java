@@ -59,7 +59,7 @@ public class EtudiantService {
     private final EtudiantCvNotificationRepository etudiantCvNotificationRepository;
     private final ConvocationNotificationRepository convocationNotificationRepository;
     private final PostulationNotificationRepository postulationNotificationRepository;
-    private final EmployeurResponseNotificationRepository employeurResponseNotificationRepository;
+    private final EtudiantOffreDecisionNotificationRepository etudiantOffreDecisionNotificationRepository;
     private final CandidatureDecisionNotificationRepository candidatureDecisionNotificationRepository;
     private final NotificationsHelper notificationsHelper;
 
@@ -333,18 +333,18 @@ public class EtudiantService {
             message += " - Commentaire: " + comment;
         }
 
-        EmployeurResponseNotification notification = new EmployeurResponseNotification();
+        EtudiantOffreDecisionNotification notification = new EtudiantOffreDecisionNotification();
         notification.setFirstRecipientReadAt(null);
         notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
         notification.setCandidatureResponseId(candidature.getId());
         notification.setEtudiantResponseId(candidature.getEtudiant().getId());
         notification.setStageResponseId(candidature.getStage().getId());
         notification.setEmployeurResponseEmail(candidature.getStage().getEmployeurEmail());
-        notification.setAccepted(accepted);
+        notification.setOffreAcceptedByStudent(accepted);
         notification.setComment(comment);
-        notification.setType(NotificationType.EMPLOYEUR_RESPONSE_NOTIFICATION);
+        notification.setType(NotificationType.ETUDIANT_OFFRE_DECCISION_NOTIFICATION);
         notification.setMessage(message);
 
-        employeurResponseNotificationRepository.save(notification);
+        etudiantOffreDecisionNotificationRepository.save(notification);
     }
 }

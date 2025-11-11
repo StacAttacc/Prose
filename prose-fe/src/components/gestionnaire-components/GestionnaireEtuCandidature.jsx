@@ -103,27 +103,46 @@ export default function GestionnaireEtuCandidature() {
     }, [user?.token, selectedYear, t]);
 
     useEffect(() => {
-        if (loading || modalStudent) return;
+        if (loading) return;
 
-        const raw =
-            location?.state?.openEtudiantId ?? location?.state?.openStudentId;
-        if (!raw) return;
+        const openEtudiantId = location?.state?.openEtudiantId;
+        const etudiantOffreDecisionId = location?.state?.etudiantOffreDecisionId;
 
-        const id = String(raw);
-        const student = (students || []).find((s) => String(s.id) === id);
-        if (student) {
-            if (tab !== "APPLIED") setTab("APPLIED");
-            setModalStudent(student);
+        if (openEtudiantId && !modalStudent) {
+            const stu = students.find((s) => String(s.id) === String(openEtudiantId));
+            if (stu) {
+                if (tab !== "APPLIED") setTab("APPLIED");
+                setModalFilterStatuses(null);
+                setModalStudent(stu);
+            }
+        }
+        else if (etudiantOffreDecisionId) {
+            const match = students.find((s) =>
+                (s.applications || []).some(
+                    (a) => String(a.id) === String(etudiantOffreDecisionId)
+                )
+            );
+            if (match) {
+                if (tab !== "APPROVED") setTab("APPROVED");
+                const application = (match.applications || []).find(
+                    (a) => String(a.id) === String(etudiantOffreDecisionId)
+                );
+                if (application) {
+                    openStageModal(application);
+                }
+            }
         }
 
-        navigate(location.pathname, { replace: true, state: {} });
+        if (openEtudiantId || etudiantOffreDecisionId) {
+            navigate(location.pathname, { replace: true, state: {} });
+        }
     }, [
         loading,
         students,
-        modalStudent,
-        tab,
         location?.state?.openEtudiantId,
-        location?.state?.openStudentId,
+        location?.state?.etudiantOffreDecisionId,
+        tab,
+        modalStudent,
         navigate,
         location.pathname,
     ]);

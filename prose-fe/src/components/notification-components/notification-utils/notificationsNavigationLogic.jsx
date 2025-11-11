@@ -1,18 +1,26 @@
-export function getDefaultNavigationPath(user) {
-    if (user.role === "GESTIONNAIRE") return "/gestionnaire/candidatures";
-    if (user.role === "EMPLOYEUR") return `/employeur/posted-stages`;
-    if (user.role === "ETUDIANT") return `/etudiant/mon-cv`;
+export function getDefaultNavigationPath(role) {
+    if (role === "GESTIONNAIRE") return "/gestionnaire/candidatures";
+    if (role === "EMPLOYEUR") return `/employeur/posted-stages`;
+    if (role === "ETUDIANT") return `/etudiant/mon-cv`;
     return "/";
 }
 
 export function getNotificationNavigationPath(notification, role) {
-    const { stageId, candidatureId, etudiantId, cvId, convocation, candidatureResponseId, stageResponseId } = notification;
+    const {
+        stageId,
+        candidatureId,
+        etudiantId,
+        cvId,
+        convocation,
+        stageResponseId,
+        etudiantOffreDecisionId
+    } = notification;
     const isCandidature = Boolean(notification?.candidature || notification?.candidatureId);
-    const isEmployeurResponse = Boolean(candidatureResponseId || (notification?.candidatureId && notification?.hasOwnProperty('accepted')));
+    const isEtudiantOffreDecision = Boolean(etudiantOffreDecisionId);
 
     if (role === "EMPLOYEUR") {
-        if (isEmployeurResponse) {
-            const candId = candidatureResponseId || candidatureId;
+        if (isEtudiantOffreDecision) {
+            const candId = etudiantOffreDecisionId;
             const stage = stageResponseId || stageId;
 
             if (stage && candId) {
@@ -53,6 +61,14 @@ export function getNotificationNavigationPath(notification, role) {
     }
 
     else if (role === "GESTIONNAIRE") {
+        if (notification.type === "employeur_response") {
+            if (etudiantOffreDecisionId) {
+                return {
+                    path: getDefaultNavigationPath(role),
+                    state: { etudiantOffreDecisionId: etudiantOffreDecisionId }
+                };
+            }
+        }
         if (isCandidature && stageId) {
             return {
                 path: getDefaultNavigationPath(role),
@@ -77,7 +93,7 @@ export function getNotificationNavigationPath(notification, role) {
                 state: { openEtudiantId: etudiantId }
             };
         }
-        if (candidatureDecisionId) {
+        if (notification.type === "candidature_decision") {
             return {
                 path: getDefaultNavigationPath(role),
                 state: { openEtudiantId: etudiantId }

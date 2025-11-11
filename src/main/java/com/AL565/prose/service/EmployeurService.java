@@ -35,7 +35,7 @@ public class EmployeurService {
     private CandidatureRepository candidatureRepository;
     private NotificationsHelper notificationsHelper;
     private PostulationNotificationRepository postulationNotificationRepository;
-    private EmployeurResponseNotificationRepository employeurResponseNotificationRepository;
+    private EtudiantOffreDecisionNotificationRepository etudiantOffreDecisionNotificationRepository;
 
     public void enregistrer(EmployeurPasswordDTO employeurDTO) throws EmailAlreadyExistsException {
         if (proseUserRepository.findByCredentials_Username(employeurDTO.getEmail()).isPresent()) {
@@ -215,8 +215,8 @@ public class EmployeurService {
     @Transactional
     public NotificationsResponseDTO getEmployeurResponseNotifications(String employeurEmail) throws Exception {
         try {
-            List<EmployeurResponseNotification> notifications =
-                    employeurResponseNotificationRepository
+            List<EtudiantOffreDecisionNotification> notifications =
+                    etudiantOffreDecisionNotificationRepository
                             .findByEmployeurResponseEmailAndFirstRecipientReadAt(employeurEmail, null);
             NotificationGroupDTO group = NotificationGroupDTO.toDTO("employeur_response", notifications);
             return NotificationsResponseDTO.toDTO(List.of(group));
