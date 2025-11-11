@@ -10,15 +10,15 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-@DiscriminatorValue("employeur_response")
+@DiscriminatorValue("etudiant_offre_decision")
 @NoArgsConstructor
 @AllArgsConstructor
-public class EmployeurResponseNotification extends Notification {
+public class EtudiantOffreDecisionNotification extends Notification {
     private Long candidatureResponseId;
     private Long etudiantResponseId;
     private Long stageResponseId;
     private String employeurResponseEmail;
-    private boolean accepted;
+    private boolean isOffreAcceptedByStudent;
     private String comment;
 }
 

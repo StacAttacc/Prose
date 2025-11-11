@@ -24,6 +24,7 @@ public class NotificationSummaryDTO {
     private Long candidatureId;
     private Long candidatureDecisionId;
     private Long candidatureResponseId;
+    private Long etudiantOffreDecisionId;
     private Long etudiantId;
     private Long convocation;
 
@@ -36,6 +37,7 @@ public class NotificationSummaryDTO {
         Long cvId = null;
         Long etudiantId = null;
         Long convocation = null;
+        Long etudiantOffreDecisionId = null;
 
         switch (n) {
             case StageNotification sn -> {
@@ -57,12 +59,12 @@ public class NotificationSummaryDTO {
                     if (candidatueEtudiantId != null) etudiantId = candidatueEtudiantId;
                 }
             }
-            case EmployeurResponseNotification ern -> {
+            case EtudiantOffreDecisionNotification ern -> {
                 Long candidatureResponseId = ern.getCandidatureResponseId();
                 Long stageResponseId = ern.getStageResponseId();
                 Long etudiantResponseId = ern.getEtudiantResponseId();
                 if (candidatureResponseId != null) {
-                    candidatureId = candidatureResponseId;
+                    etudiantOffreDecisionId = candidatureResponseId;
                     if (stageResponseId != null) stageId = stageResponseId;
                     if (etudiantResponseId != null) etudiantId = etudiantResponseId;
                 }
@@ -96,6 +98,7 @@ public class NotificationSummaryDTO {
                 .cvId(cvId)
                 .convocation(convocation)
                 .candidatureDecisionId(candidatureDecisionId)
+                .etudiantOffreDecisionId(etudiantOffreDecisionId)
                 .build();
     }
 }
