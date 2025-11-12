@@ -25,7 +25,10 @@ export function NotificationItem({ notification, markAndNavigate, typeKey, setRe
     }
 
     return (
-        <li key={notification.id} className="flex items-center gap-3 p-2 hover:bg-gray-100 rounded">
+        <li
+            key={notification.id}
+            className="flex items-center gap-3 p-2 hover:bg-gray-100 rounded"
+        >
             <div
                 className="flex items-start gap-3 flex-1"
                 onClick={(e) => markAndNavigate(e, notification, typeKey)}
