@@ -7,9 +7,9 @@ import lombok.Data;
 @Data
 public class ProfesseurPasswordDTO extends ProseUserDTO {
     private String password;
-    private Discipline discipline;
+    private String discipline;
 
     public static Professeur toModel(ProfesseurPasswordDTO dto) {
-        return new Professeur(dto.getFirstName(), dto.getLastName(), dto.getEmail(), dto.getPassword(), dto.getDiscipline());
+        return new Professeur(dto.getFirstName(), dto.getLastName(), dto.getEmail(), dto.getPassword(), Discipline.valueOf(dto.getDiscipline().toUpperCase()));
     }
 }
