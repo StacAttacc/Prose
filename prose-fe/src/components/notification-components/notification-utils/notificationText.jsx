@@ -5,31 +5,36 @@ export function setI18nInstance(instance) {
 }
 
 export function labelForKey(key) {
-    if (key === "stage") return `nouvelles offre(s) de stage à approuver`;
-    if (key === "postulation") return `nouvelles candidature(s) reçue(s)`;
-    if (key === "employeur_response") return `réponse(s) d'étudiant(s) à vos offres`;
-    if (key === "gestionnaire_cv") return `nouveau(x) CV(s) à examiner`;
-    if (key === "etudiant_cv") return `changement sur votre CV`;
-    if (key === "convocation") return `nouvelle(s) convocation(s)`;
-    if (key === "candidature_decision") return `nouvelles(s) candidatures mise(s) à jour`;
-    return `${key} notification(s)`;
     if (!i18nInstance) {
         // Fallback si i18n n'est pas encore initialisé
         if (key === "stage") return `nouvelles offre(s) de stage à approuver`;
         if (key === "postulation") return `nouvelles candidature(s) reçue(s)`;
+        if (key === "employeur_response") return `réponse(s) d'étudiant(s) à vos offres`;
         if (key === "gestionnaire_cv") return `nouveau(x) CV(s) à examiner`;
         if (key === "etudiant_cv") return `changement sur votre CV`;
         if (key === "convocation") return `nouvelle(s) convocation(s)`;
         return `${key} notification(s)`;
     }
     
-    const t = i18nInstance.t;
-    if (key === "stage") return t('nouvellesOffresStage');
-    if (key === "postulation") return t('nouvellesCandidatures');
-    if (key === "gestionnaire_cv") return t('nouveauxCVs');
-    if (key === "etudiant_cv") return t('changementCV');
-    if (key === "convocation") return t('nouvellesConvocations');
-    return `${key} ${t('notifications')}`;
+    try {
+        const t = i18nInstance.t;
+        if (key === "stage") return t('nouvellesOffresStage');
+        if (key === "postulation") return t('nouvellesCandidatures');
+        if (key === "employeur_response") return t('reponsesEtudiants');
+        if (key === "gestionnaire_cv") return t('nouveauxCVs');
+        if (key === "etudiant_cv") return t('changementCV');
+        if (key === "convocation") return t('nouvellesConvocations');
+        return `${key} ${t('notifications')}`;
+    } catch (err) {
+        // Fallback en cas d'erreur
+        if (key === "stage") return `nouvelles offre(s) de stage à approuver`;
+        if (key === "postulation") return `nouvelles candidature(s) reçue(s)`;
+        if (key === "employeur_response") return `réponse(s) d'étudiant(s) à vos offres`;
+        if (key === "gestionnaire_cv") return `nouveau(x) CV(s) à examiner`;
+        if (key === "etudiant_cv") return `changement sur votre CV`;
+        if (key === "convocation") return `nouvelle(s) convocation(s)`;
+        return `${key} notification(s)`;
+    }
 }
 
 export function shortText(text, max = 80) {
@@ -40,11 +45,12 @@ export function shortText(text, max = 80) {
 export function translateNotificationMessage(message) {
     if (!i18nInstance || !message) return message;
     
-    const t = i18nInstance.t;
-    const locale = i18nInstance.locale;
-    
-    // Si on est déjà en français, pas besoin de traduire
-    if (locale === 'fr') return message;
+    try {
+        const t = i18nInstance.t;
+        const locale = i18nInstance.locale;
+        
+        // Si on est déjà en français, pas besoin de traduire
+        if (locale === 'fr') return message;
     
     // Traductions des messages de notification de CV
     const translations = {
@@ -102,4 +108,9 @@ export function translateNotificationMessage(message) {
     }
     
     return message;
+    } catch (err) {
+        // En cas d'erreur, retourner le message original
+        console.error("Error translating notification message:", err);
+        return message;
+    }
 }

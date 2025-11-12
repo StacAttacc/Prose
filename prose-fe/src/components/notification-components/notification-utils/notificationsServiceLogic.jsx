@@ -19,24 +19,34 @@ export async function fetchNotifications(user) {
     if (user.role === "GESTIONNAIRE") {
         return await getGestionnaireNotifications(user.token);
     } else if (user.role === "EMPLOYEUR") {
-        const [candidatureNotifs, responseNotifs] = await Promise.all([
-            getEmployeurCandidatureNotifications(user.email, user.token),
-            getEmployeurResponseNotifications(user.email, user.token)
-        ]);
+        try {
+            const [candidatureNotifs, responseNotifs] = await Promise.allSettled([
+                getEmployeurCandidatureNotifications(user.email, user.token),
+                getEmployeurResponseNotifications(user.email, user.token)
+            ]);
 
-        const allGroups = [
-            ...(candidatureNotifs?.data?.groups || []),
-            ...(responseNotifs?.data?.groups || [])
-        ];
+            const allGroups = [
+                ...(candidatureNotifs.status === 'fulfilled' ? (candidatureNotifs.value?.data?.groups || []) : []),
+                ...(responseNotifs.status === 'fulfilled' ? (responseNotifs.value?.data?.groups || []) : [])
+            ];
 
-        const totalCount = allGroups.reduce((sum, group) => sum + (group?.items?.length || 0), 0);
+            const totalCount = allGroups.reduce((sum, group) => sum + (group?.items?.length || 0), 0);
 
-        return {
-            data: {
-                groups: allGroups,
-                totalCount: totalCount
-            }
-        };
+            return {
+                data: {
+                    groups: allGroups,
+                    totalCount: totalCount
+                }
+            };
+        } catch (err) {
+            console.error("Error fetching employer notifications:", err);
+            return {
+                data: {
+                    groups: [],
+                    totalCount: 0
+                }
+            };
+        }
     } else if (user.role === "ETUDIANT") {
         return await getEtudiantNotifications(user.token);
     } else return null;
