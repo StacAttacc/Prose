@@ -7,6 +7,7 @@ import { server } from '../../mocks/server';
 import { http, HttpResponse } from 'msw';
 import { useAuth } from '../../../context/AuthContext';
 import { useI18n } from '../../../context/I18nContext';
+import { useYear } from '../../../context/YearContext';
 
 vi.mock('../../../context/AuthContext', async (importOriginal) => {
   const actual = await importOriginal();
@@ -21,6 +22,14 @@ vi.mock('../../../context/I18nContext', async (importOriginal) => {
   return {
     ...actual,
     useI18n: vi.fn()
+  };
+});
+
+vi.mock('../../../context/YearContext', async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    useYear: vi.fn()
   };
 });
 
@@ -74,9 +83,6 @@ describe('PostedStages', () => {
       approuvee: 'Approuvée',
       rejetee: 'Rejetée',
       publiee: 'Publiée',
-      sessionsAnterieures: 'Sessions',
-      sessionsActuellesFutures: 'Sessions actuelles/futures',
-      toutesLesSessions: 'Toutes les sessions',
       effacerFiltres: 'Effacer les filtres',
       stagesTrouves: (p) => `${p?.count || 0} stage(s) trouvé(s) sur ${p?.total || 0} au total`,
       chargementStagesEmployeur: 'Chargement des stages...',
@@ -109,6 +115,10 @@ describe('PostedStages', () => {
       t: mockT,
       locale: 'fr',
       setLocale: vi.fn()
+    });
+    vi.mocked(useYear).mockReturnValue({
+      selectedYear: '2025',
+      setSelectedYear: vi.fn()
     });
   });
 
@@ -149,19 +159,6 @@ describe('PostedStages', () => {
     expect(screen.getByText('Effacer les filtres')).toBeInTheDocument();
   });
 
-  it('devrait afficher le filtre de sessions', async () => {
-    renderWithProviders(<PostedStages />);
-
-    await waitFor(() => {
-      expect(screen.getByText('Sessions')).toBeInTheDocument();
-    });
-
-    const sessionSelect = screen.getAllByRole('combobox').find(select => 
-      select.querySelector('option[value="current"]')
-    );
-    expect(sessionSelect).toBeInTheDocument();
-    expect(screen.getByText('Sessions actuelles/futures')).toBeInTheDocument();
-  });
 
   it('devrait filtrer les stages par recherche', async () => {
     const user = userEvent.setup();
@@ -220,29 +217,50 @@ describe('PostedStages', () => {
     }
   });
 
-  it('devrait filtrer les stages par sessions antérieures', async () => {
-    const user = userEvent.setup();
+  it('devrait charger les stages de l\'année sélectionnée (2025)', async () => {
+    vi.mocked(useYear).mockReturnValue({
+      selectedYear: '2025',
+      setSelectedYear: vi.fn()
+    });
+
     renderWithProviders(<PostedStages />);
 
     await waitFor(() => {
       expect(screen.getByText('Stage Développeur Web')).toBeInTheDocument();
     });
 
-    expect(screen.queryByText('Stage Développeur Backend')).not.toBeInTheDocument();
+    expect(screen.getByText('Stage Analyste Données')).toBeInTheDocument();
+    expect(screen.getByText('Stage Designer UI/UX')).toBeInTheDocument();
+  });
 
-    const sessionSelects = screen.getAllByRole('combobox');
-    const sessionSelect = sessionSelects.find(select => 
-      select.querySelector('option[value="all"]')
-    );
-    
-    if (sessionSelect) {
-      await user.selectOptions(sessionSelect, 'all');
+  it('devrait charger les stages de l\'année 2026 quand l\'année change', async () => {
+    vi.mocked(useYear).mockReturnValue({
+      selectedYear: '2026',
+      setSelectedYear: vi.fn()
+    });
 
-      await waitFor(() => {
-        expect(screen.getByText('Stage Développeur Backend')).toBeInTheDocument();
-        expect(screen.getByText('Stage Data Analyst')).toBeInTheDocument();
-      });
-    }
+    renderWithProviders(<PostedStages />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Stage Développeur Web')).toBeInTheDocument();
+    });
+
+    expect(screen.getByText('Stage Analyste Données')).toBeInTheDocument();
+  });
+
+  it('devrait charger les stages de l\'année 2024 quand l\'année change', async () => {
+    vi.mocked(useYear).mockReturnValue({
+      selectedYear: '2024',
+      setSelectedYear: vi.fn()
+    });
+
+    renderWithProviders(<PostedStages />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Stage Développeur Backend')).toBeInTheDocument();
+    });
+
+    expect(screen.getByText('Stage Data Analyst')).toBeInTheDocument();
   });
 
   it('devrait afficher les informations de chaque stage', async () => {
@@ -376,41 +394,5 @@ describe('PostedStages', () => {
     });
   });
 
-  it('devrait exclure les stages antérieurs par défaut', async () => {
-    renderWithProviders(<PostedStages />);
-
-    await waitFor(() => {
-      expect(screen.getByText('Stage Développeur Web')).toBeInTheDocument();
-    });
-
-    // Les stages antérieurs ne devraient pas être affichés
-    expect(screen.queryByText('Stage Développeur Backend')).not.toBeInTheDocument();
-    expect(screen.queryByText('Stage Data Analyst')).not.toBeInTheDocument();
-  });
-
-  it('devrait inclure les stages antérieurs quand le filtre est activé', async () => {
-    const user = userEvent.setup();
-    renderWithProviders(<PostedStages />);
-
-    await waitFor(() => {
-      expect(screen.getByText('Stage Développeur Web')).toBeInTheDocument();
-    });
-
-    // Sélectionner "Toutes les sessions"
-    const sessionSelects = screen.getAllByRole('combobox');
-    const sessionSelect = sessionSelects.find(select => 
-      select.querySelector('option[value="all"]')
-    );
-    
-    if (sessionSelect) {
-      await user.selectOptions(sessionSelect, 'all');
-
-      await waitFor(() => {
-        // Vérifier que les stages antérieurs sont maintenant affichés
-        expect(screen.getByText('Stage Développeur Backend')).toBeInTheDocument();
-        expect(screen.getByText('Stage Data Analyst')).toBeInTheDocument();
-      }, { timeout: 3000 });
-    }
-  });
 });
 

@@ -327,49 +327,10 @@ export const handlers = [
 
   http.get(`${BASE_URL}/employeur/:email/stages`, ({ request, params }) => {
     const url = new URL(request.url);
-    const includePreviousSessions = url.searchParams.get('includePreviousSessions') === 'true';
+    const year = url.searchParams.get('year') || '2025';
     const email = params.email;
 
-    const currentStages = [
-      {
-        id: 1,
-        title: 'Stage Développeur Web',
-        description: 'Développement d\'applications web modernes',
-        location: 'Montréal',
-        compensation: '25$/h',
-        status: 'APPROUVEE',
-        startDate: '2026-06-01',
-        endDate: '2026-08-31',
-        skills: ['React', 'Node.js', 'TypeScript'],
-        createdAt: '2025-01-15T00:00:00Z'
-      },
-      {
-        id: 2,
-        title: 'Stage Analyste Données',
-        description: 'Analyse de données et machine learning',
-        location: 'Québec',
-        compensation: '22$/h',
-        status: 'PUBLIEE',
-        startDate: '2026-09-01',
-        endDate: '2026-12-31',
-        skills: ['Python', 'SQL', 'Pandas'],
-        createdAt: '2025-02-01T00:00:00Z'
-      },
-      {
-        id: 3,
-        title: 'Stage Designer UI/UX',
-        description: 'Design d\'interfaces utilisateur',
-        location: 'Montréal',
-        compensation: '24$/h',
-        status: 'SOUMISE',
-        startDate: '2026-05-01',
-        endDate: '2026-07-31',
-        skills: ['Figma', 'Adobe XD'],
-        createdAt: '2025-03-10T00:00:00Z'
-      }
-    ];
-
-    const previousStages = [
+    const stages2024 = [
       {
         id: 4,
         title: 'Stage Développeur Backend',
@@ -396,13 +357,90 @@ export const handlers = [
       }
     ];
 
-    const allStages = includePreviousSessions 
-      ? [...currentStages, ...previousStages]
-      : currentStages;
+    const stages2025 = [
+      {
+        id: 1,
+        title: 'Stage Développeur Web',
+        description: 'Développement d\'applications web modernes',
+        location: 'Montréal',
+        compensation: '25$/h',
+        status: 'APPROUVEE',
+        startDate: '2025-06-01',
+        endDate: '2025-08-31',
+        skills: ['React', 'Node.js', 'TypeScript'],
+        createdAt: '2025-01-15T00:00:00Z'
+      },
+      {
+        id: 2,
+        title: 'Stage Analyste Données',
+        description: 'Analyse de données et machine learning',
+        location: 'Québec',
+        compensation: '22$/h',
+        status: 'PUBLIEE',
+        startDate: '2025-09-01',
+        endDate: '2025-12-31',
+        skills: ['Python', 'SQL', 'Pandas'],
+        createdAt: '2025-02-01T00:00:00Z'
+      },
+      {
+        id: 3,
+        title: 'Stage Designer UI/UX',
+        description: 'Design d\'interfaces utilisateur',
+        location: 'Montréal',
+        compensation: '24$/h',
+        status: 'SOUMISE',
+        startDate: '2025-05-01',
+        endDate: '2025-07-31',
+        skills: ['Figma', 'Adobe XD'],
+        createdAt: '2025-03-10T00:00:00Z'
+      }
+    ];
+
+    const stages2026 = [
+      {
+        id: 6,
+        title: 'Stage Développeur Web',
+        description: 'Développement d\'applications web modernes',
+        location: 'Montréal',
+        compensation: '25$/h',
+        status: 'APPROUVEE',
+        startDate: '2026-06-01',
+        endDate: '2026-08-31',
+        skills: ['React', 'Node.js', 'TypeScript'],
+        createdAt: '2026-01-15T00:00:00Z'
+      },
+      {
+        id: 7,
+        title: 'Stage Analyste Données',
+        description: 'Analyse de données et machine learning',
+        location: 'Québec',
+        compensation: '22$/h',
+        status: 'PUBLIEE',
+        startDate: '2026-09-01',
+        endDate: '2026-12-31',
+        skills: ['Python', 'SQL', 'Pandas'],
+        createdAt: '2026-02-01T00:00:00Z'
+      }
+    ];
+
+    const getStagesByYear = (yearParam) => {
+      switch (yearParam) {
+        case '2024':
+          return stages2024;
+        case '2025':
+          return stages2025;
+        case '2026':
+          return stages2026;
+        default:
+          return stages2025;
+      }
+    };
+
+    const stages = getStagesByYear(year);
 
     return HttpResponse.json({
       message: 'Trouvés',
-      data: allStages
+      data: stages
     });
   })
 ];
