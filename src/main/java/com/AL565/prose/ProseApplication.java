@@ -1,5 +1,6 @@
 package com.AL565.prose;
 
+import com.AL565.prose.model.Discipline;
 import com.AL565.prose.repository.NotificationRepository;
 import com.AL565.prose.repository.PostulationNotificationRepository;
 import com.AL565.prose.service.EtudiantService;
@@ -8,6 +9,7 @@ import com.AL565.prose.service.EmployeurService;
 import com.AL565.prose.service.dto.EmployeurPasswordDTO;
 import com.AL565.prose.service.dto.EtudiantPasswordDTO;
 import com.AL565.prose.service.dto.GestionnairePasswordDTO;
+import com.AL565.prose.service.dto.ProfesseurPasswordDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import lombok.AllArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
@@ -69,6 +71,13 @@ public class ProseApplication {
             } catch (EmailAlreadyExistsException e) {
                 System.out.println();
             }
+
+            ProfesseurPasswordDTO professeurRobert = new ProfesseurPasswordDTO();
+            professeurRobert.setFirstName("Robert");
+            professeurRobert.setLastName("Duval");
+            professeurRobert.setEmail("professeur@professeur.com");
+            professeurRobert.setPassword("password123");
+            professeurRobert.setDiscipline(Discipline.INFORMATIQUE);
         };
     }
 }
