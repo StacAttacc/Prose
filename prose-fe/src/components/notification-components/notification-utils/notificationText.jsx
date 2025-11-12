@@ -5,31 +5,37 @@ export function setI18nInstance(instance) {
 }
 
 export function labelForKey(key) {
-    if (key === "stage") return `nouvelles offre(s) de stage à approuver`;
-    if (key === "postulation") return `nouvelles candidature(s) reçue(s)`;
-    if (key === "employeur_response") return `réponse(s) d'étudiant(s) à vos offres`;
-    if (key === "gestionnaire_cv") return `nouveau(x) CV(s) à examiner`;
-    if (key === "etudiant_cv") return `changement sur votre CV`;
-    if (key === "convocation") return `nouvelle(s) convocation(s)`;
-    if (key === "candidature_decision") return `nouvelles(s) candidatures mise(s) à jour`;
-    return `${key} notification(s)`;
-    if (!i18nInstance) {
-        // Fallback si i18n n'est pas encore initialisé
-        if (key === "stage") return `nouvelles offre(s) de stage à approuver`;
-        if (key === "postulation") return `nouvelles candidature(s) reçue(s)`;
-        if (key === "gestionnaire_cv") return `nouveau(x) CV(s) à examiner`;
-        if (key === "etudiant_cv") return `changement sur votre CV`;
-        if (key === "convocation") return `nouvelle(s) convocation(s)`;
-        return `${key} notification(s)`;
+    switch (key) {
+        case "stage": {
+            return i18nInstance ? `nouvelles offre(s) de stage à approuver`:
+                i18nInstance.t('nouvellesOffresStage');
+        }
+        case"postulation": {
+            return i18nInstance ? `nouvelles candidature(s) reçue(s)`:
+                i18nInstance.t('nouvellesCandidatures');
+        }
+        case "employeur_response": {
+            return i18nInstance ? `réponse(s) d'étudiant(s) à vos offres`:
+                i18nInstance.t('reponsesEtudiantsOffres');
+        }
+        case "gestionnaire_cv": {
+            return i18nInstance ? `nouveau(x) CV(s) à examiner`:
+                i18nInstance.t('nouveauxCVs');
+        }
+        case "etudiant_cv": {
+            return i18nInstance ? `changement sur votre CV`:
+                i18nInstance.t('changementCV');
+        }
+        case "convocation": {
+            return i18nInstance ? `nouvelle(s) convocation(s)`:
+                i18nInstance.t('nouvellesConvocations');
+        }
+        case "candidature_decision": {
+            return i18nInstance ? `nouvelles(s) candidatures mise(s) à jour`:
+                i18nInstance.t('nouvellesCandidaturesMisesAJour');
+        }
+        default: return `${key} notification(s)`;
     }
-    
-    const t = i18nInstance.t;
-    if (key === "stage") return t('nouvellesOffresStage');
-    if (key === "postulation") return t('nouvellesCandidatures');
-    if (key === "gestionnaire_cv") return t('nouveauxCVs');
-    if (key === "etudiant_cv") return t('changementCV');
-    if (key === "convocation") return t('nouvellesConvocations');
-    return `${key} ${t('notifications')}`;
 }
 
 export function shortText(text, max = 80) {
