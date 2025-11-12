@@ -74,42 +74,42 @@ class NotificationsServiceLayerTest {
     void getNotifications_returnsNotifications() throws Exception {
         StageNotification n1 = new StageNotification();
         n1.setType(NotificationType.STAGE_NOTIFICATION);
-        n1.setMessage("Stage submitted");
+        n1.setMessageEN("Stage submitted");
         n1.setCreatedAt(LocalDateTime.now());
 
         StageNotification n2 = new StageNotification();
         n2.setType(NotificationType.STAGE_NOTIFICATION);
-        n2.setMessage("Stage updated");
+        n2.setMessageEN("Stage updated");
         n2.setCreatedAt(LocalDateTime.now());
 
         PostulationNotification n3 = new PostulationNotification();
         n3.setType(NotificationType.POSTULATION_NOTIFICATION);
-        n3.setMessage("New application");
+        n3.setMessageEN("New application");
         n3.setCreatedAt(LocalDateTime.now());
 
         GestionnaireCvNotification n4 = new GestionnaireCvNotification();
         n4.setType(NotificationType.GESTIONNAIRE_CV_NOTIFICATION);
-        n4.setMessage("New CV uploaded");
+        n4.setMessageEN("New CV uploaded");
         n4.setCreatedAt(LocalDateTime.now());
 
         EtudiantCvNotification n5 = new EtudiantCvNotification();
         n5.setType(NotificationType.ETUDIANT_CV_NOTIFICATION);
-        n5.setMessage("CV processed");
+        n5.setMessageEN("CV processed");
         n5.setCreatedAt(LocalDateTime.now());
 
         EtudiantOffreDecisionNotification n6 = new EtudiantOffreDecisionNotification();
         n6.setType(NotificationType.ETUDIANT_OFFRE_DECCISION_NOTIFICATION);
-        n6.setMessage("Offer decision made");
+        n6.setMessageEN("Offer decision made");
         n6.setCreatedAt(LocalDateTime.now());
 
         ConvocationNotification n7 = new ConvocationNotification();
         n7.setType(NotificationType.CONVOCATION_NOTIFICATION);
-        n7.setMessage("New convocation");
+        n7.setMessageEN("New convocation");
         n7.setCreatedAt(LocalDateTime.now());
 
         CandidatureDecisionNotification n8 = new CandidatureDecisionNotification();
         n8.setType(NotificationType.CANDIDATURE_DECISION_NOTIFICATION);
-        n8.setMessage("Candidature decision made");
+        n8.setMessageEN("Candidature decision made");
         n8.setCreatedAt(LocalDateTime.now());
 
         when(notificationRepository.findNotificationsByTypeAndFirstRecipientReadAt(NotificationType.STAGE_NOTIFICATION, null))
@@ -149,23 +149,23 @@ class NotificationsServiceLayerTest {
         assertThat(gestionnaireResult.getTotalCount()).isEqualTo(4);
         assertThat(gestionnaireResult.getGroups()).hasSize(6);
         assertThat(gestionnaireResult.getGroups().get(0).getItems()).hasSize(2);
-        assertThat(gestionnaireResult.getGroups().get(0).getItems().getFirst().getMessage()).isEqualTo("Stage submitted");
-        assertThat(gestionnaireResult.getGroups().get(1).getItems().getFirst().getMessage()).isEqualTo("New application");
-        assertThat(gestionnaireResult.getGroups().get(2).getItems().getFirst().getMessage()).isEqualTo("New CV uploaded");
+        assertThat(gestionnaireResult.getGroups().get(0).getItems().getFirst().getMessageEN()).isEqualTo("Stage submitted");
+        assertThat(gestionnaireResult.getGroups().get(1).getItems().getFirst().getMessageEN()).isEqualTo("New application");
+        assertThat(gestionnaireResult.getGroups().get(2).getItems().getFirst().getMessageEN()).isEqualTo("New CV uploaded");
 
         assertThat(etudiantResult).isNotNull();
         assertThat(etudiantResult.getTotalCount()).isEqualTo(3);
         assertThat(etudiantResult.getGroups()).hasSize(3);
         assertThat(etudiantResult.getGroups().getFirst().getItems()).hasSize(1);
-        assertThat(etudiantResult.getGroups().getFirst().getItems().getFirst().getMessage()).isEqualTo("CV processed");
-        assertThat(etudiantResult.getGroups().get(1).getItems().getFirst().getMessage()).isEqualTo("New convocation");
-        assertThat(etudiantResult.getGroups().get(2).getItems().getFirst().getMessage()).isEqualTo("Candidature decision made");
+        assertThat(etudiantResult.getGroups().getFirst().getItems().getFirst().getMessageEN()).isEqualTo("CV processed");
+        assertThat(etudiantResult.getGroups().get(1).getItems().getFirst().getMessageEN()).isEqualTo("New convocation");
+        assertThat(etudiantResult.getGroups().get(2).getItems().getFirst().getMessageEN()).isEqualTo("Candidature decision made");
 
         assertThat(etudiantOffreDecision).isNotNull();
         assertThat(etudiantOffreDecision.getTotalCount()).isEqualTo(1);
         assertThat(etudiantOffreDecision.getGroups()).hasSize(1);
         assertThat(etudiantOffreDecision.getGroups().getFirst().getItems()).hasSize(1);
-        assertThat(etudiantOffreDecision.getGroups().getFirst().getItems().getFirst().getMessage()).isEqualTo("Offer decision made");
+        assertThat(etudiantOffreDecision.getGroups().getFirst().getItems().getFirst().getMessageEN()).isEqualTo("Offer decision made");
     }
 
     @Test

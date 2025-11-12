@@ -374,7 +374,7 @@ class EmployeurControllerTest {
         notification1.setCandidatureResponseId(10L);
         notification1.setOffreAcceptedByStudent(true);
         notification1.setComment("Je suis ravi d'accepter!");
-        notification1.setMessage("Jean Dupont a accepté l'offre pour le stage Développeur Java");
+        notification1.setMessageFR("Jean Dupont a accepté l'offre pour le stage Développeur Java");
         notification1.setCreatedAt(LocalDateTime.now());
 
         EtudiantOffreDecisionNotification notification2 = new EtudiantOffreDecisionNotification();
@@ -383,7 +383,7 @@ class EmployeurControllerTest {
         notification2.setCandidatureResponseId(11L);
         notification2.setOffreAcceptedByStudent(false);
         notification2.setComment("J'ai accepté une autre offre");
-        notification2.setMessage("Marie Tremblay a refusé l'offre pour le stage Développeur Java");
+        notification2.setMessageFR("Marie Tremblay a refusé l'offre pour le stage Développeur Java");
         notification2.setCreatedAt(LocalDateTime.now());
 
         NotificationGroupDTO group = NotificationGroupDTO.toDTO("employeur_response", List.of(notification1, notification2));

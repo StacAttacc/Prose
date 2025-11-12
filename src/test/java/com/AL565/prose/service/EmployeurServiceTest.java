@@ -215,7 +215,7 @@ class EmployeurServiceTest {
         notification1.setStageResponseId(3L);
         notification1.setOffreAcceptedByStudent(true);
         notification1.setComment("Je suis ravi d'accepter!");
-        notification1.setMessage("Jean Dupont a accepté l'offre pour le stage Développeur Java");
+        notification1.setMessageFR("Jean Dupont a accepté l'offre pour le stage Développeur Java");
         notification1.setCreatedAt(LocalDateTime.now());
         notification1.setFirstRecipientReadAt(null);
 
@@ -227,7 +227,7 @@ class EmployeurServiceTest {
         notification2.setStageResponseId(3L);
         notification2.setOffreAcceptedByStudent(false);
         notification2.setComment("J'ai accepté une autre offre");
-        notification2.setMessage("Marie Tremblay a refusé l'offre pour le stage Développeur Java");
+        notification2.setMessageFR("Marie Tremblay a refusé l'offre pour le stage Développeur Java");
         notification2.setCreatedAt(LocalDateTime.now());
         notification2.setFirstRecipientReadAt(null);
 
