@@ -33,7 +33,12 @@ export default function Notifications() {
     }, []);
 
     useEffect(() => {
+        let timerId;
+        let inFlight = false;
+
         async function fetchData() {
+            if (inFlight) return;
+
             if (!user?.token) {
                 setNotificationsByType({});
                 setLoading(false);
@@ -41,6 +46,7 @@ export default function Notifications() {
                 return;
             }
 
+            inFlight = true;
             setLoading(true);
             setError(null);
             try {
@@ -54,10 +60,16 @@ export default function Notifications() {
                     setNotificationsByType({});
                 }
             } finally {
+                inFlight = false;
                 if (mountedRef.current) setLoading(false);
             }
         }
         fetchData();
+        timerId = setInterval(fetchData, 30);
+        return () => {
+            clearInterval(timerId)
+        }
+
     }, [user, readCounter]);
 
     useEffect(() => {
