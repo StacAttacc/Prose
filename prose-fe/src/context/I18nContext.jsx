@@ -106,8 +106,10 @@ const translations = {
     // Notifications
     nouvellesOffresStage: 'nouvelles offre(s) de stage à approuver',
     nouvellesCandidatures: 'nouvelles candidature(s) reçue(s)',
+    candidaturesUpdates: 'nouvelle(s) sur votre/vos candidature(s)',
+    reponsesEtudiantsOffres: 'nouvelle(s) décision(s) au(x) stages(s)',
     nouveauxCVs: 'nouveau(x) CV(s) à examiner',
-    changementCV: 'changement sur votre CV',
+    changementCV: 'mise à jour sur votre CV',
     nouvellesConvocations: 'nouvelle(s) convocation(s)',
     notifications: 'notification(s)',
     noMessage: 'No message',
@@ -126,6 +128,7 @@ const translations = {
     aConvouquePourEntrevue: 'a convoqué',
     pourUneEntrevue: 'pour une entrevue',
     aCreeLeStage: 'a créé le stage',
+
     
     // GestionCV
     rechercherParNom: 'Rechercher par nom d\'étudiant...',
@@ -224,7 +227,7 @@ const translations = {
     offreAccepteeSucces: 'Vous avez accepté l\'offre avec succès',
     offreRefuseeSucces: 'Vous avez refusé l\'offre avec succès',
     erreurEnvoiReponse: 'Erreur lors de l\'envoi de votre réponse. Veuillez réessayer.',
-    
+
     // TeleversementCV (Étudiant)
     televerserCV: 'Téléverser un CV',
     choisirFichier: 'Choisir un fichier',
@@ -416,8 +419,10 @@ const translations = {
     // Notifications
     nouvellesOffresStage: 'new internship offer(s) to approve',
     nouvellesCandidatures: 'new application(s) received',
+    candidaturesUpdates: 'update(s) on your application(s)',
+    reponsesEtudiantsOffres: 'new decision(s) made on the internship(s)',
     nouveauxCVs: 'new CV(s) to review',
-    changementCV: 'change on your CV',
+    changementCV: 'update on your CV',
     nouvellesConvocations: 'new interview invitation(s)',
     notifications: 'notification(s)',
     noMessage: 'No message',

@@ -1,11 +1,11 @@
 function makeKeyForItem(item = {}, groupKey) {
     if (item?.convocation) return "convocation";
-    else if (item?.candidatureResponseId || (item?.candidatureId && item?.hasOwnProperty('accepted'))) return "employeur_response";
+    else if (item?.etudiantOffreDecisionId) return "etudiant_offre_decision";
     else if (item?.candidatureId) return "postulation";
     else if (item?.stageId) return "stage";
     else if (item?.cvId) return "gestionnaire_cv";
-    else if (item?.etudiantId) return "etudiant_cv";
     else if (item?.candidatureDecisionId) return "candidature_decision";
+    else if (item?.etudiantId) return "etudiant_cv";
     else if (groupKey && typeof groupKey === "string" && !/\s/.test(groupKey)) return groupKey.toLowerCase();
     else if (item?.type) {
         return String(item.type)

@@ -9,12 +9,12 @@ export function setI18nInstance(instance) {
 export function labelForKey(key) {
     switch (key) {
         case "stage": return useI18n().t('nouvellesOffresStage');
-        case"postulation": return useI18n().t('nouvellesCandidatures');
-        case "employeur_response": return useI18n().t('reponsesEtudiantsOffres');
+        case "postulation": return useI18n().t('nouvellesCandidatures');
+        case "etudiant_offre_decision": return useI18n().t('reponsesEtudiantsOffres');
         case "gestionnaire_cv": return useI18n().t('nouveauxCVs');
         case "etudiant_cv": return useI18n().t('changementCV');
         case "convocation": return useI18n().t('nouvellesConvocations');
-        case "candidature_decision": return useI18n().t('nouvellesCandidaturesMisesAJour');
+        case "candidature_decision": return useI18n().t('candidaturesUpdates');
         default: return `${key} notification(s)`;
     }
 }

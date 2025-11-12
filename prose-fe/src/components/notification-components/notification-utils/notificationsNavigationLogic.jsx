@@ -50,7 +50,7 @@ export function getNotificationNavigationPath(notification, role) {
     }
 
     else if (role === "GESTIONNAIRE") {
-        if (notification.type === "employeur_response") {
+        if (notification.type === "etudiant_offre_decision") {
             if (etudiantOffreDecisionId) {
                 return {
                     path: getDefaultNavigationPath(role),
