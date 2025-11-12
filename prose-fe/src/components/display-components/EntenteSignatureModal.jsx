@@ -95,9 +95,9 @@ export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSi
         } else if (status === "A_SIGNER") {
             // Cas théorique où l'utilisateur a signé mais le statut est encore A_SIGNER
             if (isStudent) {
-                return "En attente de la signature de l'employeur";
+                return "En attente de votre signature et de l'employeur";
             } else if (isEmployeur) {
-                return "En attente de la signature de l'étudiant";
+                return "En attente de votre signature et de l'étudiant";
             }
         }
         return null;
