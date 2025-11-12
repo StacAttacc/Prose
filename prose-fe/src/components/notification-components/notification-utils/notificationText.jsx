@@ -39,7 +39,7 @@ export function labelForKey(key) {
 }
 
 export function shortText(notification, i18, max = 80) {
-    if (!text) return "";
+    if (!notification.messageFR && !notification.messageEN) return "";
     if (i18) {
         if (i18.locale == 'en') {
             return notification.messageEN.length > max ? notification.messageEN.slice(0, max - 3) + "..." : notification.messageEN;
