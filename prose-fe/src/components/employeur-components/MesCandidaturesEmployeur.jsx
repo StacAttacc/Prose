@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useI18n } from "../../context/I18nContext.jsx";
+import { useYear } from "../../context/YearContext.jsx";
 import { getEmployeurStages } from "../../services/StageService.js";
 import { getStageApplicants } from "../../services/EmployeurService.js";
 import ErrorBanner from "../display-components/ErrorBanner.jsx";
@@ -11,6 +12,7 @@ import ScrollToTop from "../common/ScrollToTop.jsx";
 export default function MesCandidaturesEmployeur() {
     const { user } = useAuth();
     const { t } = useI18n();
+    const { selectedYear } = useYear();
     const navigate = useNavigate();
     
     const [allCandidatures, setAllCandidatures] = useState([]);
@@ -27,14 +29,13 @@ export default function MesCandidaturesEmployeur() {
                 setError(null);
                 
                 // Récupérer tous les stages de l'employeur
-                const stagesData = await getEmployeurStages(user.email, user.token);
+                const stagesData = await getEmployeurStages(user.email, user.token, selectedYear);
                 const stages = Array.isArray(stagesData) 
                     ? stagesData 
                     : Array.isArray(stagesData?.data) 
                         ? stagesData.data 
                         : [];
 
-                // Pour chaque stage, récupérer les candidatures
                 const candidaturesPromises = stages.map(async (stage) => {
                     try {
                         const candidatures = await getStageApplicants(stage.id);
@@ -61,10 +62,10 @@ export default function MesCandidaturesEmployeur() {
             }
         }
 
-        if (user?.email && user?.token) {
+        if (user?.email && user?.token && selectedYear) {
             fetchAllCandidatures();
         }
-    }, [user?.email, user?.token, t]);
+    }, [user?.email, user?.token, selectedYear, t]);
 
     const filteredCandidatures = useMemo(() => {
         return allCandidatures.filter(candidature => {

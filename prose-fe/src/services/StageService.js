@@ -11,10 +11,10 @@ export async function createStage(stage, token) {
     });
 }
 
-export async function getEmployeurStages(email, token, includePreviousSessions = false) {
+export async function getEmployeurStages(email, token, year = null) {
     const params = {};
-    if (includePreviousSessions) {
-        params.includePreviousSessions = 'true';
+    if (year) {
+        params.year = year;
     }
     
     const {data} = await axios.get(`${url}/employeur/${email}/stages`, {

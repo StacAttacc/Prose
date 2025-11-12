@@ -47,7 +47,7 @@ export default function Dashboard() {
                                                 <option value="en">English</option>
                                             </select>
                                         </div>
-                                        {user.role === "GESTIONNAIRE" && (
+                                        {(user.role === "GESTIONNAIRE" || user.role === "EMPLOYEUR") && (
                                             <div className="flex items-center gap-2">
                                                 <label className="text-white text-sm font-medium">{t('year')}:</label>
                                                 <select
@@ -55,8 +55,8 @@ export default function Dashboard() {
                                                     onChange={(e) => setSelectedYear(e.target.value)}
                                                     className="px-3 py-2 border border-white/30 rounded-md bg-teal-600 text-white focus:ring-2 focus:ring-white focus:border-white"
                                                 >
-                                                    {Array.from({ length: 8 }, (_, i) => {
-                                                        const year = 2025 + i;
+                                                    {Array.from({ length: 10 }, (_, i) => {
+                                                        const year = 2023 + i;
                                                         return (
                                                             <option key={year} value={year.toString()}>
                                                                 {year}
