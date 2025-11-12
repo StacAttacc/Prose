@@ -13,6 +13,7 @@ export function labelForKey(key) {
         if (key === "gestionnaire_cv") return `nouveau(x) CV(s) à examiner`;
         if (key === "etudiant_cv") return `changement sur votre CV`;
         if (key === "convocation") return `nouvelle(s) convocation(s)`;
+        if (key === "candidature_decision") return `nouvelles(s) candidatures mise(s) à jour`;
         return `${key} notification(s)`;
     }
     
@@ -24,6 +25,7 @@ export function labelForKey(key) {
         if (key === "gestionnaire_cv") return t('nouveauxCVs');
         if (key === "etudiant_cv") return t('changementCV');
         if (key === "convocation") return t('nouvellesConvocations');
+        if (key === "candidature_decision") return t('nouvellesCandidaturesMisesAJour') || `nouvelles(s) candidatures mise(s) à jour`;
         return `${key} ${t('notifications')}`;
     } catch (err) {
         // Fallback en cas d'erreur
@@ -33,13 +35,16 @@ export function labelForKey(key) {
         if (key === "gestionnaire_cv") return `nouveau(x) CV(s) à examiner`;
         if (key === "etudiant_cv") return `changement sur votre CV`;
         if (key === "convocation") return `nouvelle(s) convocation(s)`;
+        if (key === "candidature_decision") return `nouvelles(s) candidatures mise(s) à jour`;
         return `${key} notification(s)`;
     }
 }
 
 export function shortText(text, max = 80) {
     if (!text) return "";
-    return text.length > max ? text.slice(0, max - 3) + "..." : text;
+    if (text.length <= max) return text;
+    // Tronquer pour que le résultat total (texte + "...") fasse exactement max caractères
+    return text.slice(0, max - 3) + "...";
 }
 
 export function translateNotificationMessage(message) {

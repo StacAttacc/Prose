@@ -46,7 +46,7 @@ describe('notificationText utils', () => {
         it('truncates text when exceeds max length', () => {
             const text = 'This is a very long text that exceeds the maximum allowed length and should be truncated';
             const result = shortText(text, 50);
-            expect(result).toBe('This is a very long text that exceeds the max...');
+            expect(result).toBe('This is a very long text that exceeds the maxim...');
             expect(result.length).toBe(50);
         });
 

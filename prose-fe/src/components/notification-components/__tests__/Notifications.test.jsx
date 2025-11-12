@@ -3,9 +3,11 @@ import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { BrowserRouter } from 'react-router-dom';
 import Notifications from '../Notifications';
 import { useAuth } from '../../../context/AuthContext';
+import { useI18n } from '../../../context/I18nContext';
 import * as notificationService from '../notification-utils/notificationsServiceLogic';
 
 vi.mock('../../../context/AuthContext');
+vi.mock('../../../context/I18nContext');
 vi.mock('../notification-utils/notificationsServiceLogic');
 
 const mockNavigate = vi.fn();
@@ -44,9 +46,28 @@ const mockNotifications = {
 };
 
 describe('Notifications Component', () => {
+    const mockT = (key) => {
+        const translations = {
+            'toggleNotifications': 'Toggle notifications dropdown',
+            'closeNotifications': 'Fermer',
+            'openNotifications': 'Open',
+            'markAllAsRead': 'Mark all as read',
+            'erreurChargementNotifications': 'Network error',
+            'nouvellesOffresStage': 'nouvelles offre(s) de stage à approuver',
+            'nouvellesCandidatures': 'nouvelles candidature(s) reçue(s)',
+            'notifications': 'notification(s)'
+        };
+        return translations[key] || key;
+    };
+
     beforeEach(() => {
         vi.clearAllMocks();
         useAuth.mockReturnValue({ user: mockUser });
+        useI18n.mockReturnValue({
+            t: mockT,
+            locale: 'fr',
+            setLocale: vi.fn()
+        });
         notificationService.fetchNotifications.mockResolvedValue(mockNotifications);
         notificationService.markManyNotifications.mockResolvedValue();
         notificationService.markSingleNotificationAsRead.mockResolvedValue();
@@ -114,7 +135,11 @@ describe('Notifications Component', () => {
         fireEvent.click(toggleButton);
 
         await waitFor(() => {
-            expect(screen.getByText('Fermer')).toBeInTheDocument();
+            // Vérifier que le dropdown s'ouvre - il devrait y avoir au moins 2 éléments avec ce texte (carte + dropdown)
+            const elements = screen.getAllByText(/nouvelles offre\(s\) de stage à approuver/i);
+            expect(elements.length).toBeGreaterThanOrEqual(2);
+            // Vérifier que le dropdown est présent
+            expect(document.querySelector('[role="menu"]')).toBeInTheDocument();
         });
     });
 
@@ -140,12 +165,17 @@ describe('Notifications Component', () => {
         const toggleButton = screen.getByLabelText(/Toggle notifications dropdown/i);
         fireEvent.click(toggleButton);
 
-        await waitFor(() => screen.getByText('Fermer'));
+        // Vérifier que le dropdown s'ouvre
+        await waitFor(() => {
+            expect(document.querySelector('[role="menu"]')).toBeInTheDocument();
+        });
 
         fireEvent.click(document.body);
 
+        // Le dropdown devrait se fermer
         await waitFor(() => {
-            expect(screen.queryByText('Fermer')).not.toBeInTheDocument();
+            const dropdown = document.querySelector('[role="menu"]');
+            expect(dropdown).not.toBeInTheDocument();
         });
     });
 
