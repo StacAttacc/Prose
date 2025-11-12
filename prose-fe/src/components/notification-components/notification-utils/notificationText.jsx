@@ -38,14 +38,21 @@ export function labelForKey(key) {
     }
 }
 
-export function shortText(text, max = 80) {
+export function shortText(notification, i18, max = 80) {
     if (!text) return "";
-    return text.length > max ? text.slice(0, max - 3) + "..." : text;
+    if (i18) {
+        if (i18.locale == 'en') {
+            return notification.messageEN.length > max ? notification.messageEN.slice(0, max - 3) + "..." : notification.messageEN;
+        } else {
+            return notification.messageFR.length > max ? notification.messageFR.slice(0, max - 3) + "..." : notification.messageFR;
+        }
+    }
+    return notification.messageFR.length > max ? notification.messageFR.slice(0, max - 3) + "..." : notification.messageFR;
 }
 
 export function translateNotificationMessage(message) {
     if (!i18nInstance || !message) return message;
-    
+
     const t = i18nInstance.t;
     const locale = i18nInstance.locale;
     

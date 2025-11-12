@@ -14,7 +14,8 @@ import java.time.LocalDateTime;
 public class NotificationSummaryDTO {
     private Long id;
     private String type;
-    private String message;
+    private String messageFR;
+    private String messageEN;
     private String senderEmail;
     private LocalDateTime createdAt;
     private LocalDateTime readAt;
@@ -88,7 +89,8 @@ public class NotificationSummaryDTO {
         return NotificationSummaryDTO.builder()
                 .id(n.getId())
                 .type(n.getType() != null ? n.getType().getDisplayName() : null)
-                .message(n.getMessage())
+                .messageFR(n.getMessageFR())
+                .messageEN(n.getMessageEN())
                 .createdAt(n.getCreatedAt())
                 .readAt(n.getFirstRecipientReadAt())
                 .secondaryRecipientReadAt(n.getSecondRecipientReadAt())

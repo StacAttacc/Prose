@@ -164,7 +164,8 @@ public class EtudiantService {
         notification.setFirstRecipientReadAt(null);
         notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
         notification.setType(NotificationType.GESTIONNAIRE_CV_NOTIFICATION);
-        notification.setMessage(etudiantName + " a soumis un nouveau CV");
+        notification.setMessageFR(etudiantName + " a soumis un nouveau CV");
+        notification.setMessageEN(etudiantName + " has submitted a new CV");
         notificationRepository.save(notification);
     }
 
@@ -239,7 +240,8 @@ public class EtudiantService {
         notification.setStagePostulationId(candidature.getStage().getId());
         notification.setEmployeurEmail(candidature.getStage().getEmployeurEmail());
         notification.setType(NotificationType.POSTULATION_NOTIFICATION);
-        notification.setMessage(studentName + " a postulé pour le stage " + companyName);
+        notification.setMessageFR(studentName + " a postulé pour le stage " + companyName);
+        notification.setMessageEN(studentName + " has applied for the " + companyName + " internship");
         notificationRepository.save(notification);
     }
 
@@ -326,11 +328,14 @@ public class EtudiantService {
     private void createNotificationForEmployeurResponse(Candidature candidature, boolean accepted, String comment) {
         String studentName = candidature.getEtudiant().getFirstName() + " " + candidature.getEtudiant().getLastName();
         String stageTitle = candidature.getStage().getTitle();
-        String decision = accepted ? "accepté" : "refusé";
+        String decisionFR = accepted ? "accepté" : "refusé";
+        String decisionEN = accepted ? "accepted" : "rejected";
 
-        String message = studentName + " a " + decision + " l'offre pour le stage " + stageTitle;
+        String messageFR = studentName + " a " + decisionFR + " l'offre pour le stage " + stageTitle;
+        String messageEN = studentName + " has " + decisionEN + " the offer for " + stageTitle;
+
         if (comment != null && !comment.trim().isEmpty()) {
-            message += " - Commentaire: " + comment;
+            messageFR += " - Commentaire: " + comment;
         }
 
         EtudiantOffreDecisionNotification notification = new EtudiantOffreDecisionNotification();
@@ -343,7 +348,8 @@ public class EtudiantService {
         notification.setOffreAcceptedByStudent(accepted);
         notification.setComment(comment);
         notification.setType(NotificationType.ETUDIANT_OFFRE_DECCISION_NOTIFICATION);
-        notification.setMessage(message);
+        notification.setMessageFR(messageFR);
+        notification.setMessageEN(messageEN);
 
         etudiantOffreDecisionNotificationRepository.save(notification);
     }

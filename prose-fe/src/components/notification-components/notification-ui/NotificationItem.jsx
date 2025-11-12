@@ -1,8 +1,10 @@
 import React from 'react';
 import { shortText } from "../notification-utils/notificationText.jsx";
 import {NotificationCloseButton} from "./NotificationCloseButton.jsx";
+import {useI18n} from "../../../context/I18nContext.jsx";
 
 export function NotificationItem({ notification, markAndNavigate, typeKey, setReadCounter, markAndReload }) {
+    const t = useI18n();
 
     function renderCompactItem() {
         return (

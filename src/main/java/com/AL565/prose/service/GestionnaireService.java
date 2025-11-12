@@ -236,16 +236,22 @@ public class GestionnaireService {
         if (cv.getStatus() == CvStatus.PENDING) {
             return;
         }
-        String statusMessage = switch (cv.getStatus()) {
+        String statusMessageFR = switch (cv.getStatus()) {
             case APPROVED -> "approuvé";
             case REJECTED -> "rejeté";
+            default -> "";
+        };
+        String statusMessageEN = switch (cv.getStatus()) {
+            case APPROVED -> "approved";
+            case REJECTED -> "rejected";
             default -> "";
         };
         notification.setFirstRecipientReadAt(null);
         notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
         notification.setType(NotificationType.ETUDIANT_CV_NOTIFICATION);
         notification.setEtudiantEmail(cv.getEtudiant().getEmail());
-        notification.setMessage("Votre CV a été " + statusMessage + ".");
+        notification.setMessageFR("Votre CV a été " + statusMessageFR);
+        notification.setMessageEN("Your CV has been " + statusMessageEN);
         notificationRepository.save(notification);
     }
 
