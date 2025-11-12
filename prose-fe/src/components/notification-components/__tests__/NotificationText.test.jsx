@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import { labelForKey, shortText } from '../notification-utils/notificationText';
-import {useI18n} from "../../../context/I18nContext.jsx";
 
 describe('notificationText utils', () => {
     describe('labelForKey', () => {
@@ -41,19 +40,19 @@ describe('notificationText utils', () => {
 
         it('returns full text when below max length', () => {
             const text = 'Short text';
-            expect(shortText(text, useI18n(), 80)).toBe('Short text');
+            expect(shortText(text, 80)).toBe('Short text');
         });
 
         it('truncates text when exceeds max length', () => {
             const text = 'This is a very long text that exceeds the maximum allowed length and should be truncated';
-            const result = shortText(text, useI18n() ,50);
+            const result = shortText(text, 50);
             expect(result).toBe('This is a very long text that exceeds the max...');
             expect(result.length).toBe(50);
         });
 
         it('uses default max length of 80', () => {
             const text = 'A'.repeat(100);
-            const result = shortText(text, useI18n(), 80);
+            const result = shortText(text, 80);
             expect(result.length).toBe(80);
             expect(result.endsWith('...')).toBe(true);
         });

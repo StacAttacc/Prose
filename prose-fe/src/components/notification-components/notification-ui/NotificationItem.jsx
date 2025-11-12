@@ -1,11 +1,8 @@
 import React from 'react';
 import { shortText } from "../notification-utils/notificationText.jsx";
 import {NotificationCloseButton} from "./NotificationCloseButton.jsx";
-import {useI18n} from "../../../context/I18nContext.jsx";
 
 export function NotificationItem({ notification, markAndNavigate, typeKey, setReadCounter, markAndReload }) {
-    const i18 = useI18n();
-
     function renderCompactItem() {
         return (
             <>
@@ -14,7 +11,7 @@ export function NotificationItem({ notification, markAndNavigate, typeKey, setRe
                 </div>
                 <div className="min-w-0">
                     <div className="text-sm font-medium text-gray-900 whitespace-normal break-words overflow-hidden line-clamp-2">
-                        {shortText(notification, i18, 200)}
+                        {shortText(notification, 200)}
                     </div>
                     <div className="text-xs text-gray-500">
                         {notification.createdAt ? new Date(notification.createdAt).toLocaleString() : notification.createdAtString || "Unknown time"}
