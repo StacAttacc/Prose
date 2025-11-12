@@ -1,3 +1,5 @@
+import {useI18n} from "../../../context/I18nContext.jsx";
+
 let i18nInstance = null;
 
 export function setI18nInstance(instance) {
@@ -6,34 +8,13 @@ export function setI18nInstance(instance) {
 
 export function labelForKey(key) {
     switch (key) {
-        case "stage": {
-            return i18nInstance ? `nouvelles offre(s) de stage à approuver`:
-                i18nInstance.t('nouvellesOffresStage');
-        }
-        case"postulation": {
-            return i18nInstance ? `nouvelles candidature(s) reçue(s)`:
-                i18nInstance.t('nouvellesCandidatures');
-        }
-        case "employeur_response": {
-            return i18nInstance ? `réponse(s) d'étudiant(s) à vos offres`:
-                i18nInstance.t('reponsesEtudiantsOffres');
-        }
-        case "gestionnaire_cv": {
-            return i18nInstance ? `nouveau(x) CV(s) à examiner`:
-                i18nInstance.t('nouveauxCVs');
-        }
-        case "etudiant_cv": {
-            return i18nInstance ? `changement sur votre CV`:
-                i18nInstance.t('changementCV');
-        }
-        case "convocation": {
-            return i18nInstance ? `nouvelle(s) convocation(s)`:
-                i18nInstance.t('nouvellesConvocations');
-        }
-        case "candidature_decision": {
-            return i18nInstance ? `nouvelles(s) candidatures mise(s) à jour`:
-                i18nInstance.t('nouvellesCandidaturesMisesAJour');
-        }
+        case "stage": return useI18n().t('nouvellesOffresStage');
+        case"postulation": return useI18n().t('nouvellesCandidatures');
+        case "employeur_response": return useI18n().t('reponsesEtudiantsOffres');
+        case "gestionnaire_cv": return useI18n().t('nouveauxCVs');
+        case "etudiant_cv": return useI18n().t('changementCV');
+        case "convocation": return useI18n().t('nouvellesConvocations');
+        case "candidature_decision": return useI18n().t('nouvellesCandidaturesMisesAJour');
         default: return `${key} notification(s)`;
     }
 }
