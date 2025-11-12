@@ -13,7 +13,7 @@ export function labelForKey(key) {
     }
 }
 
-export function shortText(notification, i18, max = 80) {
+export function shortText(notification, max = 80) {
     if (!notification.messageFR && !notification.messageEN) return "";
     if (useI18n().locale === 'en')
         return notification.messageEN.length > max
