@@ -12,28 +12,17 @@ export function getNotificationNavigationPath(notification, role) {
         etudiantId,
         cvId,
         convocation,
-        stageResponseId,
         etudiantOffreDecisionId
     } = notification;
     const isCandidature = Boolean(notification?.candidature || notification?.candidatureId);
-    const isEtudiantOffreDecision = Boolean(etudiantOffreDecisionId);
 
     if (role === "EMPLOYEUR") {
-        if (isEtudiantOffreDecision) {
-            const candId = etudiantOffreDecisionId;
-            const stage = stageResponseId || stageId;
-
-            if (stage && candId) {
-                return {
-                    path: `/employeur/stages/${stage}/candidatures`,
-                    state: { openCandidatureId: candId }
-                };
-            }
+        if (etudiantOffreDecisionId) {
             return {
-                path: `/employeur/posted-stages`,
+                path: `/employeur/stages/${stageId}/candidatures`,
+                state: { openCandidatureId: etudiantOffreDecisionId }
             };
         }
-
         else if (isCandidature && stageId && candidatureId) {
             return {
                 path: `/employeur/stages/${stageId}/candidatures`,
