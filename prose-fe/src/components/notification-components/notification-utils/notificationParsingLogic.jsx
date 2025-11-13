@@ -1,28 +1,9 @@
-function makeKeyForItem(item = {}, groupKey) {
-    if (item?.convocation) return "convocation";
-    else if (item?.etudiantOffreDecisionId) return "etudiant_offre_decision";
-    else if (item?.candidatureId) return "postulation";
-    else if (item?.stageId) return "stage";
-    else if (item?.cvId) return "gestionnaire_cv";
-    else if (item?.candidatureDecisionId) return "candidature_decision";
-    else if (item?.etudiantId) return "etudiant_cv";
-    else if (groupKey && typeof groupKey === "string" && !/\s/.test(groupKey)) return groupKey.toLowerCase();
-    else if (item?.type) {
-        return String(item.type)
-            .toLowerCase()
-            .replace(/\s+/g, "-")
-            .replace(/[^a-z0-9-]/g, "");
-    }
-    return "default";
-}
-
-function buildFromGroups(groups = []) {
+ function buildFromGroups(groups = []) {
     const map = {};
     groups.forEach(g => {
         const items = Array.isArray(g.items) ? g.items : [];
-        const groupKey = g?.typeKey;
         items.forEach(item => {
-            const key = makeKeyForItem(item, groupKey);
+            const key = g?.typeKey;
             if (!map[key]) map[key] = [];
             map[key].push(item);
         });

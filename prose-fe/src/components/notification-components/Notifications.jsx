@@ -65,7 +65,7 @@ export default function Notifications() {
             }
         }
         fetchData();
-        timerId = setInterval(fetchData, 30);
+        timerId = setInterval(fetchData, 30000);
         return () => {
             clearInterval(timerId)
         }

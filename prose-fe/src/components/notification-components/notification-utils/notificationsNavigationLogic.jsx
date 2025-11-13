@@ -6,27 +6,17 @@ export function getDefaultNavigationPath(role) {
 }
 
 export function getNotificationNavigationPath(notification, role) {
-    const {
-        stageId,
-        candidatureId,
-        etudiantId,
-        cvId,
-        convocation,
-        etudiantOffreDecisionId
-    } = notification;
-    const isCandidature = Boolean(notification?.candidature || notification?.candidatureId);
-
     if (role === "EMPLOYEUR") {
-        if (etudiantOffreDecisionId) {
+        if (notification.type === "etudiant_offre_decision") {
             return {
-                path: `/employeur/stages/${stageId}/candidatures`,
-                state: { openCandidatureId: etudiantOffreDecisionId }
+                path: `/employeur/stages/${notification.stageId}/candidatures`,
+                state: { openCandidatureId: notification.etudiantOffreDecisionId }
             };
         }
-        else if (isCandidature && stageId && candidatureId) {
+        else if (notification.type === "postulation") {
             return {
-                path: `/employeur/stages/${stageId}/candidatures`,
-                state: { openCandidatureId: candidatureId }
+                path: `/employeur/stages/${notification.stageId}/candidatures`,
+                state: { openCandidatureId: notification.candidaturePostulationId }
             };
         }
     }
@@ -44,48 +34,48 @@ export function getNotificationNavigationPath(notification, role) {
         } else if (notification.type === "candidature_decision") {
             return {
                 path: `/etudiant/stages/candidatures`,
-                state: { openCandidatureId: notification.candidatureDecisionId}
+                state: { openCandidatureId: notification.candidatureDecisionId }
             }
         }
     }
 
     else if (role === "GESTIONNAIRE") {
         if (notification.type === "etudiant_offre_decision") {
-            if (etudiantOffreDecisionId) {
+            if (notification.etudiantOffreDecisionId) {
                 return {
                     path: getDefaultNavigationPath(role),
-                    state: { etudiantOffreDecisionId: etudiantOffreDecisionId }
+                    state: { etudiantOffreDecisionId: notification.etudiantOffreDecisionId }
                 };
             }
         }
-        if (isCandidature && stageId) {
+        if (notification.type === "postulation") {
             return {
                 path: getDefaultNavigationPath(role),
-                state: { openEtudiantId: etudiantId }
+                state: { openEtudiantId: notification.etudiantId }
             };
         }
-        if (stageId) {
+        if (notification.type === "stage") {
             return {
                 path: "/gestionnaire/list-stages",
-                state: { openStageId: stageId }
+                state: { openStageId: notification.stageId }
             };
         }
-        if (!stageId && cvId) {
+        if (notification.type === "gestionnaire_cv") {
             return {
                 path: "/gestionnaire/gestion-cv",
-                state: { openCvId: cvId }
+                state: { openCvId: notification.cvId }
             };
         }
-        if (convocation) {
+        if (notification.type === "convocation") {
             return {
                 path: getDefaultNavigationPath(role),
-                state: { openEtudiantId: etudiantId }
+                state: { openEtudiantId: notification.etudiantId }
             };
         }
         if (notification.type === "candidature_decision") {
             return {
                 path: getDefaultNavigationPath(role),
-                state: { openEtudiantId: etudiantId }
+                state: { openEtudiantId: notification.etudiantId }
             }
         }
     }
