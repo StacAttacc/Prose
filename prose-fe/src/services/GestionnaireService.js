@@ -172,3 +172,25 @@ export async function generateEntente(candidatureId, token) {
 
     return res?.data?.data ?? res?.data;
 }
+
+export async function associerProfesseurEtudiant(professeurEmail, etudiantId, token) {
+    try {
+        const res = await axios.post(
+            `${BASE_URL_GESTIONNAIRE}/associer-professeur-etudiant`,
+            {
+                professeurEmail,
+                etudiantId
+            },
+            {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+        return res.data;
+    } catch (error) {
+        console.error('Erreur lors de l\'association:', error);
+        throw error;
+    }
+}
