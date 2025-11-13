@@ -8,12 +8,13 @@ export function getDefaultNavigationPath(role) {
 export function getNotificationNavigationPath(notification, role) {
     const {
         stageId,
+        candidatureId,
         etudiantId,
         cvId,
         convocation,
-        etudiantOffreDecisionId,
-        candidaturePostulationId
+        etudiantOffreDecisionId
     } = notification;
+    const isCandidature = Boolean(notification?.candidature || notification?.candidatureId);
 
     if (role === "EMPLOYEUR") {
         if (etudiantOffreDecisionId) {
@@ -22,10 +23,10 @@ export function getNotificationNavigationPath(notification, role) {
                 state: { openCandidatureId: etudiantOffreDecisionId }
             };
         }
-        else if (candidaturePostulationId) {
+        else if (isCandidature && stageId && candidatureId) {
             return {
                 path: `/employeur/stages/${stageId}/candidatures`,
-                state: { openCandidatureId: candidaturePostulationId }
+                state: { openCandidatureId: candidatureId }
             };
         }
     }
@@ -49,13 +50,15 @@ export function getNotificationNavigationPath(notification, role) {
     }
 
     else if (role === "GESTIONNAIRE") {
-        if (etudiantOffreDecisionId) {
-            return {
-                path: getDefaultNavigationPath(role),
-                state: { etudiantOffreDecisionId: etudiantOffreDecisionId }
-            };
+        if (notification.type === "etudiant_offre_decision") {
+            if (etudiantOffreDecisionId) {
+                return {
+                    path: getDefaultNavigationPath(role),
+                    state: { etudiantOffreDecisionId: etudiantOffreDecisionId }
+                };
+            }
         }
-        if (candidaturePostulationId) {
+        if (isCandidature && stageId) {
             return {
                 path: getDefaultNavigationPath(role),
                 state: { openEtudiantId: etudiantId }
