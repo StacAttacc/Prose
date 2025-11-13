@@ -17,6 +17,8 @@ import com.AL565.prose.service.exceptions.InvalidCandidatureModificationExceptio
 import com.AL565.prose.utils.NotificationsHelper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -246,5 +248,26 @@ class EmployeurServiceTest {
 
         verify(etudiantOffreDecisionNotificationRepository, times(1))
                 .findByEmployeurResponseEmailAndFirstRecipientReadAt(employeurEmail, null);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "2077, 2",
+            "2078, 1",
+            "2025, 0"
+    })
+    void getStagesForDated(String year, int expected) {
+        Stage stage1 = new Stage(1L, "Travailler", "Programmez dans mon entreprise!", "Techniques de l'Informatique", new ArrayList<>(), LocalDate.of(2077, 1, 15), LocalDate.of(2077, 1, 21), "", null, "Remote", "26$/h", OfferStatus.APPROUVEE, "jemployeur1@gmail.com", OffsetDateTime.now(), OffsetDateTime.now());
+        Stage stage2 = new Stage(2L, "Démissioner", "Partir immédiatement!", "Rien", new ArrayList<>(), LocalDate.of(2077, 5, 6), LocalDate.of(2077, 5, 7), "Chez vous", null, "Remote", "0$", OfferStatus.APPROUVEE, "jemployeur1@gmail.com", OffsetDateTime.now(), OffsetDateTime.now());
+        Stage stage3 = new Stage(3L, "Revenir", "J'ai besoin de stagiaires!", "Rien", new ArrayList<>(), LocalDate.of(2078, 3, 6), LocalDate.of(2078, 3, 7), "Au bureau", null, "Présentiel", "40$/h", OfferStatus.APPROUVEE, "jemployeur1@gmail.com", OffsetDateTime.now(), OffsetDateTime.now());
+
+        Employeur jean = new Employeur("Jean", "Jacques", "JeanEmployeurs", "jemployeur1@gmail.com", "jeanemployeur");
+
+        when(stageRepository.findByEmployeurEmail(anyString())).thenReturn(List.of(stage1, stage2, stage3));
+        when(employeurRepository.getEmployeurByCredentials_Username(anyString())).thenReturn(jean);
+
+        List<StageDTO> stages = employeurService.listStagesFor("jemployeur1@gmail.com", year);
+
+        assertThat(stages.size()).isEqualTo(expected);
     }
 }

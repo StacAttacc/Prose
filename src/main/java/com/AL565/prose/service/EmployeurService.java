@@ -18,6 +18,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import java.time.OffsetDateTime;
@@ -79,12 +80,14 @@ public class EmployeurService {
     }
 
     @Transactional
-    public List<StageDTO> listStagesFor(String email) {
+    public List<StageDTO> listStagesFor(String email, String year) {
+        int yearNumber =  year != null ? Integer.parseInt(year) : LocalDate.now().getYear();
+
         return stageRepository.findByEmployeurEmail(email)
                 .stream().map((stage) -> {
                     Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(stage.getEmployeurEmail());
                     return StageDTO.fromModel(stage, employeur);
-                }).toList();
+                }).filter(stage -> stage.getStartDate().getYear() == yearNumber).toList();
     }
 
     public StageDTO updateStage(Long id, StageDTO stageDTO) throws StageNotFoundException {

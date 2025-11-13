@@ -21,6 +21,8 @@ import com.AL565.prose.service.exceptions.InvalidCandidatureModificationExceptio
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -36,6 +38,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -408,5 +411,54 @@ class EmployeurControllerTest {
         assertThat(response.getData().getGroups().getFirst().getItems()).hasSize(2);
 
         verify(employeurService, times(1)).getEmployeurResponseNotifications(email);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "2077, 2",
+            "2078, 1",
+            "2025, 0"
+    })
+    void listPublishedByDate(String year, int expected) throws Exception {
+        StageDTO stage1 = new StageDTO();
+        stage1.setId(1L);
+        stage1.setTitle("Partir");
+        stage1.setEmployeur(new EmployeurDTO());
+        stage1.setDescription("S'enfuir immédiatement!");
+        stage1.setStartDate(LocalDate.of(2077, 5, 6));
+        stage1.setStatus(OfferStatus.APPROUVEE);
+
+        StageDTO stage2 = new StageDTO();
+        stage2.setId(2L);
+        stage2.setTitle("Programmeur C++");
+        stage2.setEmployeur(new EmployeurDTO());
+        stage2.setDescription("Programmer en C++");
+        stage2.setStartDate(LocalDate.of(2077, 6, 12));
+        stage2.setStatus(OfferStatus.APPROUVEE);
+
+        StageDTO stage3 = new StageDTO();
+        stage3.setId(3L);
+        stage3.setTitle("Programmeur C#");
+        stage3.setEmployeur(new EmployeurDTO());
+        stage3.setDescription("Programmer en C#");
+        stage3.setStartDate(LocalDate.of(2078, 3, 25));
+        stage3.setStatus(OfferStatus.APPROUVEE);
+
+        when(employeurService.listStagesFor(anyString(), eq(year))).thenReturn(
+                switch (year) {
+                    case "2077" -> List.of(stage1, stage2);
+                    case "2078" -> List.of(stage3);
+                    default -> Collections.emptyList();
+                }
+        );
+
+        MvcResult result = mockMvc.perform(get("/employeur/jemployeur1@gmail.com/stages").param("year", year))
+                .andExpect(status().isOk())
+                .andReturn();
+        ReturnEntityDTO<List<StageDTO>> data = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+
+        List<StageDTO> stages= data.getData();
+
+        assertThat(stages.size()).isEqualTo(expected);
     }
 }
