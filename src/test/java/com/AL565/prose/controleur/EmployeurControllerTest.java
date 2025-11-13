@@ -5,7 +5,7 @@ import com.AL565.prose.model.CandidatureStatus;
 import com.AL565.prose.model.Employeur;
 import com.AL565.prose.model.OfferStatus;
 import com.AL565.prose.model.Stage;
-import com.AL565.prose.model.notifications.EmployeurResponseNotification;
+import com.AL565.prose.model.notifications.EtudiantOffreDecisionNotification;
 import com.AL565.prose.model.notifications.PostulationNotification;
 import com.AL565.prose.repository.*;
 import com.AL565.prose.service.EtudiantService;
@@ -371,22 +371,22 @@ class EmployeurControllerTest {
     void getEmployeurResponseNotifications_success() throws Exception {
         String email = "employer@company.com";
 
-        EmployeurResponseNotification notification1 = new EmployeurResponseNotification();
+        EtudiantOffreDecisionNotification notification1 = new EtudiantOffreDecisionNotification();
         notification1.setId(1L);
         notification1.setEmployeurResponseEmail(email);
         notification1.setCandidatureResponseId(10L);
-        notification1.setAccepted(true);
+        notification1.setOffreAcceptedByStudent(true);
         notification1.setComment("Je suis ravi d'accepter!");
-        notification1.setMessage("Jean Dupont a accepté l'offre pour le stage Développeur Java");
+        notification1.setMessageFR("Jean Dupont a accepté l'offre pour le stage Développeur Java");
         notification1.setCreatedAt(LocalDateTime.now());
 
-        EmployeurResponseNotification notification2 = new EmployeurResponseNotification();
+        EtudiantOffreDecisionNotification notification2 = new EtudiantOffreDecisionNotification();
         notification2.setId(2L);
         notification2.setEmployeurResponseEmail(email);
         notification2.setCandidatureResponseId(11L);
-        notification2.setAccepted(false);
+        notification2.setOffreAcceptedByStudent(false);
         notification2.setComment("J'ai accepté une autre offre");
-        notification2.setMessage("Marie Tremblay a refusé l'offre pour le stage Développeur Java");
+        notification2.setMessageFR("Marie Tremblay a refusé l'offre pour le stage Développeur Java");
         notification2.setCreatedAt(LocalDateTime.now());
 
         NotificationGroupDTO group = NotificationGroupDTO.toDTO("employeur_response", List.of(notification1, notification2));

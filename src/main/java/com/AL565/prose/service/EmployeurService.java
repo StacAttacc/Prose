@@ -36,7 +36,7 @@ public class EmployeurService {
     private CandidatureRepository candidatureRepository;
     private NotificationsHelper notificationsHelper;
     private PostulationNotificationRepository postulationNotificationRepository;
-    private EmployeurResponseNotificationRepository employeurResponseNotificationRepository;
+    private EtudiantOffreDecisionNotificationRepository etudiantOffreDecisionNotificationRepository;
 
     public void enregistrer(EmployeurPasswordDTO employeurDTO) throws EmailAlreadyExistsException {
         if (proseUserRepository.findByCredentials_Username(employeurDTO.getEmail()).isPresent()) {
@@ -74,7 +74,8 @@ public class EmployeurService {
         notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
         notification.setStage(stage);
         notification.setType(NotificationType.STAGE_NOTIFICATION);
-        notification.setMessage(employeurName + " a créé le stage " +stage.getTitle());
+        notification.setMessageFR(employeurName + " a créé le stage " + stage.getTitle());
+        notification.setMessageEN(employeurName + " has created the internship " + stage.getTitle());
         notificationRepository.save(notification);
     }
 
@@ -139,26 +140,38 @@ public class EmployeurService {
             throw new IllegalArgumentException("candidature must not be null");
         }
 
-        String status = "";
+        String statusFR = "";
         if (candidature.getStatus() == CandidatureStatus.ACCEPTEE) {
-            status = "acceptée";
+            statusFR = "acceptée";
         } else if (candidature.getStatus() == CandidatureStatus.REFUSEE) {
-            status = "rejectée";
+            statusFR = "rejectée";
+        }
+
+        String statusEN = "";
+        if (candidature.getStatus() == CandidatureStatus.ACCEPTEE) {
+            statusEN = "accepted";
+        } else if (candidature.getStatus() == CandidatureStatus.REFUSEE) {
+            statusEN = "rejected";
         }
 
         String etudiantName = candidature.getEtudiant().getFirstName()
                 + " " + candidature.getEtudiant().getLastName();
 
-        String notifMessage = employeur.getCompany()
-                + " a " + status + " " + etudiantName
+        String notifMessageFR = employeur.getCompany()
+                + " a " + statusFR + " " + etudiantName
                 + " pour le stage " + candidature.getStage().getTitle();
+
+        String notifMessageEN = employeur.getCompany()
+                + " has " + statusEN + " "
+                + etudiantName + " for the internship " + candidature.getStage().getTitle();
 
         CandidatureDecisionNotification notification = new CandidatureDecisionNotification();
         notification.setFirstRecipientReadAt(null);
         notification.setSecondRecipientReadAt(null);
         notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
         notification.setType(NotificationType.CANDIDATURE_DECISION_NOTIFICATION);
-        notification.setMessage(notifMessage);
+        notification.setMessageFR(notifMessageFR);
+        notification.setMessageEN(notifMessageEN);
         notification.setCandidatureDecisionId(candidature.getId());
         notification.setCandidatureDecisionEtudiantEmail(candidature.getEtudiant().getEmail());
         notification.setCandidatureDecisionEtudiantId(candidature.getEtudiant().getId());
@@ -199,17 +212,24 @@ public class EmployeurService {
         if (candidature == null) {
             throw new IllegalArgumentException("candidature must not be null");
         }
-        String notifMessage = employeur.getCompany()
+        String notifMessageFR = employeur.getCompany()
                 + " a convoqué " + candidature.getEtudiant().getFirstName()
                 + " " + candidature.getEtudiant().getLastName()
                 + " pour une entrevue";
+
+        String notifMessageEN = employeur.getCompany()
+                + " has summoned " + candidature.getEtudiant().getFirstName()
+                + " " + candidature.getEtudiant().getLastName()
+                + " for an interview";
+
         ConvocationNotification notification = new ConvocationNotification();
         notification.setFirstRecipientReadAt(null);
         notification.setSecondRecipientReadAt(null);
         notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
         notification.setCandidatureConvocationId(candidature.getId());
         notification.setType(NotificationType.CONVOCATION_NOTIFICATION);
-        notification.setMessage(notifMessage);
+        notification.setMessageFR(notifMessageFR);
+        notification.setMessageEN(notifMessageEN);
         notification.setEtudiantConvocationEmail(candidature.getEtudiant().getEmail());
         notification.setEtudiantConvocationId(candidature.getEtudiant().getId());
         notificationRepository.save(notification);
@@ -218,8 +238,8 @@ public class EmployeurService {
     @Transactional
     public NotificationsResponseDTO getEmployeurResponseNotifications(String employeurEmail) throws Exception {
         try {
-            List<EmployeurResponseNotification> notifications =
-                    employeurResponseNotificationRepository
+            List<EtudiantOffreDecisionNotification> notifications =
+                    etudiantOffreDecisionNotificationRepository
                             .findByEmployeurResponseEmailAndFirstRecipientReadAt(employeurEmail, null);
             NotificationGroupDTO group = NotificationGroupDTO.toDTO("employeur_response", notifications);
             return NotificationsResponseDTO.toDTO(List.of(group));

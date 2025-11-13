@@ -18,14 +18,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
-import java.util.Optional;
 
 @Service
 @Transactional
@@ -192,6 +189,8 @@ public class GestionnaireService {
                         .findNotificationsByTypeAndSecondRecipientReadAt(NotificationType.CONVOCATION_NOTIFICATION, null);
                 List<Notification> candidatureDecisions = notificationRepository
                         .findNotificationsByTypeAndSecondRecipientReadAt(NotificationType.CANDIDATURE_DECISION_NOTIFICATION, null);
+                List<Notification> etudiantOffresResponses = notificationRepository
+                        .findNotificationsByTypeAndSecondRecipientReadAt(NotificationType.ETUDIANT_OFFRE_DECCISION_NOTIFICATION, null);
 
                 NotificationGroupDTO stagesGroup = NotificationGroupDTO
                         .toDTO(NotificationType.STAGE_NOTIFICATION.getDisplayName(), stages);
@@ -203,13 +202,16 @@ public class GestionnaireService {
                         .toDTO(NotificationType.CONVOCATION_NOTIFICATION.getDisplayName(), convocations);
                 NotificationGroupDTO candidatureDecisionsGroup = NotificationGroupDTO
                         .toDTO(NotificationType.CANDIDATURE_DECISION_NOTIFICATION.getDisplayName(), candidatureDecisions);
+                NotificationGroupDTO etudiantOffresResponsesGroup = NotificationGroupDTO
+                        .toDTO(NotificationType.ETUDIANT_OFFRE_DECCISION_NOTIFICATION.getDisplayName(), etudiantOffresResponses);
 
             return NotificationsResponseDTO
                     .toDTO(List.of(stagesGroup,
                             postulationGroup,
                             cvsGroup,
                             convocationsGroup,
-                            candidatureDecisionsGroup));
+                            candidatureDecisionsGroup,
+                            etudiantOffresResponsesGroup));
         } catch (Exception e) {
             throw new NotificationExceptions.NotificationFetchException();
         }
@@ -222,7 +224,8 @@ public class GestionnaireService {
         switch(notification.getType()) {
             case POSTULATION_NOTIFICATION,
                  CONVOCATION_NOTIFICATION,
-                 CANDIDATURE_DECISION_NOTIFICATION -> markPostulationAsReadBySecondRecipient(notificationId);
+                 CANDIDATURE_DECISION_NOTIFICATION,
+                 ETUDIANT_OFFRE_DECCISION_NOTIFICATION -> markPostulationAsReadBySecondRecipient(notificationId);
             default-> notificationsHelper.markNotificationAsReadByFirstRecipient(notificationId);
         }
     }
@@ -233,16 +236,22 @@ public class GestionnaireService {
         if (cv.getStatus() == CvStatus.PENDING) {
             return;
         }
-        String statusMessage = switch (cv.getStatus()) {
+        String statusMessageFR = switch (cv.getStatus()) {
             case APPROVED -> "approuvé";
             case REJECTED -> "rejeté";
+            default -> "";
+        };
+        String statusMessageEN = switch (cv.getStatus()) {
+            case APPROVED -> "approved";
+            case REJECTED -> "rejected";
             default -> "";
         };
         notification.setFirstRecipientReadAt(null);
         notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
         notification.setType(NotificationType.ETUDIANT_CV_NOTIFICATION);
         notification.setEtudiantEmail(cv.getEtudiant().getEmail());
-        notification.setMessage("Votre CV a été " + statusMessage + ".");
+        notification.setMessageFR("Votre CV a été " + statusMessageFR);
+        notification.setMessageEN("Your CV has been " + statusMessageEN);
         notificationRepository.save(notification);
     }
 

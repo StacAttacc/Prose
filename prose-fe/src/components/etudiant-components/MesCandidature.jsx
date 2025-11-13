@@ -51,10 +51,10 @@ export default function MesCandidature() {
         if (!openCandidatureFromNotif) return;
 
         if (candidatures && candidatures.length > 0) {
-            const candidatureToOpen = candidatures.find(c => String(c.id) === String(openCandidatureFromNotif));
-            if (candidatureToOpen) {
+            const candidatureToScrollTo = candidatures.find(c => String(c.id) === String(openCandidatureFromNotif));
+            if (candidatureToScrollTo) {
                 setTimeout(() => {
-                    const element = document.getElementById(`candidature-${candidatureToOpen.id}`);
+                    const element = document.getElementById(`candidature-${candidatureToScrollTo.id}`);
                     if (element) {
                         element.scrollIntoView({
                             behavior: 'smooth',

@@ -52,7 +52,7 @@ describe('notificationText utils', () => {
 
         it('uses default max length of 80', () => {
             const text = 'A'.repeat(100);
-            const result = shortText(text);
+            const result = shortText(text, 80);
             expect(result.length).toBe(80);
             expect(result.endsWith('...')).toBe(true);
         });

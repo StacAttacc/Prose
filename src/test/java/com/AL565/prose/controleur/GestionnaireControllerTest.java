@@ -405,22 +405,22 @@ class GestionnaireControllerTest {
     void getStageNotifications_returnsOkWithList() throws Exception {
         StageNotification n1 = new StageNotification();
         n1.setType(NotificationType.STAGE_NOTIFICATION);
-        n1.setMessage("Stage submitted");
+        n1.setMessageEN("Stage submitted");
         n1.setCreatedAt(LocalDateTime.now());
 
         StageNotification n2 = new StageNotification();
         n2.setType(NotificationType.STAGE_NOTIFICATION);
-        n2.setMessage("Stage updated");
+        n2.setMessageEN("Stage updated");
         n2.setCreatedAt(LocalDateTime.now());
 
         PostulationNotification n3 = new PostulationNotification();
         n3.setType(NotificationType.POSTULATION_NOTIFICATION);
-        n3.setMessage("New application");
+        n3.setMessageEN("New application");
         n3.setCreatedAt(LocalDateTime.now());
 
         GestionnaireCvNotification n4 = new GestionnaireCvNotification();
         n4.setType(NotificationType.GESTIONNAIRE_CV_NOTIFICATION);
-        n4.setMessage("New CV uploaded");
+        n4.setMessageEN("New CV uploaded");
         n4.setCreatedAt(LocalDateTime.now());
 
         NotificationGroupDTO stageGroup = NotificationGroupDTO
