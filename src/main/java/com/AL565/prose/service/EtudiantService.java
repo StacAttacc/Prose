@@ -19,8 +19,10 @@ import com.AL565.prose.service.dto.EtudiantResponseOfferDTO;
 import com.AL565.prose.security.JwtTokenProvider;
 import com.AL565.prose.service.dto.*;
 
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -41,6 +43,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.Instant;
 
+import static com.AL565.prose.model.notifications.NotificationType.SIGNATURE_ENTENTE_NOTIFICATION;
+
 @Service
 @Transactional
 @AllArgsConstructor
@@ -58,7 +62,6 @@ public class EtudiantService {
     private final GestionnaireCvNotificationRepository gestionnaireCvNotificationRepository;
     private final EtudiantCvNotificationRepository etudiantCvNotificationRepository;
     private final ConvocationNotificationRepository convocationNotificationRepository;
-    private final PostulationNotificationRepository postulationNotificationRepository;
     private final EtudiantOffreDecisionNotificationRepository etudiantOffreDecisionNotificationRepository;
     private final CandidatureDecisionNotificationRepository candidatureDecisionNotificationRepository;
     private final SignatureEntenteNotificationRepository signatureEntenteNotificationRepository;
@@ -288,7 +291,7 @@ public class EtudiantService {
             NotificationGroupDTO candidatureDecisionGroup = NotificationGroupDTO
                     .toDTO(NotificationType.CANDIDATURE_DECISION_NOTIFICATION.getDisplayName(), candidatureDecisions);
             NotificationGroupDTO signatureEntenteGroup = NotificationGroupDTO
-                    .toDTO(NotificationType.SIGNATURE_ENTENTE_NOTIFICATION.getDisplayName(), signatureEntentes);
+                    .toDTO(SIGNATURE_ENTENTE_NOTIFICATION.getDisplayName(), signatureEntentes);
 
             return NotificationsResponseDTO.toDTO(List.of(
                     cvGroup,
@@ -302,7 +305,14 @@ public class EtudiantService {
     }
 
     public void markNotificationAsRead(Long notificationId) throws Exception {
-        notificationsHelper.markNotificationAsReadByFirstRecipient(notificationId);
+        Notification notification = notificationRepository.findById(notificationId)
+                .orElseThrow(NotificationExceptions.NotificationFetchException::new);
+        if (Objects.requireNonNull(notification.getType()) == SIGNATURE_ENTENTE_NOTIFICATION) {
+            notification.setSecondRecipientReadAt(LocalDateTime.now());
+            notificationRepository.save(notification);
+        } else {
+            notificationsHelper.markNotificationAsReadByFirstRecipient(notificationId);
+        }
     }
 
     public void respondToOffer(String email, EtudiantResponseOfferDTO responseDTO)
