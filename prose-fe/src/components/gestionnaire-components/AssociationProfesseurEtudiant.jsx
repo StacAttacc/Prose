@@ -96,7 +96,7 @@ export default function AssociationProfesseurEtudiant() {
                     
                     <div className="mb-4">
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                            {t('') || 'Email du professeur'}
+                            {t('emailProfesseur') || 'Email du professeur'}
                         </label>
                         <input
                             type="email"

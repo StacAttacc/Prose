@@ -315,7 +315,19 @@ const translations = {
     dateHeureDoiventEtreFutur: 'La date et l\'heure doivent être dans le futur',
     erreurLorsConvocation: 'Erreur lors de la convocation',
     cetEtudiant: 'Cet étudiant',
-    envoi: 'Envoi...'
+    envoi: 'Envoi...',
+    
+    // AssociationProfesseurEtudiant
+    'Faire une demande': 'Association Professeur - Étudiant',
+    associationReussie: 'Association réussie avec succès!',
+    'Veuillez entrer l\'email de l\'étudiant': 'Email de l\'étudiant',
+    'Veuillez entrer l\'email du professeur': 'Sélectionner un professeur',
+    reinitialiser: 'Réinitialiser',
+    associationEnCours: 'Association en cours...',
+    associer: 'Associer',
+    selectionnerEtudiantEtProfesseur: 'Veuillez entrer l\'email de l\'étudiant et l\'email du professeur',
+    erreurAssociation: 'Erreur lors de l\'association',
+    emailProfesseur: 'Email du professeur'
   },
   en: {
     // Dashboard
@@ -634,7 +646,19 @@ const translations = {
     dateHeureDoiventEtreFutur: 'The date and time must be in the future',
     erreurLorsConvocation: 'Error during invitation',
     cetEtudiant: 'This student',
-    envoi: 'Sending...'
+    envoi: 'Sending...',
+    
+    // AssociationProfesseurEtudiant
+    'Faire une demande': 'Professor - Student Association',
+    associationReussie: 'Association successful!',
+    'Veuillez entrer l\'email de l\'étudiant': 'Student email',
+    'Veuillez entrer l\'email du professeur': 'Select a professor',
+    reinitialiser: 'Reset',
+    associationEnCours: 'Associating...',
+    associer: 'Associate',
+    selectionnerEtudiantEtProfesseur: 'Please enter the student email and professor email',
+    erreurAssociation: 'Error during association',
+    emailProfesseur: 'Professor email'
   }
 };
 
