@@ -25,7 +25,9 @@ public class NotificationSummaryDTO {
     private Long candidatureId;
     private Long candidatureDecisionId;
     private Long candidatureResponseId;
+    private Long candidaturePostulationId;
     private Long etudiantOffreDecisionId;
+    private Long signatureEntenteCandidatureId;
     private Long etudiantId;
     private Long convocation;
 
@@ -39,6 +41,8 @@ public class NotificationSummaryDTO {
         Long etudiantId = null;
         Long convocation = null;
         Long etudiantOffreDecisionId = null;
+        Long candidaturePostulationId = null;
+        Long signatureEntenteCandidatureId = null;
 
         switch (n) {
             case StageNotification sn -> {
@@ -51,13 +55,10 @@ public class NotificationSummaryDTO {
                 }
             }
             case PostulationNotification pn -> {
-                Long candidaturePostulationId = pn.getCandidaturePostulationId();
-                Long candidatueEtudiantId = pn.getEtudiantPostulationId();
-                Long candidatureStageId = pn.getStagePostulationId();
-                if (candidaturePostulationId != null) {
-                    candidatureId = candidaturePostulationId;
-                    if (candidatureStageId != null) stageId = candidatureStageId;
-                    if (candidatueEtudiantId != null) etudiantId = candidatueEtudiantId;
+                if (pn.getCandidaturePostulationId() != null) {
+                    candidaturePostulationId = pn.getCandidaturePostulationId();
+                    stageId = pn.getStagePostulationId();
+                    etudiantId = pn.getEtudiantPostulationId();
                 }
             }
             case EtudiantOffreDecisionNotification ern -> {
@@ -82,6 +83,12 @@ public class NotificationSummaryDTO {
                     etudiantId = cn.getEtudiantConvocationId();
                 }
             }
+            case SignatureEntenteNotification sen -> {
+                if (sen.getSignatureEntenteCandidatureId() != null) {
+                    signatureEntenteCandidatureId = sen.getSignatureEntenteCandidatureId();
+                    stageId = sen.getSignatureEntenteStageId();
+                }
+            }
             default -> {
             }
         }
@@ -101,6 +108,8 @@ public class NotificationSummaryDTO {
                 .convocation(convocation)
                 .candidatureDecisionId(candidatureDecisionId)
                 .etudiantOffreDecisionId(etudiantOffreDecisionId)
+                .candidaturePostulationId(candidaturePostulationId)
+                .signatureEntenteCandidatureId(signatureEntenteCandidatureId)
                 .build();
     }
 }

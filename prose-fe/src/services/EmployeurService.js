@@ -41,50 +41,16 @@ export function approveApplicant(candidatureId, token) {
 export function rejectApplicant(candidatureId, token) {
     return updateCandidatureStatus(candidatureId, "REFUSEE", token);
 }
-export async function getEmployeurCandidatureNotifications(employeurEmail, token) {
-    try {
-        const res = await fetch(`${API}/employeur/notifications/postulations/${encodeURIComponent(employeurEmail)}`, {
-            method: "GET",
-            headers: {
-                Accept: "application/json",
-                ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            },
-        });
-        if (!res.ok) {
-            throw new Error(`HTTP error! status: ${res.status}`);
-        }
-        return await res.json();
-    } catch (err) {
-        console.error("Error fetching candidature notifications:", err);
-        // Retourner une structure vide en cas d'erreur réseau
-        if (err?.message?.includes('Failed to fetch') || err?.code === 'ERR_NETWORK') {
-            return { data: { groups: [], totalCount: 0 } };
-        }
-        throw err;
-    }
-}
-
-export async function getEmployeurResponseNotifications(employeurEmail, token) {
-    try {
-        const res = await fetch(`${API}/employeur/notifications/responses/${encodeURIComponent(employeurEmail)}`, {
-            method: "GET",
-            headers: {
-                Accept: "application/json",
-                ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            },
-        });
-        if (!res.ok) {
-            throw new Error(`HTTP error! status: ${res.status}`);
-        }
-        return await res.json();
-    } catch (err) {
-        console.error("Error fetching response notifications:", err);
-        // Retourner une structure vide en cas d'erreur réseau
-        if (err?.message?.includes('Failed to fetch') || err?.code === 'ERR_NETWORK') {
-            return { data: { groups: [], totalCount: 0 } };
-        }
-        throw err;
-    }
+export async function getEmployeurNotifications(employeurEmail, token) {
+    const res = await http.get(`${API}/employeur/notifications/all`, {
+        method: "GET",
+        headers: {
+            Accept: "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+    });
+    console.log(res.data);
+    return res.data;
 }
 
 export async function markNotificationRead(notificationId, token) {

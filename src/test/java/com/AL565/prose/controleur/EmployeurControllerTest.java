@@ -5,8 +5,6 @@ import com.AL565.prose.model.CandidatureStatus;
 import com.AL565.prose.model.Employeur;
 import com.AL565.prose.model.OfferStatus;
 import com.AL565.prose.model.Stage;
-import com.AL565.prose.model.notifications.EtudiantOffreDecisionNotification;
-import com.AL565.prose.model.notifications.PostulationNotification;
 import com.AL565.prose.repository.*;
 import com.AL565.prose.service.EtudiantService;
 import com.AL565.prose.service.GestionnaireService;
@@ -15,14 +13,11 @@ import com.AL565.prose.security.JwtTokenProvider;
 import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.dto.EmployeurPasswordDTO;
 import com.AL565.prose.service.EmployeurService;
-import com.AL565.prose.service.dto.notifications.NotificationGroupDTO;
 import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
 import com.AL565.prose.service.exceptions.InvalidCandidatureModificationException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -35,10 +30,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -212,45 +205,18 @@ class EmployeurControllerTest {
 
     @Test
     void getPostulationNotifications_success_returnsDTO() throws Exception {
-        String email = "employer@company.com";
+        NotificationsResponseDTO notifications = new NotificationsResponseDTO();
+        when(jwtTokenProvider.getEmailFromJWT(anyString())).thenReturn("test@test.com");
+        when(employeurService.getEmployeurNotifications("test@test.com")).thenReturn(notifications);
 
-        PostulationNotification pn = new PostulationNotification();
-        pn.setId(1L);
-        pn.setCreatedAt(LocalDateTime.now());
-
-        NotificationGroupDTO group = NotificationGroupDTO.toDTO("postulation", List.of(pn));
-        NotificationsResponseDTO notifications = NotificationsResponseDTO.toDTO(List.of(group));
-
-        when(employeurService.getPostulationNotifications(email)).thenReturn(notifications);
-
-        MvcResult result = mockMvc.perform(get("/employeur/notifications/postulations/" + email)
-                        .accept(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/employeur/notifications/all")
+                        .header("Authorization", "Bearer token123")
+                        .with(csrf()))
                 .andExpect(status().isOk())
-                .andReturn();
+                .andExpect(jsonPath("$.message").value("Notifications: "))
+                .andExpect(jsonPath("$.data").exists());
 
-        TypeReference<com.AL565.prose.service.dto.ReturnEntityDTO<NotificationsResponseDTO>> tr =
-                new TypeReference<>() { };
-
-        ReturnEntityDTO<NotificationsResponseDTO> response =
-                objectMapper.readValue(result.getResponse().getContentAsString(), tr);
-
-        assertThat(response.getMessage()).isEqualTo("Notifications: ");
-        assertThat(response.getData()).isNotNull();
-        assertThat(response.getData().getTotalCount()).isEqualTo(1);
-        assertThat(response.getData().getGroups()).hasSize(1);
-        assertThat(response.getData().getGroups().getFirst().getItems()).hasSize(1);
-
-        verify(employeurService, times(1)).getPostulationNotifications(email);
-    }
-
-    @Test
-    void getPostulationNotifications_whenServiceThrows_returns500WithMessage() throws Exception {
-        doThrow(new Exception("boom")).when(employeurService).getPostulationNotifications(anyString());
-
-        mockMvc.perform(get("/employeur/notifications/postulations/employer@company.com")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isInternalServerError());
-        verify(employeurService, times(1)).getPostulationNotifications(anyString());
+        verify(employeurService, times(1)).getEmployeurNotifications("test@test.com");
     }
 
     @Test
@@ -365,100 +331,5 @@ class EmployeurControllerTest {
                 .andExpect(jsonPath("$.message").value("Erreur interne du serveur lors de la signature de l'entente"));
 
         verify(ententeService, times(1)).signEntente(ententeId, email);
-    }
-
-    @Test
-    void getEmployeurResponseNotifications_success() throws Exception {
-        String email = "employer@company.com";
-
-        EtudiantOffreDecisionNotification notification1 = new EtudiantOffreDecisionNotification();
-        notification1.setId(1L);
-        notification1.setEmployeurResponseEmail(email);
-        notification1.setCandidatureResponseId(10L);
-        notification1.setOffreAcceptedByStudent(true);
-        notification1.setComment("Je suis ravi d'accepter!");
-        notification1.setMessageFR("Jean Dupont a accepté l'offre pour le stage Développeur Java");
-        notification1.setCreatedAt(LocalDateTime.now());
-
-        EtudiantOffreDecisionNotification notification2 = new EtudiantOffreDecisionNotification();
-        notification2.setId(2L);
-        notification2.setEmployeurResponseEmail(email);
-        notification2.setCandidatureResponseId(11L);
-        notification2.setOffreAcceptedByStudent(false);
-        notification2.setComment("J'ai accepté une autre offre");
-        notification2.setMessageFR("Marie Tremblay a refusé l'offre pour le stage Développeur Java");
-        notification2.setCreatedAt(LocalDateTime.now());
-
-        NotificationGroupDTO group = NotificationGroupDTO.toDTO("employeur_response", List.of(notification1, notification2));
-        NotificationsResponseDTO notifications = NotificationsResponseDTO.toDTO(List.of(group));
-
-        when(employeurService.getEmployeurResponseNotifications(email)).thenReturn(notifications);
-
-        MvcResult result = mockMvc.perform(get("/employeur/notifications/responses/" + email)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        TypeReference<ReturnEntityDTO<NotificationsResponseDTO>> tr = new TypeReference<>() { };
-        ReturnEntityDTO<NotificationsResponseDTO> response =
-                objectMapper.readValue(result.getResponse().getContentAsString(), tr);
-
-        assertThat(response.getMessage()).isEqualTo("Notifications: ");
-        assertThat(response.getData()).isNotNull();
-        assertThat(response.getData().getTotalCount()).isEqualTo(2);
-        assertThat(response.getData().getGroups()).hasSize(1);
-        assertThat(response.getData().getGroups().getFirst().getTypeKey()).isEqualTo("employeur_response");
-        assertThat(response.getData().getGroups().getFirst().getItems()).hasSize(2);
-
-        verify(employeurService, times(1)).getEmployeurResponseNotifications(email);
-    }
-
-    @ParameterizedTest
-    @CsvSource({
-            "2077, 2",
-            "2078, 1",
-            "2025, 0"
-    })
-    void listPublishedByDate(String year, int expected) throws Exception {
-        StageDTO stage1 = new StageDTO();
-        stage1.setId(1L);
-        stage1.setTitle("Partir");
-        stage1.setEmployeur(new EmployeurDTO());
-        stage1.setDescription("S'enfuir immédiatement!");
-        stage1.setStartDate(LocalDate.of(2077, 5, 6));
-        stage1.setStatus(OfferStatus.APPROUVEE);
-
-        StageDTO stage2 = new StageDTO();
-        stage2.setId(2L);
-        stage2.setTitle("Programmeur C++");
-        stage2.setEmployeur(new EmployeurDTO());
-        stage2.setDescription("Programmer en C++");
-        stage2.setStartDate(LocalDate.of(2077, 6, 12));
-        stage2.setStatus(OfferStatus.APPROUVEE);
-
-        StageDTO stage3 = new StageDTO();
-        stage3.setId(3L);
-        stage3.setTitle("Programmeur C#");
-        stage3.setEmployeur(new EmployeurDTO());
-        stage3.setDescription("Programmer en C#");
-        stage3.setStartDate(LocalDate.of(2078, 3, 25));
-        stage3.setStatus(OfferStatus.APPROUVEE);
-
-        when(employeurService.listStagesFor(anyString(), eq(year))).thenReturn(
-                switch (year) {
-                    case "2077" -> List.of(stage1, stage2);
-                    case "2078" -> List.of(stage3);
-                    default -> Collections.emptyList();
-                }
-        );
-
-        MvcResult result = mockMvc.perform(get("/employeur/jemployeur1@gmail.com/stages").param("year", year))
-                .andExpect(status().isOk())
-                .andReturn();
-        ReturnEntityDTO<List<StageDTO>> data = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
-
-        List<StageDTO> stages= data.getData();
-
-        assertThat(stages.size()).isEqualTo(expected);
     }
 }

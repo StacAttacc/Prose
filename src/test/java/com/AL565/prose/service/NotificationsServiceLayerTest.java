@@ -55,6 +55,8 @@ class NotificationsServiceLayerTest {
     @Mock
     private CandidatureDecisionNotificationRepository candidatureDecisionNotificationRepository;
     @Mock
+    private SignatureEntenteNotificationRepository signatureEntenteNotificationRepository;
+    @Mock
     private NotificationsHelper notificationsHelper;
 
     @InjectMocks
@@ -112,6 +114,11 @@ class NotificationsServiceLayerTest {
         n8.setMessageEN("Candidature decision made");
         n8.setCreatedAt(LocalDateTime.now());
 
+        SignatureEntenteNotification n9 = new SignatureEntenteNotification();
+        n9.setType(NotificationType.SIGNATURE_ENTENTE_NOTIFICATION);
+        n9.setMessageEN("Entente needs to be signed");
+        n9.setCreatedAt(LocalDateTime.now());
+
         when(notificationRepository.findNotificationsByTypeAndFirstRecipientReadAt(NotificationType.STAGE_NOTIFICATION, null))
                 .thenReturn(List.of(n1, n2));
 
@@ -141,9 +148,19 @@ class NotificationsServiceLayerTest {
                 "dummy@email.com"
         )).thenReturn(List.of(n8));
 
+        when(signatureEntenteNotificationRepository.findSignatureEntenteNotificationsBySecondRecipientReadAtAndSignatureEntenteEtudiantEmail(
+                null,
+                "dummy@email.com"
+        )).thenReturn(List.of(n9));
+
+        when(signatureEntenteNotificationRepository.findSignatureEntenteNotificationsBySecondRecipientReadAtAndSignatureEntenteEtudiantEmail(
+                null,
+                "dummy@email.com"
+        )).thenReturn(List.of(n9));
+
         NotificationsResponseDTO gestionnaireResult = gestionnaireService.getGestionnaireNotifications();
         NotificationsResponseDTO etudiantResult = etudiantService.getStudentsNotifications("dummy@email.com");
-        NotificationsResponseDTO etudiantOffreDecision = employeurService.getEmployeurResponseNotifications("dummy@email.com");
+        NotificationsResponseDTO employeurResult = employeurService.getEmployeurNotifications("dummy@email.com");
 
         assertThat(gestionnaireResult).isNotNull();
         assertThat(gestionnaireResult.getTotalCount()).isEqualTo(4);
@@ -154,18 +171,20 @@ class NotificationsServiceLayerTest {
         assertThat(gestionnaireResult.getGroups().get(2).getItems().getFirst().getMessageEN()).isEqualTo("New CV uploaded");
 
         assertThat(etudiantResult).isNotNull();
-        assertThat(etudiantResult.getTotalCount()).isEqualTo(3);
-        assertThat(etudiantResult.getGroups()).hasSize(3);
+        assertThat(etudiantResult.getTotalCount()).isEqualTo(4);
+        assertThat(etudiantResult.getGroups()).hasSize(4);
         assertThat(etudiantResult.getGroups().getFirst().getItems()).hasSize(1);
         assertThat(etudiantResult.getGroups().getFirst().getItems().getFirst().getMessageEN()).isEqualTo("CV processed");
         assertThat(etudiantResult.getGroups().get(1).getItems().getFirst().getMessageEN()).isEqualTo("New convocation");
         assertThat(etudiantResult.getGroups().get(2).getItems().getFirst().getMessageEN()).isEqualTo("Candidature decision made");
+        assertThat(etudiantResult.getGroups().get(2).getItems().getFirst().getMessageEN()).isEqualTo("Entente needs to be signed");
 
-        assertThat(etudiantOffreDecision).isNotNull();
-        assertThat(etudiantOffreDecision.getTotalCount()).isEqualTo(1);
-        assertThat(etudiantOffreDecision.getGroups()).hasSize(1);
-        assertThat(etudiantOffreDecision.getGroups().getFirst().getItems()).hasSize(1);
-        assertThat(etudiantOffreDecision.getGroups().getFirst().getItems().getFirst().getMessageEN()).isEqualTo("Offer decision made");
+        assertThat(employeurResult).isNotNull();
+        assertThat(employeurResult.getTotalCount()).isEqualTo(2);
+        assertThat(employeurResult.getGroups()).hasSize(2);
+        assertThat(employeurResult.getGroups().getFirst().getItems()).hasSize(1);
+        assertThat(employeurResult.getGroups().getFirst().getItems().getFirst().getMessageEN()).isEqualTo("Offer decision made");
+        assertThat(employeurResult.getGroups().get(1).getItems().getFirst().getMessageEN()).isEqualTo("Entente needs to be signed");
     }
 
     @Test

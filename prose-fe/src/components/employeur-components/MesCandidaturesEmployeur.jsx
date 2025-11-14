@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useI18n } from "../../context/I18nContext.jsx";
 import { useYear } from "../../context/YearContext.jsx";
@@ -13,8 +12,7 @@ export default function MesCandidaturesEmployeur() {
     const { user } = useAuth();
     const { t } = useI18n();
     const { selectedYear } = useYear();
-    const navigate = useNavigate();
-    
+
     const [allCandidatures, setAllCandidatures] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);

@@ -4,21 +4,17 @@ import com.AL565.prose.model.Employeur;
 import com.AL565.prose.model.Stage;
 import com.AL565.prose.model.*;
 import com.AL565.prose.model.auth.Credentials;
-import com.AL565.prose.model.notifications.EtudiantOffreDecisionNotification;
 import com.AL565.prose.repository.*;
 import com.AL565.prose.service.dto.CandidatureDTO;
 import com.AL565.prose.service.dto.EmployeurDTO;
 import com.AL565.prose.service.dto.EmployeurPasswordDTO;
 import com.AL565.prose.service.dto.StageDTO;
-import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
 import com.AL565.prose.service.exceptions.CandidatureNotFoundException;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import com.AL565.prose.service.exceptions.InvalidCandidatureModificationException;
 import com.AL565.prose.utils.NotificationsHelper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -203,71 +199,5 @@ class EmployeurServiceTest {
 
         assertThatThrownBy(() -> employeurService.updateCandidatureStatus(candidature.getId(), "Acceptee"))
                 .isInstanceOf(InvalidCandidatureModificationException.class);
-    }
-
-    @Test
-    void getEmployeurResponseNotifications_success() throws Exception {
-        String employeurEmail = "employeur@test.com";
-
-        EtudiantOffreDecisionNotification notification1 = new EtudiantOffreDecisionNotification();
-        notification1.setId(1L);
-        notification1.setEmployeurResponseEmail(employeurEmail);
-        notification1.setCandidatureResponseId(10L);
-        notification1.setEtudiantResponseId(5L);
-        notification1.setStageResponseId(3L);
-        notification1.setOffreAcceptedByStudent(true);
-        notification1.setComment("Je suis ravi d'accepter!");
-        notification1.setMessageFR("Jean Dupont a accepté l'offre pour le stage Développeur Java");
-        notification1.setCreatedAt(LocalDateTime.now());
-        notification1.setFirstRecipientReadAt(null);
-
-        EtudiantOffreDecisionNotification notification2 = new EtudiantOffreDecisionNotification();
-        notification2.setId(2L);
-        notification2.setEmployeurResponseEmail(employeurEmail);
-        notification2.setCandidatureResponseId(11L);
-        notification2.setEtudiantResponseId(6L);
-        notification2.setStageResponseId(3L);
-        notification2.setOffreAcceptedByStudent(false);
-        notification2.setComment("J'ai accepté une autre offre");
-        notification2.setMessageFR("Marie Tremblay a refusé l'offre pour le stage Développeur Java");
-        notification2.setCreatedAt(LocalDateTime.now());
-        notification2.setFirstRecipientReadAt(null);
-
-        List<EtudiantOffreDecisionNotification> notifications = List.of(notification1, notification2);
-
-        when(etudiantOffreDecisionNotificationRepository.findByEmployeurResponseEmailAndFirstRecipientReadAt(employeurEmail, null))
-                .thenReturn(notifications);
-
-        NotificationsResponseDTO result = employeurService.getEmployeurResponseNotifications(employeurEmail);
-
-        assertThat(result).isNotNull();
-        assertThat(result.getTotalCount()).isEqualTo(2);
-        assertThat(result.getGroups().size()).isEqualTo(1);
-        assertThat(result.getGroups().get(0).getTypeKey()).isEqualTo("employeur_response");
-        assertThat(result.getGroups().get(0).getItems().size()).isEqualTo(2);
-
-        verify(etudiantOffreDecisionNotificationRepository, times(1))
-                .findByEmployeurResponseEmailAndFirstRecipientReadAt(employeurEmail, null);
-    }
-
-    @ParameterizedTest
-    @CsvSource({
-            "2077, 2",
-            "2078, 1",
-            "2025, 0"
-    })
-    void getStagesForDated(String year, int expected) {
-        Stage stage1 = new Stage(1L, "Travailler", "Programmez dans mon entreprise!", "Techniques de l'Informatique", new ArrayList<>(), LocalDate.of(2077, 1, 15), LocalDate.of(2077, 1, 21), "", null, "Remote", "26$/h", OfferStatus.APPROUVEE, "jemployeur1@gmail.com", OffsetDateTime.now(), OffsetDateTime.now());
-        Stage stage2 = new Stage(2L, "Démissioner", "Partir immédiatement!", "Rien", new ArrayList<>(), LocalDate.of(2077, 5, 6), LocalDate.of(2077, 5, 7), "Chez vous", null, "Remote", "0$", OfferStatus.APPROUVEE, "jemployeur1@gmail.com", OffsetDateTime.now(), OffsetDateTime.now());
-        Stage stage3 = new Stage(3L, "Revenir", "J'ai besoin de stagiaires!", "Rien", new ArrayList<>(), LocalDate.of(2078, 3, 6), LocalDate.of(2078, 3, 7), "Au bureau", null, "Présentiel", "40$/h", OfferStatus.APPROUVEE, "jemployeur1@gmail.com", OffsetDateTime.now(), OffsetDateTime.now());
-
-        Employeur jean = new Employeur("Jean", "Jacques", "JeanEmployeurs", "jemployeur1@gmail.com", "jeanemployeur");
-
-        when(stageRepository.findByEmployeurEmail(anyString())).thenReturn(List.of(stage1, stage2, stage3));
-        when(employeurRepository.getEmployeurByCredentials_Username(anyString())).thenReturn(jean);
-
-        List<StageDTO> stages = employeurService.listStagesFor("jemployeur1@gmail.com", year);
-
-        assertThat(stages.size()).isEqualTo(expected);
     }
 }

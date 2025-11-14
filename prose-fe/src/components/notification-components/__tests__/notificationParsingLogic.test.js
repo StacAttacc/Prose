@@ -1,96 +1,84 @@
-import { describe, it, expect } from 'vitest';
-import { normalizeNotifications } from '../notification-utils/notificationParsingLogic';
+import {normalizeNotifications} from "../notification-utils/notificationParsingLogic.jsx";
 
-describe('notificationParsingLogic', () => {
-    it('normalizes grouped notifications correctly', () => {
-        const payload = {
-            data: {
-                groups: [
-                    {
-                        typeKey: 'stage',
-                        items: [
-                            { id: 1, stageId: 10, message: 'Stage 1' },
-                            { id: 2, stageId: 11, message: 'Stage 2' }
-                        ]
-                    },
-                    {
-                        typeKey: 'postulation',
-                        items: [
-                            { id: 3, candidatureId: 20, message: 'Application 1' }
-                        ]
-                    }
-                ]
-            }
-        };
+it('handles groups with missing items property', () => {
+    const payload = {
+        data: {
+            groups: [
+                { typeKey: 'stage' },
+                { typeKey: 'postulation', items: null }
+            ]
+        }
+    };
 
-        const result = normalizeNotifications(payload);
-        expect(result.stage).toHaveLength(2);
-        expect(result.postulation).toHaveLength(1);
-    });
+    const result = normalizeNotifications(payload);
+    expect(result).toEqual({});
+});
 
-    it('handles convocation notifications', () => {
-        const payload = {
-            data: {
-                groups: [{
-                    typeKey: 'convocation',
-                    items: [{ id: 1, convocation: 100 }]
-                }]
-            }
-        };
+it('handles groups with undefined typeKey', () => {
+    const payload = {
+        data: {
+            groups: [
+                {
+                    items: [{ id: 1, message: 'Test' }]
+                }
+            ]
+        }
+    };
 
-        const result = normalizeNotifications(payload);
-        expect(result.convocation).toHaveLength(1);
-    });
+    const result = normalizeNotifications(payload);
+    expect(result.undefined).toHaveLength(1);
+});
 
-    it('handles cv notifications', () => {
-        const payload = {
-            data: {
-                groups: [{
-                    typeKey: 'gestionnaire_cv',
-                    items: [{ id: 1, cvId: 50 }]
-                }]
-            }
-        };
+it('handles multiple groups with same typeKey', () => {
+    const payload = {
+        data: {
+            groups: [
+                {
+                    typeKey: 'stage',
+                    items: [{ id: 1, message: 'Stage 1' }]
+                },
+                {
+                    typeKey: 'stage',
+                    items: [{ id: 2, message: 'Stage 2' }]
+                }
+            ]
+        }
+    };
 
-        const result = normalizeNotifications(payload);
-        expect(result.gestionnaire_cv).toHaveLength(1);
-    });
+    const result = normalizeNotifications(payload);
+    expect(result.stage).toHaveLength(2);
+    expect(result.stage[0].id).toBe(1);
+    expect(result.stage[1].id).toBe(2);
+});
 
-    it('handles candidature_decision notifications', () => {
-        const payload = {
-            data: {
-                groups: [{
-                    typeKey: 'candidature_decision',
-                    items: [{ id: 1, candidatureDecisionId: 60 }]
-                }]
-            }
-        };
+it('handles mixed valid and invalid groups', () => {
+    const payload = {
+        data: {
+            groups: [
+                { typeKey: 'stage', items: [{ id: 1 }] },
+                { typeKey: 'invalid' },
+                { typeKey: 'postulation', items: [{ id: 2 }] }
+            ]
+        }
+    };
 
-        const result = normalizeNotifications(payload);
-        expect(result.candidature_decision).toHaveLength(1);
-    });
+    const result = normalizeNotifications(payload);
+    expect(result.stage).toHaveLength(1);
+    expect(result.postulation).toHaveLength(1);
+    expect(result.invalid).toBeUndefined();
+});
 
-    it('returns empty object for invalid payload', () => {
-        expect(normalizeNotifications(null)).toEqual({});
-        expect(normalizeNotifications({})).toEqual({});
-        expect(normalizeNotifications({ data: {} })).toEqual({});
-    });
+it('handles groups with empty items array', () => {
+    const payload = {
+        data: {
+            groups: [
+                { typeKey: 'stage', items: [] },
+                { typeKey: 'postulation', items: [{ id: 1 }] }
+            ]
+        }
+    };
 
-    it('handles empty groups array', () => {
-        const payload = { data: { groups: [] } };
-        expect(normalizeNotifications(payload)).toEqual({});
-    });
-
-    it('handles items with type property', () => {
-        const payload = {
-            data: {
-                groups: [{
-                    items: [{ id: 1, type: 'Custom Type' }]
-                }]
-            }
-        };
-
-        const result = normalizeNotifications(payload);
-        expect(result['custom-type']).toHaveLength(1);
-    });
+    const result = normalizeNotifications(payload);
+    expect(result.stage).toBeUndefined();
+    expect(result.postulation).toHaveLength(1);
 });

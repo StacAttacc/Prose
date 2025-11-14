@@ -37,6 +37,7 @@ public class EmployeurService {
     private NotificationsHelper notificationsHelper;
     private PostulationNotificationRepository postulationNotificationRepository;
     private EtudiantOffreDecisionNotificationRepository etudiantOffreDecisionNotificationRepository;
+    private SignatureEntenteNotificationRepository signatureEntenteNotificationRepository;
 
     public void enregistrer(EmployeurPasswordDTO employeurDTO) throws EmailAlreadyExistsException {
         if (proseUserRepository.findByCredentials_Username(employeurDTO.getEmail()).isPresent()) {
@@ -179,13 +180,36 @@ public class EmployeurService {
     }
 
     @Transactional
-    public NotificationsResponseDTO getPostulationNotifications(String employeurEmail) throws Exception {
+    public NotificationsResponseDTO getEmployeurNotifications(String employeurEmail) throws Exception {
         try {
-            List<PostulationNotification> notifications =
+            List<PostulationNotification> postulations =
                     postulationNotificationRepository
-                            .findByFirstRecipientReadAtAndEmployeurEmail(null, employeurEmail);
-            NotificationGroupDTO group = NotificationGroupDTO.toDTO("postulation", notifications);
-            return NotificationsResponseDTO.toDTO(List.of(group));
+                            .findByFirstRecipientReadAtAndEmployeurEmail(
+                                    null,
+                                    employeurEmail
+                            );
+            List<SignatureEntenteNotification> signatureEntentes =
+                    signatureEntenteNotificationRepository
+                            .findSignatureEntenteNotificationsByFirstRecipientReadAtAndSignatureEntenteEmployeurEmail(
+                                    null,
+                                    employeurEmail
+                            );
+            List<EtudiantOffreDecisionNotification> etudiantOffreDecisions =
+                    etudiantOffreDecisionNotificationRepository
+                            .findByEmployeurResponseEmailAndFirstRecipientReadAt(employeurEmail, null);
+
+            NotificationGroupDTO etudiantOffreDecisionsGroup = NotificationGroupDTO
+                    .toDTO(NotificationType.ETUDIANT_OFFRE_DECCISION_NOTIFICATION.getDisplayName(), etudiantOffreDecisions);
+            NotificationGroupDTO signatureEntentesGroup = NotificationGroupDTO
+                    .toDTO(NotificationType.SIGNATURE_ENTENTE_NOTIFICATION.getDisplayName(), signatureEntentes);
+            NotificationGroupDTO postulationsGroup = NotificationGroupDTO
+                    .toDTO(NotificationType.POSTULATION_NOTIFICATION.getDisplayName(), postulations);
+
+            return NotificationsResponseDTO.toDTO(List.of(
+                    postulationsGroup,
+                    signatureEntentesGroup,
+                    etudiantOffreDecisionsGroup
+            ));
         } catch (Exception e) {
             throw new NotificationExceptions.NotificationFetchException();
         }
@@ -233,18 +257,5 @@ public class EmployeurService {
         notification.setEtudiantConvocationEmail(candidature.getEtudiant().getEmail());
         notification.setEtudiantConvocationId(candidature.getEtudiant().getId());
         notificationRepository.save(notification);
-    }
-
-    @Transactional
-    public NotificationsResponseDTO getEmployeurResponseNotifications(String employeurEmail) throws Exception {
-        try {
-            List<EtudiantOffreDecisionNotification> notifications =
-                    etudiantOffreDecisionNotificationRepository
-                            .findByEmployeurResponseEmailAndFirstRecipientReadAt(employeurEmail, null);
-            NotificationGroupDTO group = NotificationGroupDTO.toDTO("employeur_response", notifications);
-            return NotificationsResponseDTO.toDTO(List.of(group));
-        } catch (Exception e) {
-            throw new NotificationExceptions.NotificationFetchException();
-        }
     }
 }

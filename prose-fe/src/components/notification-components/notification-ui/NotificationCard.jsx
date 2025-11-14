@@ -1,4 +1,4 @@
-import {labelForKey} from "../notification-utils/notificationText.jsx";
+import {labelForKey} from "../notification-utils/notificationTextLogic.jsx";
 import {NotificationItem} from "./NotificationItem.jsx";
 import {Eye, EyeOff} from "lucide-react";
 import {NotificationCloseButton} from "./NotificationCloseButton.jsx";
