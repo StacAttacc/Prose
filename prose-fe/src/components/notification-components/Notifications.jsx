@@ -11,7 +11,7 @@ import {
     getDefaultNavigationPath,
     getNotificationNavigationPath
 } from "./notification-utils/notificationsNavigationLogic.jsx";
-import { labelForKey, shortText, setI18nInstance } from "./notification-utils/notificationText.jsx";
+import { labelForKey, shortText } from "./notification-utils/notificationTextLogic.jsx";
 import { NotificationItem } from "./notification-ui/NotificationItem.jsx";
 import ErrorBanner from "../display-components/ErrorBanner.jsx";
 import {NotificationGroupDropdown} from "./notification-ui/NotificationGroupDropdown.jsx";
