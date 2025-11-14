@@ -119,25 +119,16 @@ public class EmployeurController {
         }
     }
 
-    @GetMapping("/notifications/postulations/{email}")
-    public ResponseEntity<ReturnEntityDTO<NotificationsResponseDTO>> getPostulationNotifications(@PathVariable String email) {
+    @GetMapping("/notifications/all")
+    public ResponseEntity<ReturnEntityDTO<NotificationsResponseDTO>> getPostulationNotifications(@RequestHeader("Authorization") String authHeader) {
         try {
-            NotificationsResponseDTO notifications = employeurService.getPostulationNotifications(email);
+            String token = authHeader.replace("Bearer ", "");
+            String email = jwtTokenProvider.getEmailFromJWT(token);
+            NotificationsResponseDTO notifications = employeurService.getEmployeurNotifications(email);
             return ResponseEntity.ok(new ReturnEntityDTO<>("Notifications: ", notifications));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ReturnEntityDTO<>("Erreur lors de la récupération des notifications de postulation", null));
-        }
-    }
-
-    @GetMapping("/notifications/responses/{email}")
-    public ResponseEntity<ReturnEntityDTO<NotificationsResponseDTO>> getEmployeurResponseNotifications(@PathVariable String email) {
-        try {
-            NotificationsResponseDTO notifications = employeurService.getEmployeurResponseNotifications(email);
-            return ResponseEntity.ok(new ReturnEntityDTO<>("Notifications: ", notifications));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ReturnEntityDTO<>("Erreur lors de la récupération des notifications de réponse d'étudiant", null));
+                    .body(new ReturnEntityDTO<>("Erreur lors de la récupération des notifications", null));
         }
     }
 

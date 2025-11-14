@@ -4,13 +4,11 @@ import com.AL565.prose.model.Employeur;
 import com.AL565.prose.model.Stage;
 import com.AL565.prose.model.*;
 import com.AL565.prose.model.auth.Credentials;
-import com.AL565.prose.model.notifications.EtudiantOffreDecisionNotification;
 import com.AL565.prose.repository.*;
 import com.AL565.prose.service.dto.CandidatureDTO;
 import com.AL565.prose.service.dto.EmployeurDTO;
 import com.AL565.prose.service.dto.EmployeurPasswordDTO;
 import com.AL565.prose.service.dto.StageDTO;
-import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
 import com.AL565.prose.service.exceptions.CandidatureNotFoundException;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import com.AL565.prose.service.exceptions.InvalidCandidatureModificationException;
@@ -201,50 +199,5 @@ class EmployeurServiceTest {
 
         assertThatThrownBy(() -> employeurService.updateCandidatureStatus(candidature.getId(), "Acceptee"))
                 .isInstanceOf(InvalidCandidatureModificationException.class);
-    }
-
-    @Test
-    void getEmployeurResponseNotifications_success() throws Exception {
-        String employeurEmail = "employeur@test.com";
-
-        EtudiantOffreDecisionNotification notification1 = new EtudiantOffreDecisionNotification();
-        notification1.setId(1L);
-        notification1.setEmployeurResponseEmail(employeurEmail);
-        notification1.setCandidatureResponseId(10L);
-        notification1.setEtudiantResponseId(5L);
-        notification1.setStageResponseId(3L);
-        notification1.setOffreAcceptedByStudent(true);
-        notification1.setComment("Je suis ravi d'accepter!");
-        notification1.setMessageFR("Jean Dupont a accepté l'offre pour le stage Développeur Java");
-        notification1.setCreatedAt(LocalDateTime.now());
-        notification1.setFirstRecipientReadAt(null);
-
-        EtudiantOffreDecisionNotification notification2 = new EtudiantOffreDecisionNotification();
-        notification2.setId(2L);
-        notification2.setEmployeurResponseEmail(employeurEmail);
-        notification2.setCandidatureResponseId(11L);
-        notification2.setEtudiantResponseId(6L);
-        notification2.setStageResponseId(3L);
-        notification2.setOffreAcceptedByStudent(false);
-        notification2.setComment("J'ai accepté une autre offre");
-        notification2.setMessageFR("Marie Tremblay a refusé l'offre pour le stage Développeur Java");
-        notification2.setCreatedAt(LocalDateTime.now());
-        notification2.setFirstRecipientReadAt(null);
-
-        List<EtudiantOffreDecisionNotification> notifications = List.of(notification1, notification2);
-
-        when(etudiantOffreDecisionNotificationRepository.findByEmployeurResponseEmailAndFirstRecipientReadAt(employeurEmail, null))
-                .thenReturn(notifications);
-
-        NotificationsResponseDTO result = employeurService.getEmployeurResponseNotifications(employeurEmail);
-
-        assertThat(result).isNotNull();
-        assertThat(result.getTotalCount()).isEqualTo(2);
-        assertThat(result.getGroups().size()).isEqualTo(1);
-        assertThat(result.getGroups().get(0).getTypeKey()).isEqualTo("employeur_response");
-        assertThat(result.getGroups().get(0).getItems().size()).isEqualTo(2);
-
-        verify(etudiantOffreDecisionNotificationRepository, times(1))
-                .findByEmployeurResponseEmailAndFirstRecipientReadAt(employeurEmail, null);
     }
 }

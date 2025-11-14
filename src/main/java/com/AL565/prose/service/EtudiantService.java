@@ -61,6 +61,7 @@ public class EtudiantService {
     private final PostulationNotificationRepository postulationNotificationRepository;
     private final EtudiantOffreDecisionNotificationRepository etudiantOffreDecisionNotificationRepository;
     private final CandidatureDecisionNotificationRepository candidatureDecisionNotificationRepository;
+    private final SignatureEntenteNotificationRepository signatureEntenteNotificationRepository;
     private final NotificationsHelper notificationsHelper;
 
     public void inscrireEtudiant(EtudiantPasswordDTO dto) {
@@ -271,8 +272,12 @@ public class EtudiantService {
                     .findByFirstRecipientReadAtAndEtudiantConvocationEmail(
                             null, etudiantEmail
                     );
-            List<CandidatureDecisionNotification> candidatureDecisionNotifications = candidatureDecisionNotificationRepository
+            List<CandidatureDecisionNotification> candidatureDecisions = candidatureDecisionNotificationRepository
                     .findCandidatureDecisionNotificationsByFirstRecipientReadAtAndCandidatureDecisionEtudiantEmail(
+                            null, etudiantEmail
+                    );
+            List<SignatureEntenteNotification> signatureEntentes = signatureEntenteNotificationRepository
+                    .findSignatureEntenteNotificationsBySecondRecipientReadAtAndSignatureEntenteEtudiantEmail(
                             null, etudiantEmail
                     );
 
@@ -281,10 +286,16 @@ public class EtudiantService {
             NotificationGroupDTO convocationGroup = NotificationGroupDTO
                     .toDTO(NotificationType.CONVOCATION_NOTIFICATION.getDisplayName(), convocationNotifications);
             NotificationGroupDTO candidatureDecisionGroup = NotificationGroupDTO
-                    .toDTO(NotificationType.CANDIDATURE_DECISION_NOTIFICATION.getDisplayName(), candidatureDecisionNotifications);
+                    .toDTO(NotificationType.CANDIDATURE_DECISION_NOTIFICATION.getDisplayName(), candidatureDecisions);
+            NotificationGroupDTO signatureEntenteGroup = NotificationGroupDTO
+                    .toDTO(NotificationType.SIGNATURE_ENTENTE_NOTIFICATION.getDisplayName(), signatureEntentes);
 
-            return NotificationsResponseDTO
-                    .toDTO(List.of(cvGroup, convocationGroup, candidatureDecisionGroup));
+            return NotificationsResponseDTO.toDTO(List.of(
+                    cvGroup,
+                    convocationGroup,
+                    candidatureDecisionGroup,
+                    signatureEntenteGroup
+            ));
         } catch (Exception e) {
             throw new NotificationExceptions.NotificationFetchException();
         }
