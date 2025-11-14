@@ -173,13 +173,13 @@ export async function generateEntente(candidatureId, token) {
     return res?.data?.data ?? res?.data;
 }
 
-export async function associerProfesseurEtudiant(professeurEmail, etudiantId, token) {
+export async function associerProfesseurEtudiant(professeurEmail, etudiantEmail, token) {
     try {
         const res = await axios.post(
-            `${BASE_URL_GESTIONNAIRE}/associer-professeur-etudiant`,
+            `${BASE_URL_GESTIONNAIRE}/associate-professeur`,
             {
-                professeurEmail,
-                etudiantId
+                etudiantEmail: etudiantEmail,
+                professeurEmail: professeurEmail
             },
             {
                 headers: {
