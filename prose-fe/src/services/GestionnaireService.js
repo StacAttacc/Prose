@@ -206,3 +206,25 @@ export async function signEntente(ententeId, password, token) {
     }
     return await res.json();
 }
+
+export async function associerProfesseurEtudiant(professeurEmail, etudiantEmail, token) {
+    try {
+        const res = await axios.post(
+            `${BASE_URL_GESTIONNAIRE}/associate-professeur`,
+            {
+                etudiantEmail: etudiantEmail,
+                professeurEmail: professeurEmail
+            },
+            {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+        return res.data;
+    } catch (error) {
+        console.error('Erreur lors de l\'association:', error);
+        throw error;
+    }
+}

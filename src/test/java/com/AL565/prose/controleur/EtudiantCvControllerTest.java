@@ -7,6 +7,7 @@ import com.AL565.prose.security.JwtTokenProvider;
 import com.AL565.prose.service.EmployeurService;
 import com.AL565.prose.service.EtudiantService;
 import com.AL565.prose.service.GestionnaireService;
+import com.AL565.prose.service.ProfesseurService;
 import com.AL565.prose.service.dto.EtudiantCvDTO;
 import com.AL565.prose.model.CV;
 import org.junit.jupiter.api.Test;
@@ -45,6 +46,9 @@ class EtudiantCvControllerTest {
 
     @MockitoBean
     private GestionnaireService gestionnaireService;
+
+    @MockitoBean
+    private ProfesseurService professeurService;
 
     @MockitoBean
     private NotificationRepository notificationRepository;
