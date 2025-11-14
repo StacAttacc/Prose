@@ -60,11 +60,10 @@ public class EmployeurController {
         }
     }
 
-
     @GetMapping("/{email:.+}/stages")
-    public ResponseEntity<ReturnEntityDTO<List<StageDTO>>> listPublishedByEmployerEmail(@PathVariable("email") String email) {
+    public ResponseEntity<ReturnEntityDTO<List<StageDTO>>> listPublishedByEmployerEmail(@PathVariable("email") String email, @RequestParam(required = false) String year) {
         try {
-            List<StageDTO> stages = employeurService.listStagesFor(email);
+            List<StageDTO> stages = employeurService.listStagesFor(email, year);
             if (stages.isEmpty()) {
                 return ResponseEntity.ok().body(new ReturnEntityDTO<>("Aucun stage publié trouvé pour cet employeur", new ArrayList<>() {
                 }));

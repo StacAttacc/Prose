@@ -184,6 +184,10 @@ const translations = {
     voirDetails: 'Voir détails',
     aucunStageApprouve: 'Aucun stage approuvé disponible pour le moment.',
     aucunStageEmployeur: 'Vous n\'avez aucun stage.',
+    inclureSessionsAnterieures: 'Inclure les sessions antérieures',
+    sessionsAnterieures: 'Sessions',
+    sessionsActuellesFutures: 'Sessions actuelles/futures',
+    toutesLesSessions: 'Toutes les sessions',
     
     // StageListings (Étudiant)
     stagesDisponibles: 'Stages Disponibles',
@@ -497,6 +501,10 @@ const translations = {
     voirDetails: 'View details',
     aucunStageApprouve: 'No approved stage available at the moment.',
     aucunStageEmployeur: 'You have no stages.',
+    inclureSessionsAnterieures: 'Include previous sessions',
+    sessionsAnterieures: 'Sessions',
+    sessionsActuellesFutures: 'Current/future sessions',
+    toutesLesSessions: 'All sessions',
     
     // StageListings (Étudiant)
     stagesDisponibles: 'Available Stages',

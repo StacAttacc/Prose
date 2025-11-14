@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useI18n } from "../../context/I18nContext.jsx";
+import { useYear } from "../../context/YearContext.jsx";
 import { getEmployeurStages } from "../../services/StageService.js";
 import ErrorBanner from "../display-components/ErrorBanner.jsx";
 import StageDetailsModal from "../display-components/StageDetailsModal.jsx";
@@ -10,6 +11,7 @@ import ScrollToTop from "../common/ScrollToTop.jsx";
 export default function PostedStages() {
     const { user } = useAuth();
     const { t, locale } = useI18n();
+    const { selectedYear } = useYear();
     const navigate = useNavigate();
 
     const [stages, setStages] = useState([]);
@@ -24,11 +26,11 @@ export default function PostedStages() {
     const [compensationFilter, setCompensationFilter] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
 
-
     useEffect(() => {
         async function fetchAllStages() {
             try {
-                const data = await getEmployeurStages(user.email, user.token);
+                setLoading(true);
+                const data = await getEmployeurStages(user.email, user.token, selectedYear);
                 const list = Array.isArray(data)
                     ? data
                     : Array.isArray(data?.data)
@@ -41,12 +43,14 @@ export default function PostedStages() {
                 setLoading(false);
             }
         }
-        fetchAllStages();
-    }, [user.email, user.token]);
+        if (user?.email && user?.token && selectedYear) {
+            fetchAllStages();
+        }
+    }, [user.email, user.token, selectedYear]);
 
     const filteredStages = useMemo(() => {
         return stages.filter((stage) => {
-            const matchesSearch =
+            const matchesSearch = !searchTerm ||
                 stage.title?.toLowerCase?.().includes(searchTerm.toLowerCase()) ||
                 stage.description?.toLowerCase?.().includes(searchTerm.toLowerCase()) ||
                 (Array.isArray(stage.skills) &&
