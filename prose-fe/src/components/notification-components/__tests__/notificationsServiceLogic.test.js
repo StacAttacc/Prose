@@ -28,12 +28,12 @@ describe('notificationsServiceLogic', () => {
         });
 
         it('fetches EMPLOYEUR notifications', async () => {
-            const user = { role: 'EMPLOYEUR', email: 'emp@test.com', token: 'token123' };
-            EmployeurService.getEmployeurCandidatureNotifications.mockResolvedValue({ data: [] });
+            const user = { role: 'EMPLOYEUR', token: 'token123' };
+            EmployeurService.getEmployeurNotifications.mockResolvedValue({ data: [] });
 
             await fetchNotifications(user);
 
-            expect(EmployeurService.getEmployeurCandidatureNotifications).toHaveBeenCalledWith('emp@test.com', 'token123');
+            expect(EmployeurService.getEmployeurNotifications).toHaveBeenCalledWith('token123');
         });
 
         it('fetches ETUDIANT notifications', async () => {
@@ -95,6 +95,24 @@ describe('notificationsServiceLogic', () => {
             await markManyNotifications(user, [1, 2, 3]);
 
             expect(GestionnaireService.markNotificationsRead).toHaveBeenCalledWith([1, 2, 3], 'token123');
+        });
+
+        it('marks multiple EMPLOYEUR notifications as read', async () => {
+            const user = { role: 'EMPLOYEUR', token: 'token123' };
+            EmployeurService.markNotificationsRead.mockResolvedValue();
+
+            await markManyNotifications(user, [1, 2, 3]);
+
+            expect(EmployeurService.markNotificationsRead).toHaveBeenCalledWith([1, 2, 3], 'token123');
+        });
+
+        it('marks multiple ETUDIANT notifications as read', async () => {
+            const user = { role: 'ETUDIANT', token: 'token123' };
+            EtudiantService.markNotificationsRead.mockResolvedValue();
+
+            await markManyNotifications(user, [1, 2, 3]);
+
+            expect(EtudiantService.markNotificationsRead).toHaveBeenCalledWith([1, 2, 3], 'token123');
         });
 
         it('does nothing when ids array is empty', async () => {

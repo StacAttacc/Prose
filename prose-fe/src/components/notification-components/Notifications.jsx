@@ -9,7 +9,6 @@ import {
 import { normalizeNotifications } from "./notification-utils/notificationParsingLogic.jsx";
 import {
     getDefaultNavigationPath,
-    getGroupedNotificationNavigation,
     getNotificationNavigationPath
 } from "./notification-utils/notificationsNavigationLogic.jsx";
 import ErrorBanner from "../display-components/ErrorBanner.jsx";
@@ -87,7 +86,12 @@ export default function Notifications() {
         try {
             await markManyNotifications(user, ids);
             setReadCounter(c => c + ids.length);
-            const { path, state } = getGroupedNotificationNavigation(typeKey, user.role);
+            const { path, state } = getNotificationNavigationPath({
+                role: user.role,
+                notification: null,
+                isGrouped: true,
+                groupType: typeKey
+            });
             navigate(path, state ? { state } : undefined);
         } catch (err) {
             console.error("Failed to mark card notifications as read:", err);
@@ -114,7 +118,12 @@ export default function Notifications() {
 
         try {
             await markAndReload(notification, typeKey);
-            const { path, state } = getNotificationNavigationPath(notification, user.role);
+            const { path, state } = getNotificationNavigationPath({
+                role: user.role,
+                notification,
+                isGrouped: false,
+                groupType: null
+            });
             navigate(path, state ? { state } : undefined);
         } catch (err) {
             console.error("Failed to mark notification as read:", err);
