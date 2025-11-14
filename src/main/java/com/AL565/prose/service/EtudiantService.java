@@ -343,10 +343,10 @@ public class EtudiantService {
 
         candidatureRepository.save(candidature);
 
-        createNotificationForEmployeurResponse(candidature, responseDTO.isAccepted(), responseDTO.getComment());
+        createNotificationForEmployeurResponse(candidature, responseDTO.isAccepted());
     }
 
-    private void createNotificationForEmployeurResponse(Candidature candidature, boolean accepted, String comment) {
+    private void createNotificationForEmployeurResponse(Candidature candidature, boolean accepted) {
         String studentName = candidature.getEtudiant().getFirstName() + " " + candidature.getEtudiant().getLastName();
         String stageTitle = candidature.getStage().getTitle();
         String decisionFR = accepted ? "accepté" : "refusé";
@@ -354,10 +354,6 @@ public class EtudiantService {
 
         String messageFR = studentName + " a " + decisionFR + " l'offre pour le stage " + stageTitle;
         String messageEN = studentName + " has " + decisionEN + " the offer for " + stageTitle;
-
-        if (comment != null && !comment.trim().isEmpty()) {
-            messageFR += " - Commentaire: " + comment;
-        }
 
         EtudiantOffreDecisionNotification notification = new EtudiantOffreDecisionNotification();
         notification.setFirstRecipientReadAt(null);
@@ -367,7 +363,6 @@ public class EtudiantService {
         notification.setStageResponseId(candidature.getStage().getId());
         notification.setEmployeurResponseEmail(candidature.getStage().getEmployeurEmail());
         notification.setOffreAcceptedByStudent(accepted);
-        notification.setComment(comment);
         notification.setType(NotificationType.ETUDIANT_OFFRE_DECCISION_NOTIFICATION);
         notification.setMessageFR(messageFR);
         notification.setMessageEN(messageEN);

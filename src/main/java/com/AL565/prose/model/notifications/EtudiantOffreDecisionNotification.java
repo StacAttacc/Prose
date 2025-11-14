@@ -19,6 +19,4 @@ public class EtudiantOffreDecisionNotification extends Notification {
     private Long stageResponseId;
     private String employeurResponseEmail;
     private boolean isOffreAcceptedByStudent;
-    private String comment;
 }
-
