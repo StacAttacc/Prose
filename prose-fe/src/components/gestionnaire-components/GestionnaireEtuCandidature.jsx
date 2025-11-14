@@ -380,9 +380,6 @@ export default function GestionnaireEtuCandidature() {
                                         {t('email')}
                                     </th>
                                     <th className="text-left text-gray-800 font-semibold py-3 px-4">
-                                        {t('professeur') || 'Professeur'}
-                                    </th>
-                                    <th className="text-left text-gray-800 font-semibold py-3 px-4">
                                         {tab === "APPLIED" ? t('candidatures') : t('statut')}
                                     </th>
 
@@ -426,11 +423,6 @@ export default function GestionnaireEtuCandidature() {
                                         </td>
                                         <td className="py-3 px-4 align-top text-gray-700">
                                             {s.email}
-                                        </td>
-                                        <td className="py-3 px-4 align-top text-gray-700">
-                                            {s.professeur 
-                                                ? `${s.professeur.firstName || ''} ${s.professeur.lastName || ''}`.trim() || s.professeur.email || '—'
-                                                : '—'}
                                         </td>
                                         <td className="py-3 px-4 align-top">
                                             {tab === "APPLIED" ? (
