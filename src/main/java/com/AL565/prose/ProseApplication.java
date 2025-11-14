@@ -59,7 +59,7 @@ public class ProseApplication {
             } catch (EmailAlreadyExistsException e) {
                 System.out.println();
             }
-
+            
             GestionnairePasswordDTO gestionnaireJane = new GestionnairePasswordDTO();
             gestionnaireJane.setFirstName("Jane");
             gestionnaireJane.setLastName("Doe");
