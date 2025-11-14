@@ -327,7 +327,9 @@ const translations = {
     associer: 'Associer',
     selectionnerEtudiantEtProfesseur: 'Veuillez entrer l\'email de l\'étudiant et l\'email du professeur',
     erreurAssociation: 'Erreur lors de l\'association',
-    emailProfesseur: 'Email du professeur'
+    emailProfesseur: 'Email du professeur',
+    associationsExistantes: 'Associations existantes',
+    professeur: 'Professeur'
   },
   en: {
     // Dashboard
@@ -658,7 +660,9 @@ const translations = {
     associer: 'Associate',
     selectionnerEtudiantEtProfesseur: 'Please enter the student email and professor email',
     erreurAssociation: 'Error during association',
-    emailProfesseur: 'Professor email'
+    emailProfesseur: 'Professor email',
+    associationsExistantes: 'Existing Associations',
+    professeur: 'Professor'
   }
 };
 

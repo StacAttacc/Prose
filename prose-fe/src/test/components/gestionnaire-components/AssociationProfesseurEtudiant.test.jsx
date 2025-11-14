@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '../../utils/testUtils';
 import AssociationProfesseurEtudiant from '../../../components/gestionnaire-components/AssociationProfesseurEtudiant.jsx';
@@ -7,6 +7,7 @@ import { server } from '../../mocks/server';
 import { http, HttpResponse } from 'msw';
 import { useAuth } from '../../../context/AuthContext';
 import { useI18n } from '../../../context/I18nContext';
+import { useYear } from '../../../context/YearContext';
 import * as GestionnaireService from '../../../services/GestionnaireService';
 
 vi.mock('../../../context/AuthContext', async (importOriginal) => {
@@ -22,6 +23,14 @@ vi.mock('../../../context/I18nContext', async (importOriginal) => {
   return {
     ...actual,
     useI18n: vi.fn()
+  };
+});
+
+vi.mock('../../../context/YearContext', async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    useYear: vi.fn()
   };
 });
 
@@ -49,12 +58,16 @@ describe('AssociationProfesseurEtudiant', () => {
       'etudiant': 'Email de l\'étudiant',
       'Veuillez entrer l\'email du professeur': 'Sélectionner un professeur',
       'Email du professeur': 'Email du professeur',
+      'emailProfesseur': 'Email du professeur',
       'reinitialiser': 'Réinitialiser',
       'associer': 'Associer',
       'associationEnCours': 'Association en cours...',
       'associationReussie': 'Association réussie avec succès!',
       'selectionnerEtudiantEtProfesseur': 'Veuillez entrer l\'email de l\'étudiant et l\'email du professeur',
-      'erreurAssociation': 'Erreur lors de l\'association'
+      'erreurAssociation': 'Erreur lors de l\'association',
+      'associationsExistantes': 'Associations existantes',
+      'professeur': 'Professeur',
+      'chargement': 'Chargement des associations...'
     };
     return translations[key] || defaultValue || key;
   };
@@ -76,33 +89,52 @@ describe('AssociationProfesseurEtudiant', () => {
       i18n: {},
       ready: true
     });
+
+    vi.mocked(useYear).mockReturnValue({
+      selectedYear: '2025',
+      setSelectedYear: vi.fn()
+    });
+
+    // Mock getStageApplicantsManager pour retourner une liste vide par défaut
+    vi.spyOn(GestionnaireService, 'getStageApplicantsManager').mockResolvedValue([]);
   });
 
-  it('devrait afficher le formulaire avec les champs email', () => {
+  it('devrait afficher le formulaire avec les champs email', async () => {
     renderWithProviders(<AssociationProfesseurEtudiant />);
 
-    expect(screen.getByText('Association Professeur - Étudiant')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('Association Professeur - Étudiant')).toBeInTheDocument();
+    });
+
     const etudiantLabels = screen.getAllByText(/Email de l'étudiant/i);
-    const professeurLabels = screen.getAllByText(/Email du professeur/i);
     expect(etudiantLabels.length).toBeGreaterThan(0);
-    expect(professeurLabels.length).toBeGreaterThan(0);
     
+    // Vérifier que les inputs existent (le label du professeur peut être traduit différemment)
     const inputs = screen.getAllByRole('textbox');
     expect(inputs.length).toBe(2);
+    
+    // Vérifier que les deux sections sont présentes (utiliser getAllByText car il peut y avoir plusieurs occurrences)
+    const etudiantTexts = screen.getAllByText(/Email de l'étudiant/i);
+    expect(etudiantTexts.length).toBeGreaterThan(0);
+    expect(screen.getByText(/Sélectionner un professeur/i)).toBeInTheDocument();
   });
 
-  it('devrait afficher les boutons Réinitialiser et Associer', () => {
+  it('devrait afficher les boutons Réinitialiser et Associer', async () => {
     renderWithProviders(<AssociationProfesseurEtudiant />);
 
-    expect(screen.getByRole('button', { name: /Réinitialiser/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Associer/i })).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Réinitialiser/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Associer/i })).toBeInTheDocument();
+    });
   });
 
-  it('devrait désactiver le bouton Associer quand les champs sont vides', () => {
+  it('devrait désactiver le bouton Associer quand les champs sont vides', async () => {
     renderWithProviders(<AssociationProfesseurEtudiant />);
 
-    const submitButton = screen.getByRole('button', { name: /Associer/i });
-    expect(submitButton).toBeDisabled();
+    await waitFor(() => {
+      const submitButton = screen.getByRole('button', { name: /Associer/i });
+      expect(submitButton).toBeDisabled();
+    });
   });
 
   it('devrait activer le bouton Associer quand les deux emails sont remplis', async () => {
@@ -123,14 +155,14 @@ describe('AssociationProfesseurEtudiant', () => {
   it('devrait appeler le service avec les bons paramètres lors de la soumission', async () => {
     const user = userEvent.setup();
     const mockAssocier = vi.spyOn(GestionnaireService, 'associerProfesseurEtudiant').mockResolvedValue({});
-
-    server.use(
-      http.post('http://localhost:8080/gestionnaire/associate-professeur', () => {
-        return HttpResponse.json('Association réussie', { status: 200 });
-      })
-    );
+    const mockGetAssociations = vi.spyOn(GestionnaireService, 'getStageApplicantsManager').mockResolvedValue([]);
 
     renderWithProviders(<AssociationProfesseurEtudiant />);
+
+    await waitFor(() => {
+      const inputs = screen.getAllByRole('textbox');
+      expect(inputs.length).toBe(2);
+    });
 
     const inputs = screen.getAllByRole('textbox');
     const etudiantInput = inputs[0];
@@ -150,13 +182,20 @@ describe('AssociationProfesseurEtudiant', () => {
     });
 
     mockAssocier.mockRestore();
+    mockGetAssociations.mockRestore();
   });
 
   it('devrait afficher un message de succès après une association réussie', async () => {
     const user = userEvent.setup();
     vi.spyOn(GestionnaireService, 'associerProfesseurEtudiant').mockResolvedValue({});
+    vi.spyOn(GestionnaireService, 'getStageApplicantsManager').mockResolvedValue([]);
 
     renderWithProviders(<AssociationProfesseurEtudiant />);
+
+    await waitFor(() => {
+      const inputs = screen.getAllByRole('textbox');
+      expect(inputs.length).toBe(2);
+    });
 
     const inputs = screen.getAllByRole('textbox');
     const etudiantInput = inputs[0];
@@ -175,8 +214,14 @@ describe('AssociationProfesseurEtudiant', () => {
   it('devrait vider les champs après une association réussie', async () => {
     const user = userEvent.setup();
     vi.spyOn(GestionnaireService, 'associerProfesseurEtudiant').mockResolvedValue({});
+    vi.spyOn(GestionnaireService, 'getStageApplicantsManager').mockResolvedValue([]);
 
     renderWithProviders(<AssociationProfesseurEtudiant />);
+
+    await waitFor(() => {
+      const inputs = screen.getAllByRole('textbox');
+      expect(inputs.length).toBe(2);
+    });
 
     const inputs = screen.getAllByRole('textbox');
     const etudiantInput = inputs[0];
@@ -242,11 +287,18 @@ describe('AssociationProfesseurEtudiant', () => {
     
     vi.spyOn(GestionnaireService, 'associerProfesseurEtudiant').mockRejectedValue({
       response: {
-        data: errorMessage
+        data: errorMessage,
+        status: 404
       }
     });
+    vi.spyOn(GestionnaireService, 'getStageApplicantsManager').mockResolvedValue([]);
 
     renderWithProviders(<AssociationProfesseurEtudiant />);
+
+    await waitFor(() => {
+      const inputs = screen.getAllByRole('textbox');
+      expect(inputs.length).toBe(2);
+    });
 
     const inputs = screen.getAllByRole('textbox');
     const etudiantInput = inputs[0];
@@ -269,11 +321,18 @@ describe('AssociationProfesseurEtudiant', () => {
     
     vi.spyOn(GestionnaireService, 'associerProfesseurEtudiant').mockRejectedValue({
       response: {
-        data: errorMessage
+        data: errorMessage,
+        status: 409
       }
     });
+    vi.spyOn(GestionnaireService, 'getStageApplicantsManager').mockResolvedValue([]);
 
     renderWithProviders(<AssociationProfesseurEtudiant />);
+
+    await waitFor(() => {
+      const inputs = screen.getAllByRole('textbox');
+      expect(inputs.length).toBe(2);
+    });
 
     const inputs = screen.getAllByRole('textbox');
     const etudiantInput = inputs[0];
@@ -297,8 +356,14 @@ describe('AssociationProfesseurEtudiant', () => {
     });
     
     vi.spyOn(GestionnaireService, 'associerProfesseurEtudiant').mockReturnValue(promise);
+    vi.spyOn(GestionnaireService, 'getStageApplicantsManager').mockResolvedValue([]);
 
     renderWithProviders(<AssociationProfesseurEtudiant />);
+
+    await waitFor(() => {
+      const inputs = screen.getAllByRole('textbox');
+      expect(inputs.length).toBe(2);
+    });
 
     const inputs = screen.getAllByRole('textbox');
     const etudiantInput = inputs[0];
@@ -320,6 +385,11 @@ describe('AssociationProfesseurEtudiant', () => {
     const user = userEvent.setup();
     renderWithProviders(<AssociationProfesseurEtudiant />);
 
+    await waitFor(() => {
+      const inputs = screen.getAllByRole('textbox');
+      expect(inputs.length).toBe(2);
+    });
+
     const inputs = screen.getAllByRole('textbox');
     const etudiantInput = inputs[0];
     const professeurInput = inputs[1];
@@ -340,8 +410,14 @@ describe('AssociationProfesseurEtudiant', () => {
   it('devrait supprimer les espaces de l\'email de l\'étudiant avant l\'envoi', async () => {
     const user = userEvent.setup();
     const mockAssocier = vi.spyOn(GestionnaireService, 'associerProfesseurEtudiant').mockResolvedValue({});
+    vi.spyOn(GestionnaireService, 'getStageApplicantsManager').mockResolvedValue([]);
 
     renderWithProviders(<AssociationProfesseurEtudiant />);
+
+    await waitFor(() => {
+      const inputs = screen.getAllByRole('textbox');
+      expect(inputs.length).toBe(2);
+    });
 
     const inputs = screen.getAllByRole('textbox');
     const etudiantInput = inputs[0];
@@ -371,8 +447,14 @@ describe('AssociationProfesseurEtudiant', () => {
     });
     
     vi.spyOn(GestionnaireService, 'associerProfesseurEtudiant').mockReturnValue(promise);
+    vi.spyOn(GestionnaireService, 'getStageApplicantsManager').mockResolvedValue([]);
 
     renderWithProviders(<AssociationProfesseurEtudiant />);
+
+    await waitFor(() => {
+      const inputs = screen.getAllByRole('textbox');
+      expect(inputs.length).toBe(2);
+    });
 
     const inputs = screen.getAllByRole('textbox');
     const etudiantInput = inputs[0];
@@ -389,6 +471,151 @@ describe('AssociationProfesseurEtudiant', () => {
     });
 
     resolvePromise({});
+  });
+
+  it('devrait charger et afficher les associations existantes', async () => {
+    const user = userEvent.setup();
+    const mockAssociations = [
+      {
+        etudiant: {
+          id: 1,
+          email: 'etudiant1@test.com',
+          firstName: 'John',
+          lastName: 'Doe',
+          professeurResponsable: {
+            email: 'prof1@test.com',
+            firstName: 'Robert',
+            lastName: 'Smith'
+          }
+        }
+      },
+      {
+        etudiant: {
+          id: 2,
+          email: 'etudiant2@test.com',
+          firstName: 'Jane',
+          lastName: 'Doe',
+          professeurResponsable: {
+            email: 'prof2@test.com',
+            firstName: 'Alice',
+            lastName: 'Johnson'
+          }
+        }
+      }
+    ];
+
+    vi.spyOn(GestionnaireService, 'getStageApplicantsManager').mockResolvedValue(mockAssociations);
+
+    renderWithProviders(<AssociationProfesseurEtudiant />);
+
+    // Attendre que le titre "Associations existantes" soit visible
+    await waitFor(() => {
+      expect(screen.getByText('Associations existantes')).toBeInTheDocument();
+    });
+
+    // Cliquer sur le bouton pour ouvrir le collapse
+    const collapseButton = screen.getByRole('button', { name: /Associations existantes/i });
+    await user.click(collapseButton);
+
+    // Attendre que le contenu soit visible après l'ouverture
+    await waitFor(() => {
+      expect(screen.getByText('John Doe')).toBeInTheDocument();
+    });
+
+    expect(screen.getByText('etudiant1@test.com')).toBeInTheDocument();
+    expect(screen.getByText('Robert Smith')).toBeInTheDocument();
+    expect(screen.getByText('prof1@test.com')).toBeInTheDocument();
+  });
+
+  it('devrait afficher une erreur si l\'email de l\'étudiant est invalide', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<AssociationProfesseurEtudiant />);
+
+    await waitFor(() => {
+      const inputs = screen.getAllByRole('textbox');
+      expect(inputs.length).toBe(2);
+    });
+
+    const inputs = screen.getAllByRole('textbox');
+    const etudiantInput = inputs[0];
+    const professeurInput = inputs[1];
+    const form = etudiantInput.closest('form');
+
+    await user.type(etudiantInput, 'email-invalide');
+    await user.type(professeurInput, 'professeur@test.com');
+    
+    // Soumettre le formulaire directement pour contourner la validation HTML5
+    fireEvent.submit(form);
+
+    await waitFor(() => {
+      expect(screen.getByText("L'email de l'étudiant n'est pas valide")).toBeInTheDocument();
+    });
+  });
+
+  it('devrait afficher une erreur si l\'email du professeur est invalide', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<AssociationProfesseurEtudiant />);
+
+    await waitFor(() => {
+      const inputs = screen.getAllByRole('textbox');
+      expect(inputs.length).toBe(2);
+    });
+
+    const inputs = screen.getAllByRole('textbox');
+    const etudiantInput = inputs[0];
+    const professeurInput = inputs[1];
+    const form = etudiantInput.closest('form');
+
+    await user.type(etudiantInput, 'etudiant@test.com');
+    await user.type(professeurInput, 'email-invalide');
+    
+    // Soumettre le formulaire directement pour contourner la validation HTML5
+    fireEvent.submit(form);
+
+    await waitFor(() => {
+      expect(screen.getByText("L'email du professeur n'est pas valide")).toBeInTheDocument();
+    });
+  });
+
+  it('devrait afficher une erreur si l\'étudiant est déjà dans la liste des associations', async () => {
+    const user = userEvent.setup();
+    const mockAssociations = [
+      {
+        etudiant: {
+          id: 1,
+          email: 'etudiant@test.com',
+          firstName: 'John',
+          lastName: 'Doe',
+          professeurResponsable: {
+            email: 'prof@test.com',
+            firstName: 'Robert',
+            lastName: 'Smith'
+          }
+        }
+      }
+    ];
+
+    vi.spyOn(GestionnaireService, 'getStageApplicantsManager').mockResolvedValue(mockAssociations);
+
+    renderWithProviders(<AssociationProfesseurEtudiant />);
+
+    await waitFor(() => {
+      const inputs = screen.getAllByRole('textbox');
+      expect(inputs.length).toBe(2);
+    });
+
+    const inputs = screen.getAllByRole('textbox');
+    const etudiantInput = inputs[0];
+    const professeurInput = inputs[1];
+    const submitButton = screen.getByRole('button', { name: /Associer/i });
+
+    await user.type(etudiantInput, 'etudiant@test.com');
+    await user.type(professeurInput, 'professeur2@test.com');
+    await user.click(submitButton);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Cet étudiant.*est déjà associé/i)).toBeInTheDocument();
+    });
   });
 });
 
