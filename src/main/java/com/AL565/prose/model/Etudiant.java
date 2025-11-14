@@ -15,7 +15,7 @@ public class Etudiant extends ProseUser {
     private Discipline discipline;
 
     @OneToOne
-    @JoinColumn(name = "username")
+    @JoinColumn(name = "professeur_id")
     Professeur professeurResponsable;
 
     public Etudiant(String firstName, String lastName, Credentials credentials, Discipline discipline) {
