@@ -250,6 +250,7 @@ export default function MesCandidaturesEmployeur() {
                                     <th className="py-3 px-4 font-medium text-gray-600">{t('lettreMotivation')}</th>
                                     <th className="py-3 px-4 font-medium text-gray-600">{t('statut')}</th>
                                     <th className="py-3 px-4 font-medium text-gray-600">{t('entrevue')}</th>
+                                    <th className="py-3 px-4 font-medium text-gray-600">Status Entente</th>
                                     <th className="py-3 px-4 font-medium text-gray-600">{t('action')}</th>
                                 </tr>
                             </thead>

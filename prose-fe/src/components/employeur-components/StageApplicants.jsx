@@ -143,19 +143,20 @@ const StageApplicantsPage = () => {
                             <th className="py-3 px-4 font-medium text-gray-600">{t('lettreMotivation')}</th>
                             <th className="py-3 px-4 font-medium text-gray-600">{t('statut')}</th>
                             <th className="py-3 px-4 font-medium text-gray-600">{t('entrevue')}</th>
+                            <th className="py-3 px-4 font-medium text-gray-600">Status Entente</th>
                             <th className="py-3 px-4 font-medium text-gray-600">{t('action')}</th>
                         </tr>
                         </thead>
                         <tbody>
                         {loading ? (
                             <tr>
-                                <td className="py-8 px-4 text-gray-500 text-center" colSpan={5}>
+                                <td className="py-8 px-4 text-gray-500 text-center" colSpan={7}>
                                     {t('chargement')}
                                 </td>
                             </tr>
                         ) : filtered.length === 0 ? (
                             <tr>
-                                <td className="py-8 px-4 text-gray-500 text-center" colSpan={5}>
+                                <td className="py-8 px-4 text-gray-500 text-center" colSpan={7}>
                                     {t('aucuneCandidatureTrouvee')}
                                 </td>
                             </tr>

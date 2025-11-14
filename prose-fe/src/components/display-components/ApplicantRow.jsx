@@ -372,6 +372,30 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                 </td>
 
                 <td className="py-3 px-4 align-top">
+                    {status === "CONFIRMER" ? (
+                        <>
+                            {checkingEntente ? (
+                                <span className="text-sm text-gray-500 italic">{t('verification')}</span>
+                            ) : ententeExists ? (
+                                <>
+                                    {ententeData?.status === "SIGNEE" ? (
+                                        <span className="text-sm text-green-600 font-medium">
+                                            {t('ententeSigneeParToutesLesParties')}
+                                        </span>
+                                    ) : (
+                                        <span className="text-sm text-gray-500">{t('enAttenteDeSignature')}</span>
+                                    )}
+                                </>
+                            ) : (
+                                <span className="text-sm text-gray-400">{t('ententeNonGeneree')}</span>
+                            )}
+                        </>
+                    ) : (
+                        <span className="text-sm text-gray-400">—</span>
+                    )}
+                </td>
+
+                <td className="py-3 px-4 align-top">
                     {showActions && (
                         <div className="flex gap-2">
                             {localStatus === "SOUMISE" && (
@@ -422,7 +446,7 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                             {status === "CONFIRMER" && (
                                 <>
                                     {checkingEntente ? (
-                                        <span className="text-sm text-gray-500 italic px-4 py-2">Vérification...</span>
+                                        <span className="text-sm text-gray-500 italic px-4 py-2">{t('verification')}</span>
                                     ) : ententeExists ? (
                                         <>
                                             {ententeData?.status === "SIGNEE_ETUDIANT" ? (
@@ -431,16 +455,16 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                                                     className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br transition-all"
                                                     type="button"
                                                 >
-                                                    Voir et signer l'entente
+                                                    {t('voirEtSignerEntente')}
                                                 </button>
                                             ) : ententeData?.status === "SIGNEE" ? (
                                                 <div className="flex gap-2">
                                                     <button
                                                         onClick={() => setShowEntenteModal(true)}
-                                                        className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 hover:bg-gradient-to-br transition-all"
+                                                        className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br transition-all"
                                                         type="button"
                                                     >
-                                                        Voir l'entente
+                                                        {t('voirEntente')}
                                                     </button>
                                                     <button
                                                         onClick={() => {
@@ -459,25 +483,25 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                                                                 URL.revokeObjectURL(url);
                                                             }
                                                         }}
-                                                        className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-purple-400 via-purple-500 to-purple-600 hover:bg-gradient-to-br transition-all"
+                                                        className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 hover:bg-gradient-to-br transition-all"
                                                         type="button"
                                                     >
-                                                        Télécharger
+                                                        {t('telecharger')}
                                                     </button>
                                                 </div>
                                             ) : (
                                                 <button
                                                     onClick={() => setShowEntenteModal(true)}
-                                                    className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 hover:bg-gradient-to-br transition-all"
+                                                    className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br transition-all"
                                                     type="button"
                                                 >
-                                                    Voir l'entente
+                                                    {t('voirEntente')}
                                                 </button>
                                             )}
                                         </>
                                     ) : (
                                         <span className="text-sm text-gray-500 italic px-4 py-2">
-                                            En attente du gestionnaire pour l'entente de stage
+                                            {t('enAttenteGestionnaireEntente')}
                                         </span>
                                     )}
                                 </>
@@ -525,7 +549,7 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                                     setEntenteData(result.data);
                                 }
                             } catch (error) {
-                                throw new Error(error.message || "Erreur lors de la signature");
+                                throw new Error(error.message || t('erreurLorsSignature'));
                             }
                         }}
                     />,

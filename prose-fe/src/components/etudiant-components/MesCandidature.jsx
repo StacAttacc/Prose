@@ -422,70 +422,50 @@ export default function MesCandidature() {
                                         </h4>
                                         {checkingEntente[candidature.id] ? (
                                             <div className="text-center text-gray-500">
-                                                Vérification de l'entente...
+                                                {t('verificationEntente')}
                                             </div>
                                         ) : ententeDataMap[candidature.id] ? (
                                             <>
-                                                {ententeDataMap[candidature.id].status === "SIGNEE_ETUDIANT" ? (
-                                                    <div className="mt-4 flex flex-col items-center gap-2">
-                                                        <span className="text-sm text-gray-600">
-                                                            En attente de la signature de l'employeur
-                                                        </span>
-                                                        <button
-                                                            onClick={() => {
-                                                                setSelectedCandidatureForEntente(candidature);
-                                                                setShowEntenteModal(true);
-                                                            }}
-                                                            className="px-6 py-3 rounded-md font-medium text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br transition-all"
-                                                            type="button"
-                                                        >
-                                                            Voir l'entente de stage
-                                                        </button>
-                                                    </div>
-                                                ) : ententeDataMap[candidature.id].status === "SIGNEE_ETUDIANT_ET_EMPLOYEUR" ? (
-                                                    <div className="mt-4 flex flex-col items-center gap-2">
-                                                        <span className="text-sm text-gray-600">
-                                                            En attente de la signature du gestionnaire
-                                                        </span>
-                                                        <button
-                                                            onClick={() => {
-                                                                setSelectedCandidatureForEntente(candidature);
-                                                                setShowEntenteModal(true);
-                                                            }}
-                                                            className="px-6 py-3 rounded-md font-medium text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br transition-all"
-                                                            type="button"
-                                                        >
-                                                            Voir l'entente de stage
-                                                        </button>
-                                                    </div>
-                                                ) : ententeDataMap[candidature.id].status === "SIGNEE" ? (
+                                                {ententeDataMap[candidature.id].status === "SIGNEE" ? (
                                                     <div className="mt-4 flex flex-col items-center gap-2">
                                                         <span className="text-sm text-green-600 font-medium">
-                                                            ✓ Entente signée par toutes les parties
+                                                            {t('ententeSigneeParToutesLesParties')}
                                                         </span>
-                                                        <button
-                                                            onClick={() => {
-                                                                const ententeData = ententeDataMap[candidature.id];
-                                                                if (ententeData?.documentPdfBase64) {
-                                                                    const bin = atob(ententeData.documentPdfBase64);
-                                                                    const bytes = new Uint8Array(bin.length);
-                                                                    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-                                                                    const blob = new Blob([bytes], { type: "application/pdf" });
-                                                                    const url = URL.createObjectURL(blob);
-                                                                    const a = document.createElement("a");
-                                                                    a.href = url;
-                                                                    a.download = ententeData.documentName || "entente_stage.pdf";
-                                                                    document.body.appendChild(a);
-                                                                    a.click();
-                                                                    a.remove();
-                                                                    URL.revokeObjectURL(url);
-                                                                }
-                                                            }}
-                                                            className="px-6 py-3 rounded-md font-medium text-white bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 hover:bg-gradient-to-br transition-all"
-                                                            type="button"
-                                                        >
-                                                            Télécharger l'entente de stage
-                                                        </button>
+                                                        <div className="flex gap-2">
+                                                            <button
+                                                                onClick={() => {
+                                                                    setSelectedCandidatureForEntente(candidature);
+                                                                    setShowEntenteModal(true);
+                                                                }}
+                                                                className="px-6 py-3 rounded-md font-medium text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br transition-all"
+                                                                type="button"
+                                                            >
+                                                                {t('voirEntenteStage')}
+                                                            </button>
+                                                            <button
+                                                                onClick={() => {
+                                                                    const ententeData = ententeDataMap[candidature.id];
+                                                                    if (ententeData?.documentPdfBase64) {
+                                                                        const bin = atob(ententeData.documentPdfBase64);
+                                                                        const bytes = new Uint8Array(bin.length);
+                                                                        for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+                                                                        const blob = new Blob([bytes], { type: "application/pdf" });
+                                                                        const url = URL.createObjectURL(blob);
+                                                                        const a = document.createElement("a");
+                                                                        a.href = url;
+                                                                        a.download = ententeData.documentName || "entente_stage.pdf";
+                                                                        document.body.appendChild(a);
+                                                                        a.click();
+                                                                        a.remove();
+                                                                        URL.revokeObjectURL(url);
+                                                                    }
+                                                                }}
+                                                                className="px-6 py-3 rounded-md font-medium text-white bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 hover:bg-gradient-to-br transition-all"
+                                                                type="button"
+                                                            >
+                                                                {t('telechargerEntenteStage')}
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 ) : (
                                                     <div className="mt-4 flex justify-center">
@@ -497,14 +477,14 @@ export default function MesCandidature() {
                                                             className="px-6 py-3 rounded-md font-medium text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br transition-all"
                                                             type="button"
                                                         >
-                                                            Voir et signer l'entente de stage
+                                                            {t('voirEtSignerEntenteStage')}
                                                         </button>
                                                     </div>
                                                 )}
                                             </>
                                         ) : (
                                             <div className="text-center text-gray-500 text-sm mt-4">
-                                                En attente du gestionnaire pour l'entente de stage
+                                                {t('enAttenteGestionnaireEntente')}
                                             </div>
                                         )}
                                     </div>
@@ -717,7 +697,7 @@ export default function MesCandidature() {
                                 }));
                             }
                         } catch (error) {
-                            throw new Error(error.message || "Erreur lors de la signature");
+                            throw new Error(error.message || t('erreurLorsSignature'));
                         }
                     }}
                 />

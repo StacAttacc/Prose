@@ -3,9 +3,10 @@ import { useAuth } from "../../context/AuthContext.jsx";
 import { useYear } from "../../context/YearContext";
 import { useI18n } from "../../context/I18nContext";
 import ErrorBanner from "../display-components/ErrorBanner.jsx";
-import { getStageApplicantsManager } from "../../services/GestionnaireService.js";
+import { getStageApplicantsManager, checkEntenteExists, generateEntente, signEntente } from "../../services/GestionnaireService.js";
 import StageDetailsModal from "../display-components/StageDetailsModal.jsx";
 import ApplicationsModal from "../display-components/ApplicationsModal.jsx";
+import EntenteSignatureModal from "../display-components/EntenteSignatureModal.jsx";
 import { useLocation, useNavigate } from "react-router-dom";
 
 const CONFIRMED_STATUS = "CONFIRMER";
@@ -35,6 +36,11 @@ export default function GestionnaireEtuCandidature() {
     const [isStageModalOpen, setIsStageModalOpen] = useState(false);
     const [selectedCandidatureId, setSelectedCandidatureId] = useState(null);
     const [modalFilterStatuses, setModalFilterStatuses] = useState(null);
+    const [ententeDataMap, setEntenteDataMap] = useState({}); // Map candidatureId -> ententeData
+    const [checkingEntente, setCheckingEntente] = useState({}); // Map candidatureId -> boolean
+    const [showEntenteModal, setShowEntenteModal] = useState(false);
+    const [selectedCandidatureForEntente, setSelectedCandidatureForEntente] = useState(null);
+    const [generatingEntente, setGeneratingEntente] = useState(false);
 
     useEffect(() => {
         let mounted = true;
@@ -173,6 +179,78 @@ export default function GestionnaireEtuCandidature() {
                 ? partition.applied
                 : partition.approved;
 
+    // Vérifier l'existence de l'entente pour les candidatures confirmées dans l'onglet APPROVED
+    useEffect(() => {
+        const checkEntentes = async () => {
+            if (tab !== "APPROVED" || !user?.token) return;
+            
+            const confirmedCandidatures = [];
+            for (const student of list) {
+                const confirmedApp = (student.applications || []).find((a) =>
+                    String(a.status).toUpperCase() === CONFIRMED_STATUS
+                );
+                if (confirmedApp?.id) {
+                    confirmedCandidatures.push(confirmedApp);
+                }
+            }
+            
+            for (const candidature of confirmedCandidatures) {
+                // Vérifier si on a déjà vérifié cette entente
+                if (ententeDataMap[candidature.id] !== undefined || checkingEntente[candidature.id]) {
+                    continue;
+                }
+                
+                setCheckingEntente(prev => ({ ...prev, [candidature.id]: true }));
+                try {
+                    const result = await checkEntenteExists(candidature.id, user.token);
+                    setEntenteDataMap(prev => ({
+                        ...prev,
+                        [candidature.id]: result.exists ? result.data : null
+                    }));
+                } catch (error) {
+                    console.error(`Erreur lors de la vérification de l'entente pour candidature ${candidature.id}:`, error);
+                    setEntenteDataMap(prev => ({
+                        ...prev,
+                        [candidature.id]: null
+                    }));
+                } finally {
+                    setCheckingEntente(prev => ({ ...prev, [candidature.id]: false }));
+                }
+            }
+        };
+
+        if (list.length > 0 && user?.token && tab === "APPROVED") {
+            checkEntentes();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [list, user?.token, tab]);
+
+    useEffect(() => {
+        if (loading || modalStudent) return;
+
+        const raw =
+            location?.state?.openEtudiantId ?? location?.state?.openStudentId;
+        if (!raw) return;
+
+        const id = String(raw);
+        const student = (students || []).find((s) => String(s.id) === id);
+        if (student) {
+            if (tab !== "APPLIED") setTab("APPLIED");
+            setModalStudent(student);
+        }
+
+        navigate(location.pathname, { replace: true, state: {} });
+    }, [
+        loading,
+        students,
+        modalStudent,
+        tab,
+        location?.state?.openEtudiantId,
+        location?.state?.openStudentId,
+        navigate,
+        location.pathname,
+    ]);
+
     const openStageModal = (application) => {
         setSelectedStage(application?.stage ?? null);
         setSelectedCandidatureId(
@@ -187,6 +265,49 @@ export default function GestionnaireEtuCandidature() {
         setSelectedStage(null);
         setSelectedCandidatureId(null);
         setIsStageModalOpen(false);
+    };
+
+    const handleGenerateEntente = async (candidatureId) => {
+        if (!user?.token) return;
+        setGeneratingEntente(true);
+        try {
+            const entente = await generateEntente(candidatureId, user.token);
+            const result = await checkEntenteExists(candidatureId, user.token);
+            if (result.exists) {
+                setEntenteDataMap(prev => ({
+                    ...prev,
+                    [candidatureId]: result.data
+                }));
+            }
+        } catch (error) {
+            console.error("Erreur lors de la génération de l'entente:", error);
+            alert(error.response?.data?.message || t('erreurGenerationEntente'));
+        } finally {
+            setGeneratingEntente(false);
+        }
+    };
+
+    const handleViewEntente = (candidatureId) => {
+        setSelectedCandidatureForEntente({ id: candidatureId });
+        setShowEntenteModal(true);
+    };
+
+    const handleDownloadEntente = (candidatureId) => {
+        const ententeData = ententeDataMap[candidatureId];
+        if (ententeData?.documentPdfBase64) {
+            const bin = atob(ententeData.documentPdfBase64);
+            const bytes = new Uint8Array(bin.length);
+            for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+            const blob = new Blob([bytes], { type: "application/pdf" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = ententeData.documentName || "entente_stage.pdf";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        }
     };
 
     return (
@@ -262,6 +383,18 @@ export default function GestionnaireEtuCandidature() {
                                         {tab === "APPLIED" ? t('candidatures') : t('statut')}
                                     </th>
 
+                                    {tab === "APPROVED" && (
+                                        <th className="text-left text-gray-800 font-semibold py-3 px-4">
+                                            {t('details')}
+                                        </th>
+                                    )}
+
+                                    {tab === "APPROVED" && (
+                                        <th className="text-left text-gray-800 font-semibold py-3 px-4">
+                                            {t('statusEntente')}
+                                        </th>
+                                    )}
+
                                     {tab === "APPLIED" && (
                                         <th className="text-left text-gray-800 font-semibold py-3 px-4">
                                             {t('action')}
@@ -315,6 +448,64 @@ export default function GestionnaireEtuCandidature() {
                                             )}
                                         </td>
 
+                                        {tab === "APPROVED" && (
+                                            <td className="py-3 px-4 align-top">
+                                                {(() => {
+                                                    const confirmedApp = (s.applications || []).find((a) =>
+                                                        String(a.status).toUpperCase() === CONFIRMED_STATUS
+                                                    ) || (s.applications || [])[0];
+                                                    if (!confirmedApp) return null;
+                                                    
+                                                    return (
+                                                        <button
+                                                            type="button"
+                                                            className="text-teal-700 hover:underline"
+                                                            title={t('detailsEntente')}
+                                                            onClick={() => {
+                                                                if (confirmedApp) openStageModal(confirmedApp);
+                                                            }}
+                                                        >
+                                                            {t('detailsEntente')}
+                                                        </button>
+                                                    );
+                                                })()}
+                                            </td>
+                                        )}
+
+                                        {tab === "APPROVED" && (
+                                            <td className="py-3 px-4 align-top">
+                                                {(() => {
+                                                    const confirmedApp = (s.applications || []).find((a) =>
+                                                        String(a.status).toUpperCase() === CONFIRMED_STATUS
+                                                    ) || (s.applications || [])[0];
+                                                    if (!confirmedApp?.id) return <span className="text-sm text-gray-400">—</span>;
+                                                    
+                                                    const candidatureId = confirmedApp.id;
+                                                    const ententeData = ententeDataMap[candidatureId];
+                                                    const isChecking = checkingEntente[candidatureId];
+                                                    
+                                                    if (isChecking) {
+                                                        return <span className="text-sm text-gray-500 italic">{t('verification')}</span>;
+                                                    }
+                                                    
+                                                    if (!ententeData) {
+                                                        return <span className="text-sm text-gray-400">{t('ententeNonGeneree')}</span>;
+                                                    }
+                                                    
+                                                    if (ententeData.status === "SIGNEE") {
+                                                        return (
+                                                            <span className="text-sm text-green-600 font-medium">
+                                                                {t('ententeSigneeParToutesLesParties')}
+                                                            </span>
+                                                        );
+                                                    }
+                                                    
+                                                    // Autres statuts
+                                                    return <span className="text-sm text-gray-500">{t('enAttenteDeSignature')}</span>;
+                                                })()}
+                                            </td>
+                                        )}
+
                                         {tab === "APPLIED" && (
                                             <td className="py-3 px-4 align-top">
                                                 <button
@@ -333,20 +524,85 @@ export default function GestionnaireEtuCandidature() {
 
                                         {tab === "APPROVED" && (
                                             <td className="py-3 px-4 align-top">
-                                                <button
-                                                    type="button"
-                                                    className="text-teal-700 hover:underline"
-                                                    title={t('detailsEntente')}
-                                                    onClick={() => {
-                                                        const app =
-                                                            (s.applications || []).find((a) =>
-                                                                String(a.status).toUpperCase() === CONFIRMED_STATUS
-                                                            ) || (s.applications || [])[0];
-                                                        if (app) openStageModal(app);
-                                                    }}
-                                                >
-                                                    {t('detailsEntente')}
-                                                </button>
+                                                {(() => {
+                                                    const confirmedApp = (s.applications || []).find((a) =>
+                                                        String(a.status).toUpperCase() === CONFIRMED_STATUS
+                                                    ) || (s.applications || [])[0];
+                                                    if (!confirmedApp?.id) return null;
+                                                    
+                                                    const candidatureId = confirmedApp.id;
+                                                    const ententeData = ententeDataMap[candidatureId];
+                                                    const isChecking = checkingEntente[candidatureId];
+                                                    
+                                                    if (isChecking) {
+                                                        return (
+                                                            <span className="text-sm text-gray-500 italic">
+                                                                {t('verification')}
+                                                            </span>
+                                                        );
+                                                    }
+                                                    
+                                                    if (!ententeData) {
+                                                        // Pas d'entente, afficher "Générer entente"
+                                                        return (
+                                                            <button
+                                                                type="button"
+                                                                className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br transition-all disabled:opacity-50"
+                                                                onClick={() => handleGenerateEntente(candidatureId)}
+                                                                disabled={generatingEntente}
+                                                            >
+                                                                {generatingEntente ? t('generation') : t('genererEntente')}
+                                                            </button>
+                                                        );
+                                                    }
+                                                    
+                                                    // Vérifier le statut de l'entente
+                                                    const ententeStatus = ententeData.status;
+                                                    
+                                                    if (ententeStatus === "SIGNEE") {
+                                                        // Toutes les parties ont signé
+                                                        return (
+                                                            <div className="flex gap-2">
+                                                                <button
+                                                                    type="button"
+                                                                    className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br transition-all"
+                                                                    onClick={() => handleViewEntente(candidatureId)}
+                                                                >
+                                                                    {t('voirEntenteStage')}
+                                                                </button>
+                                                                <button
+                                                                    type="button"
+                                                                    className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 hover:bg-gradient-to-br transition-all"
+                                                                    onClick={() => handleDownloadEntente(candidatureId)}
+                                                                >
+                                                                    {t('telechargerEntenteStage')}
+                                                                </button>
+                                                            </div>
+                                                        );
+                                                    } else if (ententeStatus === "SIGNEE_ETUDIANT_ET_EMPLOYEUR") {
+                                                        // Les deux ont signé, mais pas le gestionnaire
+                                                        return (
+                                                            <button
+                                                                type="button"
+                                                                className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br transition-all"
+                                                                onClick={() => handleViewEntente(candidatureId)}
+                                                            >
+                                                                {t('voirEtSignerEntenteStage')}
+                                                            </button>
+                                                        );
+                                                    } else {
+                                                        // Entente existe mais pas complètement signée, afficher "Voir l'entente de stage"
+                                                        return (
+                                                            <button
+                                                                type="button"
+                                                                className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br transition-all"
+                                                                onClick={() => handleViewEntente(candidatureId)}
+                                                            >
+                                                                {t('voirEntenteStage')}
+                                                            </button>
+                                                        );
+                                                    }
+                                                })()}
                                             </td>
                                         )}
                                     </tr>
@@ -381,6 +637,37 @@ export default function GestionnaireEtuCandidature() {
                 // bouton “Générer entente” seulement dans “Stage Trouvé”
                 allowGenerateEntente={tab === "APPROVED"}
             />
+
+            {showEntenteModal && selectedCandidatureForEntente && (
+                <EntenteSignatureModal
+                    applicant={selectedCandidatureForEntente}
+                    isOpen={showEntenteModal}
+                    onClose={() => {
+                        setShowEntenteModal(false);
+                        setSelectedCandidatureForEntente(null);
+                    }}
+                    ententeData={ententeDataMap[selectedCandidatureForEntente.id]}
+                    loadEntenteFn={async (candidatureId, token) => {
+                        const result = await checkEntenteExists(candidatureId, token);
+                        return result.exists ? { exists: true, data: result.data } : { exists: false };
+                    }}
+                    onSign={async (ententeId, password) => {
+                        try {
+                            await signEntente(ententeId, password, user?.token);
+                            // Rafraîchir les données de l'entente après signature
+                            const result = await checkEntenteExists(selectedCandidatureForEntente.id, user?.token);
+                            if (result.exists) {
+                                setEntenteDataMap(prev => ({
+                                    ...prev,
+                                    [selectedCandidatureForEntente.id]: result.data
+                                }));
+                            }
+                        } catch (error) {
+                            throw new Error(error.message || t('erreurLorsSignature'));
+                        }
+                    }}
+                />
+            )}
         </div>
     );
 }

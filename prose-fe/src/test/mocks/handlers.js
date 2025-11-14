@@ -280,13 +280,15 @@ export const handlers = [
   http.get(`${BASE_URL}/etudiant/candidatures/:id/entente`, ({ params }) => {
     const { id } = params;
     if (id === '3') {
+      // Retourner une entente SIGNEE pour tester les deux boutons
       return HttpResponse.json({
         data: {
           id: 1,
-          status: 'A_SIGNER',
-          dateSignatureEtudiant: null,
-          dateSignatureEmployeur: null,
-          documentPdfBase64: 'JVBERi0xLjQKJeLjz9MKMSAwIG9iago8PAovVHlwZSAvQ2F0YWxvZwovUGFnZXMgMiAwIFIKPj4KZW5kb2JqCjIgMCBvYmoKPDwKL1R5cGUgL1BhZ2VzCi9LaWRzIFszIDAgUl0KL0NvdW50IDEKPD4KZW5kb2JqCjMgMCBvYmoKPDwKL1R5cGUgL1BhZ2UKL1BhcmVudCAyIDAgUgovTWVkaWFCb3ggWzAgMCA2MTIgNzkyXQovUmVzb3VyY2VzIDw8Ci9Gb250IDw8Ci9GMSA0IDAgUgo+Pgo+PgovQ29udGVudHMgNSAwIFIKPj4KZW5kb2JqCjQgMCBvYmoKPDwKL1R5cGUgL0ZvbnQKL1N1YnR5cGUgL1R5cGUxCi9CYXNlRm9udCAvSGVsdmV0aWNhCj4+CmVuZG9iago1IDAgb2JqCjw8Ci9MZW5ndGggNDQKPj4Kc3RyZWFtCkJUCi9GMSAxMiBUZgo1MCA3MDAgVGQKKEhlbGxvIFdvcmxkKSBUagpFVApzdHJlYW0KZW5kb2JqCnhyZWYKMCA2CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAwOSAwMDAwMCBuIAowMDAwMDAwMDU4IDAwMDAwIG4gCjAwMDAwMDAxMTUgMDAwMDAgbiAKMDAwMDAwMDI2OCAwMDAwMCBuIAowMDAwMDAwMzQxIDAwMDAwIG4gCnRyYWlsZXIKPDwKL1NpemUgNgovUm9vdCAxIDAgUgo+PgpzdGFydHhyZWYKNDI3CiUlRU9G'
+          status: 'SIGNEE',
+          dateSignatureEtudiant: '2025-01-15T10:00:00Z',
+          dateSignatureEmployeur: '2025-01-16T10:00:00Z',
+          documentPdfBase64: 'JVBERi0xLjQKJeLjz9MKMSAwIG9iago8PAovVHlwZSAvQ2F0YWxvZwovUGFnZXMgMiAwIFIKPj4KZW5kb2JqCjIgMCBvYmoKPDwKL1R5cGUgL1BhZ2VzCi9LaWRzIFszIDAgUl0KL0NvdW50IDEKPD4KZW5kb2JqCjMgMCBvYmoKPDwKL1R5cGUgL1BhZ2UKL1BhcmVudCAyIDAgUgovTWVkaWFCb3ggWzAgMCA2MTIgNzkyXQovUmVzb3VyY2VzIDw8Ci9Gb250IDw8Ci9GMSA0IDAgUgo+Pgo+PgovQ29udGVudHMgNSAwIFIKPj4KZW5kb2JqCjQgMCBvYmoKPDwKL1R5cGUgL0ZvbnQKL1N1YnR5cGUgL1R5cGUxCi9CYXNlRm9udCAvSGVsdmV0aWNhCj4+CmVuZG9iago1IDAgb2JqCjw8Ci9MZW5ndGggNDQKPj4Kc3RyZWFtCkJUCi9GMSAxMiBUZgo1MCA3MDAgVGQKKEhlbGxvIFdvcmxkKSBUagpFVApzdHJlYW0KZW5kb2JqCnhyZWYKMCA2CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAwOSAwMDAwMCBuIAowMDAwMDAwMDU4IDAwMDAwIG4gCjAwMDAwMDAxMTUgMDAwMDAgbiAKMDAwMDAwMDI2OCAwMDAwMCBuIAowMDAwMDAwMzQxIDAwMDAwIG4gCnRyYWlsZXIKPDwKL1NpemUgNgovUm9vdCAxIDAgUgo+PgpzdGFydHhyZWYKNDI3CiUlRU9G',
+          documentName: 'entente_stage_3.pdf'
         }
       });
     }
@@ -325,6 +327,82 @@ export const handlers = [
     });
   }),
 
+  // Handlers pour Gestionnaire - Ententes
+  // GET /gestionnaire/candidatures/:candidatureId/entente
+  http.get(`${BASE_URL}/gestionnaire/candidatures/:candidatureId/entente`, ({ params }) => {
+    const { candidatureId } = params;
+    // Pour la candidature 4 (CONFIRMER dans mockEtudiants2027), retourner une entente SIGNEE
+    if (candidatureId === '4') {
+      return HttpResponse.json({
+        message: 'Entente trouvée',
+        data: {
+          id: 1,
+          status: 'SIGNEE',
+          dateSignatureEtudiant: '2025-01-15T10:00:00Z',
+          dateSignatureEmployeur: '2025-01-16T10:00:00Z',
+          documentPdfBase64: 'JVBERi0xLjQKJeLjz9MKMSAwIG9iago8PAovVHlwZSAvQ2F0YWxvZwovUGFnZXMgMiAwIFIKPj4KZW5kb2JqCjIgMCBvYmoKPDwKL1R5cGUgL1BhZ2VzCi9LaWRzIFszIDAgUl0KL0NvdW50IDEKPD4KZW5kb2JqCjMgMCBvYmoKPDwKL1R5cGUgL1BhZ2UKL1BhcmVudCAyIDAgUgovTWVkaWFCb3ggWzAgMCA2MTIgNzkyXQovUmVzb3VyY2VzIDw8Ci9Gb250IDw8Ci9GMSA0IDAgUgo+Pgo+PgovQ29udGVudHMgNSAwIFIKPj4KZW5kb2JqCjQgMCBvYmoKPDwKL1R5cGUgL0ZvbnQKL1N1YnR5cGUgL1R5cGUxCi9CYXNlRm9udCAvSGVsdmV0aWNhCj4+CmVuZG9iago1IDAgb2JqCjw8Ci9MZW5ndGggNDQKPj4Kc3RyZWFtCkJUCi9GMSAxMiBUZgo1MCA3MDAgVGQKKEhlbGxvIFdvcmxkKSBUagpFVApzdHJlYW0KZW5kb2JqCnhyZWYKMCA2CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAwOSAwMDAwMCBuIAowMDAwMDAwMDU4IDAwMDAwIG4gCjAwMDAwMDAxMTUgMDAwMDAgbiAKMDAwMDAwMDI2OCAwMDAwMCBuIAowMDAwMDAwMzQxIDAwMDAwIG4gCnRyYWlsZXIKPDwKL1NpemUgNgovUm9vdCAxIDAgUgo+PgpzdGFydHhyZWYKNDI3CiUlRU9G',
+          documentName: 'entente_stage_4.pdf'
+        }
+      });
+    }
+    return HttpResponse.json({ message: 'Entente non trouvée' }, { status: 404 });
+  }),
+
+  // POST /gestionnaire/candidatures/:candidatureId/generer-entente
+  http.post(`${BASE_URL}/gestionnaire/candidatures/:candidatureId/generer-entente`, ({ params }) => {
+    const { candidatureId } = params;
+    return HttpResponse.json({
+      message: 'Entente générée avec succès',
+      data: {
+        id: 1,
+        status: 'A_SIGNER',
+        dateSignatureEtudiant: null,
+        dateSignatureEmployeur: null,
+        documentPdfBase64: 'JVBERi0xLjQKJeLjz9MKMSAwIG9iago8PAovVHlwZSAvQ2F0YWxvZwovUGFnZXMgMiAwIFIKPj4KZW5kb2JqCjIgMCBvYmoKPDwKL1R5cGUgL1BhZ2VzCi9LaWRzIFszIDAgUl0KL0NvdW50IDEKPD4KZW5kb2JqCjMgMCBvYmoKPDwKL1R5cGUgL1BhZ2UKL1BhcmVudCAyIDAgUgovTWVkaWFCb3ggWzAgMCA2MTIgNzkyXQovUmVzb3VyY2VzIDw8Ci9Gb250IDw8Ci9GMSA0IDAgUgo+Pgo+PgovQ29udGVudHMgNSAwIFIKPj4KZW5kb2JqCjQgMCBvYmoKPDwKL1R5cGUgL0ZvbnQKL1N1YnR5cGUgL1R5cGUxCi9CYXNlRm9udCAvSGVsdmV0aWNhCj4+CmVuZG9iago1IDAgb2JqCjw8Ci9MZW5ndGggNDQKPj4Kc3RyZWFtCkJUCi9GMSAxMiBUZgo1MCA3MDAgVGQKKEhlbGxvIFdvcmxkKSBUagpFVApzdHJlYW0KZW5kb2JqCnhyZWYKMCA2CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAwOSAwMDAwMCBuIAowMDAwMDAwMDU4IDAwMDAwIG4gCjAwMDAwMDAxMTUgMDAwMDAgbiAKMDAwMDAwMDI2OCAwMDAwMCBuIAowMDAwMDAwMzQxIDAwMDAwIG4gCnRyYWlsZXIKPDwKL1NpemUgNgovUm9vdCAxIDAgUgo+PgpzdGFydHhyZWYKNDI3CiUlRU9G',
+        documentName: `entente_stage_${candidatureId}.pdf`
+      }
+    });
+  }),
+
+  // PUT /gestionnaire/ententes/:ententeId/signer
+  http.put(`${BASE_URL}/gestionnaire/ententes/:ententeId/signer`, async ({ request }) => {
+    const body = await request.json();
+    if (body.password === 'wrong') {
+      return HttpResponse.json({ message: 'Mot de passe incorrect' }, { status: 401 });
+    }
+    return HttpResponse.json({
+      message: 'Entente signée avec succès'
+    });
+  }),
+
+  // GET /employeur/candidatures/:candidatureId/entente (pour ApplicantRow)
+  http.get(`${BASE_URL}/employeur/candidatures/:candidatureId/entente`, ({ params }) => {
+    const { candidatureId } = params;
+    // Retourner une entente SIGNEE pour tester
+    if (candidatureId === '1') {
+      return HttpResponse.json({
+        message: 'Entente trouvée',
+        data: {
+          id: 1,
+          status: 'SIGNEE',
+          dateSignatureEtudiant: '2025-01-15T10:00:00Z',
+          dateSignatureEmployeur: '2025-01-16T10:00:00Z',
+          documentPdfBase64: 'JVBERi0xLjQKJeLjz9MKMSAwIG9iago8PAovVHlwZSAvQ2F0YWxvZwovUGFnZXMgMiAwIFIKPj4KZW5kb2JqCjIgMCBvYmoKPDwKL1R5cGUgL1BhZ2VzCi9LaWRzIFszIDAgUl0KL0NvdW50IDEKPD4KZW5kb2JqCjMgMCBvYmoKPDwKL1R5cGUgL1BhZ2UKL1BhcmVudCAyIDAgUgovTWVkaWFCb3ggWzAgMCA2MTIgNzkyXQovUmVzb3VyY2VzIDw8Ci9Gb250IDw8Ci9GMSA0IDAgUgo+Pgo+PgovQ29udGVudHMgNSAwIFIKPj4KZW5kb2JqCjQgMCBvYmoKPDwKL1R5cGUgL0ZvbnQKL1N1YnR5cGUgL1R5cGUxCi9CYXNlRm9udCAvSGVsdmV0aWNhCj4+CmVuZG9iago1IDAgb2JqCjw8Ci9MZW5ndGggNDQKPj4Kc3RyZWFtCkJUCi9GMSAxMiBUZgo1MCA3MDAgVGQKKEhlbGxvIFdvcmxkKSBUagpFVApzdHJlYW0KZW5kb2JqCnhyZWYKMCA2CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAwOSAwMDAwMCBuIAowMDAwMDAwMDU4IDAwMDAwIG4gCjAwMDAwMDAxMTUgMDAwMDAgbiAKMDAwMDAwMDI2OCAwMDAwMCBuIAowMDAwMDAwMzQxIDAwMDAwIG4gCnRyYWlsZXIKPDwKL1NpemUgNgovUm9vdCAxIDAgUgo+PgpzdGFydHhyZWYKNDI3CiUlRU9G',
+          documentName: 'entente_stage_1.pdf'
+        }
+      });
+    }
+    return HttpResponse.json({ message: 'Entente non trouvée' }, { status: 404 });
+  }),
+
+  // PUT /employeur/ententes/:ententeId/signer (pour ApplicantRow)
+  http.put(`${BASE_URL}/employeur/ententes/:ententeId/signer`, async ({ request }) => {
+    const body = await request.json();
+    if (body.password === 'wrong') {
+      return HttpResponse.json({ message: 'Mot de passe incorrect' }, { status: 401 });
+    }
+    return HttpResponse.json({
+      message: 'Entente signée avec succès'
   http.get(`${BASE_URL}/employeur/:email/stages`, ({ request, params }) => {
     const url = new URL(request.url);
     const year = url.searchParams.get('year') || '2025';

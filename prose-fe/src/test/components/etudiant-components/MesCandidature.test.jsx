@@ -100,7 +100,15 @@ describe('MesCandidature', () => {
       confirmee: 'Confirmée',
       offreAccepteeSucces: 'Vous avez accepté l\'offre avec succès',
       offreRefuseeSucces: 'Vous avez refusé l\'offre avec succès',
-      erreurEnvoiReponse: 'Erreur lors de l\'envoi de votre réponse. Veuillez réessayer.'
+      erreurEnvoiReponse: 'Erreur lors de l\'envoi de votre réponse. Veuillez réessayer.',
+      // Entente translations
+      verificationEntente: 'Vérification de l\'entente...',
+      ententeSigneeParToutesLesParties: '✓ Entente signée par toutes les parties',
+      voirEntenteStage: 'Voir l\'entente de stage',
+      telechargerEntenteStage: 'Télécharger l\'entente de stage',
+      voirEtSignerEntenteStage: 'Voir et signer l\'entente de stage',
+      enAttenteGestionnaireEntente: 'En attente du gestionnaire pour l\'entente de stage',
+      erreurLorsSignature: 'Erreur lors de la signature'
     };
     const translation = translations[key];
     if (typeof translation === 'function') {
@@ -312,8 +320,24 @@ describe('MesCandidature', () => {
     renderWithProviders(<MesCandidature />);
 
     await waitFor(() => {
-      // Il y a plusieurs "Stage Accepté" (titre et h4), on cherche le bouton spécifique
-      expect(screen.getByRole('button', { name: /Voir et signer l'entente de stage/i })).toBeInTheDocument();
+      // Maintenant que l'entente est SIGNEE, on cherche les deux boutons
+      expect(screen.getByRole('button', { name: /Voir l'entente de stage/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Télécharger l'entente de stage/i })).toBeInTheDocument();
+    }, { timeout: 3000 });
+  });
+
+  it('devrait afficher les deux boutons "Voir l\'entente de stage" et "Télécharger" quand l\'entente est SIGNEE', async () => {
+    renderWithProviders(<MesCandidature />);
+
+    await waitFor(() => {
+      // Utiliser getAllByText car il y a plusieurs "Stage Accepté" (h3 et h4)
+      const stageAccepteElements = screen.getAllByText('Stage Accepté');
+      expect(stageAccepteElements.length).toBeGreaterThan(0);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Voir l'entente de stage/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Télécharger l'entente de stage/i })).toBeInTheDocument();
     }, { timeout: 3000 });
   });
 

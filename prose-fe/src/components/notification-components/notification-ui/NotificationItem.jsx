@@ -1,5 +1,6 @@
 import React from 'react';
-import { shortText } from "../notification-utils/notificationTextLogic.jsx";
+import { useI18n } from '../../../context/I18nContext';
+import { shortText, translateNotificationMessage } from "../notification-utils/notificationText.jsx";
 import {NotificationCloseButton} from "./NotificationCloseButton.jsx";
 
 export function NotificationItem({ notification, markAndNavigate, typeKey, setReadCounter, markAndReload }) {

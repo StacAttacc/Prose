@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { useAuth } from "../../context/AuthContext.jsx";
+import { useI18n } from "../../context/I18nContext.jsx";
 import { PDFDownloadLink, PDFViewer } from "@react-pdf/renderer";
 import EntentePdfDoc from "../../components/display-components/EntentePdfDoc.jsx";
 import { generateEntente } from "../../services/GestionnaireService.js";
@@ -7,6 +8,7 @@ import {base64ToPdfUrl} from "./pdfUtils.jsx";
 
 export default function GenererEntente() {
     const { user } = useAuth();
+    const { t } = useI18n();
     const [candidatureId, setCandidatureId] = useState("");
     const [entente, setEntente] = useState(null);
     const [error, setError] = useState("");
@@ -19,7 +21,7 @@ export default function GenererEntente() {
             const data = await generateEntente(Number(candidatureId), user?.token);
             setEntente(data || null);
         } catch (e) {
-            const msg = e?.response?.data?.message || e?.message || "Erreur inconnue";
+            const msg = e?.response?.data?.message || e?.message || t('erreurInconnue');
             setError(String(msg));
         } finally {
             setLoading(false);
@@ -31,11 +33,11 @@ export default function GenererEntente() {
 
     return (
         <div className="p-4 max-w-5xl mx-auto">
-            <h1 className="text-2xl font-bold mb-4">Générer ou récupérer une entente de stage</h1>
+            <h1 className="text-2xl font-bold mb-4">{t('genererOuRecupererEntente')}</h1>
             <div className="flex gap-2 mb-4">
                 <input
                     type="number"
-                    placeholder="ID de la candidature confirmée"
+                    placeholder={t('idCandidatureConfirmee')}
                     className="border rounded px-3 py-2 w-64"
                     value={candidatureId}
                     onChange={(e) => setCandidatureId(e.target.value)}
@@ -45,7 +47,7 @@ export default function GenererEntente() {
                     disabled={!candidatureId || loading}
                     className="px-4 py-2 rounded bg-emerald-600 text-white disabled:opacity-50"
                 >
-                    {loading ? "Chargement..." : "Générer / Récupérer"}
+                    {loading ? t('chargement') : t('genererRecuperer')}
                 </button>
             </div>
 
@@ -56,11 +58,11 @@ export default function GenererEntente() {
             {entente && (
                 <div className="space-y-4">
                     <div className="rounded border p-3 bg-white">
-                        <h2 className="font-semibold mb-2">Résultat</h2>
+                        <h2 className="font-semibold mb-2">{t('resultat')}</h2>
                         <div className="text-sm text-slate-700">
-                            <div>ID: {entente?.id}</div>
-                            <div>Statut: {entente?.status}</div>
-                            <div>Nom du document: {entente?.documentName || "entente.pdf"}</div>
+                            <div>{t('id')}: {entente?.id}</div>
+                            <div>{t('statut')}: {entente?.status}</div>
+                            <div>{t('nomDocument')}: {entente?.documentName || "entente.pdf"}</div>
                         </div>
                         <div className="mt-3 flex gap-3 flex-wrap">
                             {backendPdfHref && (
@@ -69,7 +71,7 @@ export default function GenererEntente() {
                                     href={backendPdfHref}
                                     download={entente?.documentName || "entente-backend.pdf"}
                                 >
-                                    Télécharger PDF (backend)
+                                    {t('telechargerPdfBackend')}
                                 </a>
                             )}
                             <PDFDownloadLink
@@ -77,7 +79,7 @@ export default function GenererEntente() {
                                 fileName={entente?.documentName || "entente-react-pdf.pdf"}
                                 className="px-3 py-2 rounded border bg-slate-100"
                             >
-                                {({ loading: l }) => (l ? "Préparation du PDF…" : "Télécharger PDF (React-PDF)")}
+                                {({ loading: l }) => (l ? t('preparationPdf') : t('telechargerPdfReactPdf'))}
                             </PDFDownloadLink>
                         </div>
                     </div>
