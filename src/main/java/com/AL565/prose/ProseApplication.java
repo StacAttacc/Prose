@@ -1,14 +1,15 @@
 package com.AL565.prose;
 
-import com.AL565.prose.repository.NotificationRepository;
-import com.AL565.prose.repository.PostulationNotificationRepository;
 import com.AL565.prose.service.EtudiantService;
 import com.AL565.prose.service.GestionnaireService;
 import com.AL565.prose.service.EmployeurService;
+import com.AL565.prose.service.ProfesseurService;
 import com.AL565.prose.service.dto.EmployeurPasswordDTO;
 import com.AL565.prose.service.dto.EtudiantPasswordDTO;
 import com.AL565.prose.service.dto.GestionnairePasswordDTO;
+import com.AL565.prose.service.dto.ProfesseurPasswordDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
+import jakarta.validation.ConstraintViolationException;
 import lombok.AllArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -22,13 +23,14 @@ import org.springframework.context.annotation.Profile;
 public class ProseApplication {
 
     private final EtudiantService etudiantService;
+    private final ProfesseurService professeurService;
 
     public static void main(String[] args) {
         SpringApplication.run(ProseApplication.class, args);
     }
 
     @Bean
-    @Profile({"dev", "local", "test"})
+    //@Profile({"dev", "local", "test"})
     public CommandLineRunner seedEmployeur(EmployeurService employeurService, GestionnaireService gestionnaireService) {
         return _ -> {
             EmployeurPasswordDTO employeurRandy = new EmployeurPasswordDTO();
@@ -57,7 +59,7 @@ public class ProseApplication {
             } catch (EmailAlreadyExistsException e) {
                 System.out.println();
             }
-
+            
             GestionnairePasswordDTO gestionnaireJane = new GestionnairePasswordDTO();
             gestionnaireJane.setFirstName("Jane");
             gestionnaireJane.setLastName("Doe");
@@ -68,6 +70,22 @@ public class ProseApplication {
                 gestionnaireService.saveGestionnaire(gestionnaireJane);
             } catch (EmailAlreadyExistsException e) {
                 System.out.println();
+            }
+
+            ProfesseurPasswordDTO professeurRobert = new ProfesseurPasswordDTO();
+            professeurRobert.setFirstName("Robert");
+            professeurRobert.setLastName("Duval");
+            professeurRobert.setEmail("professeur@professeur.com");
+            professeurRobert.setPassword("password123");
+            professeurRobert.setDiscipline("INFORMATIQUE");
+
+            try {
+                professeurService.register(professeurRobert);
+            } catch (EmailAlreadyExistsException e) {
+                System.out.println();
+            } catch (ConstraintViolationException e) {
+                e.getConstraintViolations().forEach(v ->
+                        System.out.println(v.getPropertyPath()));
             }
         };
     }

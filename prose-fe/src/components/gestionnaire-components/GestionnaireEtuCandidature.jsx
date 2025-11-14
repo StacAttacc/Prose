@@ -47,7 +47,7 @@ export default function GestionnaireEtuCandidature() {
         (async () => {
             try {
                 setLoading(true);
-                setNote(""); // Réinitialiser le message au début du chargement
+                setNote(""); 
                 const data = await getStageApplicantsManager(user?.token, selectedYear);
 
                 const arr = (Array.isArray(data) ? data : []).map((dto) => {
@@ -86,16 +86,16 @@ export default function GestionnaireEtuCandidature() {
                         email: stu?.email || "",
                         accepted,
                         applications,
+                        professeur: stu?.professeur || dto?.professeur || null,
                     };
                 });
 
                 if (mounted) {
                     setStudents(arr);
-                    // Réinitialiser le message si des étudiants sont trouvés, sinon afficher le message
                     if (arr.length === 0) {
                         setNote(t('aucunEtudiantAnnee', { year: selectedYear }));
                     } else {
-                        setNote(""); // Réinitialiser le message s'il y a des étudiants
+                        setNote(""); 
                     }
                 }
             } catch (e) {
@@ -380,6 +380,9 @@ export default function GestionnaireEtuCandidature() {
                                         {t('email')}
                                     </th>
                                     <th className="text-left text-gray-800 font-semibold py-3 px-4">
+                                        {t('professeur') || 'Professeur'}
+                                    </th>
+                                    <th className="text-left text-gray-800 font-semibold py-3 px-4">
                                         {tab === "APPLIED" ? t('candidatures') : t('statut')}
                                     </th>
 
@@ -423,6 +426,11 @@ export default function GestionnaireEtuCandidature() {
                                         </td>
                                         <td className="py-3 px-4 align-top text-gray-700">
                                             {s.email}
+                                        </td>
+                                        <td className="py-3 px-4 align-top text-gray-700">
+                                            {s.professeur 
+                                                ? `${s.professeur.firstName || ''} ${s.professeur.lastName || ''}`.trim() || s.professeur.email || '—'
+                                                : '—'}
                                         </td>
                                         <td className="py-3 px-4 align-top">
                                             {tab === "APPLIED" ? (
@@ -630,11 +638,9 @@ export default function GestionnaireEtuCandidature() {
                 stage={selectedStage}
                 isOpen={isStageModalOpen}
                 onClose={closeStageModal}
-                // tu peux laisser false si tu ne veux pas afficher Approuver/Rejeter ici
                 showManagementButtons={false}
                 showPostulerButton={false}
                 candidatureId={selectedCandidatureId}
-                // bouton “Générer entente” seulement dans “Stage Trouvé”
                 allowGenerateEntente={tab === "APPROVED"}
             />
 

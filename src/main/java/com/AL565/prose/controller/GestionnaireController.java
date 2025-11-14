@@ -2,10 +2,12 @@ package com.AL565.prose.controller;
 
 import com.AL565.prose.repository.GestionnaireRepository;
 import com.AL565.prose.security.JwtTokenProvider;
+import com.AL565.prose.security.exceptions.UserNotFoundException;
 import com.AL565.prose.service.GestionnaireService;
 import com.AL565.prose.service.EntenteService;
 import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
+import com.AL565.prose.service.exceptions.EtudiantAlreadyAssociatedException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -174,6 +176,20 @@ public class GestionnaireController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ReturnEntityDTO<>("Erreur interne du serveur lors de la signature de l'entente", null));
+        }
+    }
+
+    @PostMapping("/associate-professeur")
+    public ResponseEntity<String> associateProfesseur(@RequestBody ProfesseurAssociationDTO association) {
+        try {
+            gestionnaireService.associateProfesseurToEtudiant(association);
+            return ResponseEntity.ok("Association réussie");
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Un des utilisateurs n'existe pas");
+        } catch(EtudiantAlreadyAssociatedException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Etudiant already associated");
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Erreur interne du serveur");
         }
     }
 }

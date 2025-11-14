@@ -322,6 +322,7 @@ const translations = {
     cetEtudiant: 'Cet étudiant',
     envoi: 'Envoi...',
     
+<<<<<<< HEAD
     // Entente (Agreement) - Common
     verification: 'Vérification...',
     ententeSigneeParToutesLesParties: '✓ Entente signée par toutes les parties',
@@ -375,7 +376,21 @@ const translations = {
     donneesEntenteInvalides: 'Données d\'entente invalides',
     erreurSignatureEntente: 'Erreur lors de la signature de l\'entente',
     signatureEnCours: 'Signature en cours...',
-    signerEntente: 'Signer l\'entente'
+    signerEntente: 'Signer l\'entente',
+    // AssociationProfesseurEtudiant
+    'Faire une demande': 'Association Professeur - Étudiant',
+    associationReussie: 'Association réussie avec succès!',
+    'Veuillez entrer l\'email de l\'étudiant': 'Email de l\'étudiant',
+    'Veuillez entrer l\'email du professeur': 'Sélectionner un professeur',
+    reinitialiser: 'Réinitialiser',
+    associationEnCours: 'Association en cours...',
+    associer: 'Associer',
+    selectionnerEtudiantEtProfesseur: 'Veuillez entrer l\'email de l\'étudiant et l\'email du professeur',
+    erreurAssociation: 'Erreur lors de l\'association',
+    emailProfesseur: 'Email du professeur',
+    associationsExistantes: 'Associations existantes',
+    professeur: 'Professeur',
+    chargement: 'Chargement des associations...'
   },
   en: {
     // Dashboard
@@ -700,6 +715,7 @@ const translations = {
     cetEtudiant: 'This student',
     envoi: 'Sending...',
     
+<<<<<<< HEAD
     // Entente (Agreement) - Common
     verification: 'Verifying...',
     ententeSigneeParToutesLesParties: '✓ Agreement signed by all parties',
@@ -753,7 +769,21 @@ const translations = {
     donneesEntenteInvalides: 'Invalid agreement data',
     erreurSignatureEntente: 'Error signing the agreement',
     signatureEnCours: 'Signing in progress...',
-    signerEntente: 'Sign agreement'
+    signerEntente: 'Sign agreement',
+    // AssociationProfesseurEtudiant
+    'Faire une demande': 'Professor - Student Association',
+    associationReussie: 'Association successful!',
+    'Veuillez entrer l\'email de l\'étudiant': 'Student email',
+    'Veuillez entrer l\'email du professeur': 'Select a professor',
+    reinitialiser: 'Reset',
+    associationEnCours: 'Associating...',
+    associer: 'Associate',
+    selectionnerEtudiantEtProfesseur: 'Please enter the student email and professor email',
+    erreurAssociation: 'Error during association',
+    emailProfesseur: 'Professor email',
+    associationsExistantes: 'Existing Associations',
+    professeur: 'Professor',
+    chargement: 'Loading associations...'
   }
 };
 

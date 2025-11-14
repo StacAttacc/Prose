@@ -4,10 +4,7 @@ import com.AL565.prose.controller.AuthController;
 import com.AL565.prose.model.auth.Role;
 import com.AL565.prose.security.exceptions.AuthenticationException;
 import com.AL565.prose.security.exceptions.UserNotFoundException;
-import com.AL565.prose.service.AuthService;
-import com.AL565.prose.service.EmployeurService;
-import com.AL565.prose.service.EtudiantService;
-import com.AL565.prose.service.GestionnaireService;
+import com.AL565.prose.service.*;
 import com.AL565.prose.service.dto.EtudiantPasswordDTO;
 import com.AL565.prose.service.dto.LoginRequestDTO;
 import com.AL565.prose.service.dto.ProseUserDTO;
@@ -48,6 +45,9 @@ class AuthControllerTest {
 
     @MockitoBean
     private GestionnaireService gestionnaireService;
+
+    @MockitoBean
+    private ProfesseurService professeurService;
 
     @Test
     void login_success() throws Exception {

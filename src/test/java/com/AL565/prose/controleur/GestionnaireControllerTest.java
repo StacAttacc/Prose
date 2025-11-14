@@ -9,13 +9,11 @@ import com.AL565.prose.model.notifications.PostulationNotification;
 import com.AL565.prose.model.notifications.StageNotification;
 import com.AL565.prose.repository.*;
 import com.AL565.prose.security.JwtTokenProvider;
-import com.AL565.prose.service.EmployeurService;
-import com.AL565.prose.service.EtudiantService;
+import com.AL565.prose.service.*;
 import com.AL565.prose.service.dto.*;
-import com.AL565.prose.service.GestionnaireService;
-import com.AL565.prose.service.EntenteService;
 import com.AL565.prose.service.dto.notifications.NotificationGroupDTO;
 import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
+import com.AL565.prose.service.exceptions.EtudiantAlreadyAssociatedException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
@@ -64,6 +62,9 @@ class GestionnaireControllerTest {
 
     @MockitoBean
     private EtudiantService etudiantService;
+
+    @MockitoBean
+    private ProfesseurService professeurService;
 
     @MockitoBean
     private NotificationRepository notificationRepository;
@@ -355,11 +356,13 @@ class GestionnaireControllerTest {
         Stage stage = new Stage();
         stage.setId(1L);
         stage.setTitle("Stage Test");
+        stage.setStartDate(LocalDate.now());
         stage.setStatus(OfferStatus.SOUMISE);
 
         Stage stage2 = new Stage();
         stage2.setId(2L);
         stage2.setTitle("Stage Test 2");
+        stage.setStartDate(LocalDate.now());
         stage2.setStatus(OfferStatus.SOUMISE);
 
         EtudiantCandidaturesDTO candidatureJohn = EtudiantCandidaturesDTO.builder()
@@ -388,14 +391,13 @@ class GestionnaireControllerTest {
                                 .status("En Attente")
                                 .build()
                 )).build();
-        when(gestionnaireService.getAllEtudiantsCandidatures("2025")).thenReturn(List.of(candidatureJohn, candidaturesUmberto));
+        when(gestionnaireService.getAllEtudiantsCandidatures(nullable(String.class))).thenReturn(List.of(candidatureJohn, candidaturesUmberto));
 
         MvcResult result = mockMvc.perform(get("/gestionnaire/getCandidatures"))
                 .andExpect(status().isOk())
                 .andReturn();
 
-        ReturnEntityDTO<List<EtudiantCandidaturesDTO>> candidatures = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
-        });
+        ReturnEntityDTO<List<EtudiantCandidaturesDTO>> candidatures = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
 
         assertThat(candidatures.getData().size()).isEqualTo(2);
     }
@@ -482,11 +484,13 @@ class GestionnaireControllerTest {
         Stage stage = new Stage();
         stage.setId(1L);
         stage.setTitle("Stage Test");
+        stage.setStartDate(LocalDate.now());
         stage.setStatus(OfferStatus.SOUMISE);
 
         Stage stage2 = new Stage();
         stage2.setId(2L);
         stage2.setTitle("Stage Test 2");
+        stage2.setStartDate(LocalDate.now());
         stage2.setStatus(OfferStatus.SOUMISE);
 
         EtudiantCandidaturesDTO candidatureJohn = EtudiantCandidaturesDTO.builder()
@@ -516,13 +520,13 @@ class GestionnaireControllerTest {
                                 .status("REFUSEE")
                                 .build()
                 )).build();
-        when(gestionnaireService.getAllEtudiantsCandidatures("2025")).thenReturn(List.of(candidatureJohn, candidaturesUmberto));
+        when(gestionnaireService.getAllEtudiantsCandidatures(nullable(String.class))).thenReturn(List.of(candidatureJohn, candidaturesUmberto));
 
         MvcResult result = mockMvc.perform(get("/gestionnaire/getCandidatures"))
                 .andExpect(status().isOk())
                 .andReturn();
 
-        ReturnEntityDTO<List<EtudiantCandidaturesDTO>> candidatures = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
+        ReturnEntityDTO<List<EtudiantCandidaturesDTO>> candidatures = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<ReturnEntityDTO<List<EtudiantCandidaturesDTO>>>() {
         });
 
         List<EtudiantCandidaturesDTO> candidaturesList = candidatures.getData();
@@ -589,5 +593,46 @@ class GestionnaireControllerTest {
                 .andExpect(jsonPath("$.message", is("Erreur interne du serveur lors de la génération de l'entente")));
 
         verify(ententeService, times(1)).genererEntente(candidatureId);
+    }
+
+    @Test
+    void associationProfesseurEtudiant() throws Exception {
+        ProfesseurDTO professeurDTO = new ProfesseurDTO();
+        professeurDTO.setEmail("robert@brassard.com");
+        professeurDTO.setFirstName("Robert");
+
+        EtudiantDTO etudiantDTO = new EtudiantDTO();
+        etudiantDTO.setEmail("john@doe.com");
+        etudiantDTO.setFirstName("John");
+
+        doNothing().when(gestionnaireService).associateProfesseurToEtudiant(any());
+
+        String content = objectMapper.writeValueAsString(new ProfesseurAssociationDTO(etudiantDTO.getEmail(), professeurDTO.getFirstName()));
+
+        mockMvc.perform(post("/gestionnaire/associate-professeur")
+                        .content(content)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void associationProfesseurEtudiantAlreadyAssociated() throws Exception {
+        ProfesseurDTO professeurDTO = new ProfesseurDTO();
+        professeurDTO.setEmail("robert@brassard.com");
+        professeurDTO.setFirstName("Robert");
+
+        EtudiantDTO etudiantDTO = new EtudiantDTO();
+        etudiantDTO.setEmail("john@doe.com");
+        etudiantDTO.setFirstName("John");
+        etudiantDTO.setProfesseurResponsable(professeurDTO);
+
+        doThrow(EtudiantAlreadyAssociatedException.class).when(gestionnaireService).associateProfesseurToEtudiant(any());
+
+        String content = objectMapper.writeValueAsString(new ProfesseurAssociationDTO(etudiantDTO.getEmail(), professeurDTO.getFirstName()));
+
+        mockMvc.perform(post("/gestionnaire/associate-professeur")
+                        .content(content)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isConflict());
     }
 }
