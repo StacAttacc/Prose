@@ -15,34 +15,48 @@ import {
 } from "../../../services/EtudiantService.js";
 
 export async function fetchNotifications(user) {
-    console.log(user.role)
-    if (user.role === "GESTIONNAIRE") {
-        return await getGestionnaireNotifications(user.token);
-    } else if (user.role === "EMPLOYEUR") {
-        return await getEmployeurNotifications(user.token);
-    } else if (user.role === "ETUDIANT") {
-        return await getEtudiantNotifications(user.token);
-    } else return null;
+    switch (user.role) {
+        case "GESTIONNAIRE":
+            return await getGestionnaireNotifications(user.token);
+        case "EMPLOYEUR":
+            return await getEmployeurNotifications(user.token);
+        case "ETUDIANT":
+            return await getEtudiantNotifications(user.token);
+        default:
+            return null;
+    }
 }
 
 export async function markSingleNotificationAsRead(id, user) {
     if (!id) return;
-    if (user.role === "GESTIONNAIRE") {
-        await markNotificationReadGestionnaire(id, user.token);
-    } else if (user.role === "EMPLOYEUR") {
-        await markNotificationReadEmployeur(id, user.token);
-    } else if (user.role === "ETUDIANT") {
-        await markNotificationReadEtudiant(id, user.token);
+    switch (user.role) {
+        case "GESTIONNAIRE":
+            await markNotificationReadGestionnaire(id, user.token);
+            break;
+        case "EMPLOYEUR":
+            await markNotificationReadEmployeur(id, user.token);
+            break;
+        case "ETUDIANT":
+            await markNotificationReadEtudiant(id, user.token);
+            break;
+        default:
+            break;
     }
 }
 
 export async function markManyNotifications(user, ids = []) {
     if (!Array.isArray(ids) || ids.length === 0) return;
-    if (user.role === "GESTIONNAIRE") {
-        await markNotificationsReadGestionnaire(ids, user.token);
-    } else if (user.role === "EMPLOYEUR") {
-        await markNotificationsReadEmployeur(ids, user.token);
-    } else if (user.role === "ETUDIANT") {
-        await markNotificationsReadEtudiant(ids, user.token);
+    switch (user.role) {
+        case "GESTIONNAIRE":
+            await markNotificationsReadGestionnaire(ids, user.token);
+            break;
+        case "EMPLOYEUR":
+            await markNotificationsReadEmployeur(ids, user.token);
+            break;
+        case "ETUDIANT":
+            await markNotificationsReadEtudiant(ids, user.token);
+            break;
+        default:
+            break;
     }
 }
