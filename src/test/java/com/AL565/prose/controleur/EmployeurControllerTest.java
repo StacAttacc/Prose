@@ -8,13 +8,10 @@ import com.AL565.prose.model.Stage;
 import com.AL565.prose.model.notifications.EmployeurResponseNotification;
 import com.AL565.prose.model.notifications.PostulationNotification;
 import com.AL565.prose.repository.*;
-import com.AL565.prose.service.EtudiantService;
-import com.AL565.prose.service.GestionnaireService;
-import com.AL565.prose.service.EntenteService;
+import com.AL565.prose.service.*;
 import com.AL565.prose.security.JwtTokenProvider;
 import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.dto.EmployeurPasswordDTO;
-import com.AL565.prose.service.EmployeurService;
 import com.AL565.prose.service.dto.notifications.NotificationGroupDTO;
 import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
 import com.AL565.prose.service.exceptions.InvalidCandidatureModificationException;
@@ -81,6 +78,9 @@ class EmployeurControllerTest {
 
     @MockitoBean
     private EtudiantRepository etudiantRepository;
+
+    @MockitoBean
+    private ProfesseurService professeurService;
 
     @MockitoBean
     private ProseUserRepository proseUserRepository;
@@ -354,7 +354,7 @@ class EmployeurControllerTest {
         String email = "employeur@test.com";
 
         when(jwtTokenProvider.getEmailFromJWT("token123")).thenReturn(email);
-        doThrow(new RuntimeException("Erreur lors de la signature"))
+        doThrow(new Exception("Erreur lors de la signature"))
                 .when(ententeService).signEntente(ententeId, email);
 
         mockMvc.perform(put("/employeur/ententes/" + ententeId + "/signer")

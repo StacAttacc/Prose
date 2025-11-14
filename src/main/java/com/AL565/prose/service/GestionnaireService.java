@@ -5,10 +5,12 @@ import com.AL565.prose.model.notifications.*;
 import com.AL565.prose.repository.*;
 import com.AL565.prose.security.exceptions.CvExceptions.*;
 import com.AL565.prose.security.exceptions.NotificationExceptions;
+import com.AL565.prose.security.exceptions.UserNotFoundException;
 import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.dto.notifications.NotificationGroupDTO;
 import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
+import com.AL565.prose.service.exceptions.EtudiantAlreadyAssociatedException;
 import com.AL565.prose.service.exceptions.FailedToRetrieveStagesException;
 
 import com.AL565.prose.utils.NotificationsHelper;
@@ -16,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -37,6 +40,7 @@ public class GestionnaireService {
     private final StageRepository stageRepository;
     private final EmployeurRepository employeurRepository;
     private final EtudiantRepository etudiantRepository;
+    private final ProfesseurRepository professeurRepository;
     private final PasswordEncoder passwordEncoder;
     private final CandidatureRepository candidatureRepository;
     private final NotificationRepository notificationRepository;
@@ -140,7 +144,7 @@ public class GestionnaireService {
 
     @Transactional
     public List<EtudiantCandidaturesDTO> getAllEtudiantsCandidatures(String year) {
-        int yearNumber =  year != null ? Integer.parseInt(year) : LocalDate.now().getYear();
+        int yearNumber = year != null && !year.isEmpty() ? Integer.parseInt(year) : LocalDate.now().getYear();
         List<Etudiant> etudiants =  etudiantRepository.findAll();
 
         List <EtudiantCandidaturesDTO> etudiantCandidaturesDTO = new ArrayList<>();
@@ -256,5 +260,19 @@ public class GestionnaireService {
         } catch (Exception e) {
             throw new NotificationExceptions.NotificationFetchException();
         }
+    }
+
+    @Transactional
+    public void associateProfesseurToEtudiant(@RequestBody ProfesseurAssociationDTO association) throws EtudiantAlreadyAssociatedException {
+        Etudiant etudiant = etudiantRepository.findEtudiantByCredentials_Username(association.getEtudiantEmail()).orElseThrow(UserNotFoundException::new);
+        Professeur professeur = professeurRepository.findByCredentials_Username(association.getProfesseurEmail()).orElseThrow(UserNotFoundException::new);
+
+        if (etudiant.getProfesseurResponsable() != null) {
+            throw new EtudiantAlreadyAssociatedException("L'étudiant est déja associé a un professeur");
+        }
+
+        etudiant.setProfesseurResponsable(professeur);
+
+        etudiantRepository.save(etudiant);
     }
 }

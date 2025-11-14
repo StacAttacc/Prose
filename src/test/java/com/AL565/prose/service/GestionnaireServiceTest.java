@@ -4,11 +4,9 @@ import com.AL565.prose.model.*;
 import com.AL565.prose.model.auth.Credentials;
 import com.AL565.prose.model.auth.Role;
 import com.AL565.prose.repository.*;
-import com.AL565.prose.service.dto.EtudiantCandidatureDTO;
-import com.AL565.prose.service.dto.EtudiantCandidaturesDTO;
-import com.AL565.prose.service.dto.GestionnairePasswordDTO;
-import com.AL565.prose.service.dto.StageDTO;
+import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
+import com.AL565.prose.service.exceptions.EtudiantAlreadyAssociatedException;
 import com.AL565.prose.service.exceptions.FailedToRetrieveStagesException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -46,6 +44,9 @@ class GestionnaireServiceTest {
 
     @Mock
     private EtudiantRepository etudiantRepository;
+
+    @Mock
+    private ProfesseurRepository professeurRepository;
 
     @Mock
     private CandidatureRepository candidatureRepository;
@@ -484,5 +485,32 @@ class GestionnaireServiceTest {
         assertThat(candidatures2078.getFirst().getCandidatures()).hasSize(1);
 
         assertThat(candidatures2025).hasSize(0);
+    }
+
+    @Test
+    void testAssociationEtudiant() throws EtudiantAlreadyAssociatedException {
+        Etudiant etudiant = new Etudiant("John", "Doe", new Credentials("john@doe.com", "password123", Role.ETUDIANT), Discipline.INFORMATIQUE);
+        Professeur professeur = new Professeur("Robert", "Brassard", "robert@brassard.com", "password123", Discipline.INFORMATIQUE);
+
+        when(etudiantRepository.findEtudiantByCredentials_Username(anyString())).thenReturn(Optional.of(etudiant));
+        when(professeurRepository.findByCredentials_Username(anyString())).thenReturn(Optional.of(professeur));
+
+        gestionnaireService.associateProfesseurToEtudiant(new ProfesseurAssociationDTO(etudiant.getEmail(), professeur.getEmail()));
+
+        verify(etudiantRepository, times(1)).save(etudiant);
+    }
+
+    @Test
+    void testAssociationEtudiantAlreadyAssociated() {
+        Etudiant etudiant = new Etudiant("John", "Doe", new Credentials("john@doe.com", "password123", Role.ETUDIANT), Discipline.INFORMATIQUE);
+        Professeur professeur = new Professeur("Robert", "Brassard", "robert@brassard.com", "password123", Discipline.INFORMATIQUE);
+
+        etudiant.setProfesseurResponsable(professeur);
+
+        when(etudiantRepository.findEtudiantByCredentials_Username(anyString())).thenReturn(Optional.of(etudiant));
+        when(professeurRepository.findByCredentials_Username(anyString())).thenReturn(Optional.of(professeur));
+
+        assertThatThrownBy(() -> gestionnaireService.associateProfesseurToEtudiant(new ProfesseurAssociationDTO(etudiant.getEmail(), professeur.getEmail())))
+                .isInstanceOf(EtudiantAlreadyAssociatedException.class);
     }
 }

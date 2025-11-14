@@ -13,10 +13,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class EtudiantDTO extends ProseUserDTO {
     private Discipline discipline;
+    private ProfesseurDTO professeurResponsable;
 
-    public EtudiantDTO(Etudiant model, String token) {
+    private EtudiantDTO(Etudiant model, String token) {
         super(model.getId(), model.getFirstName(), model.getLastName(), model.getEmail(), model.getRole(), token);
         this.discipline = model.getDiscipline();
+        this.professeurResponsable = model.getProfesseurResponsable() != null ? ProfesseurDTO.toDTOTokenless(model.getProfesseurResponsable()) : null;
     }
 
     public static EtudiantDTO toDTO(Etudiant model, String token) {

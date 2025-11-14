@@ -5,10 +5,7 @@ import com.AL565.prose.model.Discipline;
 import com.AL565.prose.model.Employeur;
 import com.AL565.prose.repository.*;
 import com.AL565.prose.security.JwtTokenProvider;
-import com.AL565.prose.service.EmployeurService;
-import com.AL565.prose.service.EtudiantService;
-import com.AL565.prose.service.GestionnaireService;
-import com.AL565.prose.service.EntenteService;
+import com.AL565.prose.service.*;
 import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
@@ -53,6 +50,9 @@ class EtudiantControllerTest {
 
     @MockitoBean
     private GestionnaireService gestionnaireService;
+
+    @MockitoBean
+    private ProfesseurService professeurService;
 
     @MockitoBean
     private EntenteService ententeService;

@@ -177,6 +177,8 @@ class EmployeurServiceTest {
         );
 
         when(candidatureRepository.findById(anyLong())).thenReturn(Optional.of(candidature));
+        when(candidatureRepository.save(any())).thenReturn(candidature);
+        when(employeurRepository.getEmployeurByCredentials_Username(anyString())).thenReturn(new Employeur());
 
         employeurService.updateCandidatureStatus(candidature.getId(), "Acceptee");
 
