@@ -391,29 +391,41 @@ export default function MesCandidature() {
                                                         <span className="text-sm text-green-600 font-medium">
                                                             ✓ Entente signée par toutes les parties
                                                         </span>
-                                                        <button
-                                                            onClick={() => {
-                                                                const ententeData = ententeDataMap[candidature.id];
-                                                                if (ententeData?.documentPdfBase64) {
-                                                                    const bin = atob(ententeData.documentPdfBase64);
-                                                                    const bytes = new Uint8Array(bin.length);
-                                                                    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-                                                                    const blob = new Blob([bytes], { type: "application/pdf" });
-                                                                    const url = URL.createObjectURL(blob);
-                                                                    const a = document.createElement("a");
-                                                                    a.href = url;
-                                                                    a.download = ententeData.documentName || "entente_stage.pdf";
-                                                                    document.body.appendChild(a);
-                                                                    a.click();
-                                                                    a.remove();
-                                                                    URL.revokeObjectURL(url);
-                                                                }
-                                                            }}
-                                                            className="px-6 py-3 rounded-md font-medium text-white bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 hover:bg-gradient-to-br transition-all"
-                                                            type="button"
-                                                        >
-                                                            Télécharger l'entente de stage
-                                                        </button>
+                                                        <div className="flex gap-2">
+                                                            <button
+                                                                onClick={() => {
+                                                                    setSelectedCandidatureForEntente(candidature);
+                                                                    setShowEntenteModal(true);
+                                                                }}
+                                                                className="px-6 py-3 rounded-md font-medium text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br transition-all"
+                                                                type="button"
+                                                            >
+                                                                Voir l'entente de stage
+                                                            </button>
+                                                            <button
+                                                                onClick={() => {
+                                                                    const ententeData = ententeDataMap[candidature.id];
+                                                                    if (ententeData?.documentPdfBase64) {
+                                                                        const bin = atob(ententeData.documentPdfBase64);
+                                                                        const bytes = new Uint8Array(bin.length);
+                                                                        for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+                                                                        const blob = new Blob([bytes], { type: "application/pdf" });
+                                                                        const url = URL.createObjectURL(blob);
+                                                                        const a = document.createElement("a");
+                                                                        a.href = url;
+                                                                        a.download = ententeData.documentName || "entente_stage.pdf";
+                                                                        document.body.appendChild(a);
+                                                                        a.click();
+                                                                        a.remove();
+                                                                        URL.revokeObjectURL(url);
+                                                                    }
+                                                                }}
+                                                                className="px-6 py-3 rounded-md font-medium text-white bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 hover:bg-gradient-to-br transition-all"
+                                                                type="button"
+                                                            >
+                                                                Télécharger l'entente de stage
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 ) : (
                                                     <div className="mt-4 flex justify-center">

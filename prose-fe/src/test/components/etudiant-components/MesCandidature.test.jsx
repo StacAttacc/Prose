@@ -312,8 +312,24 @@ describe('MesCandidature', () => {
     renderWithProviders(<MesCandidature />);
 
     await waitFor(() => {
-      // Il y a plusieurs "Stage Accepté" (titre et h4), on cherche le bouton spécifique
-      expect(screen.getByRole('button', { name: /Voir et signer l'entente de stage/i })).toBeInTheDocument();
+      // Maintenant que l'entente est SIGNEE, on cherche les deux boutons
+      expect(screen.getByRole('button', { name: /Voir l'entente de stage/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Télécharger l'entente de stage/i })).toBeInTheDocument();
+    }, { timeout: 3000 });
+  });
+
+  it('devrait afficher les deux boutons "Voir l\'entente de stage" et "Télécharger" quand l\'entente est SIGNEE', async () => {
+    renderWithProviders(<MesCandidature />);
+
+    await waitFor(() => {
+      // Utiliser getAllByText car il y a plusieurs "Stage Accepté" (h3 et h4)
+      const stageAccepteElements = screen.getAllByText('Stage Accepté');
+      expect(stageAccepteElements.length).toBeGreaterThan(0);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Voir l'entente de stage/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Télécharger l'entente de stage/i })).toBeInTheDocument();
     }, { timeout: 3000 });
   });
 

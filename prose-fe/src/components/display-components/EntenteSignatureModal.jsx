@@ -230,7 +230,7 @@ export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSi
                 ) : (
                     <>
                         {/* Message si déjà signé - affiché en premier */}
-                        {userHasSigned && userSignatureDate && (
+                        {userHasSigned && userSignatureDate && ententeData?.status !== "SIGNEE" && (
                             <div className="mb-6">
                                 <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
                                     <p className="text-sm text-green-700 font-medium">

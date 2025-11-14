@@ -7,6 +7,7 @@ import { server } from '../../mocks/server';
 import { http, HttpResponse } from 'msw';
 import { useYear } from '../../../context/YearContext';
 import { useAuth } from '../../../context/AuthContext';
+import { useI18n } from '../../../context/I18nContext';
 
 vi.mock('../../../context/YearContext', () => ({
   useYear: vi.fn()
@@ -17,6 +18,14 @@ vi.mock('../../../context/AuthContext', async (importOriginal) => {
   return {
     ...actual,
     useAuth: vi.fn()
+  };
+});
+
+vi.mock('../../../context/I18nContext', async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    useI18n: vi.fn()
   };
 });
 
@@ -32,6 +41,15 @@ vi.mock('../../../components/display-components/ErrorBanner', () => ({
   default: ({ message }) => message ? <div data-testid="error-banner">{message}</div> : null
 }));
 
+vi.mock('../../../components/display-components/EntenteSignatureModal', () => ({
+  default: ({ isOpen, onClose }) => 
+    isOpen ? (
+      <div data-testid="entente-signature-modal">
+        <button onClick={onClose}>Fermer</button>
+      </div>
+    ) : null
+}));
+
 describe('GestionnaireEtuCandidature - Filtrage par année', () => {
   const mockUser = {
     email: 'gestionnaire@test.com',
@@ -39,6 +57,23 @@ describe('GestionnaireEtuCandidature - Filtrage par année', () => {
     lastName: 'Gestionnaire',
     role: 'GESTIONNAIRE',
     token: 'mock-token-123'
+  };
+
+  const mockT = (key, params) => {
+    const translations = {
+      statusCandidatures: 'Statut des candidatures',
+      aucuneCandidature: 'Aucune Candidature',
+      candidatureSoumise: 'Candidature Soumise',
+      stageTrouve: 'Stage Trouvé',
+      aucunEtudiantTrouve: (year) => `Aucun étudiant trouvé pour l'année ${year}`,
+      aucunEtudiantAnnee: (params) => `Aucun étudiant trouvé pour l'année ${params?.year || ''}`,
+      aucunEtudiantCategorie: 'Aucun étudiant dans cette catégorie'
+    };
+    const translation = translations[key];
+    if (typeof translation === 'function') {
+      return translation(params);
+    }
+    return translation || key;
   };
 
   beforeEach(() => {
@@ -51,6 +86,12 @@ describe('GestionnaireEtuCandidature - Filtrage par année', () => {
       registerEmployeur: vi.fn(),
       registerEtudiant: vi.fn(),
       logout: vi.fn()
+    });
+    // Mock useI18n
+    vi.mocked(useI18n).mockReturnValue({
+      t: mockT,
+      locale: 'fr',
+      setLocale: vi.fn()
     });
   });
 
@@ -119,7 +160,9 @@ describe('GestionnaireEtuCandidature - Filtrage par année', () => {
     renderWithProviders(<GestionnaireEtuCandidature />, { selectedYear: '2030' });
 
     await waitFor(() => {
-      expect(screen.getByText(/Aucun étudiant trouvé pour l'année 2030/i)).toBeInTheDocument();
+      // Le message est affiché via ErrorBanner qui est mocké, on vérifie le contenu du banner
+      const errorBanner = screen.getByTestId('error-banner');
+      expect(errorBanner).toHaveTextContent('Aucun étudiant trouvé pour l\'année 2030');
     });
   });
 
@@ -163,6 +206,29 @@ describe('GestionnaireEtuCandidature - Filtrage par année', () => {
 
     expect(screen.getByText('jean.dupont@example.com')).toBeInTheDocument();
     expect(screen.getByText('marie.martin@example.com')).toBeInTheDocument();
+  });
+
+  it('devrait afficher les deux boutons "Voir l\'entente de stage" et "Télécharger" quand l\'entente est SIGNEE', async () => {
+    vi.mocked(useYear).mockReturnValue({ selectedYear: '2027', setSelectedYear: vi.fn() });
+    renderWithProviders(<GestionnaireEtuCandidature />, { selectedYear: '2027' });
+
+    await waitFor(() => {
+      expect(screen.getByText(/Stage Trouvé \(1\)/)).toBeInTheDocument();
+    });
+
+    const buttons = screen.getAllByRole('button');
+    const stageTrouveButton = buttons.find(btn => btn.textContent.includes('Stage Trouvé'));
+    expect(stageTrouveButton).toBeTruthy();
+    await userEvent.click(stageTrouveButton);
+
+    await waitFor(() => {
+      expect(screen.getByText('Sophie Lefebvre')).toBeInTheDocument();
+    }, { timeout: 3000 });
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Voir l'entente de stage/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Télécharger l'entente de stage/i })).toBeInTheDocument();
+    }, { timeout: 3000 });
   });
 });
 

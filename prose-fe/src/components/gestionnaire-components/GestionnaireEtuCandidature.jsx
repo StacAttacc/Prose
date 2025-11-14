@@ -247,6 +247,24 @@ export default function GestionnaireEtuCandidature() {
         setShowEntenteModal(true);
     };
 
+    const handleDownloadEntente = (candidatureId) => {
+        const ententeData = ententeDataMap[candidatureId];
+        if (ententeData?.documentPdfBase64) {
+            const bin = atob(ententeData.documentPdfBase64);
+            const bytes = new Uint8Array(bin.length);
+            for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+            const blob = new Blob([bytes], { type: "application/pdf" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = ententeData.documentName || "entente_stage.pdf";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        }
+    };
+
     return (
         <div className="min-h-screen bg-white">
             <div className="mx-auto max-w-5xl px-4 pt-6 pb-16">
@@ -499,13 +517,22 @@ export default function GestionnaireEtuCandidature() {
                                                     if (ententeStatus === "SIGNEE") {
                                                         // Toutes les parties ont signé
                                                         return (
-                                                            <button
-                                                                type="button"
-                                                                className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br transition-all"
-                                                                onClick={() => handleViewEntente(candidatureId)}
-                                                            >
-                                                                Voir l'entente de stage
-                                                            </button>
+                                                            <div className="flex gap-2">
+                                                                <button
+                                                                    type="button"
+                                                                    className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br transition-all"
+                                                                    onClick={() => handleViewEntente(candidatureId)}
+                                                                >
+                                                                    Voir l'entente de stage
+                                                                </button>
+                                                                <button
+                                                                    type="button"
+                                                                    className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 hover:bg-gradient-to-br transition-all"
+                                                                    onClick={() => handleDownloadEntente(candidatureId)}
+                                                                >
+                                                                    Télécharger l'entente de stage
+                                                                </button>
+                                                            </div>
                                                         );
                                                     } else if (ententeStatus === "SIGNEE_ETUDIANT_ET_EMPLOYEUR") {
                                                         // Les deux ont signé, mais pas le gestionnaire
