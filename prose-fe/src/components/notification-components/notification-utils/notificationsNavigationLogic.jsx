@@ -6,8 +6,21 @@ export function getDefaultNavigationPath(user) {
     return "/";
 }
 
-export function getNotificationNavigationPath(notification, role) {
-    const { stageId, candidatureId, etudiantId, cvId, convocation, candidatureResponseId, stageResponseId, candidatureDecisionId } = notification;
+export function getNotificationNavigationPath(params) {
+    // Support both old signature (notification, role) and new signature (object with role, notification, etc.)
+    let notification, role, isGrouped, groupType;
+    if (params && typeof params === 'object' && 'role' in params) {
+        role = params.role;
+        notification = params.notification;
+        isGrouped = params.isGrouped;
+        groupType = params.groupType;
+    } else {
+        // Old signature support
+        notification = params;
+        role = arguments[1];
+    }
+    
+    const { stageId, candidatureId, etudiantId, cvId, convocation, candidatureResponseId, stageResponseId, candidatureDecisionId, signatureEntenteCandidatureId } = notification || {};
     const isCandidature = Boolean(notification?.candidature || notification?.candidatureId);
     const isEmployeurResponse = Boolean(candidatureResponseId || (notification?.candidatureId && notification?.hasOwnProperty('accepted')));
 
@@ -54,6 +67,19 @@ export function getNotificationNavigationPath(notification, role) {
     }
 
     else if (role === "GESTIONNAIRE") {
+        // Notification de signature d'entente - naviguer vers les candidatures avec la candidature ouverte
+        if (signatureEntenteCandidatureId || notification?.type === "signature_entente") {
+            const candidatureId = signatureEntenteCandidatureId || notification?.signatureEntenteCandidatureId;
+            if (candidatureId) {
+                return {
+                    path: getDefaultNavigationPath({ role }),
+                    state: { 
+                        openCandidatureId: candidatureId,
+                        openTab: "APPROVED" // Ouvrir l'onglet APPROVED car l'entente est signée par étudiant et employeur
+                    }
+                };
+            }
+        }
         if (isCandidature && stageId) {
             return {
                 path: getDefaultNavigationPath({ role }),
@@ -130,6 +156,11 @@ export function getGroupedNotificationNavigation(type, role) {
             };
         }
         if (type === "convocation") {
+            return {
+                path: getDefaultNavigationPath({ role }),
+            };
+        }
+        if (type === "signature_entente") {
             return {
                 path: getDefaultNavigationPath({ role }),
             };
