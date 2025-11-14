@@ -27,6 +27,7 @@ const translations = {
     action: 'Action',
     voirCandidatures: 'Voir ses candidatures',
     detailsEntente: 'Détails & entente',
+    details: 'Détails',
     aucunEtudiantCategorie: 'Aucun étudiant dans cette catégorie.',
     aucunEtudiantAnnee: 'Aucun étudiant trouvé pour l\'année {year}.',
     chargement: 'Chargement…',
@@ -307,7 +308,64 @@ const translations = {
     dateHeureDoiventEtreFutur: 'La date et l\'heure doivent être dans le futur',
     erreurLorsConvocation: 'Erreur lors de la convocation',
     cetEtudiant: 'Cet étudiant',
-    envoi: 'Envoi...'
+    envoi: 'Envoi...',
+    
+    // Entente (Agreement) - Common
+    verification: 'Vérification...',
+    ententeSigneeParToutesLesParties: '✓ Entente signée par toutes les parties',
+    enAttenteDeSignature: 'En attente de signature',
+    ententeNonGeneree: 'Entente non générée',
+    voirEtSignerEntente: 'Voir et signer l\'entente',
+    voirEntente: 'Voir l\'entente',
+    telecharger: 'Télécharger',
+    enAttenteGestionnaireEntente: 'En attente du gestionnaire pour l\'entente de stage',
+    erreurLorsSignature: 'Erreur lors de la signature',
+    verificationEntente: 'Vérification de l\'entente...',
+    voirEntenteStage: 'Voir l\'entente de stage',
+    telechargerEntenteStage: 'Télécharger l\'entente de stage',
+    voirEtSignerEntenteStage: 'Voir et signer l\'entente de stage',
+    
+    // GenererEntente
+    genererOuRecupererEntente: 'Générer ou récupérer une entente de stage',
+    idCandidatureConfirmee: 'ID de la candidature confirmée',
+    genererRecuperer: 'Générer / Récupérer',
+    resultat: 'Résultat',
+    id: 'ID',
+    nomDocument: 'Nom du document',
+    telechargerPdfBackend: 'Télécharger PDF (backend)',
+    preparationPdf: 'Préparation du PDF…',
+    telechargerPdfReactPdf: 'Télécharger PDF (React-PDF)',
+    
+    // GestionnaireEtuCandidature - Entente
+    statusEntente: 'Status Entente',
+    generation: 'Génération...',
+    genererEntente: 'Générer entente',
+    
+    // EntenteSignatureModal
+    ententeStageSignature: 'Entente de stage - Signature',
+    chargementEntente: 'Chargement de l\'entente...',
+    ententeNonTrouvee: 'Entente non trouvée',
+    erreurChargementEntente: 'Erreur lors du chargement de l\'entente',
+    vousAvezDejaSigneEntente: '✓ Vous avez déjà signé cette entente le',
+    enAttenteSignatureEtudiantEtEmployeur: 'En attente de la signature de l\'étudiant et de l\'employeur',
+    enAttenteSignatureEmployeur: 'En attente de la signature de l\'employeur',
+    enAttenteSignatureEtudiant: 'En attente de la signature de l\'étudiant',
+    enAttenteVotreSignatureGestionnaire: 'En attente de votre signature (gestionnaire)',
+    enAttenteSignatureGestionnaire: 'En attente de la signature du gestionnaire',
+    enAttenteVotreSignatureEtEmployeur: 'En attente de votre signature et de l\'employeur',
+    enAttenteVotreSignatureEtEtudiant: 'En attente de votre signature et de l\'étudiant',
+    documentEntente: 'Document d\'entente',
+    impossibleAfficherPdf: 'Impossible d\'afficher le PDF',
+    consentementEntente: 'Je consens à cette entente de stage et je confirme avoir lu et compris tous les termes et conditions énoncés dans le document ci-dessus.',
+    motDePasse: 'Mot de passe',
+    entrezMotDePasseConfirmer: 'Entrez votre mot de passe pour confirmer',
+    motDePasseRequisConfirmer: 'Votre mot de passe est requis pour confirmer la signature',
+    veuillezCocherConsentement: 'Veuillez cocher la case de consentement pour signer l\'entente',
+    veuillezSaisirMotDePasse: 'Veuillez saisir votre mot de passe',
+    donneesEntenteInvalides: 'Données d\'entente invalides',
+    erreurSignatureEntente: 'Erreur lors de la signature de l\'entente',
+    signatureEnCours: 'Signature en cours...',
+    signerEntente: 'Signer l\'entente'
   },
   en: {
     // Dashboard
@@ -333,6 +391,7 @@ const translations = {
     action: 'Action',
     voirCandidatures: 'View applications',
     detailsEntente: 'Details & agreement',
+    details: 'Details',
     aucunEtudiantCategorie: 'No student in this category.',
     aucunEtudiantAnnee: 'No student found for year {year}.',
     chargement: 'Loading…',
@@ -618,7 +677,64 @@ const translations = {
     dateHeureDoiventEtreFutur: 'The date and time must be in the future',
     erreurLorsConvocation: 'Error during invitation',
     cetEtudiant: 'This student',
-    envoi: 'Sending...'
+    envoi: 'Sending...',
+    
+    // Entente (Agreement) - Common
+    verification: 'Verifying...',
+    ententeSigneeParToutesLesParties: '✓ Agreement signed by all parties',
+    enAttenteDeSignature: 'Awaiting signature',
+    ententeNonGeneree: 'Agreement not generated',
+    voirEtSignerEntente: 'View and sign agreement',
+    voirEntente: 'View agreement',
+    telecharger: 'Download',
+    enAttenteGestionnaireEntente: 'Waiting for manager to generate the internship agreement',
+    erreurLorsSignature: 'Error during signature',
+    verificationEntente: 'Verifying agreement...',
+    voirEntenteStage: 'View internship agreement',
+    telechargerEntenteStage: 'Download internship agreement',
+    voirEtSignerEntenteStage: 'View and sign internship agreement',
+    
+    // GenererEntente
+    genererOuRecupererEntente: 'Generate or retrieve an internship agreement',
+    idCandidatureConfirmee: 'Confirmed application ID',
+    genererRecuperer: 'Generate / Retrieve',
+    resultat: 'Result',
+    id: 'ID',
+    nomDocument: 'Document name',
+    telechargerPdfBackend: 'Download PDF (backend)',
+    preparationPdf: 'Preparing PDF…',
+    telechargerPdfReactPdf: 'Download PDF (React-PDF)',
+    
+    // GestionnaireEtuCandidature - Entente
+    statusEntente: 'Agreement Status',
+    generation: 'Generating...',
+    genererEntente: 'Generate agreement',
+    
+    // EntenteSignatureModal
+    ententeStageSignature: 'Internship Agreement - Signature',
+    chargementEntente: 'Loading agreement...',
+    ententeNonTrouvee: 'Agreement not found',
+    erreurChargementEntente: 'Error loading agreement',
+    vousAvezDejaSigneEntente: '✓ You have already signed this agreement on',
+    enAttenteSignatureEtudiantEtEmployeur: 'Awaiting signature from student and employer',
+    enAttenteSignatureEmployeur: 'Awaiting signature from employer',
+    enAttenteSignatureEtudiant: 'Awaiting signature from student',
+    enAttenteVotreSignatureGestionnaire: 'Awaiting your signature (manager)',
+    enAttenteSignatureGestionnaire: 'Awaiting signature from manager',
+    enAttenteVotreSignatureEtEmployeur: 'Awaiting your signature and employer\'s',
+    enAttenteVotreSignatureEtEtudiant: 'Awaiting your signature and student\'s',
+    documentEntente: 'Agreement document',
+    impossibleAfficherPdf: 'Unable to display PDF',
+    consentementEntente: 'I consent to this internship agreement and confirm that I have read and understood all the terms and conditions stated in the document above.',
+    motDePasse: 'Password',
+    entrezMotDePasseConfirmer: 'Enter your password to confirm',
+    motDePasseRequisConfirmer: 'Your password is required to confirm the signature',
+    veuillezCocherConsentement: 'Please check the consent box to sign the agreement',
+    veuillezSaisirMotDePasse: 'Please enter your password',
+    donneesEntenteInvalides: 'Invalid agreement data',
+    erreurSignatureEntente: 'Error signing the agreement',
+    signatureEnCours: 'Signing in progress...',
+    signerEntente: 'Sign agreement'
   }
 };
 

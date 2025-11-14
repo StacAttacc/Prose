@@ -66,8 +66,31 @@ describe('GestionnaireEtuCandidature - Filtrage par année', () => {
       candidatureSoumise: 'Candidature Soumise',
       stageTrouve: 'Stage Trouvé',
       aucunEtudiantTrouve: (year) => `Aucun étudiant trouvé pour l'année ${year}`,
-      aucunEtudiantAnnee: (params) => `Aucun étudiant trouvé pour l'année ${params?.year || ''}`,
-      aucunEtudiantCategorie: 'Aucun étudiant dans cette catégorie'
+      aucunEtudiantAnnee: (p) => `Aucun étudiant trouvé pour l'année ${p?.year || ''}`,
+      aucunEtudiantCategorie: 'Aucun étudiant dans cette catégorie',
+      etudiant: 'Étudiant',
+      email: 'Email',
+      candidatures: 'Candidatures',
+      statut: 'Statut',
+      action: 'Action',
+      voirCandidatures: 'Voir ses candidatures',
+      detailsEntente: 'Détails & entente',
+      details: 'Détails',
+      chargement: 'Chargement…',
+      erreurChargement: 'Erreur lors du chargement des candidatures.',
+      // Entente translations
+      statusEntente: 'Status Entente',
+      verification: 'Vérification...',
+      ententeNonGeneree: 'Entente non générée',
+      ententeSigneeParToutesLesParties: '✓ Entente signée par toutes les parties',
+      enAttenteDeSignature: 'En attente de signature',
+      generation: 'Génération...',
+      genererEntente: 'Générer entente',
+      voirEntenteStage: 'Voir l\'entente de stage',
+      telechargerEntenteStage: 'Télécharger l\'entente de stage',
+      voirEtSignerEntenteStage: 'Voir et signer l\'entente de stage',
+      erreurGenerationEntente: 'Erreur lors de la génération de l\'entente',
+      erreurLorsSignature: 'Erreur lors de la signature'
     };
     const translation = translations[key];
     if (typeof translation === 'function') {

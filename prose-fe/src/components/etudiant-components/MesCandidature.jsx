@@ -382,14 +382,14 @@ export default function MesCandidature() {
                                         </h4>
                                         {checkingEntente[candidature.id] ? (
                                             <div className="text-center text-gray-500">
-                                                Vérification de l'entente...
+                                                {t('verificationEntente')}
                                             </div>
                                         ) : ententeDataMap[candidature.id] ? (
                                             <>
                                                 {ententeDataMap[candidature.id].status === "SIGNEE" ? (
                                                     <div className="mt-4 flex flex-col items-center gap-2">
                                                         <span className="text-sm text-green-600 font-medium">
-                                                            ✓ Entente signée par toutes les parties
+                                                            {t('ententeSigneeParToutesLesParties')}
                                                         </span>
                                                         <div className="flex gap-2">
                                                             <button
@@ -400,7 +400,7 @@ export default function MesCandidature() {
                                                                 className="px-6 py-3 rounded-md font-medium text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br transition-all"
                                                                 type="button"
                                                             >
-                                                                Voir l'entente de stage
+                                                                {t('voirEntenteStage')}
                                                             </button>
                                                             <button
                                                                 onClick={() => {
@@ -423,7 +423,7 @@ export default function MesCandidature() {
                                                                 className="px-6 py-3 rounded-md font-medium text-white bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 hover:bg-gradient-to-br transition-all"
                                                                 type="button"
                                                             >
-                                                                Télécharger l'entente de stage
+                                                                {t('telechargerEntenteStage')}
                                                             </button>
                                                         </div>
                                                     </div>
@@ -437,14 +437,14 @@ export default function MesCandidature() {
                                                             className="px-6 py-3 rounded-md font-medium text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br transition-all"
                                                             type="button"
                                                         >
-                                                            Voir et signer l'entente de stage
+                                                            {t('voirEtSignerEntenteStage')}
                                                         </button>
                                                     </div>
                                                 )}
                                             </>
                                         ) : (
                                             <div className="text-center text-gray-500 text-sm mt-4">
-                                                En attente du gestionnaire pour l'entente de stage
+                                                {t('enAttenteGestionnaireEntente')}
                                             </div>
                                         )}
                                     </div>
@@ -657,7 +657,7 @@ export default function MesCandidature() {
                                 }));
                             }
                         } catch (error) {
-                            throw new Error(error.message || "Erreur lors de la signature");
+                            throw new Error(error.message || t('erreurLorsSignature'));
                         }
                     }}
                 />

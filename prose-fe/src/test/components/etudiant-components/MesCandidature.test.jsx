@@ -100,7 +100,15 @@ describe('MesCandidature', () => {
       confirmee: 'Confirmée',
       offreAccepteeSucces: 'Vous avez accepté l\'offre avec succès',
       offreRefuseeSucces: 'Vous avez refusé l\'offre avec succès',
-      erreurEnvoiReponse: 'Erreur lors de l\'envoi de votre réponse. Veuillez réessayer.'
+      erreurEnvoiReponse: 'Erreur lors de l\'envoi de votre réponse. Veuillez réessayer.',
+      // Entente translations
+      verificationEntente: 'Vérification de l\'entente...',
+      ententeSigneeParToutesLesParties: '✓ Entente signée par toutes les parties',
+      voirEntenteStage: 'Voir l\'entente de stage',
+      telechargerEntenteStage: 'Télécharger l\'entente de stage',
+      voirEtSignerEntenteStage: 'Voir et signer l\'entente de stage',
+      enAttenteGestionnaireEntente: 'En attente du gestionnaire pour l\'entente de stage',
+      erreurLorsSignature: 'Erreur lors de la signature'
     };
     const translation = translations[key];
     if (typeof translation === 'function') {

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Viewer, Worker } from "@react-pdf-viewer/core";
 import { useAuth } from "../../context/AuthContext.jsx";
+import { useI18n } from "../../context/I18nContext.jsx";
 
 function blobFromUnknownData(data, mime = "application/pdf") {
     if (!data) return null;
@@ -26,6 +27,7 @@ function blobFromUnknownData(data, mime = "application/pdf") {
 
 export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSign, ententeData: initialEntenteData, loadEntenteFn }) {
     const { user } = useAuth();
+    const { t } = useI18n();
     const [password, setPassword] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState("");
@@ -60,15 +62,15 @@ export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSi
         const status = ententeData.status;
         switch (status) {
             case "A_SIGNER":
-                return "En attente de la signature de l'étudiant et de l'employeur";
+                return t('enAttenteSignatureEtudiantEtEmployeur');
             case "SIGNEE_ETUDIANT":
-                return "En attente de la signature de l'employeur";
+                return t('enAttenteSignatureEmployeur');
             case "SIGNEE_EMPLOYEUR":
-                return "En attente de la signature de l'étudiant";
+                return t('enAttenteSignatureEtudiant');
             case "SIGNEE_ETUDIANT_ET_EMPLOYEUR":
-                return "En attente de votre signature (gestionnaire)";
+                return t('enAttenteVotreSignatureGestionnaire');
             case "SIGNEE":
-                return "✓ Entente signée par toutes les parties";
+                return t('ententeSigneeParToutesLesParties');
             default:
                 return null;
         }
@@ -83,21 +85,21 @@ export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSi
         const isEmployeur = user?.role === "EMPLOYEUR" || user?.role === "Employeur";
         
         if (status === "SIGNEE") {
-            return "✓ Entente signée par toutes les parties";
+            return t('ententeSigneeParToutesLesParties');
         } else if (status === "SIGNEE_ETUDIANT_ET_EMPLOYEUR") {
-            return "En attente de la signature du gestionnaire";
+            return t('enAttenteSignatureGestionnaire');
         } else if (status === "SIGNEE_ETUDIANT" && isStudent) {
             // L'étudiant a signé, on attend l'employeur
-            return "En attente de la signature de l'employeur";
+            return t('enAttenteSignatureEmployeur');
         } else if (status === "SIGNEE_EMPLOYEUR" && isEmployeur) {
             // L'employeur a signé, on attend l'étudiant
-            return "En attente de la signature de l'étudiant";
+            return t('enAttenteSignatureEtudiant');
         } else if (status === "A_SIGNER") {
             // Cas théorique où l'utilisateur a signé mais le statut est encore A_SIGNER
             if (isStudent) {
-                return "En attente de votre signature et de l'employeur";
+                return t('enAttenteVotreSignatureEtEmployeur');
             } else if (isEmployeur) {
-                return "En attente de votre signature et de l'étudiant";
+                return t('enAttenteVotreSignatureEtEtudiant');
             }
         }
         return null;
@@ -149,11 +151,11 @@ export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSi
                     setPdfUrl(url);
                 }
             } else {
-                setError("Entente non trouvée");
+                setError(t('ententeNonTrouvee'));
             }
         } catch (err) {
             console.error("Erreur lors du chargement de l'entente:", err);
-            setError("Erreur lors du chargement de l'entente");
+            setError(t('erreurChargementEntente'));
         } finally {
             setLoading(false);
         }
@@ -164,17 +166,17 @@ export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSi
         setError("");
 
         if (!consentChecked) {
-            setError("Veuillez cocher la case de consentement pour signer l'entente");
+            setError(t('veuillezCocherConsentement'));
             return;
         }
 
         if (!password) {
-            setError("Veuillez saisir votre mot de passe");
+            setError(t('veuillezSaisirMotDePasse'));
             return;
         }
 
         if (!ententeData?.id) {
-            setError("Données d'entente invalides");
+            setError(t('donneesEntenteInvalides'));
             return;
         }
 
@@ -183,7 +185,7 @@ export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSi
             await onSign(ententeData.id, password);
             handleClose();
         } catch (err) {
-            setError(err.message || "Erreur lors de la signature de l'entente");
+            setError(err.message || t('erreurSignatureEntente'));
         } finally {
             setIsSubmitting(false);
         }
@@ -208,12 +210,12 @@ export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSi
             <div className="bg-white rounded-lg p-6 max-w-4xl w-full mx-4 shadow-xl max-h-[90vh] overflow-y-auto">
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-xl font-bold text-gray-800">
-                        Entente de stage - Signature
+                        {t('ententeStageSignature')}
                     </h2>
                     <button
                         onClick={handleClose}
                         className="text-gray-600 hover:text-gray-800 text-2xl"
-                        aria-label="Fermer"
+                        aria-label={t('fermer')}
                     >
                         &times;
                     </button>
@@ -221,7 +223,7 @@ export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSi
 
                 {loading ? (
                     <div className="text-center py-8">
-                        <div className="text-gray-500">Chargement de l'entente...</div>
+                        <div className="text-gray-500">{t('chargementEntente')}</div>
                     </div>
                 ) : error && !ententeData ? (
                     <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
@@ -234,7 +236,7 @@ export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSi
                             <div className="mb-6">
                                 <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
                                     <p className="text-sm text-green-700 font-medium">
-                                        ✓ Vous avez déjà signé cette entente le {new Date(userSignatureDate).toLocaleDateString('fr-FR', {
+                                        {t('vousAvezDejaSigneEntente')} {new Date(userSignatureDate).toLocaleDateString('fr-FR', {
                                             day: '2-digit',
                                             month: 'long',
                                             year: 'numeric'
@@ -261,7 +263,7 @@ export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSi
 
                         <div className="mb-6">
                             <h3 className="text-lg font-semibold mb-3 text-gray-700">
-                                Document d'entente
+                                {t('documentEntente')}
                             </h3>
                             {pdfUrl ? (
                                 <div className="w-full h-[500px] border rounded overflow-hidden">
@@ -271,7 +273,7 @@ export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSi
                                 </div>
                             ) : (
                                 <div className="p-4 bg-gray-50 border rounded text-gray-500 text-center">
-                                    Impossible d'afficher le PDF
+                                    {t('impossibleAfficherPdf')}
                                 </div>
                             )}
                         </div>
@@ -290,26 +292,26 @@ export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSi
                                             required
                                         />
                                         <span className="text-sm text-gray-700">
-                                            Je consens à cette entente de stage et je confirme avoir lu et compris tous les termes et conditions énoncés dans le document ci-dessus.
+                                            {t('consentementEntente')}
                                         </span>
                                     </label>
                                 </div>
 
                                 <div className="mb-4">
                                     <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                                        Mot de passe <span className="text-red-500">*</span>
+                                        {t('motDePasse')} <span className="text-red-500">*</span>
                                     </label>
                                     <input
                                         type="password"
                                         id="password"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
-                                        placeholder="Entrez votre mot de passe pour confirmer"
+                                        placeholder={t('entrezMotDePasseConfirmer')}
                                         required
                                         className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
                                     />
                                     <p className="text-xs text-gray-500 mt-1">
-                                        Votre mot de passe est requis pour confirmer la signature
+                                        {t('motDePasseRequisConfirmer')}
                                     </p>
                                 </div>
 
@@ -326,14 +328,14 @@ export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSi
                                         disabled={isSubmitting}
                                         className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition disabled:opacity-50"
                                     >
-                                        Annuler
+                                        {t('annuler')}
                                     </button>
                                     <button
                                         type="submit"
                                         disabled={isSubmitting || !consentChecked || !password}
                                         className="px-4 py-2 text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-green-300 rounded-lg transition disabled:opacity-50"
                                     >
-                                        {isSubmitting ? "Signature en cours..." : "Signer l'entente"}
+                                        {isSubmitting ? t('signatureEnCours') : t('signerEntente')}
                                     </button>
                                 </div>
                             </form>
@@ -348,7 +350,7 @@ export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSi
                                         onClick={handleClose}
                                         className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition"
                                     >
-                                        Fermer
+                                        {t('fermer')}
                                     </button>
                                 </div>
                             </div>

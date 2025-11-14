@@ -69,7 +69,7 @@ describe('ApplicantRow', () => {
     token: 'mock-token-123'
   };
 
-  const mockT = (key) => {
+  const mockT = (key, params) => {
     const translations = {
       voirLeCV: 'Voir le CV',
       voirLaLettre: 'Voir la lettre',
@@ -89,9 +89,24 @@ describe('ApplicantRow', () => {
       ouverture: 'Ouverture...',
       impossibleAfficherCV: 'Impossible d\'afficher le CV',
       impossibleAfficherLettre: 'Impossible d\'afficher la lettre',
-      cvDe: ({ name }) => `CV de ${name}`
+      cvDe: (p) => `CV de ${p?.name || ''}`,
+      lettreMotivation: 'Lettre de motivation',
+      // Entente translations
+      verification: 'Vérification...',
+      ententeSigneeParToutesLesParties: '✓ Entente signée par toutes les parties',
+      enAttenteDeSignature: 'En attente de signature',
+      ententeNonGeneree: 'Entente non générée',
+      voirEtSignerEntente: 'Voir et signer l\'entente',
+      voirEntente: 'Voir l\'entente',
+      telecharger: 'Télécharger',
+      enAttenteGestionnaireEntente: 'En attente du gestionnaire pour l\'entente de stage',
+      erreurLorsSignature: 'Erreur lors de la signature'
     };
-    return translations[key] || key;
+    const translation = translations[key];
+    if (typeof translation === 'function') {
+      return translation(params);
+    }
+    return translation || key;
   };
 
   beforeEach(() => {

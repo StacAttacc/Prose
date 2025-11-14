@@ -236,7 +236,7 @@ export default function GestionnaireEtuCandidature() {
             }
         } catch (error) {
             console.error("Erreur lors de la génération de l'entente:", error);
-            alert(error.response?.data?.message || "Erreur lors de la génération de l'entente");
+            alert(error.response?.data?.message || t('erreurGenerationEntente'));
         } finally {
             setGeneratingEntente(false);
         }
@@ -346,7 +346,7 @@ export default function GestionnaireEtuCandidature() {
 
                                     {tab === "APPROVED" && (
                                         <th className="text-left text-gray-800 font-semibold py-3 px-4">
-                                            Status Entente
+                                            {t('statusEntente')}
                                         </th>
                                     )}
 
@@ -440,23 +440,23 @@ export default function GestionnaireEtuCandidature() {
                                                     const isChecking = checkingEntente[candidatureId];
                                                     
                                                     if (isChecking) {
-                                                        return <span className="text-sm text-gray-500 italic">Vérification...</span>;
+                                                        return <span className="text-sm text-gray-500 italic">{t('verification')}</span>;
                                                     }
                                                     
                                                     if (!ententeData) {
-                                                        return <span className="text-sm text-gray-400">Entente non générée</span>;
+                                                        return <span className="text-sm text-gray-400">{t('ententeNonGeneree')}</span>;
                                                     }
                                                     
                                                     if (ententeData.status === "SIGNEE") {
                                                         return (
                                                             <span className="text-sm text-green-600 font-medium">
-                                                                ✓ Entente signée par toutes les parties
+                                                                {t('ententeSigneeParToutesLesParties')}
                                                             </span>
                                                         );
                                                     }
                                                     
                                                     // Autres statuts
-                                                    return <span className="text-sm text-gray-500">En attente de signature</span>;
+                                                    return <span className="text-sm text-gray-500">{t('enAttenteDeSignature')}</span>;
                                                 })()}
                                             </td>
                                         )}
@@ -492,7 +492,7 @@ export default function GestionnaireEtuCandidature() {
                                                     if (isChecking) {
                                                         return (
                                                             <span className="text-sm text-gray-500 italic">
-                                                                Vérification...
+                                                                {t('verification')}
                                                             </span>
                                                         );
                                                     }
@@ -506,7 +506,7 @@ export default function GestionnaireEtuCandidature() {
                                                                 onClick={() => handleGenerateEntente(candidatureId)}
                                                                 disabled={generatingEntente}
                                                             >
-                                                                {generatingEntente ? "Génération..." : "Générer entente"}
+                                                                {generatingEntente ? t('generation') : t('genererEntente')}
                                                             </button>
                                                         );
                                                     }
@@ -523,14 +523,14 @@ export default function GestionnaireEtuCandidature() {
                                                                     className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br transition-all"
                                                                     onClick={() => handleViewEntente(candidatureId)}
                                                                 >
-                                                                    Voir l'entente de stage
+                                                                    {t('voirEntenteStage')}
                                                                 </button>
                                                                 <button
                                                                     type="button"
                                                                     className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 hover:bg-gradient-to-br transition-all"
                                                                     onClick={() => handleDownloadEntente(candidatureId)}
                                                                 >
-                                                                    Télécharger l'entente de stage
+                                                                    {t('telechargerEntenteStage')}
                                                                 </button>
                                                             </div>
                                                         );
@@ -542,7 +542,7 @@ export default function GestionnaireEtuCandidature() {
                                                                 className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br transition-all"
                                                                 onClick={() => handleViewEntente(candidatureId)}
                                                             >
-                                                                Voir et signer l'entente de stage
+                                                                {t('voirEtSignerEntenteStage')}
                                                             </button>
                                                         );
                                                     } else {
@@ -553,7 +553,7 @@ export default function GestionnaireEtuCandidature() {
                                                                 className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br transition-all"
                                                                 onClick={() => handleViewEntente(candidatureId)}
                                                             >
-                                                                Voir l'entente de stage
+                                                                {t('voirEntenteStage')}
                                                             </button>
                                                         );
                                                     }
@@ -618,7 +618,7 @@ export default function GestionnaireEtuCandidature() {
                                 }));
                             }
                         } catch (error) {
-                            throw new Error(error.message || "Erreur lors de la signature");
+                            throw new Error(error.message || t('erreurLorsSignature'));
                         }
                     }}
                 />
