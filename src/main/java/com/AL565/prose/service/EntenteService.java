@@ -3,6 +3,8 @@ package com.AL565.prose.service;
 import com.AL565.prose.model.*;
 import com.AL565.prose.model.entente.Entente;
 import com.AL565.prose.model.entente.EntenteStatus;
+import com.AL565.prose.model.notifications.NotificationType;
+import com.AL565.prose.model.notifications.SignatureEntenteNotification;
 import com.AL565.prose.repository.*;
 import com.AL565.prose.service.dto.EntenteDTO;
 import com.itextpdf.io.source.ByteArrayOutputStream;
@@ -37,6 +39,7 @@ public class EntenteService {
     private final CandidatureRepository candidatureRepository;
     private final EmployeurRepository employeurRepository;
     private final GestionnaireRepository gestionnaireRepository;
+    private final NotificationRepository notificationRepository;
 
     @Transactional
     public EntenteDTO getEntenteByCandidatureId(Long candidatureId) throws Exception {
@@ -89,7 +92,29 @@ public class EntenteService {
 
         entente = ententeRepository.save(entente);
 
+        createNotificationWhenEntenteIsGenerated(entente);
+
         return EntenteDTO.toDTO(entente, employeur);
+    }
+
+    @Transactional
+    public void createNotificationWhenEntenteIsGenerated(Entente entente) {
+        String messageFR = "Une entente doit être sigée pour le stage "
+                + entente.getCandidature().getStage().getTitle();
+        String messageEN = "An agreement needs to be signed for the "
+                + entente.getCandidature().getStage().getTitle() + " internship";
+        SignatureEntenteNotification notification = new SignatureEntenteNotification();
+        notification.setCreatedAt(LocalDateTime.now());
+        notification.setMessageFR(messageFR);
+        notification.setMessageEN(messageEN);
+        notification.setType(NotificationType.SIGNATURE_ENTENTE_NOTIFICATION);
+        notification.setSignatureEntenteCandidatureId(entente.getCandidature().getId());
+        notification
+                .setSignatureEntenteEmployeurEmail(entente.getCandidature().getStage().getEmployeurEmail());
+        notification.setSignatureEntenteEtudiantEmail(entente.getCandidature().getEtudiant().getEmail());
+        notification.setSignatureEntenteStageId(entente.getCandidature().getStageId());
+
+        notificationRepository.save(notification);
     }
 
     @Transactional

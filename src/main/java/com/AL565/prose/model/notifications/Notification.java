@@ -19,6 +19,7 @@ public abstract class Notification {
     private LocalDateTime firstRecipientReadAt;
     private LocalDateTime secondRecipientReadAt;
     private LocalDateTime createdAt;
-    private String message;
+    private String messageFR;
+    private String messageEN;
     private NotificationType type;
 }

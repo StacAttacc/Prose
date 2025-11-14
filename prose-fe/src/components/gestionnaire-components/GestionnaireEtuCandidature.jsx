@@ -108,6 +108,51 @@ export default function GestionnaireEtuCandidature() {
         return () => (mounted = false);
     }, [user?.token, selectedYear, t]);
 
+    useEffect(() => {
+        if (loading) return;
+
+        const openEtudiantId = location?.state?.openEtudiantId;
+        const etudiantOffreDecisionId = location?.state?.etudiantOffreDecisionId;
+
+        if (openEtudiantId && !modalStudent) {
+            const stu = students.find((s) => String(s.id) === String(openEtudiantId));
+            if (stu) {
+                if (tab !== "APPLIED") setTab("APPLIED");
+                setModalFilterStatuses(null);
+                setModalStudent(stu);
+            }
+        }
+        else if (etudiantOffreDecisionId) {
+            const match = students.find((s) =>
+                (s.applications || []).some(
+                    (a) => String(a.id) === String(etudiantOffreDecisionId)
+                )
+            );
+            if (match) {
+                if (tab !== "APPROVED") setTab("APPROVED");
+                const application = (match.applications || []).find(
+                    (a) => String(a.id) === String(etudiantOffreDecisionId)
+                );
+                if (application) {
+                    openStageModal(application);
+                }
+            }
+        }
+
+        if (openEtudiantId || etudiantOffreDecisionId) {
+            navigate(location.pathname, { replace: true, state: {} });
+        }
+    }, [
+        loading,
+        students,
+        location?.state?.openEtudiantId,
+        location?.state?.etudiantOffreDecisionId,
+        tab,
+        modalStudent,
+        navigate,
+        location.pathname,
+    ]);
+
     const partition = useMemo(() => {
         const zero = [],
             applied = [],

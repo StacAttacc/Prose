@@ -15,12 +15,18 @@ export async function submitStageDecision(id, {approved, reason}, token) {
     return res.data;
 }
 
-export const fetchAllCVs = async (token) => {
+export const fetchAllCVs = async (token, year = null) => {
     try {
+        const params = {};
+        if (year && year !== null && year !== undefined && year !== "") {
+            params.year = year.toString();
+        }
+
         const response = await axios.get(`${BASE_URL_GESTIONNAIRE}/cv/all`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             },
+            params
         });
         return Array.isArray(response.data) ? response.data : response.data.content;
     } catch (error) {

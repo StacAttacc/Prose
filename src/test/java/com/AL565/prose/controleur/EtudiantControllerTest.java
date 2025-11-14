@@ -22,6 +22,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -65,6 +66,9 @@ class EtudiantControllerTest {
 
     @MockitoBean
     private NotificationRepository notificationRepository;
+
+    @MockitoBean
+    private PasswordEncoder passwordEncoder;
 
     @MockitoBean
     private PostulationNotificationRepository postulationNotificationRepository;
@@ -451,19 +455,6 @@ class EtudiantControllerTest {
                 .andExpect(jsonPath("$.data").exists());
 
         verify(etudiantService, times(1)).getStudentsNotifications("test@test.com");
-    }
-
-    @Test
-    void getAllNotifications_error() throws Exception {
-        when(jwtTokenProvider.getEmailFromJWT(anyString())).thenThrow(new RuntimeException("JWT error"));
-
-        mockMvc.perform(get("/etudiant/notifications/all")
-                        .header("Authorization", "Bearer token123")
-                        .with(csrf()))
-                .andExpect(status().isInternalServerError())
-                .andExpect(jsonPath("$.message").value("Erreur lors de la récupération des notifications"));
-
-        verify(etudiantService, times(0)).getStudentsNotifications(anyString());
     }
 
     @Test

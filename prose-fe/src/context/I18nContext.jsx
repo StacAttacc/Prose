@@ -8,7 +8,7 @@ const translations = {
     year: 'Année',
     language: 'Langue',
     welcome: 'Bienvenue',
-    logout: 'Logout',
+    logout: 'Quitter',
     creerStage: 'Créer un stage',
     monCV: 'Mon CV',
     mesStages: 'Mes Stages',
@@ -105,10 +105,13 @@ const translations = {
     glauconAuthor: 'Glaucon',
     
     // Notifications
+    signatureEntenteNotification: 'nouveau(x) document(s) à signer',
     nouvellesOffresStage: 'nouvelles offre(s) de stage à approuver',
     nouvellesCandidatures: 'nouvelles candidature(s) reçue(s)',
+    candidaturesUpdates: 'nouvelle(s) sur votre/vos candidature(s)',
+    reponsesEtudiantsOffres: 'nouvelle(s) décision(s) au(x) stages(s)',
     nouveauxCVs: 'nouveau(x) CV(s) à examiner',
-    changementCV: 'changement sur votre CV',
+    changementCV: 'mise à jour sur votre CV',
     nouvellesConvocations: 'nouvelle(s) convocation(s)',
     notifications: 'notification(s)',
     noMessage: 'No message',
@@ -123,6 +126,11 @@ const translations = {
     cvApprouve: 'Votre CV a été approuvé.',
     cvRejete: 'Votre CV a été rejeté.',
     aSoumisNouveauCV: 'a soumis un nouveau CV',
+    aPostulePourLeStage: 'a postulé pour le stage',
+    aConvouquePourEntrevue: 'a convoqué',
+    pourUneEntrevue: 'pour une entrevue',
+    aCreeLeStage: 'a créé le stage',
+
     
     // GestionCV
     rechercherParNom: 'Rechercher par nom d\'étudiant...',
@@ -177,6 +185,10 @@ const translations = {
     voirDetails: 'Voir détails',
     aucunStageApprouve: 'Aucun stage approuvé disponible pour le moment.',
     aucunStageEmployeur: 'Vous n\'avez aucun stage.',
+    inclureSessionsAnterieures: 'Inclure les sessions antérieures',
+    sessionsAnterieures: 'Sessions',
+    sessionsActuellesFutures: 'Sessions actuelles/futures',
+    toutesLesSessions: 'Toutes les sessions',
     
     // StageListings (Étudiant)
     stagesDisponibles: 'Stages Disponibles',
@@ -221,7 +233,7 @@ const translations = {
     offreAccepteeSucces: 'Vous avez accepté l\'offre avec succès',
     offreRefuseeSucces: 'Vous avez refusé l\'offre avec succès',
     erreurEnvoiReponse: 'Erreur lors de l\'envoi de votre réponse. Veuillez réessayer.',
-    
+
     // TeleversementCV (Étudiant)
     televerserCV: 'Téléverser un CV',
     choisirFichier: 'Choisir un fichier',
@@ -375,7 +387,7 @@ const translations = {
     logout: 'Logout',
     creerStage: 'Create a stage',
     monCV: 'My CV',
-    mesStages: 'My Stages',
+    mesStages: 'My Internships',
     gestionCVs: 'CV Management',
     voirCandidaturesNav: 'View application(s)',
     voirStages: 'View Stages',
@@ -407,7 +419,7 @@ const translations = {
     compensation: 'Compensation',
     tousLesStatuts: 'All statuses',
     effacerFiltres: 'Clear filters',
-    stagesTrouves: '{count} stage(s) found out of {total} total',
+    stagesTrouves: '{count} internships found out of {total} total',
     aucunStageDisponible: 'No stage available at the moment.',
     aucunStageCritere: 'No stage matches your search criteria.',
     chargementStages: 'Loading stages...',
@@ -469,10 +481,13 @@ const translations = {
     glauconAuthor: 'Glaucon',
     
     // Notifications
+    signatureEntenteNotification: 'new document(s) to sign',
     nouvellesOffresStage: 'new internship offer(s) to approve',
     nouvellesCandidatures: 'new application(s) received',
+    candidaturesUpdates: 'update(s) on your application(s)',
+    reponsesEtudiantsOffres: 'new decision(s) made on the internship(s)',
     nouveauxCVs: 'new CV(s) to review',
-    changementCV: 'change on your CV',
+    changementCV: 'update on your CV',
     nouvellesConvocations: 'new interview invitation(s)',
     notifications: 'notification(s)',
     noMessage: 'No message',
@@ -487,6 +502,10 @@ const translations = {
     cvApprouve: 'Your CV has been approved.',
     cvRejete: 'Your CV has been rejected.',
     aSoumisNouveauCV: 'has submitted a new CV',
+    aPostulePourLeStage: 'applied for the internship',
+    aConvouquePourEntrevue: 'invited',
+    pourUneEntrevue: 'for an interview',
+    aCreeLeStage: 'created the internship',
     
     // GestionCV
     rechercherParNom: 'Search by student name...',
@@ -541,6 +560,10 @@ const translations = {
     voirDetails: 'View details',
     aucunStageApprouve: 'No approved stage available at the moment.',
     aucunStageEmployeur: 'You have no stages.',
+    inclureSessionsAnterieures: 'Include previous sessions',
+    sessionsAnterieures: 'Sessions',
+    sessionsActuellesFutures: 'Current/future sessions',
+    toutesLesSessions: 'All sessions',
     
     // StageListings (Étudiant)
     stagesDisponibles: 'Available Stages',

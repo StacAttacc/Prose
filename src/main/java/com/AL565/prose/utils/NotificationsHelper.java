@@ -1,4 +1,4 @@
-package com.AL565.prose.service;
+package com.AL565.prose.utils;
 
 import com.AL565.prose.model.notifications.Notification;
 import com.AL565.prose.repository.NotificationRepository;

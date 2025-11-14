@@ -3,6 +3,7 @@ import {NavLink, useParams} from "react-router-dom";
 import ApplicantRow from "../display-components/ApplicantRow";
 import {useAuth} from "../../context/AuthContext.jsx";
 import {useI18n} from "../../context/I18nContext.jsx";
+import {useYear} from "../../context/YearContext.jsx";
 import {approveApplicant, getStageApplicants, rejectApplicant} from "../../services/EmployeurService.js";
 import {getEmployeurStages} from "../../services/StageService.js";
 import ErrorBanner from "../display-components/ErrorBanner.jsx";
@@ -45,6 +46,7 @@ const StageApplicantsPage = () => {
     const {id} = useParams();
     const {user} = useAuth();
     const {t} = useI18n();
+    const {selectedYear} = useYear();
     const ready = Boolean(user?.token);
 
     const [q, setQ] = useState("");
@@ -77,7 +79,7 @@ const StageApplicantsPage = () => {
                 setStageTitle(null);
                 return;
             }
-            const list = await getEmployeurStages(email, token);
+            const list = await getEmployeurStages(email, token, selectedYear);
             const stages = unwrapArray(list);
             const target = stages.find((s) => String(s?.id ?? "") === String(id ?? ""));
             setStageTitle(target?.title ?? null);
@@ -90,7 +92,7 @@ const StageApplicantsPage = () => {
     useEffect(() => {
         reloadApplicants();
         loadStageTitle();
-    }, [id, email, token]);
+    }, [id, email, token, selectedYear]);
 
     const filtered = useMemo(() => {
         const qn = norm(q);

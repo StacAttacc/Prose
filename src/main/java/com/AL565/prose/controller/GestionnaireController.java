@@ -79,8 +79,8 @@ public class GestionnaireController {
     }
 
     @GetMapping("/cv/all")
-    public ResponseEntity<List<GestionnaireCvDTO>> getAllCvs() throws Exception {
-        List<GestionnaireCvDTO> cvs = gestionnaireService.getAllCvs();
+    public ResponseEntity<List<GestionnaireCvDTO>> getAllCvs(@RequestParam(required = false) String year) throws Exception {
+        List<GestionnaireCvDTO> cvs = gestionnaireService.getAllCvs(year);
         return ResponseEntity.ok(cvs);
     }
 

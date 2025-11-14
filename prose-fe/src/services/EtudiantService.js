@@ -1,5 +1,4 @@
 import { http } from "./http.js";
-import axios from "axios";
 
 const CV_UPLOAD_URL = "/etudiant/televerser-cv";
 const CV_DOWNLOAD_URL = "/etudiant/telecharger-cv";

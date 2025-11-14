@@ -14,7 +14,8 @@ import java.time.LocalDateTime;
 public class NotificationSummaryDTO {
     private Long id;
     private String type;
-    private String message;
+    private String messageFR;
+    private String messageEN;
     private String senderEmail;
     private LocalDateTime createdAt;
     private LocalDateTime readAt;
@@ -22,6 +23,11 @@ public class NotificationSummaryDTO {
     private Long stageId;
     private Long cvId;
     private Long candidatureId;
+    private Long candidatureDecisionId;
+    private Long candidatureResponseId;
+    private Long candidaturePostulationId;
+    private Long etudiantOffreDecisionId;
+    private Long signatureEntenteCandidatureId;
     private Long etudiantId;
     private Long convocation;
 
@@ -30,30 +36,37 @@ public class NotificationSummaryDTO {
 
         Long stageId = null;
         Long candidatureId = null;
+        Long candidatureDecisionId = null;
         Long cvId = null;
         Long etudiantId = null;
         Long convocation = null;
+        Long etudiantOffreDecisionId = null;
+        Long candidaturePostulationId = null;
+        Long signatureEntenteCandidatureId = null;
 
         switch (n) {
             case StageNotification sn -> {
                 if (sn.getStage() != null) stageId = sn.getStage().getId();
             }
-            case PostulationNotification pn -> {
-                Long candidaturePostulationId = pn.getCandidaturePostulationId();
-                Long candidatueEtudiantId = pn.getEtudiantPostulationId();
-                Long candidatureStageId = pn.getStagePostulationId();
-                if (candidaturePostulationId != null) {
-                    candidatureId = candidaturePostulationId;
-                    if (candidatureStageId != null) stageId = candidatureStageId;
-                    if (candidatueEtudiantId != null) etudiantId = candidatueEtudiantId;
+            case CandidatureDecisionNotification cdn -> {
+                if (cdn.getCandidatureDecisionId() != null) {
+                    candidatureDecisionId = cdn.getCandidatureDecisionId();
+                    etudiantId = cdn.getCandidatureDecisionEtudiantId();
                 }
             }
-            case EmployeurResponseNotification ern -> {
+            case PostulationNotification pn -> {
+                if (pn.getCandidaturePostulationId() != null) {
+                    candidaturePostulationId = pn.getCandidaturePostulationId();
+                    stageId = pn.getStagePostulationId();
+                    etudiantId = pn.getEtudiantPostulationId();
+                }
+            }
+            case EtudiantOffreDecisionNotification ern -> {
                 Long candidatureResponseId = ern.getCandidatureResponseId();
                 Long stageResponseId = ern.getStageResponseId();
                 Long etudiantResponseId = ern.getEtudiantResponseId();
                 if (candidatureResponseId != null) {
-                    candidatureId = candidatureResponseId;
+                    etudiantOffreDecisionId = candidatureResponseId;
                     if (stageResponseId != null) stageId = stageResponseId;
                     if (etudiantResponseId != null) etudiantId = etudiantResponseId;
                 }
@@ -70,6 +83,12 @@ public class NotificationSummaryDTO {
                     etudiantId = cn.getEtudiantConvocationId();
                 }
             }
+            case SignatureEntenteNotification sen -> {
+                if (sen.getSignatureEntenteCandidatureId() != null) {
+                    signatureEntenteCandidatureId = sen.getSignatureEntenteCandidatureId();
+                    stageId = sen.getSignatureEntenteStageId();
+                }
+            }
             default -> {
             }
         }
@@ -77,7 +96,8 @@ public class NotificationSummaryDTO {
         return NotificationSummaryDTO.builder()
                 .id(n.getId())
                 .type(n.getType() != null ? n.getType().getDisplayName() : null)
-                .message(n.getMessage())
+                .messageFR(n.getMessageFR())
+                .messageEN(n.getMessageEN())
                 .createdAt(n.getCreatedAt())
                 .readAt(n.getFirstRecipientReadAt())
                 .secondaryRecipientReadAt(n.getSecondRecipientReadAt())
@@ -86,6 +106,10 @@ public class NotificationSummaryDTO {
                 .etudiantId(etudiantId)
                 .cvId(cvId)
                 .convocation(convocation)
+                .candidatureDecisionId(candidatureDecisionId)
+                .etudiantOffreDecisionId(etudiantOffreDecisionId)
+                .candidaturePostulationId(candidaturePostulationId)
+                .signatureEntenteCandidatureId(signatureEntenteCandidatureId)
                 .build();
     }
 }

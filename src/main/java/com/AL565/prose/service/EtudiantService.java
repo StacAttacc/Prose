@@ -19,8 +19,10 @@ import com.AL565.prose.service.dto.EtudiantResponseOfferDTO;
 import com.AL565.prose.security.JwtTokenProvider;
 import com.AL565.prose.service.dto.*;
 
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -30,6 +32,7 @@ import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import com.AL565.prose.service.exceptions.InvalidCandidatureModificationException;
 import com.AL565.prose.service.exceptions.CandidatureNotFoundException;
+import com.AL565.prose.utils.NotificationsHelper;
 import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -39,6 +42,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.Instant;
+
+import static com.AL565.prose.model.notifications.NotificationType.SIGNATURE_ENTENTE_NOTIFICATION;
 
 @Service
 @Transactional
@@ -57,8 +62,9 @@ public class EtudiantService {
     private final GestionnaireCvNotificationRepository gestionnaireCvNotificationRepository;
     private final EtudiantCvNotificationRepository etudiantCvNotificationRepository;
     private final ConvocationNotificationRepository convocationNotificationRepository;
-    private final PostulationNotificationRepository postulationNotificationRepository;
-    private final EmployeurResponseNotificationRepository employeurResponseNotificationRepository;
+    private final EtudiantOffreDecisionNotificationRepository etudiantOffreDecisionNotificationRepository;
+    private final CandidatureDecisionNotificationRepository candidatureDecisionNotificationRepository;
+    private final SignatureEntenteNotificationRepository signatureEntenteNotificationRepository;
     private final NotificationsHelper notificationsHelper;
 
     public void inscrireEtudiant(EtudiantPasswordDTO dto) {
@@ -162,7 +168,8 @@ public class EtudiantService {
         notification.setFirstRecipientReadAt(null);
         notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
         notification.setType(NotificationType.GESTIONNAIRE_CV_NOTIFICATION);
-        notification.setMessage(etudiantName + " a soumis un nouveau CV");
+        notification.setMessageFR(etudiantName + " a soumis un nouveau CV");
+        notification.setMessageEN(etudiantName + " has submitted a new CV");
         notificationRepository.save(notification);
     }
 
@@ -237,7 +244,8 @@ public class EtudiantService {
         notification.setStagePostulationId(candidature.getStage().getId());
         notification.setEmployeurEmail(candidature.getStage().getEmployeurEmail());
         notification.setType(NotificationType.POSTULATION_NOTIFICATION);
-        notification.setMessage(studentName + " a postulé pour le stage " + companyName);
+        notification.setMessageFR(studentName + " a postulé pour le stage " + companyName);
+        notification.setMessageEN(studentName + " has applied for the " + companyName + " internship");
         notificationRepository.save(notification);
     }
 
@@ -261,26 +269,50 @@ public class EtudiantService {
         try {
             List<EtudiantCvNotification> cvNotifications = etudiantCvNotificationRepository
                     .findEtudiantCvNotificationsByFirstRecipientReadAtAndEtudiantEmail(
-                            null,
-                            etudiantEmail);
-
+                            null, etudiantEmail
+                    );
             List<ConvocationNotification> convocationNotifications = convocationNotificationRepository
-                    .findByFirstRecipientReadAtAndEtudiantConvocationEmail(null, etudiantEmail);
+                    .findByFirstRecipientReadAtAndEtudiantConvocationEmail(
+                            null, etudiantEmail
+                    );
+            List<CandidatureDecisionNotification> candidatureDecisions = candidatureDecisionNotificationRepository
+                    .findCandidatureDecisionNotificationsByFirstRecipientReadAtAndCandidatureDecisionEtudiantEmail(
+                            null, etudiantEmail
+                    );
+            List<SignatureEntenteNotification> signatureEntentes = signatureEntenteNotificationRepository
+                    .findSignatureEntenteNotificationsBySecondRecipientReadAtAndSignatureEntenteEtudiantEmail(
+                            null, etudiantEmail
+                    );
 
             NotificationGroupDTO cvGroup = NotificationGroupDTO
                     .toDTO(NotificationType.ETUDIANT_CV_NOTIFICATION.getDisplayName(), cvNotifications);
-
             NotificationGroupDTO convocationGroup = NotificationGroupDTO
                     .toDTO(NotificationType.CONVOCATION_NOTIFICATION.getDisplayName(), convocationNotifications);
+            NotificationGroupDTO candidatureDecisionGroup = NotificationGroupDTO
+                    .toDTO(NotificationType.CANDIDATURE_DECISION_NOTIFICATION.getDisplayName(), candidatureDecisions);
+            NotificationGroupDTO signatureEntenteGroup = NotificationGroupDTO
+                    .toDTO(SIGNATURE_ENTENTE_NOTIFICATION.getDisplayName(), signatureEntentes);
 
-            return NotificationsResponseDTO.toDTO(List.of(cvGroup, convocationGroup));
+            return NotificationsResponseDTO.toDTO(List.of(
+                    cvGroup,
+                    convocationGroup,
+                    candidatureDecisionGroup,
+                    signatureEntenteGroup
+            ));
         } catch (Exception e) {
             throw new NotificationExceptions.NotificationFetchException();
         }
     }
 
     public void markNotificationAsRead(Long notificationId) throws Exception {
-        notificationsHelper.markNotificationAsReadByFirstRecipient(notificationId);
+        Notification notification = notificationRepository.findById(notificationId)
+                .orElseThrow(NotificationExceptions.NotificationFetchException::new);
+        if (Objects.requireNonNull(notification.getType()) == SIGNATURE_ENTENTE_NOTIFICATION) {
+            notification.setSecondRecipientReadAt(LocalDateTime.now());
+            notificationRepository.save(notification);
+        } else {
+            notificationsHelper.markNotificationAsReadByFirstRecipient(notificationId);
+        }
     }
 
     public void respondToOffer(String email, EtudiantResponseOfferDTO responseDTO)
@@ -311,31 +343,30 @@ public class EtudiantService {
 
         candidatureRepository.save(candidature);
 
-        createNotificationForEmployeurResponse(candidature, responseDTO.isAccepted(), responseDTO.getComment());
+        createNotificationForEmployeurResponse(candidature, responseDTO.isAccepted());
     }
 
-    private void createNotificationForEmployeurResponse(Candidature candidature, boolean accepted, String comment) {
+    private void createNotificationForEmployeurResponse(Candidature candidature, boolean accepted) {
         String studentName = candidature.getEtudiant().getFirstName() + " " + candidature.getEtudiant().getLastName();
         String stageTitle = candidature.getStage().getTitle();
-        String decision = accepted ? "accepté" : "refusé";
+        String decisionFR = accepted ? "accepté" : "refusé";
+        String decisionEN = accepted ? "accepted" : "rejected";
 
-        String message = studentName + " a " + decision + " l'offre pour le stage " + stageTitle;
-        if (comment != null && !comment.trim().isEmpty()) {
-            message += " - Commentaire: " + comment;
-        }
+        String messageFR = studentName + " a " + decisionFR + " l'offre pour le stage " + stageTitle;
+        String messageEN = studentName + " has " + decisionEN + " the offer for " + stageTitle;
 
-        EmployeurResponseNotification notification = new EmployeurResponseNotification();
+        EtudiantOffreDecisionNotification notification = new EtudiantOffreDecisionNotification();
         notification.setFirstRecipientReadAt(null);
         notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
         notification.setCandidatureResponseId(candidature.getId());
         notification.setEtudiantResponseId(candidature.getEtudiant().getId());
         notification.setStageResponseId(candidature.getStage().getId());
         notification.setEmployeurResponseEmail(candidature.getStage().getEmployeurEmail());
-        notification.setAccepted(accepted);
-        notification.setComment(comment);
-        notification.setType(NotificationType.EMPLOYEUR_RESPONSE_NOTIFICATION);
-        notification.setMessage(message);
+        notification.setOffreAcceptedByStudent(accepted);
+        notification.setType(NotificationType.ETUDIANT_OFFRE_DECCISION_NOTIFICATION);
+        notification.setMessageFR(messageFR);
+        notification.setMessageEN(messageEN);
 
-        employeurResponseNotificationRepository.save(notification);
+        etudiantOffreDecisionNotificationRepository.save(notification);
     }
 }

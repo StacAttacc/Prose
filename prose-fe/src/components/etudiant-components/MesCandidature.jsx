@@ -51,13 +51,52 @@ export default function MesCandidature() {
         if (!openCandidatureFromNotif) return;
 
         if (candidatures && candidatures.length > 0) {
-            const candidatureToOpen = candidatures.find(c => String(c.id) === String(openCandidatureFromNotif));
-            if (candidatureToOpen) {
-                handleViewDetails(candidatureToOpen);
+            const candidatureToScrollTo = candidatures.find(c => String(c.id) === String(openCandidatureFromNotif));
+            if (candidatureToScrollTo) {
+                setTimeout(() => {
+                    const element = document.getElementById(`candidature-${candidatureToScrollTo.id}`);
+                    if (element) {
+                        element.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center'
+                        });
+                        element.classList.add('ring-2', 'ring-teal-500');
+                        setTimeout(() => {
+                            element.classList.remove('ring-2', 'ring-teal-500');
+                        }, 2000);
+                    }
+                }, 100)
                 navigate(location.pathname, { replace: true, state: {} });
             }
         }
     }, [location.state?.openCandidatureId, candidatures, navigate, location]);
+
+    useEffect(() => {
+        const ententeFromNotif = location?.state?.openEntenteId;
+        if (!ententeFromNotif) return;
+
+        if (candidatures && candidatures.length > 0) {
+            const candidatureToScrollTo = candidatures.find(c => String(c.id) === String(ententeFromNotif));
+            if (candidatureToScrollTo) {
+                setTimeout(() => {
+                    const element = document.getElementById(`candidature-${candidatureToScrollTo.id}`);
+                    if (element) {
+                        element.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center'
+                        });
+                        element.classList.add('ring-2', 'ring-teal-500');
+                        setTimeout(() => {
+                            element.classList.remove('ring-2', 'ring-teal-500');
+                        }, 2000);
+                    }
+                }, 100)
+                setSelectedCandidatureForEntente(candidatureToScrollTo);
+                setShowEntenteModal(true);
+                navigate(location.pathname, {replace: true, state: {}});
+            }
+        }
+    }, [location.state?.openEntenteId, candidatures, navigate, location]);
 
     // Vérifier l'existence de l'entente pour les candidatures confirmées
     useEffect(() => {
@@ -364,6 +403,7 @@ export default function MesCandidature() {
                         return (
                             <div
                                 key={index}
+                                id={`candidature-${candidature.id}`}
                                 className={`rounded-lg shadow-md border p-6 hover:shadow-lg transition-shadow ${
                                     isAcceptedByStudent 
                                         ? 'bg-green-100 border-green-300' 

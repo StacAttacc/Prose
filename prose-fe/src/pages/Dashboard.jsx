@@ -6,6 +6,7 @@ import {useCv} from "../context/CvContext.jsx";
 import Notifications from "../components/notification-components/Notifications.jsx";
 import {useYear} from "../context/YearContext.jsx";
 import {useI18n} from "../context/I18nContext.jsx";
+import ErrorBoundary from "../components/common/ErrorBoundary.jsx";
 
 export default function Dashboard() {
     const { user } = useAuth();
@@ -46,7 +47,7 @@ export default function Dashboard() {
                                                 <option value="en">English</option>
                                             </select>
                                         </div>
-                                        {user.role === "GESTIONNAIRE" && (
+                                        {(user.role === "GESTIONNAIRE" || user.role === "EMPLOYEUR") && (
                                             <div className="flex items-center gap-2">
                                                 <label className="text-white text-sm font-medium">{t('year')}:</label>
                                                 <select
@@ -54,8 +55,8 @@ export default function Dashboard() {
                                                     onChange={(e) => setSelectedYear(e.target.value)}
                                                     className="px-3 py-2 border border-white/30 rounded-md bg-teal-600 text-white focus:ring-2 focus:ring-white focus:border-white"
                                                 >
-                                                    {Array.from({ length: 8 }, (_, i) => {
-                                                        const year = 2025 + i;
+                                                    {Array.from({ length: 10 }, (_, i) => {
+                                                        const year = 2023 + i;
                                                         return (
                                                             <option key={year} value={year.toString()}>
                                                                 {year}
@@ -151,7 +152,9 @@ export default function Dashboard() {
                 </div>
                 {(user.role === "GESTIONNAIRE" || user.role === "EMPLOYEUR" || user.role === "ETUDIANT") && (
                     <div className="px-1 sm:px-1 lg:px-2">
-                        <Notifications/>
+                        <ErrorBoundary silent={true}>
+                            <Notifications/>
+                        </ErrorBoundary>
                     </div>)
                 }
             </main>

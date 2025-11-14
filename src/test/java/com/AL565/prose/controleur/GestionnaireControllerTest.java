@@ -203,10 +203,66 @@ class GestionnaireControllerTest {
         dto.setEtudiantEmail("john@doe.com");
         dto.setData("data");
 
-        when(gestionnaireService.getAllCvs()).thenReturn(List.of(dto));
+        when(gestionnaireService.getAllCvs(anyString())).thenReturn(List.of(dto));
 
         mockMvc.perform(get("/gestionnaire/cv/all").contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void getAllCvsYearFiltered() throws Exception {
+        GestionnaireCvDTO dto = new GestionnaireCvDTO();
+        dto.setId(1L);
+        dto.setName("CV1");
+        dto.setStatus(CvStatus.PENDING.name());
+        dto.setEtudiantPrenom("John");
+        dto.setEtudiantNom("Doe");
+        dto.setEtudiantEmail("john@doe.com");
+        dto.setData("data");
+
+        GestionnaireCvDTO dto2 = new GestionnaireCvDTO();
+        dto.setId(2L);
+        dto.setName("CV2");
+        dto.setStatus(CvStatus.PENDING.name());
+        dto.setEtudiantPrenom("Jane");
+        dto.setEtudiantNom("Doe");
+        dto.setEtudiantEmail("jane@doe.com");
+        dto.setData("data");
+
+        GestionnaireCvDTO dto3 = new GestionnaireCvDTO();
+        dto.setId(3L);
+        dto.setName("CV3");
+        dto.setStatus(CvStatus.PENDING.name());
+        dto.setEtudiantPrenom("Jane");
+        dto.setEtudiantNom("Doe");
+        dto.setEtudiantEmail("jane@doe.com");
+        dto.setData("data");
+
+        when(gestionnaireService.getAllCvs("2077")).thenReturn(List.of(dto, dto2));
+        when(gestionnaireService.getAllCvs("2078")).thenReturn(List.of(dto3));
+        when(gestionnaireService.getAllCvs("2025")).thenReturn(new ArrayList<>());
+
+        MvcResult result = mockMvc.perform(get("/gestionnaire/cv/all").param("year", "2077").contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        List<GestionnaireCvDTO> data2077 = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+
+        result = mockMvc.perform(get("/gestionnaire/cv/all").param("year", "2078").contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        List<GestionnaireCvDTO> data2078 = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+
+        result = mockMvc.perform(get("/gestionnaire/cv/all").param("year", "2025").contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        List<GestionnaireCvDTO> data2025 = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+
+        assertThat(data2077).hasSize(2);
+        assertThat(data2078).hasSize(1);
+        assertThat(data2025).hasSize(0);
     }
 
     @Test
@@ -349,22 +405,22 @@ class GestionnaireControllerTest {
     void getStageNotifications_returnsOkWithList() throws Exception {
         StageNotification n1 = new StageNotification();
         n1.setType(NotificationType.STAGE_NOTIFICATION);
-        n1.setMessage("Stage submitted");
+        n1.setMessageEN("Stage submitted");
         n1.setCreatedAt(LocalDateTime.now());
 
         StageNotification n2 = new StageNotification();
         n2.setType(NotificationType.STAGE_NOTIFICATION);
-        n2.setMessage("Stage updated");
+        n2.setMessageEN("Stage updated");
         n2.setCreatedAt(LocalDateTime.now());
 
         PostulationNotification n3 = new PostulationNotification();
         n3.setType(NotificationType.POSTULATION_NOTIFICATION);
-        n3.setMessage("New application");
+        n3.setMessageEN("New application");
         n3.setCreatedAt(LocalDateTime.now());
 
         GestionnaireCvNotification n4 = new GestionnaireCvNotification();
         n4.setType(NotificationType.GESTIONNAIRE_CV_NOTIFICATION);
-        n4.setMessage("New CV uploaded");
+        n4.setMessageEN("New CV uploaded");
         n4.setCreatedAt(LocalDateTime.now());
 
         NotificationGroupDTO stageGroup = NotificationGroupDTO
