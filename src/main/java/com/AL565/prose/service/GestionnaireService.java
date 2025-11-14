@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -37,6 +38,7 @@ public class GestionnaireService {
     private final PasswordEncoder passwordEncoder;
     private final CandidatureRepository candidatureRepository;
     private final NotificationRepository notificationRepository;
+    private final SignatureEntenteNotificationRepository signatureEntenteNotificationRepository;
     private final NotificationsHelper notificationsHelper;
 
     public void saveGestionnaire(GestionnairePasswordDTO dto) {
@@ -191,6 +193,8 @@ public class GestionnaireService {
                         .findNotificationsByTypeAndSecondRecipientReadAt(NotificationType.CANDIDATURE_DECISION_NOTIFICATION, null);
                 List<Notification> etudiantOffresResponses = notificationRepository
                         .findNotificationsByTypeAndSecondRecipientReadAt(NotificationType.ETUDIANT_OFFRE_DECCISION_NOTIFICATION, null);
+                List<SignatureEntenteNotification> signatureEntentes = signatureEntenteNotificationRepository
+                        .findByGestionnaireReadAtIsNull();
 
                 NotificationGroupDTO stagesGroup = NotificationGroupDTO
                         .toDTO(NotificationType.STAGE_NOTIFICATION.getDisplayName(), stages);
@@ -204,6 +208,8 @@ public class GestionnaireService {
                         .toDTO(NotificationType.CANDIDATURE_DECISION_NOTIFICATION.getDisplayName(), candidatureDecisions);
                 NotificationGroupDTO etudiantOffresResponsesGroup = NotificationGroupDTO
                         .toDTO(NotificationType.ETUDIANT_OFFRE_DECCISION_NOTIFICATION.getDisplayName(), etudiantOffresResponses);
+                NotificationGroupDTO signatureEntentesGroup = NotificationGroupDTO
+                        .toDTO(NotificationType.SIGNATURE_ENTENTE_NOTIFICATION.getDisplayName(), signatureEntentes.stream().map(n -> (Notification) n).toList());
 
             return NotificationsResponseDTO
                     .toDTO(List.of(stagesGroup,
@@ -211,7 +217,8 @@ public class GestionnaireService {
                             cvsGroup,
                             convocationsGroup,
                             candidatureDecisionsGroup,
-                            etudiantOffresResponsesGroup));
+                            etudiantOffresResponsesGroup,
+                            signatureEntentesGroup));
         } catch (Exception e) {
             throw new NotificationExceptions.NotificationFetchException();
         }
@@ -226,6 +233,13 @@ public class GestionnaireService {
                  CONVOCATION_NOTIFICATION,
                  CANDIDATURE_DECISION_NOTIFICATION,
                  ETUDIANT_OFFRE_DECCISION_NOTIFICATION -> markPostulationAsReadBySecondRecipient(notificationId);
+            case SIGNATURE_ENTENTE_NOTIFICATION -> {
+                if (notification instanceof SignatureEntenteNotification) {
+                    SignatureEntenteNotification signatureNotification = (SignatureEntenteNotification) notification;
+                    signatureNotification.setGestionnaireReadAt(LocalDateTime.now());
+                    signatureEntenteNotificationRepository.save(signatureNotification);
+                }
+            }
             default-> notificationsHelper.markNotificationAsReadByFirstRecipient(notificationId);
         }
     }
