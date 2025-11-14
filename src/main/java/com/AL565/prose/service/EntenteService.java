@@ -108,10 +108,11 @@ public class EntenteService {
         notification.setMessageFR(messageFR);
         notification.setMessageEN(messageEN);
         notification.setType(NotificationType.SIGNATURE_ENTENTE_NOTIFICATION);
-        notification.setSignatureEntenteId(entente.getId());
+        notification.setSignatureEntenteCandidatureId(entente.getCandidature().getId());
         notification
                 .setSignatureEntenteEmployeurEmail(entente.getCandidature().getStage().getEmployeurEmail());
         notification.setSignatureEntenteEtudiantEmail(entente.getCandidature().getEtudiant().getEmail());
+        notification.setSignatureEntenteStageId(entente.getCandidature().getStageId());
 
         notificationRepository.save(notification);
     }

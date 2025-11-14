@@ -71,6 +71,10 @@ export default function MesCandidature() {
         }
     }, [location.state?.openCandidatureId, candidatures, navigate, location]);
 
+    useEffect(() => {
+
+    }, []);
+
     // Vérifier l'existence de l'entente pour les candidatures confirmées
     useEffect(() => {
         const checkEntentes = async () => {

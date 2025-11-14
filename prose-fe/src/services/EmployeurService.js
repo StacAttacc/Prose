@@ -42,14 +42,15 @@ export function rejectApplicant(candidatureId, token) {
     return updateCandidatureStatus(candidatureId, "REFUSEE", token);
 }
 export async function getEmployeurNotifications(employeurEmail, token) {
-    const res = await fetch(`${API}/employeur/notifications/all`, {
+    const res = await http.get(`${API}/employeur/notifications/all`, {
         method: "GET",
         headers: {
             Accept: "application/json",
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
     });
-    return await parseJsonOrThrow(res);
+    console.log(res.data);
+    return res.data;
 }
 
 export async function markNotificationRead(notificationId, token) {

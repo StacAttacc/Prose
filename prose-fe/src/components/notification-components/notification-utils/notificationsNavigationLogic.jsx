@@ -13,11 +13,11 @@ export function getNotificationNavigationPath({role, notification = null, isGrou
             path: getDefaultNavigationPath(role)
         };
     if (role === "EMPLOYEUR") {
-        getEmployeurPaths({role, notification, isGrouped, type});
+        return getEmployeurPaths({role, notification, isGrouped, type});
     } else if (role === "ETUDIANT") {
-        getEtudiantPaths({role, notification, isGrouped, type});
+        return getEtudiantPaths({role, notification, isGrouped, type});
     } else if (role === "GESTIONNAIRE") {
-        getGestionnairePaths({role, notification, isGrouped, type});
+        return getGestionnairePaths({role, notification, isGrouped, type});
     } else {
         return {
             path: "/login"
@@ -26,28 +26,28 @@ export function getNotificationNavigationPath({role, notification = null, isGrou
 }
 
 function getEmployeurPaths({role, notification = null, isGrouped = false, type}) {
+    console.log("Employeur Paths:", {role, notification, isGrouped, type});
     switch (type) {
         case "etudiant_offre_decision":
             return isGrouped ? {
-                path: `/employeur/posted-stages`,
+                path: getDefaultNavigationPath(role),
             } : {
                 path: `/employeur/stages/${notification?.stageId}/candidatures`,
                 state: { openCandidatureId: notification?.etudiantOffreDecisionId }
             };
         case "postulation":
             return isGrouped ? {
-                path: `/employeur/stages/posted-stages`,
+                path: getDefaultNavigationPath(role),
             } : {
                 path: `/employeur/stages/${notification?.stageId}/candidatures`,
                 state: { openCandidatureId: notification?.candidaturePostulationId }
             };
         case "signature_entente":
             return isGrouped ? {
-                //TODO: Update path when employeur entente page is created
                 path: getDefaultNavigationPath(role),
             } : {
-                //TODO: Update path when employeur entente page is created
-                path: getDefaultNavigationPath(role),
+                path: `/employeur/stages/${notification?.stageId}/candidatures`,
+                state: { openEntenteId: notification?.signatureEntenteCandidatureId }
             }
         default:
             return {

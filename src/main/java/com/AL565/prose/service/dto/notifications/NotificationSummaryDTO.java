@@ -27,7 +27,7 @@ public class NotificationSummaryDTO {
     private Long candidatureResponseId;
     private Long candidaturePostulationId;
     private Long etudiantOffreDecisionId;
-    private Long signatureEntenteId;
+    private Long signatureEntenteCandidatureId;
     private Long etudiantId;
     private Long convocation;
 
@@ -42,7 +42,7 @@ public class NotificationSummaryDTO {
         Long convocation = null;
         Long etudiantOffreDecisionId = null;
         Long candidaturePostulationId = null;
-        Long signatureEntenteId = null;
+        Long signatureEntenteCandidatureId = null;
 
         switch (n) {
             case StageNotification sn -> {
@@ -84,8 +84,9 @@ public class NotificationSummaryDTO {
                 }
             }
             case SignatureEntenteNotification sen -> {
-                if (sen.getSignatureEntenteId() != null) {
-                    signatureEntenteId = sen.getSignatureEntenteId();
+                if (sen.getSignatureEntenteCandidatureId() != null) {
+                    signatureEntenteCandidatureId = sen.getSignatureEntenteCandidatureId();
+                    stageId = sen.getSignatureEntenteStageId();
                 }
             }
             default -> {
@@ -108,7 +109,7 @@ public class NotificationSummaryDTO {
                 .candidatureDecisionId(candidatureDecisionId)
                 .etudiantOffreDecisionId(etudiantOffreDecisionId)
                 .candidaturePostulationId(candidaturePostulationId)
-                .signatureEntenteId(signatureEntenteId)
+                .signatureEntenteCandidatureId(signatureEntenteCandidatureId)
                 .build();
     }
 }

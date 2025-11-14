@@ -267,7 +267,6 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
 
     useEffect(() => {
         const targetId = location?.state?.openCandidatureId;
-        const kind = location?.state?.openDocType || "letter";
         if (!targetId) return;
         if (String(applicant?.id) !== String(targetId)) return;
         if (docState.open) return;
@@ -278,7 +277,16 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                 navigate(location.pathname, { replace: true, state: {} });
             }
         })();
-    }, [location?.state, applicant?.id]);
+    }, [location?.state?.openCandidatureId, applicant?.id]);
+
+    useEffect(() => {
+        const targetId = location?.state?.openEntenteId;
+        if (!targetId) return;
+        if (String(applicant?.id) !== String(targetId)) return;
+        if (showEntenteModal) return;
+        setShowEntenteModal(true);
+        navigate(location.pathname, { replace: true, state: {} });
+    }, [location?.state?.openEntenteId, applicant?.id]);
 
     return (
         <>
