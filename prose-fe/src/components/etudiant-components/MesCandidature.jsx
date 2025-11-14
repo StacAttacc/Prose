@@ -72,8 +72,31 @@ export default function MesCandidature() {
     }, [location.state?.openCandidatureId, candidatures, navigate, location]);
 
     useEffect(() => {
+        const ententeFromNotif = location?.state?.openEntenteId;
+        if (!ententeFromNotif) return;
 
-    }, []);
+        if (candidatures && candidatures.length > 0) {
+            const candidatureToScrollTo = candidatures.find(c => String(c.id) === String(ententeFromNotif));
+            if (candidatureToScrollTo) {
+                setTimeout(() => {
+                    const element = document.getElementById(`candidature-${candidatureToScrollTo.id}`);
+                    if (element) {
+                        element.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center'
+                        });
+                        element.classList.add('ring-2', 'ring-teal-500');
+                        setTimeout(() => {
+                            element.classList.remove('ring-2', 'ring-teal-500');
+                        }, 2000);
+                    }
+                }, 100)
+                setSelectedCandidatureForEntente(candidatureToScrollTo);
+                setShowEntenteModal(true);
+                navigate(location.pathname, {replace: true, state: {}});
+            }
+        }
+    }, [location.state?.openEntenteId, candidatures, navigate, location]);
 
     // Vérifier l'existence de l'entente pour les candidatures confirmées
     useEffect(() => {

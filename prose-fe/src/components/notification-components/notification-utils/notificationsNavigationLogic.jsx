@@ -78,11 +78,10 @@ function getEtudiantPaths({role, notification = null, isGrouped = false, type}) 
             };
         case "signature_entente":
             return isGrouped ? {
-                //TODO: Update path when employeur entente page is created
-                path: getDefaultNavigationPath(role),
+                path: `/etudiant/stages/candidatures`,
             } : {
-                //TODO: Update path when employeur entente page is created
-                path: getDefaultNavigationPath(role),
+                path: `/etudiant/stages/candidatures`,
+                state: { openEntenteId: notification?.signatureEntenteCandidatureId }
             }
         default:
             return {
