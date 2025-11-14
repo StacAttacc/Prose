@@ -91,7 +91,7 @@ describe('notificationText utils', () => {
                 messageEN: 'This is a very long text'
             };
             const result = shortText(notification, 50);
-            expect(result).toBe('Ceci est un très long texte qui dépasse la lon...');
+            expect(result).toBe('Ceci est un très long texte qui dépasse la long...');
             expect(result.length).toBe(50);
         });
 
@@ -108,7 +108,7 @@ describe('notificationText utils', () => {
                 messageEN: 'This is a very long text that exceeds the maximum allowed length'
             };
             const result = shortText(notification, 50);
-            expect(result).toBe('This is a very long text that exceeds the max...');
+            expect(result).toBe('This is a very long text that exceeds the maxim...');
             expect(result.length).toBe(50);
         });
 

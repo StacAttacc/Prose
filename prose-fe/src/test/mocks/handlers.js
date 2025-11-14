@@ -403,6 +403,9 @@ export const handlers = [
     }
     return HttpResponse.json({
       message: 'Entente signée avec succès'
+    });
+  }),
+
   http.get(`${BASE_URL}/employeur/:email/stages`, ({ request, params }) => {
     const url = new URL(request.url);
     const year = url.searchParams.get('year') || '2025';

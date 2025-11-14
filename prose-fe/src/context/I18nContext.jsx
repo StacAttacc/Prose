@@ -351,7 +351,6 @@ const translations = {
     // GestionnaireEtuCandidature - Entente
     statusEntente: 'Status Entente',
     generation: 'Génération...',
-    genererEntente: 'Générer entente',
     
     // EntenteSignatureModal
     ententeStageSignature: 'Entente de stage - Signature',
@@ -369,7 +368,6 @@ const translations = {
     documentEntente: 'Document d\'entente',
     impossibleAfficherPdf: 'Impossible d\'afficher le PDF',
     consentementEntente: 'Je consens à cette entente de stage et je confirme avoir lu et compris tous les termes et conditions énoncés dans le document ci-dessus.',
-    motDePasse: 'Mot de passe',
     entrezMotDePasseConfirmer: 'Entrez votre mot de passe pour confirmer',
     motDePasseRequisConfirmer: 'Votre mot de passe est requis pour confirmer la signature',
     veuillezCocherConsentement: 'Veuillez cocher la case de consentement pour signer l\'entente',
@@ -731,7 +729,6 @@ const translations = {
     // GestionnaireEtuCandidature - Entente
     statusEntente: 'Agreement Status',
     generation: 'Generating...',
-    genererEntente: 'Generate agreement',
     
     // EntenteSignatureModal
     ententeStageSignature: 'Internship Agreement - Signature',
@@ -749,7 +746,6 @@ const translations = {
     documentEntente: 'Agreement document',
     impossibleAfficherPdf: 'Unable to display PDF',
     consentementEntente: 'I consent to this internship agreement and confirm that I have read and understood all the terms and conditions stated in the document above.',
-    motDePasse: 'Password',
     entrezMotDePasseConfirmer: 'Enter your password to confirm',
     motDePasseRequisConfirmer: 'Your password is required to confirm the signature',
     veuillezCocherConsentement: 'Please check the consent box to sign the agreement',

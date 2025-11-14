@@ -53,7 +53,7 @@ describe('getNotificationNavigationPath', () => {
                 isGrouped: true,
                 groupType: 'postulation'
             });
-            expect(result.path).toBe('/employeur/stages/posted-stages');
+            expect(result.path).toBe('/employeur/posted-stages');
         });
 
         it('should return specific path for postulation notification', () => {

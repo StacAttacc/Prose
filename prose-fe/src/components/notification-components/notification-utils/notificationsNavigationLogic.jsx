@@ -45,9 +45,11 @@ function getEmployeurPaths({role, notification = null, isGrouped = false, type})
         case "signature_entente":
             return isGrouped ? {
                 path: getDefaultNavigationPath(role),
-            } : {
-                path: `/employeur/stages/${notification?.stageId}/candidatures`,
+            } : notification?.stageId ? {
+                path: `/employeur/stages/${notification.stageId}/candidatures`,
                 state: { openEntenteId: notification?.signatureEntenteCandidatureId }
+            } : {
+                path: getDefaultNavigationPath(role),
             }
         default:
             return {
