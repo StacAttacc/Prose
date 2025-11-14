@@ -9,6 +9,7 @@ export function labelForKey(key) {
         case "etudiant_cv": return useI18n().t('changementCV');
         case "convocation": return useI18n().t('nouvellesConvocations');
         case "candidature_decision": return useI18n().t('candidaturesUpdates');
+        case "signature_entente": return useI18n().t('signatureEntenteNotification');
         default: return `${key} notification(s)`;
     }
 }

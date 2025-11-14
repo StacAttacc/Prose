@@ -41,19 +41,8 @@ export function approveApplicant(candidatureId, token) {
 export function rejectApplicant(candidatureId, token) {
     return updateCandidatureStatus(candidatureId, "REFUSEE", token);
 }
-export async function getEmployeurCandidatureNotifications(employeurEmail, token) {
-    const res = await fetch(`${API}/employeur/notifications/postulations/${encodeURIComponent(employeurEmail)}`, {
-        method: "GET",
-        headers: {
-            Accept: "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-    });
-    return await parseJsonOrThrow(res);
-}
-
-export async function getEmployeurResponseNotifications(employeurEmail, token) {
-    const res = await fetch(`${API}/employeur/notifications/responses/${encodeURIComponent(employeurEmail)}`, {
+export async function getEmployeurNotifications(employeurEmail, token) {
+    const res = await fetch(`${API}/employeur/notifications/all`, {
         method: "GET",
         headers: {
             Accept: "application/json",

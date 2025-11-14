@@ -19,6 +19,12 @@ export function getNotificationNavigationPath(notification, role) {
                 state: { openCandidatureId: notification.candidaturePostulationId }
             };
         }
+        else if (notification.type === "signature_entente") {
+            return {
+                //TODO: Update path when employeur entente page is created
+                path: getDefaultNavigationPath("EMPLOYEUR"),
+            }
+        }
     }
 
     else if (role === "ETUDIANT") {
@@ -35,6 +41,11 @@ export function getNotificationNavigationPath(notification, role) {
             return {
                 path: `/etudiant/stages/candidatures`,
                 state: { openCandidatureId: notification.candidatureDecisionId }
+            }
+        } else if (notification.type === "signature_entente") {
+            return {
+                //TODO: Update path when student entente page is created
+                path: getDefaultNavigationPath("ETUDIANT"),
             }
         }
     }
@@ -85,25 +96,36 @@ export function getNotificationNavigationPath(notification, role) {
 
 export function getGroupedNotificationNavigation(type, role) {
     if (role === "EMPLOYEUR") {
-        if (type === "postulation")
-        return {
-            path: `/employeur/stages/posted-stages`,
-        };
-        if (type === "employeur_response")
-        return {
-            path: `/employeur/posted-stages`,
-        };
+        if (type === "postulation") {
+            return {
+                path: `/employeur/stages/posted-stages`,
+            };
+        } else if (type === "employeur_response") {
+            return {
+                path: `/employeur/posted-stages`,
+            };
+        } else if (type === "signature_entente") {
+            return {
+                //TODO: Update path when employeur entente page is created
+                path: getDefaultNavigationPath("EMPLOYEUR"),
+            }
+        }
     }
 
     else if (role === "ETUDIANT") {
         if (type === "etudiant_cv") {
             return {
                 path: `/etudiant/mon-cv`,
-            }
+            };
         } else if (type === "convocation") {
             return {
                 path: `/etudiant/stages/candidatures`,
-            }
+            };
+        } else if (type === "signature_entente") {
+            return {
+                //TODO: Update path when student entente page is created
+                path: getDefaultNavigationPath("ETUDIANT"),
+            };
         }
     }
 
