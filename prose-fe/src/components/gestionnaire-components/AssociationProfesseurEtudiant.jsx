@@ -268,7 +268,7 @@ export default function AssociationProfesseurEtudiant() {
 
             {loadingAssociations && (
                 <div className="mb-6 text-center">
-                    <p className="text-gray-500">{t('chargement') || 'Chargement des associations...'}</p>
+                    <p className="text-gray-500">{t('chargementAssociations') || 'Chargement des associations...'}</p>
                 </div>
             )}
 

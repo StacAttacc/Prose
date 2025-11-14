@@ -173,7 +173,6 @@ export async function generateEntente(candidatureId, token) {
     return res?.data?.data ?? res?.data;
 }
 
-<<<<<<< HEAD
 export async function checkEntenteExists(candidatureId, token) {
     try {
         const res = await axios.get(`${BASE_URL_GESTIONNAIRE}/candidatures/${candidatureId}/entente`, {
@@ -207,7 +206,7 @@ export async function signEntente(ententeId, password, token) {
     }
     return await res.json();
 }
-=======
+
 export async function associerProfesseurEtudiant(professeurEmail, etudiantEmail, token) {
     try {
         const res = await axios.post(
@@ -229,4 +228,3 @@ export async function associerProfesseurEtudiant(professeurEmail, etudiantEmail,
         throw error;
     }
 }
->>>>>>> EQ01-34-gestionnaire-association-professeur

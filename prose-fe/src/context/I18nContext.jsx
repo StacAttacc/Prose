@@ -322,7 +322,6 @@ const translations = {
     cetEtudiant: 'Cet étudiant',
     envoi: 'Envoi...',
     
-<<<<<<< HEAD
     // Entente (Agreement) - Common
     verification: 'Vérification...',
     ententeSigneeParToutesLesParties: '✓ Entente signée par toutes les parties',
@@ -390,7 +389,7 @@ const translations = {
     emailProfesseur: 'Email du professeur',
     associationsExistantes: 'Associations existantes',
     professeur: 'Professeur',
-    chargement: 'Chargement des associations...'
+    chargementAssociations: 'Chargement des associations...'
   },
   en: {
     // Dashboard
@@ -715,7 +714,6 @@ const translations = {
     cetEtudiant: 'This student',
     envoi: 'Sending...',
     
-<<<<<<< HEAD
     // Entente (Agreement) - Common
     verification: 'Verifying...',
     ententeSigneeParToutesLesParties: '✓ Agreement signed by all parties',
@@ -783,7 +781,7 @@ const translations = {
     emailProfesseur: 'Professor email',
     associationsExistantes: 'Existing Associations',
     professeur: 'Professor',
-    chargement: 'Loading associations...'
+    chargementAssociations: 'Loading associations...'
   }
 };
 
