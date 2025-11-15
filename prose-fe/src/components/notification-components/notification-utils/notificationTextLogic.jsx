@@ -14,11 +14,17 @@ export function labelForKey(key) {
     }
 }
 
-export function shortText(notification, max = 80) {
+export function shortText(notification, max = Infinity) {
     if (!notification.messageFR && !notification.messageEN) return "";
-    if (useI18n().locale === 'en')
-        return notification.messageEN.length > max
-            ? notification.messageEN.slice(0, max - 3) + "..."
-            : notification.messageEN;
-    return notification.messageFR.length > max ? notification.messageFR.slice(0, max - 3) + "..." : notification.messageFR;
+    const message = useI18n().locale === 'en' 
+        ? (notification.messageEN || "") 
+        : (notification.messageFR || "");
+    
+    // Si max est Infinity ou si le message est plus court que max, retourner le message complet
+    if (max === Infinity || message.length <= max) {
+        return message;
+    }
+    
+    // Sinon, tronquer le message
+    return message.slice(0, max - 3) + "...";
 }
