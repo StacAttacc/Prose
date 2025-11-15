@@ -94,6 +94,9 @@ export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSi
         } else if (status === "SIGNEE_EMPLOYEUR" && isEmployeur) {
             // L'employeur a signé, on attend l'étudiant
             return t('enAttenteSignatureEtudiant');
+        } else if ((status === "SIGNEE_EMPLOYEUR" && isStudent) || (status === "SIGNEE_ETUDIANT" && isEmployeur)) {
+            // L'employeur a signé et l'étudiant doit signer, OU l'étudiant a signé et l'employeur doit signer
+            return t('enAttenteVotreSignature');
         } else if (status === "A_SIGNER") {
             // Cas théorique où l'utilisateur a signé mais le statut est encore A_SIGNER
             if (isStudent) {

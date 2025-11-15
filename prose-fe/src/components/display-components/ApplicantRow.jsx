@@ -486,7 +486,7 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                                                         className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 hover:bg-gradient-to-br transition-all"
                                                         type="button"
                                                     >
-                                                        {t('telecharger')}
+                                                        {t('telechargerEntenteStage')}
                                                     </button>
                                                 </div>
                                             ) : (
