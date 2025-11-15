@@ -44,7 +44,7 @@ describe('getNotificationNavigationPath', () => {
                 notification
             });
             expect(result.path).toBe('/employeur/stages/123/candidatures');
-            expect(result.state.openCandidatureId).toBe(456);
+            expect(result.state?.openCandidatureId).toBe(456);
         });
 
         it('should return grouped path for postulation', () => {
@@ -67,7 +67,7 @@ describe('getNotificationNavigationPath', () => {
                 notification
             });
             expect(result.path).toBe('/employeur/stages/789/candidatures');
-            expect(result.state.openCandidatureId).toBe(101);
+            expect(result.state?.openCandidatureId).toBe(101);
         });
 
         it('should return default path for signature_entente', () => {
@@ -94,7 +94,8 @@ describe('getNotificationNavigationPath', () => {
             const result = getNotificationNavigationPath({
                 role: 'ETUDIANT',
                 isGrouped: true,
-                groupType: 'convocation'
+                groupType: 'convocation',
+                notification: { type: 'convocation' }
             });
             expect(result.path).toBe('/etudiant/stages/candidatures');
         });
@@ -146,7 +147,7 @@ describe('getNotificationNavigationPath', () => {
                 notification
             });
             expect(result.path).toBe('/gestionnaire/candidatures');
-            expect(result.state.openEtudiantId).toBe(444);
+            expect(result.state?.openEtudiantId).toBe(444);
         });
 
         it('should return specific path for stage notification', () => {
@@ -185,7 +186,41 @@ describe('getNotificationNavigationPath', () => {
                 notification
             });
             expect(result.path).toBe('/gestionnaire/candidatures');
-            expect(result.state.openEtudiantId).toBe(777);
+            expect(result.state?.openEtudiantId).toBe(777);
+        });
+
+        it('should return specific path for signature_entente notification with candidatureId', () => {
+            const notification = {
+                type: 'signature_entente',
+                signatureEntenteCandidatureId: 888
+            };
+            const result = getNotificationNavigationPath({
+                role: 'GESTIONNAIRE',
+                notification
+            });
+            expect(result.path).toBe('/gestionnaire/candidatures');
+            expect(result.state.openCandidatureId).toBe(888);
+            expect(result.state.openTab).toBe('APPROVED');
+        });
+
+        it('should return default path for signature_entente notification without candidatureId', () => {
+            const notification = {
+                type: 'signature_entente'
+            };
+            const result = getNotificationNavigationPath({
+                role: 'GESTIONNAIRE',
+                notification
+            });
+            expect(result.path).toBe('/gestionnaire/candidatures');
+        });
+
+        it('should return grouped path for signature_entente', () => {
+            const result = getNotificationNavigationPath({
+                role: 'GESTIONNAIRE',
+                isGrouped: true,
+                groupType: 'signature_entente'
+            });
+            expect(result.path).toBe('/gestionnaire/candidatures');
         });
     });
 
