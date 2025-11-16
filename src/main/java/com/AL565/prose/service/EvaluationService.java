@@ -64,7 +64,7 @@ public class EvaluationService {
         evaluation = evaluationRepository.save(evaluation);
 
 
-        return toDTO(evaluation);
+        return EvaluationDTO.toDTO(evaluation);
     }
 
     @Transactional
@@ -91,7 +91,7 @@ public class EvaluationService {
 
         evaluation = evaluationRepository.save(evaluation);
 
-        return toDTO(evaluation);
+        return EvaluationDTO.toDTO(evaluation);
     }
 
     @Transactional(readOnly = true)
@@ -103,7 +103,7 @@ public class EvaluationService {
             throw new IllegalStateException("Vous n'êtes pas autorisé à consulter cette évaluation");
         }
 
-        return toDTO(evaluation);
+        return EvaluationDTO.toDTO(evaluation);
     }
 
     @Transactional(readOnly = true)
@@ -119,33 +119,6 @@ public class EvaluationService {
         return ententes.stream()
                 .map(this::ententeToDTO)
                 .collect(Collectors.toList());
-    }
-
-    private EvaluationDTO toDTO(Evaluation evaluation) {
-        return EvaluationDTO.builder()
-                .id(evaluation.getId())
-                .ententeId(evaluation.getEntente().getId())
-                .employeurId(evaluation.getEmployeur().getId())
-                .etudiantId(evaluation.getEtudiant().getId())
-                .etudiantNom(evaluation.getEtudiant().getLastName())
-                .etudiantPrenom(evaluation.getEtudiant().getFirstName())
-                .employeurNom(evaluation.getEmployeur().getCompany())
-                .stageTitle(evaluation.getEntente().getCandidature().getStage().getTitle())
-                .productivite(evaluation.getProductivite())
-                .qualiteTravail(evaluation.getQualiteTravail())
-                .relationsInterpersonnelles(evaluation.getRelationsInterpersonnelles())
-                .habiletesPersonnelles(evaluation.getHabiletesPersonnelles())
-                .appreciationGlobale(evaluation.getAppreciationGlobale())
-                .commentaires(evaluation.getCommentaires())
-                .pointsForts(evaluation.getPointsForts())
-                .pointsAmelioration(evaluation.getPointsAmelioration())
-                .heureEncadrement(evaluation.getHeureEncadrement())
-                .gardeContact(evaluation.getGardeContact())
-                .rehireEtudiant(evaluation.getRehireEtudiant())
-                .dateEvaluation(evaluation.getDateEvaluation())
-                .dateCreation(evaluation.getDateCreation())
-                .dateModification(evaluation.getDateModification())
-                .build();
     }
 
     private com.AL565.prose.service.dto.EntenteDTO ententeToDTO(Entente entente) {
