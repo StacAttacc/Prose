@@ -7,6 +7,9 @@ import PageAuthentification from "./pages/PageAuthentification.jsx";
 import StageCreation from "./components/employeur-components/StageCreation.jsx";
 import PostedStages from "./components/employeur-components/PostedStages.jsx";
 import MesCandidaturesEmployeur from "./components/employeur-components/MesCandidaturesEmployeur.jsx";
+import MesEvaluations from "./components/employeur-components/MesEvaluations.jsx";
+import EvaluationForm from "./components/employeur-components/EvaluationForm.jsx";
+import EvaluationView from "./components/employeur-components/EvaluationView.jsx";
 import StageListings from "./components/etudiant-components/StageListings.jsx";
 import Stages from "./components/etudiant-components/Stages.jsx";
 import MesCandidature from "./components/etudiant-components/MesCandidature.jsx";
@@ -54,6 +57,9 @@ export default function AppRoutes() {
                     <Route path="employeur/stages" element={<Navigate to="/employeur/stages/posted-stages" replace/>}/>
                     <Route path="employeur/stages/posted-stages" element={<PostedStages/>}/>
                     <Route path="employeur/stages/mes-candidatures" element={<MesCandidaturesEmployeur/>}/>
+                    <Route path="employeur/evaluations" element={<MesEvaluations/>}/>
+                    <Route path="employeur/evaluations/evaluer/:ententeId" element={<EvaluationForm/>}/>
+                    <Route path="employeur/evaluations/voir/:ententeId" element={<EvaluationView/>}/>
                     <Route path="employeur/posted-stages" element={<Navigate to="/employeur/stages/posted-stages" replace/>}/>
                     <Route path="employeur/stages/:id/candidatures" element={<StageApplicants/>}/>
                     <Route path="employeur/modifier-stage/:id" element={<StageCreation mode="edit"/>}/>

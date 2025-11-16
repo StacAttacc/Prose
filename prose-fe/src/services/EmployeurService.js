@@ -116,3 +116,43 @@ export async function convoquerEntrevue(candidatureId, interviewData, token) {
     });
     return await parseJsonOrThrow(res);
 }
+
+export async function getEntentesForEvaluation(employeurId, token) {
+    const res = await http.get(`/api/employeur/${employeurId}/evaluations/ententes`, {
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    });
+    return res.data;
+}
+
+export async function createEvaluation(employeurId, evaluationData, token) {
+    const res = await http.post(`/api/employeur/${employeurId}/evaluations`, evaluationData, {
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    });
+    return res.data;
+}
+
+export async function updateEvaluation(employeurId, evaluationId, evaluationData, token) {
+    const res = await http.put(`/api/employeur/${employeurId}/evaluations/${evaluationId}`, evaluationData, {
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    });
+    return res.data;
+}
+
+export async function getEvaluationByEntente(employeurId, ententeId, token) {
+    const res = await http.get(`/api/employeur/${employeurId}/evaluations/entente/${ententeId}`, {
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    });
+    return res.data;
+}

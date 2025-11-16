@@ -29,6 +29,16 @@ public class EntenteDTO {
     private String documentPdfBase64;
     private String documentName;
 
+    // Champs additionnels pour l'évaluation
+    private Long etudiantId;
+    private String etudiantNom;
+    private String etudiantPrenom;
+    private Long employeurId;
+    private Long stageId;
+    private String stageTitle;
+    private String year;
+    private Boolean hasEvaluation;
+
     public static EntenteDTO toDTO(Entente entente, Employeur employeur) {
         if (entente == null) return null;
 
