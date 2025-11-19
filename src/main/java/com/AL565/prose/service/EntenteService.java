@@ -122,7 +122,7 @@ public class EntenteService {
     @Transactional
     public void createNotificationForGestionnaireWhenBothSigned(Entente entente) {
         List<SignatureEntenteNotification> existingNotifications = signatureEntenteNotificationRepository
-                .findByGestionnaireReadAtIsNullAndFirstRecipientReadAtIsNotNullAndSecondRecipientReadAtIsNotNull()
+                .findByThirdRecipientReadAtIsNullAndFirstRecipientReadAtIsNotNullAndSecondRecipientReadAtIsNotNull()
                 .stream()
                 .filter(n -> n.getCandidatureId() != null
                         && n.getCandidatureId().equals(entente.getCandidature().getId()))

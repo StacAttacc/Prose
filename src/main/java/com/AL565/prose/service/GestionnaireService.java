@@ -186,19 +186,19 @@ public class GestionnaireService {
     public NotificationsResponseDTO getGestionnaireNotifications() throws Exception {
         try {
                 List<Notification> stages = notificationRepository
-                        .findNotificationsByTypeAndFirstRecipientReadAt(NotificationType.STAGE_NOTIFICATION, null);
+                        .findNotificationsByTypeAndFirstRecipientReadAtIsNull(NotificationType.STAGE_NOTIFICATION);
                 List<Notification> postulations = notificationRepository
-                        .findNotificationsByTypeAndSecondRecipientReadAt(NotificationType.POSTULATION_NOTIFICATION, null);
+                        .findNotificationsByTypeAndSecondRecipientReadAtIsNull(NotificationType.POSTULATION_NOTIFICATION);
                 List<Notification> cvs = notificationRepository
-                        .findNotificationsByTypeAndFirstRecipientReadAt(NotificationType.CV_NOTIFICATTION, null);
+                        .findNotificationsByTypeAndFirstRecipientReadAtIsNull(NotificationType.CV_NOTIFICATTION);
                 List<Notification> convocations = notificationRepository
-                        .findNotificationsByTypeAndSecondRecipientReadAt(NotificationType.CONVOCATION_NOTIFICATION, null);
+                        .findNotificationsByTypeAndSecondRecipientReadAtIsNull(NotificationType.CONVOCATION_NOTIFICATION);
                 List<Notification> candidatureDecisions = notificationRepository
-                        .findNotificationsByTypeAndSecondRecipientReadAt(NotificationType.CANDIDATURE_DECISION_NOTIFICATION, null);
+                        .findNotificationsByTypeAndSecondRecipientReadAtIsNull(NotificationType.CANDIDATURE_DECISION_NOTIFICATION);
                 List<Notification> etudiantOffresResponses = notificationRepository
-                        .findNotificationsByTypeAndSecondRecipientReadAt(NotificationType.ETUDIANT_OFFRE_DECCISION_NOTIFICATION, null);
+                        .findNotificationsByTypeAndSecondRecipientReadAtIsNull(NotificationType.ETUDIANT_OFFRE_DECCISION_NOTIFICATION);
                 List<SignatureEntenteNotification> signatureEntentes = signatureEntenteNotificationRepository
-                        .findByGestionnaireReadAtIsNullAndFirstRecipientReadAtIsNotNullAndSecondRecipientReadAtIsNotNull();
+                        .findByThirdRecipientReadAtIsNullAndFirstRecipientReadAtIsNotNullAndSecondRecipientReadAtIsNotNull();
 
                 NotificationGroupDTO stagesGroup = NotificationGroupDTO
                         .toDTO(NotificationType.STAGE_NOTIFICATION.getDisplayName(), stages);

@@ -7,5 +7,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface CandidatureDecisionNotificationRepository extends JpaRepository<CandidatureDecisionNotification, Long> {
-    List<CandidatureDecisionNotification> findCandidatureDecisionNotificationsByFirstRecipientReadAtAndCandidatureDecisionEtudiantEmail(LocalDateTime firstRecipientReadAt, String candidatureDecisionEtudiantEmail);
+    List<CandidatureDecisionNotification> findCandidatureDecisionNotificationsByFirstRecipientReadAtIsNullAndTargetEmail(
+            String candidatureDecisionEtudiantEmail
+    );
 }

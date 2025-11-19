@@ -184,19 +184,17 @@ public class EmployeurService {
         try {
             List<PostulationNotification> postulations =
                     postulationNotificationRepository
-                            .findByFirstRecipientReadAtAndEmployeurEmail(
-                                    null,
+                            .findByFirstRecipientReadAtIsNullAndTargetEmail(
                                     employeurEmail
                             );
             List<SignatureEntenteNotification> signatureEntentes =
                     signatureEntenteNotificationRepository
-                            .findSignatureEntenteNotificationsByFirstRecipientReadAtAndSignatureEntenteEmployeurEmail(
-                                    null,
+                            .findSignatureEntenteNotificationsByFirstRecipientReadAtIsNullAndTargetEmployeurEmail(
                                     employeurEmail
                             );
             List<EtudiantOffreDecisionNotification> etudiantOffreDecisions =
                     etudiantOffreDecisionNotificationRepository
-                            .findByEmployeurResponseEmailAndFirstRecipientReadAt(employeurEmail, null);
+                            .findByTargetEmailAndFirstRecipientReadAtIsNull(employeurEmail);
 
             NotificationGroupDTO etudiantOffreDecisionsGroup = NotificationGroupDTO
                     .toDTO(NotificationType.ETUDIANT_OFFRE_DECCISION_NOTIFICATION.getDisplayName(), etudiantOffreDecisions);

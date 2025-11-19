@@ -7,5 +7,5 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface ConvocationNotificationRepository extends JpaRepository<ConvocationNotification, Long> {
-    List<ConvocationNotification> findByFirstRecipientReadAtAndEtudiantConvocationEmail(LocalDateTime firstRecipientReadAt, String etudiantEmail);
+    List<ConvocationNotification> findByFirstRecipientReadAtIsNullAndTargetEmail(String etudiantEmail);
 }

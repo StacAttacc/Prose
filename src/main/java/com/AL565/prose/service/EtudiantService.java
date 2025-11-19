@@ -267,14 +267,14 @@ public class EtudiantService {
                             etudiantEmail
                     );
             List<ConvocationNotification> convocationNotifications = convocationNotificationRepository
-                    .findByFirstRecipientReadAtAndEtudiantConvocationEmail(
-                            null, etudiantEmail
+                    .findByFirstRecipientReadAtIsNullAndTargetEmail(
+                            etudiantEmail
                     );
             List<CandidatureDecisionNotification> candidatureDecisions = candidatureDecisionNotificationRepository
                     .findCandidatureDecisionNotificationsByFirstRecipientReadAtIsNullAndTargetEmail(etudiantEmail);
             List<SignatureEntenteNotification> signatureEntentes = signatureEntenteNotificationRepository
-                    .findSignatureEntenteNotificationsBySecondRecipientReadAtAndSignatureEntenteEtudiantEmail(
-                            null, etudiantEmail
+                    .findSignatureEntenteNotificationsBySecondRecipientReadAtIsNullAndTargetEtudiantEmail(
+                            etudiantEmail
                     );
 
             NotificationGroupDTO cvGroup = NotificationGroupDTO
