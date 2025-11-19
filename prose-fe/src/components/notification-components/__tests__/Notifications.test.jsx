@@ -237,7 +237,8 @@ describe('Notifications Component', () => {
     it('displays signature_entente notification message correctly', async () => {
         render(<BrowserRouter><Notifications /></BrowserRouter>);
         await waitFor(() => {
-            expect(screen.getByText(/L'étudiant John Doe et l'employeur ont tous deux signé l'entente de stage pour Stage en développement/i)).toBeInTheDocument();
+            // Le message est tronqué à 80 caractères par défaut, donc on cherche le début du message
+            expect(screen.getByText(/L'étudiant John Doe et l'employeur ont tous deux signé l'entente de stage/i)).toBeInTheDocument();
         });
     });
 });

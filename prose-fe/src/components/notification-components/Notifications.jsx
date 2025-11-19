@@ -122,7 +122,7 @@ export default function Notifications() {
                 role: user.role,
                 notification,
                 isGrouped: false,
-                groupType: null
+                groupType: typeKey
             });
             navigate(path, state ? { state } : undefined);
         } catch (err) {

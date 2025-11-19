@@ -112,12 +112,12 @@ describe('notificationText utils', () => {
             expect(result.length).toBe(50);
         });
 
-        it('uses default max length of Infinity (no truncation)', () => {
+        it('uses default max length of 80 (truncates if longer)', () => {
             vi.mocked(I18nContext.useI18n).mockReturnValue({ locale: 'fr' });
             const notification = { messageFR: 'A'.repeat(100), messageEN: 'B'.repeat(100) };
             const result = shortText(notification);
-            expect(result.length).toBe(100);
-            expect(result.endsWith('...')).toBe(false);
+            expect(result.length).toBe(80);
+            expect(result.endsWith('...')).toBe(true);
         });
 
         it('handles notification with only messageFR', () => {

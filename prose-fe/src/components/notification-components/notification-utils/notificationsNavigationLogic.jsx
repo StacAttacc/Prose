@@ -9,6 +9,9 @@ export function getNotificationNavigationPath({role, notification = null, isGrou
     let type;
     if (isGrouped === true && groupType != null) {
         type = groupType;
+    } else if (groupType != null) {
+        // Utiliser groupType même si isGrouped est false (pour les notifications individuelles)
+        type = groupType;
     } else if (notification != null && notification.type) {
         type = notification.type;
     } else {
