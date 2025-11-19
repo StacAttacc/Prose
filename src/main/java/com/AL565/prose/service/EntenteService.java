@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -40,6 +41,7 @@ public class EntenteService {
     private final EmployeurRepository employeurRepository;
     private final GestionnaireRepository gestionnaireRepository;
     private final NotificationRepository notificationRepository;
+    private final SignatureEntenteNotificationRepository signatureEntenteNotificationRepository;
 
     @Transactional
     public EntenteDTO getEntenteByCandidatureId(Long candidatureId) throws Exception {
@@ -118,6 +120,43 @@ public class EntenteService {
     }
 
     @Transactional
+    public void createNotificationForGestionnaireWhenBothSigned(Entente entente) {
+        // Vérifier si une notification existe déjà pour cette candidature avec gestionnaireReadAt null
+        // pour éviter les doublons
+        List<SignatureEntenteNotification> existingNotifications = signatureEntenteNotificationRepository
+                .findByGestionnaireReadAtIsNull()
+                .stream()
+                .filter(n -> n.getSignatureEntenteCandidatureId() != null 
+                        && n.getSignatureEntenteCandidatureId().equals(entente.getCandidature().getId()))
+                .toList();
+        
+        // Si une notification existe déjà, ne pas en créer une nouvelle
+        if (!existingNotifications.isEmpty()) {
+            return;
+        }
+        
+        String etudiantNom = entente.getCandidature().getEtudiant().getFirstName() + " " 
+                + entente.getCandidature().getEtudiant().getLastName();
+        String stageTitre = entente.getCandidature().getStage().getTitle();
+        
+        String messageFR = "L'étudiant " + etudiantNom + " et l'employeur ont tous deux signé l'entente de stage pour " + stageTitre;
+        String messageEN = "Student " + etudiantNom + " and employer have both signed the internship agreement for " + stageTitre;
+        
+        SignatureEntenteNotification notification = new SignatureEntenteNotification();
+        notification.setCreatedAt(LocalDateTime.now());
+        notification.setMessageFR(messageFR);
+        notification.setMessageEN(messageEN);
+        notification.setType(NotificationType.SIGNATURE_ENTENTE_NOTIFICATION);
+        notification.setSignatureEntenteCandidatureId(entente.getCandidature().getId());
+        notification.setSignatureEntenteEmployeurEmail(entente.getCandidature().getStage().getEmployeurEmail());
+        notification.setSignatureEntenteEtudiantEmail(entente.getCandidature().getEtudiant().getEmail());
+        notification.setSignatureEntenteStageId(entente.getCandidature().getStageId());
+        notification.setGestionnaireReadAt(null); // Pas encore lu par le gestionnaire
+
+        notificationRepository.save(notification);
+    }
+
+    @Transactional
     public void signEntente(Long ententeId, String userEmail) throws Exception {
         Entente entente = ententeRepository.findById(ententeId)
                 .orElseThrow(() -> new IllegalArgumentException("Entente non trouvée"));
@@ -134,6 +173,8 @@ public class EntenteService {
             if (entente.getDateSignatureEmployeur() != null) {
                 // Les deux (étudiant et employeur) ont signé, mais pas encore le gestionnaire
                 entente.setStatus(EntenteStatus.SIGNEE_ETUDIANT_ET_EMPLOYEUR);
+                // Notifier le gestionnaire que les deux parties ont signé
+                createNotificationForGestionnaireWhenBothSigned(entente);
             } else {
                 entente.setStatus(EntenteStatus.SIGNEE_ETUDIANT);
             }
@@ -142,6 +183,8 @@ public class EntenteService {
             if (entente.getDateSignatureEtudiant() != null) {
                 // Les deux (étudiant et employeur) ont signé, mais pas encore le gestionnaire
                 entente.setStatus(EntenteStatus.SIGNEE_ETUDIANT_ET_EMPLOYEUR);
+                // Notifier le gestionnaire que les deux parties ont signé
+                createNotificationForGestionnaireWhenBothSigned(entente);
             } else {
                 entente.setStatus(EntenteStatus.SIGNEE_EMPLOYEUR);
             }

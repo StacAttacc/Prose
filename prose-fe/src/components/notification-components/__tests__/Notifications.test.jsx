@@ -40,6 +40,18 @@ const mockNotifications = {
                 items: [
                     { id: 3, message: 'New application', createdAt: '2024-01-03T10:00:00', candidatureId: 20, etudiantId: 5 }
                 ]
+            },
+            {
+                typeKey: 'signature_entente',
+                items: [
+                    { 
+                        id: 4, 
+                        messageFR: 'L\'étudiant John Doe et l\'employeur ont tous deux signé l\'entente de stage pour Stage en développement',
+                        messageEN: 'Student John Doe and employer have both signed the internship agreement for Stage en développement',
+                        createdAt: '2024-01-04T10:00:00', 
+                        signatureEntenteCandidatureId: 30
+                    }
+                ]
             }
         ]
     }
@@ -55,6 +67,7 @@ describe('Notifications Component', () => {
             'erreurChargementNotifications': 'Network error',
             'nouvellesOffresStage': 'nouvelles offre(s) de stage à approuver',
             'nouvellesCandidatures': 'nouvelles candidature(s) reçue(s)',
+            'signatureEntenteNotification': 'nouvelle(s) entente(s) signée(s) par l\'étudiant et l\'employeur',
             'notifications': 'notification(s)'
         };
         return translations[key] || key;
@@ -88,6 +101,7 @@ describe('Notifications Component', () => {
         await waitFor(() => {
             expect(screen.getByText(/nouvelles offre\(s\) de stage à approuver/i)).toBeInTheDocument();
             expect(screen.getByText(/nouvelles candidature\(s\) reçue\(s\)/i)).toBeInTheDocument();
+            expect(screen.getByText(/nouvelle\(s\) entente\(s\) signée\(s\) par l'étudiant et l'employeur/i)).toBeInTheDocument();
         });
     });
 
@@ -181,13 +195,14 @@ describe('Notifications Component', () => {
 
     it('marks single notification as read and navigates', async () => {
         render(<BrowserRouter><Notifications /></BrowserRouter>);
-        await waitFor(() => screen.getByText(/New application/i));
+        await waitFor(() => screen.getByText(/nouvelles candidature\(s\) reçue\(s\)/i));
 
-        const notificationItem = screen.getByText(/New application/i).closest('div');
-        fireEvent.click(notificationItem);
+        // Trouver la carte de notification pour postulation
+        const postulationCard = screen.getByText(/nouvelles candidature\(s\) reçue\(s\)/i).closest('div[role="button"]');
+        fireEvent.click(postulationCard);
 
         await waitFor(() => {
-            expect(notificationService.markSingleNotificationAsRead).toHaveBeenCalledWith(3, mockUser);
+            expect(notificationService.markManyNotifications).toHaveBeenCalledWith(mockUser, [3]);
             expect(mockNavigate).toHaveBeenCalled();
         });
     });
@@ -196,5 +211,33 @@ describe('Notifications Component', () => {
         useAuth.mockReturnValue({ user: null });
         const { container } = render(<BrowserRouter><Notifications /></BrowserRouter>);
         await waitFor(() => expect(container.firstChild).toBeNull());
+    });
+
+    it('marks signature_entente notification as read and navigates with correct state', async () => {
+        render(<BrowserRouter><Notifications /></BrowserRouter>);
+        await waitFor(() => screen.getByText(/nouvelle\(s\) entente\(s\) signée\(s\) par l'étudiant et l'employeur/i));
+
+        const notificationItem = screen.getByText(/L'étudiant John Doe et l'employeur ont tous deux signé/i).closest('div');
+        fireEvent.click(notificationItem);
+
+        await waitFor(() => {
+            expect(notificationService.markSingleNotificationAsRead).toHaveBeenCalledWith(4, mockUser);
+            expect(mockNavigate).toHaveBeenCalledWith(
+                '/gestionnaire/candidatures',
+                expect.objectContaining({
+                    state: expect.objectContaining({
+                        openCandidatureId: 30,
+                        openTab: 'APPROVED'
+                    })
+                })
+            );
+        });
+    });
+
+    it('displays signature_entente notification message correctly', async () => {
+        render(<BrowserRouter><Notifications /></BrowserRouter>);
+        await waitFor(() => {
+            expect(screen.getByText(/L'étudiant John Doe et l'employeur ont tous deux signé l'entente de stage pour Stage en développement/i)).toBeInTheDocument();
+        });
     });
 });

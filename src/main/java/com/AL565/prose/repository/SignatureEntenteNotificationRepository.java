@@ -9,4 +9,5 @@ import java.util.List;
 public interface SignatureEntenteNotificationRepository extends JpaRepository<SignatureEntenteNotification, Long> {
     List<SignatureEntenteNotification> findSignatureEntenteNotificationsByFirstRecipientReadAtAndSignatureEntenteEmployeurEmail(LocalDateTime firstRecipientReadAt, String employeurEmail);
     List<SignatureEntenteNotification> findSignatureEntenteNotificationsBySecondRecipientReadAtAndSignatureEntenteEtudiantEmail(LocalDateTime secondRecipientReadAt, String etudiantEmail);
+    List<SignatureEntenteNotification> findByGestionnaireReadAtIsNull();
 }

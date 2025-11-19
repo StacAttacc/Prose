@@ -10,11 +10,11 @@ export function NotificationItem({ notification, markAndNavigate, typeKey, setRe
                 <div className="w-7 h-7 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 text-xs">
                     !
                 </div>
-                <div className="min-w-0">
-                    <div className="text-sm font-medium text-gray-900 whitespace-normal break-words overflow-hidden line-clamp-2">
-                        {shortText(notification, 200)}
+                <div className="min-w-0 flex-1">
+                    <div className="text-sm font-medium text-gray-900 whitespace-normal break-words">
+                        {shortText(notification)}
                     </div>
-                    <div className="text-xs text-gray-500">
+                    <div className="text-xs text-gray-500 mt-1">
                         {notification.createdAt ? new Date(notification.createdAt).toLocaleString() : notification.createdAtString || "Unknown time"}
                     </div>
                 </div>
