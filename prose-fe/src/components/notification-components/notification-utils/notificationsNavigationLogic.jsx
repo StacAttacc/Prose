@@ -72,21 +72,21 @@ function getEtudiantPaths({role, notification = null, isGrouped = false, type}) 
                 path: `/etudiant/stages/candidatures`,
             } : {
                 path: `/etudiant/stages/candidatures`,
-                state: { openCandidatureId: notification?.convocation }
+                state: { openCandidatureId: notification?.candidatureId }
             };
         case "candidature_decision":
             return isGrouped ? {
                 path: `/etudiant/stages/candidatures`,
             } : {
                 path: `/etudiant/stages/candidatures`,
-                state: { openCandidatureId: notification?.candidatureDecisionId }
+                state: { openCandidatureId: notification?.candidatureId }
             };
         case "signature_entente":
             return isGrouped ? {
                 path: `/etudiant/stages/candidatures`,
             } : {
                 path: `/etudiant/stages/candidatures`,
-                state: { openEntenteId: notification?.signatureEntenteCandidatureId }
+                state: { openEntenteId: notification?.candidatureId }
             };
         default:
             return {
@@ -102,7 +102,7 @@ function getGestionnairePaths({role, notification = null, isGrouped = false, typ
                 path: getDefaultNavigationPath(role),
             } : {
                 path: getDefaultNavigationPath(role),
-                state: { etudiantOffreDecisionId: notification?.etudiantOffreDecisionId }
+                state: { etudiantOffreDecisionId: notification?.candidatureId }
             };
         case "postulation":
             return isGrouped ? {
@@ -145,7 +145,7 @@ function getGestionnairePaths({role, notification = null, isGrouped = false, typ
             } : {
                 path: getDefaultNavigationPath(role),
                 state: { 
-                    openCandidatureId: notification?.signatureEntenteCandidatureId,
+                    openCandidatureId: notification?.candidatureId,
                     openTab: "APPROVED"
                 }
             };
