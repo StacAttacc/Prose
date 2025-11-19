@@ -5,8 +5,7 @@ import lombok.Getter;
 @Getter
 public enum NotificationType {
     STAGE_NOTIFICATION("stage"),
-    GESTIONNAIRE_CV_NOTIFICATION("gestionnaire_cv"),
-    ETUDIANT_CV_NOTIFICATION("etudiant_cv"),
+    CV_NOTIFICATTION("cv"),
     POSTULATION_NOTIFICATION("postulation"),
     CANDIDATURE_DECISION_NOTIFICATION("candidature_decision"),
     CONVOCATION_NOTIFICATION("convocation"),

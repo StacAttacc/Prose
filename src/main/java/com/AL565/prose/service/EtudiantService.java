@@ -22,7 +22,6 @@ import com.AL565.prose.service.dto.*;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -43,6 +42,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.Instant;
 
+import static com.AL565.prose.model.notifications.NotificationType.CV_NOTIFICATTION;
 import static com.AL565.prose.model.notifications.NotificationType.SIGNATURE_ENTENTE_NOTIFICATION;
 
 @Service
@@ -59,8 +59,7 @@ public class EtudiantService {
     private final EmployeurRepository employeurRepository;
     private final CandidatureRepository candidatureRepository;
     private final NotificationRepository notificationRepository;
-    private final GestionnaireCvNotificationRepository gestionnaireCvNotificationRepository;
-    private final EtudiantCvNotificationRepository etudiantCvNotificationRepository;
+    private final CvNotificationRepository cvNotificationRepository;
     private final ConvocationNotificationRepository convocationNotificationRepository;
     private final EtudiantOffreDecisionNotificationRepository etudiantOffreDecisionNotificationRepository;
     private final CandidatureDecisionNotificationRepository candidatureDecisionNotificationRepository;
@@ -150,12 +149,7 @@ public class EtudiantService {
                 })
                 .orElseGet(() -> cvRepository.save(newCv));
 
-        gestionnaireCvNotificationRepository.findByCv_Id(cvSaved.getId())
-                        .ifPresentOrElse(notification -> {
-                            notification.setFirstRecipientReadAt(null);
-                            notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
-                            notificationRepository.save(notification);
-                        }, () -> createNotificationForNewCV(etudiant, cvSaved));
+        createNotificationForNewCV(etudiant, cvSaved);
     }
 
     private void createNotificationForNewCV(Etudiant etudiant, CV cv) {
@@ -163,11 +157,13 @@ public class EtudiantService {
             throw new IllegalArgumentException("Vous devez avoir un cv");
         }
         String etudiantName = etudiant.getFirstName() + " " + etudiant.getLastName();
-        GestionnaireCvNotification notification = new GestionnaireCvNotification();
-        notification.setCv(cv);
+        CvNotification notification = new CvNotification();
+        notification.setCvId(cv.getId());
         notification.setFirstRecipientReadAt(null);
+        notification.setSecondRecipientReadAt(LocalDateTime.now());
+        notification.setTargetEmail(etudiant.getEmail());
         notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
-        notification.setType(NotificationType.GESTIONNAIRE_CV_NOTIFICATION);
+        notification.setType(NotificationType.CV_NOTIFICATTION);
         notification.setMessageFR(etudiantName + " a soumis un nouveau CV");
         notification.setMessageEN(etudiantName + " has submitted a new CV");
         notificationRepository.save(notification);
@@ -267,9 +263,9 @@ public class EtudiantService {
 
     public NotificationsResponseDTO getStudentsNotifications(String etudiantEmail) throws Exception {
         try {
-            List<EtudiantCvNotification> cvNotifications = etudiantCvNotificationRepository
-                    .findEtudiantCvNotificationsByFirstRecipientReadAtAndEtudiantEmail(
-                            null, etudiantEmail
+            List<CvNotification> cvNotifications = cvNotificationRepository
+                    .findCvNotificationsByFirstRecipientReadAtIsNotNullAndSecondRecipientReadAtIsNullAndTargetEmail(
+                            etudiantEmail
                     );
             List<ConvocationNotification> convocationNotifications = convocationNotificationRepository
                     .findByFirstRecipientReadAtAndEtudiantConvocationEmail(
@@ -285,7 +281,7 @@ public class EtudiantService {
                     );
 
             NotificationGroupDTO cvGroup = NotificationGroupDTO
-                    .toDTO(NotificationType.ETUDIANT_CV_NOTIFICATION.getDisplayName(), cvNotifications);
+                    .toDTO(NotificationType.CV_NOTIFICATTION.getDisplayName(), cvNotifications);
             NotificationGroupDTO convocationGroup = NotificationGroupDTO
                     .toDTO(NotificationType.CONVOCATION_NOTIFICATION.getDisplayName(), convocationNotifications);
             NotificationGroupDTO candidatureDecisionGroup = NotificationGroupDTO
@@ -307,7 +303,7 @@ public class EtudiantService {
     public void markNotificationAsRead(Long notificationId) throws Exception {
         Notification notification = notificationRepository.findById(notificationId)
                 .orElseThrow(NotificationExceptions.NotificationFetchException::new);
-        if (Objects.requireNonNull(notification.getType()) == SIGNATURE_ENTENTE_NOTIFICATION) {
+        if (notification.getType() == SIGNATURE_ENTENTE_NOTIFICATION || notification.getType() == CV_NOTIFICATTION) {
             notification.setSecondRecipientReadAt(LocalDateTime.now());
             notificationRepository.save(notification);
         } else {

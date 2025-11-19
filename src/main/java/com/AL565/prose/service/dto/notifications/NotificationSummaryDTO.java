@@ -71,9 +71,9 @@ public class NotificationSummaryDTO {
                     if (etudiantResponseId != null) etudiantId = etudiantResponseId;
                 }
             }
-            case GestionnaireCvNotification gcn -> {
-                if (gcn.getCv() != null) {
-                    cvId = gcn.getCv().getId();
+            case CvNotification gcn -> {
+                if (gcn.getCvId() != null) {
+                    cvId = gcn.getCvId();
                 }
             }
             case ConvocationNotification cn -> {

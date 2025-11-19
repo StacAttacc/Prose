@@ -63,7 +63,7 @@ function getEmployeurPaths({role, notification = null, isGrouped = false, type})
 
 function getEtudiantPaths({role, notification = null, isGrouped = false, type}) {
     switch (type) {
-        case "etudiant_cv":
+        case "cv":
             return {
                 path: `/etudiant/mon-cv`,
             };
@@ -118,7 +118,7 @@ function getGestionnairePaths({role, notification = null, isGrouped = false, typ
                 path: "/gestionnaire/list-stages",
                 state: { openStageId: notification?.stageId }
             };
-        case "gestionnaire_cv":
+        case "cv":
             return isGrouped ? {
                 path: "/gestionnaire/gestion-cv",
             } : {
@@ -146,7 +146,7 @@ function getGestionnairePaths({role, notification = null, isGrouped = false, typ
                 path: getDefaultNavigationPath(role),
                 state: { 
                     openCandidatureId: notification?.signatureEntenteCandidatureId,
-                    openTab: "APPROVED" // Ouvrir l'onglet APPROVED car l'entente est signée par étudiant et employeur
+                    openTab: "APPROVED"
                 }
             };
         default:

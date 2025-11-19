@@ -190,7 +190,7 @@ public class GestionnaireService {
                 List<Notification> postulations = notificationRepository
                         .findNotificationsByTypeAndSecondRecipientReadAt(NotificationType.POSTULATION_NOTIFICATION, null);
                 List<Notification> cvs = notificationRepository
-                        .findNotificationsByTypeAndFirstRecipientReadAt(NotificationType.GESTIONNAIRE_CV_NOTIFICATION, null);
+                        .findNotificationsByTypeAndFirstRecipientReadAt(NotificationType.CV_NOTIFICATTION, null);
                 List<Notification> convocations = notificationRepository
                         .findNotificationsByTypeAndSecondRecipientReadAt(NotificationType.CONVOCATION_NOTIFICATION, null);
                 List<Notification> candidatureDecisions = notificationRepository
@@ -205,7 +205,7 @@ public class GestionnaireService {
                 NotificationGroupDTO postulationGroup = NotificationGroupDTO
                         .toDTO(NotificationType.POSTULATION_NOTIFICATION.getDisplayName(), postulations);
                 NotificationGroupDTO cvsGroup = NotificationGroupDTO
-                        .toDTO(NotificationType.GESTIONNAIRE_CV_NOTIFICATION.getDisplayName(), cvs);
+                        .toDTO(NotificationType.CV_NOTIFICATTION.getDisplayName(), cvs);
                 NotificationGroupDTO convocationsGroup = NotificationGroupDTO
                         .toDTO(NotificationType.CONVOCATION_NOTIFICATION.getDisplayName(), convocations);
                 NotificationGroupDTO candidatureDecisionsGroup = NotificationGroupDTO
@@ -238,8 +238,7 @@ public class GestionnaireService {
                  CANDIDATURE_DECISION_NOTIFICATION,
                  ETUDIANT_OFFRE_DECCISION_NOTIFICATION -> markPostulationAsReadBySecondRecipient(notificationId);
             case SIGNATURE_ENTENTE_NOTIFICATION -> {
-                if (notification instanceof SignatureEntenteNotification) {
-                    SignatureEntenteNotification signatureNotification = (SignatureEntenteNotification) notification;
+                if (notification instanceof SignatureEntenteNotification signatureNotification) {
                     signatureNotification.setGestionnaireReadAt(LocalDateTime.now());
                     signatureEntenteNotificationRepository.save(signatureNotification);
                 }
@@ -250,7 +249,7 @@ public class GestionnaireService {
 
     @Transactional
     public void createStudentNotificationForReviewedCV(CV cv) {
-        EtudiantCvNotification notification = new EtudiantCvNotification();
+        CvNotification notification = new CvNotification();
         if (cv.getStatus() == CvStatus.PENDING) {
             return;
         }
@@ -264,10 +263,11 @@ public class GestionnaireService {
             case REJECTED -> "rejected";
             default -> "";
         };
-        notification.setFirstRecipientReadAt(null);
+        notification.setSecondRecipientReadAt(null);
+        notification.setFirstRecipientReadAt(LocalDateTime.now());
         notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
-        notification.setType(NotificationType.ETUDIANT_CV_NOTIFICATION);
-        notification.setEtudiantEmail(cv.getEtudiant().getEmail());
+        notification.setType(NotificationType.CV_NOTIFICATTION);
+        notification.setTargetEmail(cv.getEtudiant().getEmail());
         notification.setMessageFR("Votre CV a été " + statusMessageFR);
         notification.setMessageEN("Your CV has been " + statusMessageEN);
         notificationRepository.save(notification);
