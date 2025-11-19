@@ -72,8 +72,8 @@ public class EmployeurService {
         String employeurName = employeur.getFirstName() + " " + employeur.getLastName();
         StageNotification notification = new StageNotification();
         notification.setFirstRecipientReadAt(null);
-        notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
-        notification.setStage(stage);
+        notification.setCreatedAt(LocalDateTime.now());
+        notification.setStageId(stage.getId());
         notification.setType(NotificationType.STAGE_NOTIFICATION);
         notification.setMessageFR(employeurName + " a créé le stage " + stage.getTitle());
         notification.setMessageEN(employeurName + " has created the internship " + stage.getTitle());
@@ -169,13 +169,13 @@ public class EmployeurService {
         CandidatureDecisionNotification notification = new CandidatureDecisionNotification();
         notification.setFirstRecipientReadAt(null);
         notification.setSecondRecipientReadAt(null);
-        notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
+        notification.setCreatedAt(LocalDateTime.now());
         notification.setType(NotificationType.CANDIDATURE_DECISION_NOTIFICATION);
         notification.setMessageFR(notifMessageFR);
         notification.setMessageEN(notifMessageEN);
-        notification.setCandidatureDecisionId(candidature.getId());
-        notification.setCandidatureDecisionEtudiantEmail(candidature.getEtudiant().getEmail());
-        notification.setCandidatureDecisionEtudiantId(candidature.getEtudiant().getId());
+        notification.setCandidatureId(candidature.getId());
+        notification.setTargetEmail(candidature.getEtudiant().getEmail());
+        notification.setEtudiantId(candidature.getEtudiant().getId());
         notificationRepository.save(notification);
     }
 
@@ -249,13 +249,13 @@ public class EmployeurService {
         ConvocationNotification notification = new ConvocationNotification();
         notification.setFirstRecipientReadAt(null);
         notification.setSecondRecipientReadAt(null);
-        notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
-        notification.setCandidatureConvocationId(candidature.getId());
+        notification.setCreatedAt(LocalDateTime.now());
+        notification.setCandidatureId(candidature.getId());
         notification.setType(NotificationType.CONVOCATION_NOTIFICATION);
         notification.setMessageFR(notifMessageFR);
         notification.setMessageEN(notifMessageEN);
-        notification.setEtudiantConvocationEmail(candidature.getEtudiant().getEmail());
-        notification.setEtudiantConvocationId(candidature.getEtudiant().getId());
+        notification.setTargetEmail(candidature.getEtudiant().getEmail());
+        notification.setEtudiantId(candidature.getEtudiant().getId());
         notificationRepository.save(notification);
     }
 }

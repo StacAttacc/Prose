@@ -20,7 +20,6 @@ import com.AL565.prose.security.JwtTokenProvider;
 import com.AL565.prose.service.dto.*;
 
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -162,7 +161,7 @@ public class EtudiantService {
         notification.setFirstRecipientReadAt(null);
         notification.setSecondRecipientReadAt(LocalDateTime.now());
         notification.setTargetEmail(etudiant.getEmail());
-        notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
+        notification.setCreatedAt(LocalDateTime.now());
         notification.setType(NotificationType.CV_NOTIFICATTION);
         notification.setMessageFR(etudiantName + " a soumis un nouveau CV");
         notification.setMessageEN(etudiantName + " has submitted a new CV");
@@ -234,11 +233,11 @@ public class EtudiantService {
         String companyName = candidature.getStage().getTitle();
         PostulationNotification notification = new PostulationNotification();
         notification.setFirstRecipientReadAt(null);
-        notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
-        notification.setCandidaturePostulationId(candidature.getId());
-        notification.setEtudiantPostulationId(candidature.getEtudiant().getId());
-        notification.setStagePostulationId(candidature.getStage().getId());
-        notification.setEmployeurEmail(candidature.getStage().getEmployeurEmail());
+        notification.setCreatedAt(LocalDateTime.now());
+        notification.setCandidatureId(candidature.getId());
+        notification.setEtudiantId(candidature.getEtudiant().getId());
+        notification.setStageId(candidature.getStage().getId());
+        notification.setTargetEmail(candidature.getStage().getEmployeurEmail());
         notification.setType(NotificationType.POSTULATION_NOTIFICATION);
         notification.setMessageFR(studentName + " a postulé pour le stage " + companyName);
         notification.setMessageEN(studentName + " has applied for the " + companyName + " internship");
@@ -272,9 +271,7 @@ public class EtudiantService {
                             null, etudiantEmail
                     );
             List<CandidatureDecisionNotification> candidatureDecisions = candidatureDecisionNotificationRepository
-                    .findCandidatureDecisionNotificationsByFirstRecipientReadAtAndCandidatureDecisionEtudiantEmail(
-                            null, etudiantEmail
-                    );
+                    .findCandidatureDecisionNotificationsByFirstRecipientReadAtIsNullAndTargetEmail(etudiantEmail);
             List<SignatureEntenteNotification> signatureEntentes = signatureEntenteNotificationRepository
                     .findSignatureEntenteNotificationsBySecondRecipientReadAtAndSignatureEntenteEtudiantEmail(
                             null, etudiantEmail
@@ -335,7 +332,7 @@ public class EtudiantService {
             candidature.setDecision(responseDTO.getComment());
         }
 
-        candidature.setDateDecision(java.time.LocalDateTime.now());
+        candidature.setDateDecision(LocalDateTime.now());
 
         candidatureRepository.save(candidature);
 
@@ -352,12 +349,11 @@ public class EtudiantService {
         String messageEN = studentName + " has " + decisionEN + " the offer for " + stageTitle;
 
         EtudiantOffreDecisionNotification notification = new EtudiantOffreDecisionNotification();
-        notification.setFirstRecipientReadAt(null);
-        notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
-        notification.setCandidatureResponseId(candidature.getId());
-        notification.setEtudiantResponseId(candidature.getEtudiant().getId());
-        notification.setStageResponseId(candidature.getStage().getId());
-        notification.setEmployeurResponseEmail(candidature.getStage().getEmployeurEmail());
+        notification.setCreatedAt(LocalDateTime.now());
+        notification.setCandidatureId(candidature.getId());
+        notification.setEtudiantId(candidature.getEtudiant().getId());
+        notification.setStageId(candidature.getStage().getId());
+        notification.setTargetEmail(candidature.getStage().getEmployeurEmail());
         notification.setOffreAcceptedByStudent(accepted);
         notification.setType(NotificationType.ETUDIANT_OFFRE_DECCISION_NOTIFICATION);
         notification.setMessageFR(messageFR);

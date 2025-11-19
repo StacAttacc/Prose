@@ -110,27 +110,24 @@ public class EntenteService {
         notification.setMessageFR(messageFR);
         notification.setMessageEN(messageEN);
         notification.setType(NotificationType.SIGNATURE_ENTENTE_NOTIFICATION);
-        notification.setSignatureEntenteCandidatureId(entente.getCandidature().getId());
+        notification.setCandidatureId(entente.getCandidature().getId());
         notification
-                .setSignatureEntenteEmployeurEmail(entente.getCandidature().getStage().getEmployeurEmail());
-        notification.setSignatureEntenteEtudiantEmail(entente.getCandidature().getEtudiant().getEmail());
-        notification.setSignatureEntenteStageId(entente.getCandidature().getStageId());
+                .setTargetEmployeurEmail(entente.getCandidature().getStage().getEmployeurEmail());
+        notification.setTargetEtudiantEmail(entente.getCandidature().getEtudiant().getEmail());
+        notification.setStageId(entente.getCandidature().getStageId());
 
         notificationRepository.save(notification);
     }
 
     @Transactional
     public void createNotificationForGestionnaireWhenBothSigned(Entente entente) {
-        // Vérifier si une notification existe déjà pour cette candidature avec gestionnaireReadAt null
-        // pour éviter les doublons
         List<SignatureEntenteNotification> existingNotifications = signatureEntenteNotificationRepository
                 .findByGestionnaireReadAtIsNullAndFirstRecipientReadAtIsNotNullAndSecondRecipientReadAtIsNotNull()
                 .stream()
-                .filter(n -> n.getSignatureEntenteCandidatureId() != null 
-                        && n.getSignatureEntenteCandidatureId().equals(entente.getCandidature().getId()))
+                .filter(n -> n.getCandidatureId() != null
+                        && n.getCandidatureId().equals(entente.getCandidature().getId()))
                 .toList();
         
-        // Si une notification existe déjà, ne pas en créer une nouvelle
         if (!existingNotifications.isEmpty()) {
             return;
         }
@@ -147,13 +144,12 @@ public class EntenteService {
         notification.setMessageFR(messageFR);
         notification.setMessageEN(messageEN);
         notification.setType(NotificationType.SIGNATURE_ENTENTE_NOTIFICATION);
-        notification.setSignatureEntenteCandidatureId(entente.getCandidature().getId());
-        notification.setSignatureEntenteEmployeurEmail(entente.getCandidature().getStage().getEmployeurEmail());
-        notification.setSignatureEntenteEtudiantEmail(entente.getCandidature().getEtudiant().getEmail());
+        notification.setCandidatureId(entente.getCandidature().getId());
+        notification.setTargetEmployeurEmail(entente.getCandidature().getStage().getEmployeurEmail());
+        notification.setTargetEtudiantEmail(entente.getCandidature().getEtudiant().getEmail());
         notification.setFirstRecipientReadAt(LocalDateTime.now());
         notification.setSecondRecipientReadAt(LocalDateTime.now());
-        notification.setSignatureEntenteStageId(entente.getCandidature().getStageId());
-        notification.setGestionnaireReadAt(null); // Pas encore lu par le gestionnaire
+        notification.setStageId(entente.getCandidature().getStageId());
 
         notificationRepository.save(notification);
     }

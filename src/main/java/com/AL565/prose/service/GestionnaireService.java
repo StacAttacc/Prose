@@ -213,7 +213,7 @@ public class GestionnaireService {
                 NotificationGroupDTO etudiantOffresResponsesGroup = NotificationGroupDTO
                         .toDTO(NotificationType.ETUDIANT_OFFRE_DECCISION_NOTIFICATION.getDisplayName(), etudiantOffresResponses);
                 NotificationGroupDTO signatureEntentesGroup = NotificationGroupDTO
-                        .toDTO(NotificationType.SIGNATURE_ENTENTE_NOTIFICATION.getDisplayName(), signatureEntentes.stream().map(n -> (Notification) n).toList());
+                        .toDTO(NotificationType.SIGNATURE_ENTENTE_NOTIFICATION.getDisplayName(), signatureEntentes);
 
             return NotificationsResponseDTO
                     .toDTO(List.of(stagesGroup,
@@ -239,7 +239,7 @@ public class GestionnaireService {
                  ETUDIANT_OFFRE_DECCISION_NOTIFICATION -> markPostulationAsReadBySecondRecipient(notificationId);
             case SIGNATURE_ENTENTE_NOTIFICATION -> {
                 if (notification instanceof SignatureEntenteNotification signatureNotification) {
-                    signatureNotification.setGestionnaireReadAt(LocalDateTime.now());
+                    signatureNotification.setThirdRecipientReadAt(LocalDateTime.now());
                     signatureEntenteNotificationRepository.save(signatureNotification);
                 }
             }
@@ -278,7 +278,7 @@ public class GestionnaireService {
         try {
             Notification notification = notificationRepository.findById(notificationId)
                     .orElseThrow(NotificationExceptions.NotificationFetchException::new);
-            notification.setSecondRecipientReadAt(OffsetDateTime.now().toLocalDateTime());
+            notification.setSecondRecipientReadAt(LocalDateTime.now());
             notificationRepository.save(notification);
         } catch (Exception e) {
             throw new NotificationExceptions.NotificationFetchException();

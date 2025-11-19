@@ -16,9 +16,9 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SignatureEntenteNotification extends Notification {
-    private Long signatureEntenteCandidatureId;
-    private String signatureEntenteEmployeurEmail;
-    private String signatureEntenteEtudiantEmail;
-    private LocalDateTime gestionnaireReadAt;
-    private Long signatureEntenteStageId;
+    private Long candidatureId;
+    private String targetEmployeurEmail;
+    private String targetEtudiantEmail;
+    private LocalDateTime thirdRecipientReadAt;
+    private Long stageId;
 }
