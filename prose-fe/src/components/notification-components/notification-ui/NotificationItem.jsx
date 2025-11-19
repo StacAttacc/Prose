@@ -1,6 +1,5 @@
 import React from 'react';
-import { useI18n } from '../../../context/I18nContext';
-import { shortText } from "../notification-utils/notificationTextLogic.jsx";
+import {notificationTime, shortText} from "../notification-utils/notificationTextLogic.jsx";
 import {NotificationCloseButton} from "./NotificationCloseButton.jsx";
 
 export function NotificationItem({ notification, markAndNavigate, typeKey, setReadCounter, markAndReload }) {
@@ -15,7 +14,7 @@ export function NotificationItem({ notification, markAndNavigate, typeKey, setRe
                         {shortText(notification)}
                     </div>
                     <div className="text-xs text-gray-500 mt-1">
-                        {(notification.createdAt).toLocaleString()}
+                        {notificationTime(notification.createdAt)}
                     </div>
                 </div>
             </>

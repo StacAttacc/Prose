@@ -22,3 +22,14 @@ export function shortText(notification, max = 80) {
 
     return message.length <= max ? message : message.slice(0, max - 3) + "...";
 }
+
+export function notificationTime(timestamp) {
+    const date = new Date(timestamp);
+    return date.toLocaleDateString(useI18n().locale, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
