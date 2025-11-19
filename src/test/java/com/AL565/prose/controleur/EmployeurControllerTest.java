@@ -11,7 +11,6 @@ import com.AL565.prose.security.JwtTokenProvider;
 import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.dto.EmployeurPasswordDTO;
 import com.AL565.prose.service.EmployeurService;
-import com.AL565.prose.service.dto.notifications.NotificationGroupDTO;
 import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
 import com.AL565.prose.service.exceptions.InvalidCandidatureModificationException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -90,10 +89,7 @@ class EmployeurControllerTest {
     private PostulationNotificationRepository postulationNotificationRepository;
 
     @MockitoBean
-    private EtudiantCvNotificationRepository etudiantCvNotificationRepository;
-
-    @MockitoBean
-    private GestionnaireCvNotificationRepository gestionnaireCvNotificationRepository;
+    private CvNotificationRepository cvNotificationRepository;
 
     @MockitoBean
     private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;

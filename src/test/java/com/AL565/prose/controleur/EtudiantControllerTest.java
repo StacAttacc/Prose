@@ -74,10 +74,7 @@ class EtudiantControllerTest {
     private PostulationNotificationRepository postulationNotificationRepository;
 
     @MockitoBean
-    private EtudiantCvNotificationRepository etudiantCvNotificationRepository;
-
-    @MockitoBean
-    private GestionnaireCvNotificationRepository gestionnaireCvNotificationRepository;
+    private CvNotificationRepository cvNotificationRepository;
 
     @MockitoBean
     private JwtTokenProvider jwtTokenProvider;

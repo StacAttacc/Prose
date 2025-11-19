@@ -29,7 +29,7 @@ class NotificationsServiceLayerTest {
     @Mock
     private PostulationNotificationRepository postulationNotificationRepository;
     @Mock
-    private EtudiantCvNotificationRepository etudiantCvNotificationRepository;
+    private CvNotificationRepository cvNotificationRepository;
     @Mock
     private EtudiantRepository etudiantRepository;
     @Mock
@@ -46,8 +46,6 @@ class NotificationsServiceLayerTest {
     private EmployeurRepository employeurRepository;
     @Mock
     private CandidatureRepository candidatureRepository;
-    @Mock
-    private GestionnaireCvNotificationRepository gestionnaireCvNotificationRepository;
     @Mock
     private EtudiantOffreDecisionNotificationRepository etudiantOffreDecisionNotificationRepository;
     @Mock
@@ -89,13 +87,13 @@ class NotificationsServiceLayerTest {
         n3.setMessageEN("New application");
         n3.setCreatedAt(LocalDateTime.now());
 
-        GestionnaireCvNotification n4 = new GestionnaireCvNotification();
-        n4.setType(NotificationType.GESTIONNAIRE_CV_NOTIFICATION);
+        CvNotification n4 = new CvNotification();
+        n4.setType(NotificationType.CV_NOTIFICATTION);
         n4.setMessageEN("New CV uploaded");
         n4.setCreatedAt(LocalDateTime.now());
 
-        EtudiantCvNotification n5 = new EtudiantCvNotification();
-        n5.setType(NotificationType.ETUDIANT_CV_NOTIFICATION);
+        CvNotification n5 = new CvNotification();
+        n5.setType(NotificationType.CV_NOTIFICATTION);
         n5.setMessageEN("CV processed");
         n5.setCreatedAt(LocalDateTime.now());
 
@@ -125,13 +123,28 @@ class NotificationsServiceLayerTest {
         when(notificationRepository.findNotificationsByTypeAndSecondRecipientReadAt(NotificationType.POSTULATION_NOTIFICATION, null))
                 .thenReturn(List.of(n3));
 
-        when(notificationRepository.findNotificationsByTypeAndFirstRecipientReadAt(NotificationType.GESTIONNAIRE_CV_NOTIFICATION, null))
+        when(notificationRepository.findNotificationsByTypeAndFirstRecipientReadAt(NotificationType.CV_NOTIFICATTION, null))
                 .thenReturn(List.of(n4));
 
-        when(etudiantCvNotificationRepository.findEtudiantCvNotificationsByFirstRecipientReadAtAndEtudiantEmail(
-                null,
+        when(cvNotificationRepository.findCvNotificationsByFirstRecipientReadAtIsNotNullAndSecondRecipientReadAtIsNullAndTargetEmail(
                 "dummy@email.com"
         )).thenReturn(List.of(n5));
+
+        when(postulationNotificationRepository.findByFirstRecipientReadAtAndEmployeurEmail(
+                null,
+                "dummy@email.com"
+        )).thenReturn(List.of(n3));
+
+        when(signatureEntenteNotificationRepository.findSignatureEntenteNotificationsByFirstRecipientReadAtAndSignatureEntenteEmployeurEmail(
+                null,
+                "dummy@email.com"
+        )).thenReturn(List.of(n9));
+
+        when(etudiantOffreDecisionNotificationRepository.findByEmployeurResponseEmailAndFirstRecipientReadAt(
+                "dummy@email.com",
+                null
+        )).thenReturn(List.of(n6));
+
 
         when(etudiantOffreDecisionNotificationRepository.findByEmployeurResponseEmailAndFirstRecipientReadAt(
                 "dummy@email.com",
@@ -164,7 +177,7 @@ class NotificationsServiceLayerTest {
 
         assertThat(gestionnaireResult).isNotNull();
         assertThat(gestionnaireResult.getTotalCount()).isEqualTo(4);
-        assertThat(gestionnaireResult.getGroups()).hasSize(6);
+        assertThat(gestionnaireResult.getGroups()).hasSize(7);
         assertThat(gestionnaireResult.getGroups().get(0).getItems()).hasSize(2);
         assertThat(gestionnaireResult.getGroups().get(0).getItems().getFirst().getMessageEN()).isEqualTo("Stage submitted");
         assertThat(gestionnaireResult.getGroups().get(1).getItems().getFirst().getMessageEN()).isEqualTo("New application");
@@ -177,13 +190,13 @@ class NotificationsServiceLayerTest {
         assertThat(etudiantResult.getGroups().getFirst().getItems().getFirst().getMessageEN()).isEqualTo("CV processed");
         assertThat(etudiantResult.getGroups().get(1).getItems().getFirst().getMessageEN()).isEqualTo("New convocation");
         assertThat(etudiantResult.getGroups().get(2).getItems().getFirst().getMessageEN()).isEqualTo("Candidature decision made");
-        assertThat(etudiantResult.getGroups().get(2).getItems().getFirst().getMessageEN()).isEqualTo("Entente needs to be signed");
+        assertThat(etudiantResult.getGroups().get(3).getItems().getFirst().getMessageEN()).isEqualTo("Entente needs to be signed");
 
         assertThat(employeurResult).isNotNull();
-        assertThat(employeurResult.getTotalCount()).isEqualTo(2);
-        assertThat(employeurResult.getGroups()).hasSize(2);
+        assertThat(employeurResult.getTotalCount()).isEqualTo(3);
+        assertThat(employeurResult.getGroups()).hasSize(3);
         assertThat(employeurResult.getGroups().getFirst().getItems()).hasSize(1);
-        assertThat(employeurResult.getGroups().getFirst().getItems().getFirst().getMessageEN()).isEqualTo("Offer decision made");
+        assertThat(employeurResult.getGroups().getFirst().getItems().getFirst().getMessageEN()).isEqualTo("New application");
         assertThat(employeurResult.getGroups().get(1).getItems().getFirst().getMessageEN()).isEqualTo("Entente needs to be signed");
     }
 

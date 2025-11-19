@@ -45,9 +45,7 @@ class EtudiantServiceTest {
     @Mock
     private NotificationRepository notificationRepository;
     @Mock
-    private GestionnaireCvNotificationRepository gestionnaireCvNotificationRepository;
-    @Mock
-    private EtudiantCvNotificationRepository etudiantCvNotificationRepository;
+    private CvNotificationRepository cvNotificationRepository;
     @Mock
     private ConvocationNotificationRepository convocationNotificationRepository;
     @Mock

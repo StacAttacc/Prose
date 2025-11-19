@@ -3,7 +3,7 @@ package com.AL565.prose.controleur;
 import com.AL565.prose.controller.GestionnaireController;
 import com.AL565.prose.model.*;
 import com.AL565.prose.model.auth.Credentials;
-import com.AL565.prose.model.notifications.GestionnaireCvNotification;
+import com.AL565.prose.model.notifications.CvNotification;
 import com.AL565.prose.model.notifications.NotificationType;
 import com.AL565.prose.model.notifications.PostulationNotification;
 import com.AL565.prose.model.notifications.StageNotification;
@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -70,19 +71,22 @@ class GestionnaireControllerTest {
     private NotificationRepository notificationRepository;
 
     @MockitoBean
+    private GestionnaireRepository gestionnaireRepository;
+
+    @MockitoBean
     private PostulationNotificationRepository postulationNotificationRepository;
 
     @MockitoBean
-    private EtudiantCvNotificationRepository etudiantCvNotificationRepository;
-
-    @MockitoBean
-    private GestionnaireCvNotificationRepository gestionnaireCvNotificationRepository;
+    private CvNotificationRepository cvNotificationRepository;
 
     @MockitoBean
     private CvRepository cvRepository;
 
     @MockitoBean
     private JwtTokenProvider jwtTokenProvider;
+
+    @MockitoBean
+    private PasswordEncoder passwordEncoder;
 
     @Autowired
     ObjectMapper objectMapper;
@@ -420,8 +424,8 @@ class GestionnaireControllerTest {
         n3.setMessageEN("New application");
         n3.setCreatedAt(LocalDateTime.now());
 
-        GestionnaireCvNotification n4 = new GestionnaireCvNotification();
-        n4.setType(NotificationType.GESTIONNAIRE_CV_NOTIFICATION);
+        CvNotification n4 = new CvNotification();
+        n4.setType(NotificationType.CV_NOTIFICATTION);
         n4.setMessageEN("New CV uploaded");
         n4.setCreatedAt(LocalDateTime.now());
 
@@ -430,7 +434,7 @@ class GestionnaireControllerTest {
         NotificationGroupDTO postulationGroup = NotificationGroupDTO
                 .toDTO(NotificationType.POSTULATION_NOTIFICATION.getDisplayName(), List.of(n3));
         NotificationGroupDTO cvGroup = NotificationGroupDTO
-                .toDTO(NotificationType.GESTIONNAIRE_CV_NOTIFICATION.getDisplayName(), List.of(n4));
+                .toDTO(NotificationType.CV_NOTIFICATTION.getDisplayName(), List.of(n4));
         NotificationsResponseDTO response = NotificationsResponseDTO.toDTO(List.of(stageGroup, postulationGroup, cvGroup));
 
         when(gestionnaireService.getGestionnaireNotifications()).thenReturn(response);
