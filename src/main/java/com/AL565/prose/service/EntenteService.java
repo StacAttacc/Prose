@@ -124,7 +124,7 @@ public class EntenteService {
         // Vérifier si une notification existe déjà pour cette candidature avec gestionnaireReadAt null
         // pour éviter les doublons
         List<SignatureEntenteNotification> existingNotifications = signatureEntenteNotificationRepository
-                .findByGestionnaireReadAtIsNull()
+                .findByGestionnaireReadAtIsNullAndFirstRecipientReadAtIsNotNullAndSecondRecipientReadAtIsNotNull()
                 .stream()
                 .filter(n -> n.getSignatureEntenteCandidatureId() != null 
                         && n.getSignatureEntenteCandidatureId().equals(entente.getCandidature().getId()))
@@ -150,6 +150,8 @@ public class EntenteService {
         notification.setSignatureEntenteCandidatureId(entente.getCandidature().getId());
         notification.setSignatureEntenteEmployeurEmail(entente.getCandidature().getStage().getEmployeurEmail());
         notification.setSignatureEntenteEtudiantEmail(entente.getCandidature().getEtudiant().getEmail());
+        notification.setFirstRecipientReadAt(LocalDateTime.now());
+        notification.setSecondRecipientReadAt(LocalDateTime.now());
         notification.setSignatureEntenteStageId(entente.getCandidature().getStageId());
         notification.setGestionnaireReadAt(null); // Pas encore lu par le gestionnaire
 

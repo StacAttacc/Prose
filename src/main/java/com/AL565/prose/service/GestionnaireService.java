@@ -198,7 +198,7 @@ public class GestionnaireService {
                 List<Notification> etudiantOffresResponses = notificationRepository
                         .findNotificationsByTypeAndSecondRecipientReadAt(NotificationType.ETUDIANT_OFFRE_DECCISION_NOTIFICATION, null);
                 List<SignatureEntenteNotification> signatureEntentes = signatureEntenteNotificationRepository
-                        .findByGestionnaireReadAtIsNull();
+                        .findByGestionnaireReadAtIsNullAndFirstRecipientReadAtIsNotNullAndSecondRecipientReadAtIsNotNull();
 
                 NotificationGroupDTO stagesGroup = NotificationGroupDTO
                         .toDTO(NotificationType.STAGE_NOTIFICATION.getDisplayName(), stages);

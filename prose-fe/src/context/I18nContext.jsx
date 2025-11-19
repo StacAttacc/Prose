@@ -549,7 +549,7 @@ const translations = {
     proseTagline: 'The simple meeting between students and employers.',
     glauconQuote: 'A man\'s justice is measured less by his public acts than by what he would do if he were certain he would never be seen.',
     glauconAuthor: 'Glaucon',
-    
+
     // Notifications
     signatureEntenteNotification: 'new agreement(s) signed by student and employer',
     nouvellesOffresStage: 'new internship offer(s) to approve',
