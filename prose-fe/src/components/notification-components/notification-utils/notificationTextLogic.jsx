@@ -14,17 +14,11 @@ export function labelForKey(key) {
     }
 }
 
-export function shortText(notification, max = Infinity) {
+export function shortText(notification, max = 80) {
     if (!notification.messageFR && !notification.messageEN) return "";
     const message = useI18n().locale === 'en' 
         ? (notification.messageEN || "") 
         : (notification.messageFR || "");
-    
-    // Si max est Infinity ou si le message est plus court que max, retourner le message complet
-    if (max === Infinity || message.length <= max) {
-        return message;
-    }
-    
-    // Sinon, tronquer le message
-    return message.slice(0, max - 3) + "...";
+
+    return message.length <= max ? message : message.slice(0, max - 3) + "...";
 }

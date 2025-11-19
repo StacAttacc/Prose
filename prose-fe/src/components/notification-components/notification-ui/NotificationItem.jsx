@@ -15,7 +15,7 @@ export function NotificationItem({ notification, markAndNavigate, typeKey, setRe
                         {shortText(notification)}
                     </div>
                     <div className="text-xs text-gray-500 mt-1">
-                        {notification.createdAt ? new Date(notification.createdAt).toLocaleString() : notification.createdAtString || "Unknown time"}
+                        {(notification.createdAt).toLocaleString()}
                     </div>
                 </div>
             </>
