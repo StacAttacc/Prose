@@ -160,6 +160,7 @@ export default function AssociationProfesseurEtudiant() {
             }
             
             setError(errorMessage);
+            setSuccess("");
         } finally {
             setSubmitting(false);
         }

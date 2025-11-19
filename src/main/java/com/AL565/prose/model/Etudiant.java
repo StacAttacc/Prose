@@ -14,7 +14,7 @@ public class Etudiant extends ProseUser {
     @Enumerated(EnumType.STRING)
     private Discipline discipline;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "professeur_id")
     Professeur professeurResponsable;
 
