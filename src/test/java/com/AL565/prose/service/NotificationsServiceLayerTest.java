@@ -117,66 +117,61 @@ class NotificationsServiceLayerTest {
         n9.setMessageEN("Entente needs to be signed");
         n9.setCreatedAt(LocalDateTime.now());
 
-        when(notificationRepository.findNotificationsByTypeAndFirstRecipientReadAt(NotificationType.STAGE_NOTIFICATION, null))
+        when(notificationRepository.findNotificationsByTypeAndFirstRecipientReadAtIsNull(NotificationType.STAGE_NOTIFICATION))
                 .thenReturn(List.of(n1, n2));
 
-        when(notificationRepository.findNotificationsByTypeAndSecondRecipientReadAt(NotificationType.POSTULATION_NOTIFICATION, null))
+        when(notificationRepository.findNotificationsByTypeAndSecondRecipientReadAtIsNull(NotificationType.POSTULATION_NOTIFICATION))
                 .thenReturn(List.of(n3));
 
-        when(notificationRepository.findNotificationsByTypeAndFirstRecipientReadAt(NotificationType.CV_NOTIFICATTION, null))
+        when(notificationRepository.findNotificationsByTypeAndFirstRecipientReadAtIsNull(NotificationType.CV_NOTIFICATTION))
                 .thenReturn(List.of(n4));
 
         when(cvNotificationRepository.findCvNotificationsByFirstRecipientReadAtIsNotNullAndSecondRecipientReadAtIsNullAndTargetEmail(
                 "dummy@email.com"
         )).thenReturn(List.of(n5));
 
-        when(postulationNotificationRepository.findByFirstRecipientReadAtAndEmployeurEmail(
-                null,
+        when(postulationNotificationRepository.findByFirstRecipientReadAtIsNullAndTargetEmail(
                 "dummy@email.com"
         )).thenReturn(List.of(n3));
 
-        when(signatureEntenteNotificationRepository.findSignatureEntenteNotificationsByFirstRecipientReadAtAndSignatureEntenteEmployeurEmail(
-                null,
+        when(signatureEntenteNotificationRepository.findSignatureEntenteNotificationsByFirstRecipientReadAtIsNullAndTargetEmployeurEmail(
                 "dummy@email.com"
         )).thenReturn(List.of(n9));
 
-        when(etudiantOffreDecisionNotificationRepository.findByEmployeurResponseEmailAndFirstRecipientReadAt(
-                "dummy@email.com",
-                null
+        when(etudiantOffreDecisionNotificationRepository.findByTargetEmailAndFirstRecipientReadAtIsNull(
+                "dummy@email.com"
         )).thenReturn(List.of(n6));
 
 
-        when(etudiantOffreDecisionNotificationRepository.findByEmployeurResponseEmailAndFirstRecipientReadAt(
-                "dummy@email.com",
-                null
+        when(etudiantOffreDecisionNotificationRepository.findByTargetEmailAndFirstRecipientReadAtIsNull(
+                "dummy@email.com"
         )).thenReturn(List.of(n6));
 
-        when(convocationNotificationRepository.findByFirstRecipientReadAtAndEtudiantConvocationEmail(
-                null,
+        when(convocationNotificationRepository.findByFirstRecipientReadAtIsNullAndTargetEmail(
                 "dummy@email.com"
         )).thenReturn(List.of(n7));
 
-        when(candidatureDecisionNotificationRepository.findCandidatureDecisionNotificationsByFirstRecipientReadAtAndCandidatureDecisionEtudiantEmail(
-                null,
+        when(candidatureDecisionNotificationRepository.findCandidatureDecisionNotificationsByFirstRecipientReadAtIsNullAndTargetEmail(
                 "dummy@email.com"
         )).thenReturn(List.of(n8));
 
-        when(signatureEntenteNotificationRepository.findSignatureEntenteNotificationsBySecondRecipientReadAtAndSignatureEntenteEtudiantEmail(
-                null,
+        when(signatureEntenteNotificationRepository.findSignatureEntenteNotificationsBySecondRecipientReadAtIsNullAndTargetEtudiantEmail(
                 "dummy@email.com"
         )).thenReturn(List.of(n9));
 
-        when(signatureEntenteNotificationRepository.findSignatureEntenteNotificationsBySecondRecipientReadAtAndSignatureEntenteEtudiantEmail(
-                null,
+        when(signatureEntenteNotificationRepository.findSignatureEntenteNotificationsBySecondRecipientReadAtIsNullAndTargetEtudiantEmail(
                 "dummy@email.com"
         )).thenReturn(List.of(n9));
+
+        when(signatureEntenteNotificationRepository.findByThirdRecipientReadAtIsNullAndFirstRecipientReadAtIsNotNullAndSecondRecipientReadAtIsNotNull())
+                .thenReturn(List.of(n9));
 
         NotificationsResponseDTO gestionnaireResult = gestionnaireService.getGestionnaireNotifications();
         NotificationsResponseDTO etudiantResult = etudiantService.getStudentsNotifications("dummy@email.com");
         NotificationsResponseDTO employeurResult = employeurService.getEmployeurNotifications("dummy@email.com");
 
         assertThat(gestionnaireResult).isNotNull();
-        assertThat(gestionnaireResult.getTotalCount()).isEqualTo(4);
+        assertThat(gestionnaireResult.getTotalCount()).isEqualTo(5);
         assertThat(gestionnaireResult.getGroups()).hasSize(7);
         assertThat(gestionnaireResult.getGroups().get(0).getItems()).hasSize(2);
         assertThat(gestionnaireResult.getGroups().get(0).getItems().getFirst().getMessageEN()).isEqualTo("Stage submitted");
@@ -203,14 +198,14 @@ class NotificationsServiceLayerTest {
     @Test
     @DisplayName("getNotifications() wraps repository failures into NotificationFetchException")
     void getNotifications_wrapsIntoNotificationFetchException() {
-        when(notificationRepository.findNotificationsByTypeAndFirstRecipientReadAt(any(), any()))
+        when(notificationRepository.findNotificationsByTypeAndFirstRecipientReadAtIsNull(any()))
                 .thenThrow(new RuntimeException("DB down"));
 
         assertThatThrownBy(() -> gestionnaireService.getGestionnaireNotifications())
                 .isInstanceOf(NotificationExceptions.NotificationFetchException.class);
 
         verify(notificationRepository, times(1))
-                .findNotificationsByTypeAndFirstRecipientReadAt(NotificationType.STAGE_NOTIFICATION, null);
+                .findNotificationsByTypeAndFirstRecipientReadAtIsNull(NotificationType.STAGE_NOTIFICATION);
     }
 
     @Test
