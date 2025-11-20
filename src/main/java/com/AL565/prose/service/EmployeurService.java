@@ -69,10 +69,10 @@ public class EmployeurService {
             throw new IllegalArgumentException("stage must not be null");
         }
         String employeurName = employeur.getFirstName() + " " + employeur.getLastName();
-        StageNotification notification = new StageNotification();
+        CreationStageNotification notification = new CreationStageNotification();
         notification.setCreatedAt(LocalDateTime.now());
         notification.setStageId(stage.getId());
-        notification.setType(STAGE_NOTIFICATION);
+        notification.setType(CREATION_STAGE_NOTIFICATION);
         notification.setMessageFR(employeurName + " a créé le stage " + stage.getTitle());
         notification.setMessageEN(employeurName + " has created the internship " + stage.getTitle());
         notificationRepository.save(notification);

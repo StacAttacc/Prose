@@ -6,7 +6,7 @@ import com.AL565.prose.model.auth.Credentials;
 import com.AL565.prose.model.notifications.NouveauCvNotification;
 import com.AL565.prose.model.notifications.NotificationType;
 import com.AL565.prose.model.notifications.PostulationNotification;
-import com.AL565.prose.model.notifications.StageNotification;
+import com.AL565.prose.model.notifications.CreationStageNotification;
 import com.AL565.prose.repository.*;
 import com.AL565.prose.security.JwtTokenProvider;
 import com.AL565.prose.service.*;
@@ -403,13 +403,13 @@ class GestionnaireControllerTest {
     @Test
     @DisplayName("GET /gestionnaire/notifications/all -> 200 + list of notifications (updated DTO)")
     void getStageNotifications_returnsOkWithList() throws Exception {
-        StageNotification n1 = new StageNotification();
-        n1.setType(NotificationType.STAGE_NOTIFICATION);
+        CreationStageNotification n1 = new CreationStageNotification();
+        n1.setType(NotificationType.CREATION_STAGE_NOTIFICATION);
         n1.setMessageEN("Stage submitted");
         n1.setCreatedAt(LocalDateTime.now());
 
-        StageNotification n2 = new StageNotification();
-        n2.setType(NotificationType.STAGE_NOTIFICATION);
+        CreationStageNotification n2 = new CreationStageNotification();
+        n2.setType(NotificationType.CREATION_STAGE_NOTIFICATION);
         n2.setMessageEN("Stage updated");
         n2.setCreatedAt(LocalDateTime.now());
 
@@ -424,7 +424,7 @@ class GestionnaireControllerTest {
         n4.setCreatedAt(LocalDateTime.now());
 
         NotificationGroupDTO stageGroup = NotificationGroupDTO
-                .toDTO(NotificationType.STAGE_NOTIFICATION.getDisplayName(), List.of(n1, n2));
+                .toDTO(NotificationType.CREATION_STAGE_NOTIFICATION.getDisplayName(), List.of(n1, n2));
         NotificationGroupDTO postulationGroup = NotificationGroupDTO
                 .toDTO(NotificationType.POSTULATION_NOTIFICATION.getDisplayName(), List.of(n3));
         NotificationGroupDTO cvGroup = NotificationGroupDTO

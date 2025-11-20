@@ -7,9 +7,9 @@ import lombok.*;
 @Entity
 @Getter
 @Setter
-@DiscriminatorValue("stage")
+@DiscriminatorValue("creation_stage")
 @NoArgsConstructor
 @AllArgsConstructor
-public class StageNotification extends Notification {
+public class CreationStageNotification extends Notification {
     private Long stageId;
 }

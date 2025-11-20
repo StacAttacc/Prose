@@ -188,7 +188,7 @@ public class GestionnaireService {
     public NotificationsResponseDTO getGestionnaireNotifications() throws Exception {
         try {
                 List<Notification> stages = notificationRepository
-                        .findNotificationsByTypeAndFirstRecipientReadAtIsNull(STAGE_NOTIFICATION);
+                        .findNotificationsByTypeAndFirstRecipientReadAtIsNull(CREATION_STAGE_NOTIFICATION);
                 List<Notification> postulations = notificationRepository
                         .findNotificationsByTypeAndSecondRecipientReadAtIsNull(POSTULATION_NOTIFICATION);
                 List<Notification> cvs = notificationRepository
@@ -203,7 +203,7 @@ public class GestionnaireService {
                         .findByThirdRecipientReadAtIsNullAndFirstRecipientReadAtIsNotNullAndSecondRecipientReadAtIsNotNull();
 
                 NotificationGroupDTO stagesGroup = NotificationGroupDTO
-                        .toDTO(STAGE_NOTIFICATION.getDisplayName(), stages);
+                        .toDTO(CREATION_STAGE_NOTIFICATION.getDisplayName(), stages);
                 NotificationGroupDTO postulationGroup = NotificationGroupDTO
                         .toDTO(POSTULATION_NOTIFICATION.getDisplayName(), postulations);
                 NotificationGroupDTO cvsGroup = NotificationGroupDTO

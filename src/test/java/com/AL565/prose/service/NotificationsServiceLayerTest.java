@@ -63,13 +63,13 @@ class NotificationsServiceLayerTest {
     @Test
     @DisplayName("getStageNotifications() returns stage notifications from repository")
     void getNotifications_returnsNotifications() throws Exception {
-        StageNotification n1 = new StageNotification();
-        n1.setType(STAGE_NOTIFICATION);
+        CreationStageNotification n1 = new CreationStageNotification();
+        n1.setType(CREATION_STAGE_NOTIFICATION);
         n1.setMessageEN("Stage submitted");
         n1.setCreatedAt(LocalDateTime.now());
 
-        StageNotification n2 = new StageNotification();
-        n2.setType(STAGE_NOTIFICATION);
+        CreationStageNotification n2 = new CreationStageNotification();
+        n2.setType(CREATION_STAGE_NOTIFICATION);
         n2.setMessageEN("Stage updated");
         n2.setCreatedAt(LocalDateTime.now());
 
@@ -109,7 +109,7 @@ class NotificationsServiceLayerTest {
         n9.setCreatedAt(LocalDateTime.now());
 
         when(notificationRepository.findNotificationsByTypeAndFirstRecipientReadAtIsNull(
-                STAGE_NOTIFICATION
+                CREATION_STAGE_NOTIFICATION
         )).thenReturn(List.of(n1, n2));
 
         when(notificationRepository.findNotificationsByTypeAndSecondRecipientReadAtIsNull(
@@ -197,7 +197,7 @@ class NotificationsServiceLayerTest {
                 .isInstanceOf(NotificationExceptions.NotificationFetchException.class);
 
         verify(notificationRepository, times(1))
-                .findNotificationsByTypeAndFirstRecipientReadAtIsNull(NotificationType.STAGE_NOTIFICATION);
+                .findNotificationsByTypeAndFirstRecipientReadAtIsNull(NotificationType.CREATION_STAGE_NOTIFICATION);
     }
 
     @Test

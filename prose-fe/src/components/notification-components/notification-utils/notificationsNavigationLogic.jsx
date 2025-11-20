@@ -111,7 +111,7 @@ function getGestionnairePaths({role, notification = null, isGrouped = false, typ
                 path: getDefaultNavigationPath(role),
                 state: { openEtudiantId: notification?.etudiantId }
             };
-        case "stage":
+        case "creation_stage":
             return isGrouped ? {
                 path: "/gestionnaire/list-stages"
             } : {

@@ -7,7 +7,7 @@ import lombok.*;
 @Entity
 @Getter
 @Setter
-@DiscriminatorValue("cv_decision")
+@DiscriminatorValue("new_cv")
 @NoArgsConstructor
 @AllArgsConstructor
 public class NouveauCvNotification extends Notification {
