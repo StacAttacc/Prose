@@ -54,6 +54,9 @@ class GestionnaireServiceTest {
     @Mock
     private PasswordEncoder passwordEncoder;
 
+    @Mock
+    private NotificationRepository notificationRepository;
+
     @InjectMocks
     private GestionnaireService gestionnaireService;
 
@@ -143,6 +146,7 @@ class GestionnaireServiceTest {
         when(stageRepository.findById(1L)).thenReturn(Optional.of(stage));
         when(stageRepository.save(any(Stage.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(employeurRepository.getEmployeurByCredentials_Username(anyString())).thenReturn(employeur);
+        when(notificationRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
         StageDTO result = gestionnaireService.approuverStage(1L);
 

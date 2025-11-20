@@ -108,6 +108,16 @@ class NotificationsServiceLayerTest {
         n9.setMessageEN("Entente needs to be signed");
         n9.setCreatedAt(LocalDateTime.now());
 
+        DemandeApprobationStageNotification n10 = new DemandeApprobationStageNotification();
+        n10.setType(DEMANDE_APPROBATION_STAGE_NOTIFICATION);
+        n10.setMessageEN("Stage approval request done");
+        n10.setCreatedAt(LocalDateTime.now());
+
+        when(notificationRepository.findNotificationsByTypeAndFirstRecipientReadAtIsNullAndTargetEmail(
+                DEMANDE_APPROBATION_STAGE_NOTIFICATION,
+                "dummy@email.com"
+        )).thenReturn(List.of(n10));
+
         when(notificationRepository.findNotificationsByTypeAndFirstRecipientReadAtIsNull(
                 CREATION_STAGE_NOTIFICATION
         )).thenReturn(List.of(n1, n2));
@@ -180,8 +190,8 @@ class NotificationsServiceLayerTest {
         assertThat(etudiantResult.getGroups().get(3).getItems().getFirst().getMessageEN()).isEqualTo("Entente needs to be signed");
 
         assertThat(employeurResult).isNotNull();
-        assertThat(employeurResult.getTotalCount()).isEqualTo(3);
-        assertThat(employeurResult.getGroups()).hasSize(3);
+        assertThat(employeurResult.getTotalCount()).isEqualTo(4);
+        assertThat(employeurResult.getGroups()).hasSize(4);
         assertThat(employeurResult.getGroups().getFirst().getItems()).hasSize(1);
         assertThat(employeurResult.getGroups().getFirst().getItems().getFirst().getMessageEN()).isEqualTo("New application");
         assertThat(employeurResult.getGroups().get(1).getItems().getFirst().getMessageEN()).isEqualTo("Entente needs to be signed");
