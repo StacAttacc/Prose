@@ -18,14 +18,14 @@ export function NotificationCard ({
 }) {
     return (
         <div
-            className="w-80 bg-white border border-gray-200 rounded-lg shadow-sm cursor-pointer hover:shadow-md transition p-3 flex items-center justify-between"
+            className="w-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm cursor-pointer hover:shadow-md transition p-3 flex items-center justify-between"
             role="button"
             tabIndex={0}
             onClick={() => markGroupAndNavigate(typeKey, list)}
         >
             <div className="flex items-start gap-3 flex-1">
                 <div className="flex-1">
-                    <div className="text-xs text-gray-500" aria-live="polite">
+                    <div className="text-xs text-gray-500 dark:text-gray-400" aria-live="polite">
                         {count} {labelForKey(typeKey)}
                     </div>
 
@@ -52,7 +52,7 @@ export function NotificationCard ({
                         <button
                             type="button"
                             onClick={(e) => { e.stopPropagation(); setOpenType(open ? null : typeKey); }}
-                            className="inline-flex items-center justify-center py-1 px-2 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200"
+                            className="inline-flex items-center justify-center py-1 px-2 text-xs font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded hover:bg-gray-200 dark:hover:bg-gray-600"
                             aria-haspopup="true"
                             aria-expanded={open}
                             aria-controls={dropdownId}

@@ -79,7 +79,7 @@ export default function SignUp({ onSwitchToLogin }) {
 
     return (
         <>
-            <h2 className="text-3xl font-bold text-center mb-8">
+            <h2 className="text-3xl font-bold text-center mb-8 text-gray-900 dark:text-gray-100">
                 {t('creerCompte')}
             </h2>
 
@@ -115,10 +115,10 @@ export default function SignUp({ onSwitchToLogin }) {
             <form onSubmit={onSubmit} className="space-y-4">
                 {/* Prénom */}
                 <label className="block">
-                    <span className="block text-sm mb-1 text-gray-800">{t('prenom')}</span>
+                    <span className="block text-sm mb-1 text-gray-800 dark:text-gray-200">{t('prenom')}</span>
                     <input
                         type="text"
-                        className={`w-full rounded-xl bg-transparent border px-4 py-3 outline-none focus:border-teal-500 ${!firstName.trim() ? "border-rose-600" : "border-slate-700"
+                        className={`w-full rounded-xl bg-transparent border px-4 py-3 outline-none focus:border-teal-500 text-gray-900 dark:text-gray-100 dark:placeholder-gray-400 ${!firstName.trim() ? "border-rose-600" : "border-slate-700"
                             }`}
                         placeholder={t('prenomPlaceholder')}
                         value={firstName}
@@ -128,10 +128,10 @@ export default function SignUp({ onSwitchToLogin }) {
 
                 {/* Nom */}
                 <label className="block">
-                    <span className="block text-sm mb-1 text-gray-800">{t('nom')}</span>
+                    <span className="block text-sm mb-1 text-gray-800 dark:text-gray-200">{t('nom')}</span>
                     <input
                         type="text"
-                        className={`w-full rounded-xl bg-transparent border px-4 py-3 outline-none focus:border-teal-500 ${!lastName.trim() ? "border-rose-600" : "border-slate-700"
+                        className={`w-full rounded-xl bg-transparent border px-4 py-3 outline-none focus:border-teal-500 text-gray-900 dark:text-gray-100 dark:placeholder-gray-400 ${!lastName.trim() ? "border-rose-600" : "border-slate-700"
                             }`}
                         placeholder={t('nomPlaceholder')}
                         value={lastName}
@@ -142,10 +142,10 @@ export default function SignUp({ onSwitchToLogin }) {
                 {/* Entreprise / Discipline */}
                 {accountType === "employer" ? (
                     <label className="block">
-                        <span className="block text-sm mb-1 text-gray-800">{t('entreprise')}</span>
+                        <span className="block text-sm mb-1 text-gray-800 dark:text-gray-200">{t('entreprise')}</span>
                         <input
                             type="text"
-                            className={`w-full rounded-xl bg-transparent border px-4 py-3 outline-none focus:border-teal-500 ${!company.trim() ? "border-rose-600" : "border-slate-700"
+                            className={`w-full rounded-xl bg-transparent border px-4 py-3 outline-none focus:border-teal-500 text-gray-900 dark:text-gray-100 dark:placeholder-gray-400 ${!company.trim() ? "border-rose-600" : "border-slate-700"
                                 }`}
                             placeholder={t('entreprisePlaceholder')}
                             value={company}
@@ -154,7 +154,7 @@ export default function SignUp({ onSwitchToLogin }) {
                     </label>
                 ) : (
                     <div>
-                        <label className="block text-sm mb-1 text-gray-800" htmlFor="discipline">
+                        <label className="block text-sm mb-1 text-gray-800 dark:text-gray-200" htmlFor="discipline">
                             {t('discipline')}
                         </label>
                         <select
@@ -162,7 +162,7 @@ export default function SignUp({ onSwitchToLogin }) {
                             name="discipline"
                             value={discipline}
                             onChange={(e) => setDiscipline(e.target.value)}
-                            className={`w-full rounded-xl bg-transparent border px-4 py-3 outline-none focus:border-teal-500 ${!discipline ? "border-rose-600" : "border-slate-700"
+                            className={`w-full rounded-xl bg-transparent border px-4 py-3 outline-none focus:border-teal-500 text-gray-900 dark:text-gray-100 ${!discipline ? "border-rose-600" : "border-slate-700"
                                 }`}
                         >
                             <option value="">{t('selectionner')}</option>
@@ -181,7 +181,7 @@ export default function SignUp({ onSwitchToLogin }) {
                     <div className="relative">
                         <input
                             type="email"
-                            className={`w-full rounded-xl bg-transparent border px-4 py-3 outline-none transition ${!email ? "border-rose-600" : emailOk ? "border-emerald-500" : "border-slate-700 focus:border-teal-500"
+                            className={`w-full rounded-xl bg-transparent border px-4 py-3 outline-none transition text-gray-900 dark:text-gray-100 dark:placeholder-gray-400 ${!email ? "border-rose-600" : emailOk ? "border-emerald-500" : "border-slate-700 focus:border-teal-500"
                                 }`}
                             placeholder={t('emailPlaceholderSignup')}
                             value={email}
@@ -196,7 +196,7 @@ export default function SignUp({ onSwitchToLogin }) {
                     <div className="relative">
                         <input
                             type={showPwd ? "text" : "password"}
-                            className={`w-full rounded-xl bg-transparent border px-4 py-3 pr-11 outline-none focus:border-teal-500 ${!pwd ? "border-rose-600" : "border-slate-700"
+                            className={`w-full rounded-xl bg-transparent border px-4 py-3 pr-11 outline-none focus:border-teal-500 text-gray-900 dark:text-gray-100 dark:placeholder-gray-400 ${!pwd ? "border-rose-600" : "border-slate-700"
                                 }`}
                             placeholder={t('passwordPlaceholderSignup')}
                             value={pwd}
@@ -205,13 +205,13 @@ export default function SignUp({ onSwitchToLogin }) {
                         <button
                             type="button"
                             onClick={() => setShowPwd((s) => !s)}
-                            className="absolute right-3 inset-y-0 my-auto grid place-items-center text-gray-800 hover:text-gray-600"
+                            className="absolute right-3 inset-y-0 my-auto grid place-items-center text-gray-800 dark:text-gray-200 hover:text-gray-600 dark:hover:text-gray-300"
                             aria-label="Toggle password visibility"
                         >
                             {showPwd ? "🙈" : "👁️"}
                         </button>
                     </div>
-                    <div className="mt-1 text-xs text-gray-800">{pwdHint}</div>
+                    <div className="mt-1 text-xs text-gray-800 dark:text-gray-200">{pwdHint}</div>
                 </label>
 
                 {/* Submit */}
@@ -225,11 +225,11 @@ export default function SignUp({ onSwitchToLogin }) {
 
                 {/* Retour vers Login */}
                 <div className="text-center mt-4">
-                    <span className="text-gray-800">{t('dejaUnCompte')} </span>
+                    <span className="text-gray-800 dark:text-gray-200">{t('dejaUnCompte')} </span>
                     <button
                         type="button"
                         onClick={onSwitchToLogin}
-                        className="text-teal-500 hover:underline"
+                        className="text-teal-500 dark:text-teal-400 hover:underline"
                     >
                         {t('seConnecter')}
                     </button>

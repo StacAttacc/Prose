@@ -68,7 +68,6 @@ export default function AssociationProfesseurEtudiant() {
             return;
         }
 
-        // Validation basique des emails
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(etudiantEmail.trim())) {
             setError('L\'email de l\'étudiant n\'est pas valide');
@@ -79,7 +78,6 @@ export default function AssociationProfesseurEtudiant() {
             return;
         }
 
-        // Vérifier si l'étudiant n'est pas déjà dans la liste des associations
         const etudiantDejaAssocie = associations.find(assoc => 
             assoc.etudiantEmail.toLowerCase() === etudiantEmail.trim().toLowerCase()
         );
@@ -99,10 +97,8 @@ export default function AssociationProfesseurEtudiant() {
             setEtudiantEmail("");
             setProfesseurEmail("");
             
-            // Recharger les associations après succès
             await loadAssociations();
         } catch (err) {
-            // Gérer les erreurs spécifiques du backend
             let errorMessage = t('erreurAssociation') || 'Erreur lors de l\'association';
             
             console.error('Erreur complète:', err);
@@ -110,9 +106,7 @@ export default function AssociationProfesseurEtudiant() {
             console.error('Response data:', err?.response?.data);
             console.error('Response status:', err?.response?.status);
             
-            // Priorité 1: Vérifier le statut HTTP et les données de réponse
             if (err?.response?.status === 500) {
-                // Pour les erreurs 500, vérifier d'abord les données de réponse
                 const responseData = err?.response?.data;
                 if (typeof responseData === 'string') {
                     if (responseData === 'Erreur interne du serveur') {
@@ -132,7 +126,6 @@ export default function AssociationProfesseurEtudiant() {
                     errorMessage = 'Erreur interne du serveur. Veuillez vérifier que l\'étudiant et le professeur existent et réessayez.';
                 }
             } else if (err?.response?.data) {
-                // Pour les autres statuts, utiliser les données de réponse
                 const responseData = err.response.data;
                 if (typeof responseData === 'string') {
                     errorMessage = responseData;
@@ -142,7 +135,6 @@ export default function AssociationProfesseurEtudiant() {
                     errorMessage = responseData.error;
                 }
             } else if (err?.response?.status) {
-                // Gérer les autres codes de statut HTTP
                 switch (err.response.status) {
                     case 404:
                         errorMessage = 'Un des utilisateurs (étudiant ou professeur) n\'existe pas';
@@ -169,22 +161,21 @@ export default function AssociationProfesseurEtudiant() {
     return (
         <div className="p-6">
             <ScrollToTop />
-            <h1 className="text-2xl font-bold mb-6 text-center">
+            <h1 className="text-2xl font-bold mb-6 text-center text-gray-900 dark:text-gray-100">
                 {t('Faire une demande') || 'Association Professeur - Étudiant'}
             </h1>
 
             {error && <ErrorBanner message={error} />}
 
             {success && (
-                <div className="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-md">
+                <div className="mb-6 p-4 bg-green-100 dark:bg-green-900/30 border border-green-400 dark:border-green-600 text-green-700 dark:text-green-300 rounded-md">
                     {t('associationReussie') || 'Association réussie avec succès!'}
                 </div>
             )}
 
-            {/* Tableau des associations existantes (Collapse) */}
             {!loadingAssociations && associations.length > 0 && (
                 <div className="mb-6 max-w-4xl mx-auto">
-                    <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 overflow-hidden">
                         <button
                             onClick={() => setAssociationsExpanded(!associationsExpanded)}
                             className="w-full bg-gradient-to-r from-teal-500 to-teal-600 px-6 py-4 flex items-center justify-between hover:from-teal-600 hover:to-teal-700 transition-colors"
@@ -209,32 +200,32 @@ export default function AssociationProfesseurEtudiant() {
                         
                         {associationsExpanded && (
                             <div className="overflow-x-auto">
-                                <table className="min-w-full divide-y divide-gray-200">
-                                    <thead className="bg-gray-50">
+                                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                    <thead className="bg-gray-50 dark:bg-gray-700">
                                         <tr>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                                 {t('etudiant') || 'Étudiant'}
                                             </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                                 {t('professeur') || 'Professeur'}
                                             </th>
                                         </tr>
                                     </thead>
-                                    <tbody className="bg-white divide-y divide-gray-200">
+                                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                         {associations.map((association, index) => (
-                                            <tr key={index} className="hover:bg-teal-50 transition-colors">
+                                            <tr key={index} className="hover:bg-teal-50 dark:hover:bg-teal-900/30 transition-colors">
                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                     <div className="flex items-center">
-                                                        <div className="flex-shrink-0 h-8 w-8 bg-teal-100 rounded-full flex items-center justify-center mr-3">
-                                                            <svg className="h-5 w-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <div className="flex-shrink-0 h-8 w-8 bg-teal-100 dark:bg-teal-900/50 rounded-full flex items-center justify-center mr-3">
+                                                            <svg className="h-5 w-5 text-teal-600 dark:text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                                             </svg>
                                                         </div>
                                                         <div>
-                                                            <div className="text-sm font-medium text-gray-900">
+                                                            <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
                                                                 {association.etudiantNom}
                                                             </div>
-                                                            <div className="text-sm text-gray-500">
+                                                            <div className="text-sm text-gray-500 dark:text-gray-400">
                                                                 {association.etudiantEmail}
                                                             </div>
                                                         </div>
@@ -242,16 +233,16 @@ export default function AssociationProfesseurEtudiant() {
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                     <div className="flex items-center">
-                                                        <div className="flex-shrink-0 h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-                                                            <svg className="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <div className="flex-shrink-0 h-8 w-8 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center mr-3">
+                                                            <svg className="h-5 w-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                                             </svg>
                                                         </div>
                                                         <div>
-                                                            <div className="text-sm font-medium text-gray-900">
+                                                            <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
                                                                 {association.professeurNom}
                                                             </div>
-                                                            <div className="text-sm text-gray-500">
+                                                            <div className="text-sm text-gray-500 dark:text-gray-400">
                                                                 {association.professeurEmail}
                                                             </div>
                                                         </div>
@@ -269,18 +260,18 @@ export default function AssociationProfesseurEtudiant() {
 
             {loadingAssociations && (
                 <div className="mb-6 text-center">
-                    <p className="text-gray-500">{t('chargementAssociations') || 'Chargement des associations...'}</p>
+                    <p className="text-gray-500 dark:text-gray-400">{t('chargementAssociations') || 'Chargement des associations...'}</p>
                 </div>
             )}
 
             <form onSubmit={handleSubmit} className="max-w-4xl mx-auto">
-                <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6 mb-6">
-                    <h2 className="text-xl font-semibold mb-4 text-gray-800">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 mb-6">
+                    <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">
                         {t('Veuillez entrer l\'email de l\'étudiant') || 'Email de l\'étudiant'}
                     </h2>
                     
                     <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             {t('etudiant') || 'Email de l\'étudiant'}
                         </label>
                         <input
@@ -288,19 +279,19 @@ export default function AssociationProfesseurEtudiant() {
                             value={etudiantEmail}
                             onChange={(e) => setEtudiantEmail(e.target.value)}
                             placeholder={t('Veuillez entrer l\'email de l\'étudiant') || 'etudiant@example.com'}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 dark:placeholder-gray-400"
                             required
                         />
                     </div>
                 </div>
 
-                <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6 mb-6">
-                    <h2 className="text-xl font-semibold mb-4 text-gray-800">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 mb-6">
+                    <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">
                         {t('Veuillez entrer l\'email du professeur') || 'Sélectionner un professeur'}
                     </h2>
                     
                     <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             {t('emailProfesseur') || 'Email du professeur'}
                         </label>
                         <input
@@ -308,7 +299,7 @@ export default function AssociationProfesseurEtudiant() {
                             value={professeurEmail}
                             onChange={(e) => setProfesseurEmail(e.target.value)}
                             placeholder={t('Veuillez entrer l\'email du professeur') || 'professeur@example.com'}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 dark:placeholder-gray-400"
                             required
                         />
                       

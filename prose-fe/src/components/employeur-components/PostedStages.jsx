@@ -101,15 +101,15 @@ export default function PostedStages() {
     const getStatusColor = (status) => {
         switch (status) {
             case "SOUMISE":
-                return "bg-yellow-100 text-yellow-800";
+                return "bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200";
             case "APPROUVEE":
-                return "bg-green-100 text-green-800";
+                return "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200";
             case "REJETEE":
-                return "bg-red-100 text-red-800";
+                return "bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200";
             case "PUBLIEE":
-                return "bg-blue-100 text-blue-800";
+                return "bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200";
             default:
-                return "bg-gray-100 text-gray-800";
+                return "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200";
         }
     };
 
@@ -129,14 +129,14 @@ export default function PostedStages() {
     };
 
     if (loading)
-        return <p className="text-center mt-10">{t('chargementStagesEmployeur')}</p>;
+        return <p className="text-center mt-10 text-gray-900 dark:text-gray-100">{t('chargementStagesEmployeur')}</p>;
     if (error) return <ErrorBanner message={error} />;
 
     return (
         <div className="p-6">
-            <h1 className="text-2xl font-bold mb-6 text-center">{t('mesStages')}</h1>
+            <h1 className="text-2xl font-bold mb-6 text-center text-gray-900 dark:text-gray-100">{t('mesStages')}</h1>
 
-            <div className="mb-8 bg-white rounded-lg shadow-md border border-gray-200 p-6">
+            <div className="mb-8 bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
                     <FilterInput
                         label={t('recherche')}
@@ -171,7 +171,7 @@ export default function PostedStages() {
                     </div>
                 </div>
 
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-gray-600 dark:text-gray-300">
                     {t('stagesTrouves', { count: filteredStages.length, total: stages.length })}
                 </div>
             </div>
@@ -188,22 +188,22 @@ export default function PostedStages() {
                         return (
                             <div
                                 key={stage.id}
-                                className="bg-white rounded-lg shadow-md border border-gray-200 p-6 hover:shadow-lg transition-shadow"
+                                className="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-shadow"
                             >
                                 <div className="mb-4">
-                                    <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                                    <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-2">
                                         {stage.title}
                                     </h3>
-                                    <p className="text-gray-600 text-sm mb-2">
+                                    <p className="text-gray-600 dark:text-gray-300 text-sm mb-2">
                                         <strong>{t('lieu')}:</strong> {stage.location}
                                     </p>
-                                    <p className="text-gray-600 text-sm mb-2">
+                                    <p className="text-gray-600 dark:text-gray-300 text-sm mb-2">
                                         <strong>{t('compensation')}:</strong> {stage.compensation}
                                     </p>
-                                    <p className="text-gray-600 text-sm mb-2">
+                                    <p className="text-gray-600 dark:text-gray-300 text-sm mb-2">
                                         <strong>{t('periode')}:</strong> {stage.startDate} - {stage.endDate}
                                     </p>
-                                    <p className="text-gray-600 text-sm">
+                                    <p className="text-gray-600 dark:text-gray-300 text-sm">
                                         <strong>{t('dateCreation')}:</strong>{" "}
                                         {stage.createdAt
                                             ? new Date(stage.createdAt).toLocaleDateString(locale === 'en' ? 'en-US' : 'fr-FR')
@@ -219,7 +219,7 @@ export default function PostedStages() {
                                     </span>
                                     <button
                                         onClick={() => handleStageClick(stage)}
-                                        className="text-teal-600 hover:text-teal-800 font-medium"
+                                        className="text-teal-600 dark:text-teal-400 hover:text-teal-800 dark:hover:text-teal-300 font-medium"
                                     >
                                         {t('voirDetails')} →
                                     </button>
@@ -258,7 +258,7 @@ export default function PostedStages() {
 function FilterInput({ label, value, onChange, placeholder }) {
     return (
         <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 {label}
             </label>
             <input
@@ -266,7 +266,7 @@ function FilterInput({ label, value, onChange, placeholder }) {
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
                 placeholder={placeholder}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
             />
         </div>
     );
@@ -276,13 +276,13 @@ function FilterSelect({ label, value, onChange }) {
     const { t } = useI18n();
     return (
         <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 {label}
             </label>
             <select
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
             >
                 <option value="">{t('tousLesStatuts')}</option>
                 <option value="SOUMISE">{t('soumise')}</option>
@@ -297,7 +297,7 @@ function EmptyState({ stages, onClear }) {
     const { t } = useI18n();
     return (
         <div className="text-center py-8">
-            <p className="text-gray-500 text-lg">
+            <p className="text-gray-500 dark:text-gray-400 text-lg">
                 {stages.length === 0
                     ? t('aucunStageEmployeur')
                     : t('aucunStageCritereRecherche')}

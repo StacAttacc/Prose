@@ -53,7 +53,7 @@ export default function Login({ onSwitchToSignup }) {
 
     return (
         <>
-            <h2 className="text-3xl font-bold text-center mb-8">{t('connexion')}</h2>
+            <h2 className="text-3xl font-bold text-center mb-8 text-gray-900 dark:text-gray-100">{t('connexion')}</h2>
 
             {errorMsg && (
                 <ErrorBanner message={errorMsg} />
@@ -62,11 +62,11 @@ export default function Login({ onSwitchToSignup }) {
             <form onSubmit={onSubmit} className="space-y-4">
                 {/* Email */}
                 <label className="block">
-                    <span className="block text-sm mb-1 text-gray-800">{t('adresseCourriel')}</span>
+                    <span className="block text-sm mb-1 text-gray-800 dark:text-gray-200">{t('adresseCourriel')}</span>
                     <div className="relative">
                         <input
                             type="email"
-                            className={`w-full rounded-xl bg-transparent border px-4 py-3 outline-none focus:border-teal-500 ${getInputBorderClass(
+                            className={`w-full rounded-xl bg-transparent border px-4 py-3 outline-none focus:border-teal-500 text-gray-900 dark:text-gray-100 dark:placeholder-gray-400 ${getInputBorderClass(
                                 email,
                                 emailOk
                             )}`}
@@ -80,11 +80,11 @@ export default function Login({ onSwitchToSignup }) {
 
                 {/* Mot de passe */}
                 <label className="block">
-                    <span className="block text-sm mb-1 text-gray-800">{t('motDePasse')}</span>
+                    <span className="block text-sm mb-1 text-gray-800 dark:text-gray-200">{t('motDePasse')}</span>
                     <div className="relative">
                         <input
                             type={showPwd ? "text" : "password"}
-                            className={`w-full rounded-xl bg-transparent border px-4 py-3 pr-11 outline-none focus:border-teal-500 appearance-none ${getInputBorderClass(
+                            className={`w-full rounded-xl bg-transparent border px-4 py-3 pr-11 outline-none focus:border-teal-500 appearance-none text-gray-900 dark:text-gray-100 dark:placeholder-gray-400 ${getInputBorderClass(
                                 pwd,
                                 pwdOk
                             )}`}
@@ -96,7 +96,7 @@ export default function Login({ onSwitchToSignup }) {
                         <button
                             type="button"
                             onClick={() => setShowPwd((s) => !s)}
-                            className="absolute right-3 inset-y-0 my-auto grid place-items-center text-gray-800 hover:text-gray-800"
+                            className="absolute right-3 inset-y-0 my-auto grid place-items-center text-gray-800 dark:text-gray-200 hover:text-gray-800 dark:hover:text-gray-300"
                             aria-label="Toggle password visibility"
                         >
                             {showPwd ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
@@ -115,11 +115,11 @@ export default function Login({ onSwitchToSignup }) {
 
                 {/* Basculer vers SignUp */}
                 <div className="text-center mt-4">
-                    <span className="text-slate-400">{t('pasEncoreCompte')} </span>
+                    <span className="text-slate-400 dark:text-gray-400">{t('pasEncoreCompte')} </span>
                     <button
                         type="button"
                         onClick={onSwitchToSignup}
-                        className="text-teal-500 hover:underline"
+                        className="text-teal-500 dark:text-teal-400 hover:underline"
                     >
                         {t('sinscrire')}
                     </button>

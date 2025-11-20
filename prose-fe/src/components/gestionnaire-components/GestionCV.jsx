@@ -7,9 +7,9 @@ import {useLocation, useNavigate} from "react-router-dom";
 import { useYear } from "../../context/YearContext";
 
 const statusColors = {
-    APPROVED: "bg-green-100 border-green-300",
-    PENDING: "bg-yellow-100 border-yellow-300",
-    REJECTED: "bg-red-100 border-red-300"
+    APPROVED: "bg-green-100 dark:!bg-green-100 border-green-300 dark:!border-green-300",
+    PENDING: "bg-yellow-100 dark:!bg-yellow-100 border-yellow-300 dark:!border-yellow-300",
+    REJECTED: "bg-red-100 dark:!bg-red-100 border-red-300 dark:!border-red-300"
 };
 
 const GestionCV = () => {
@@ -127,7 +127,6 @@ const GestionCV = () => {
 
     return (
         <div className="p-8">
-            {/* Barre de recherche */}
             <div className="max-w-md mx-auto mb-6">
                 <div className="relative">
                     <input
@@ -135,7 +134,7 @@ const GestionCV = () => {
                         placeholder={t('rechercherParNom')}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-4 py-2 pl-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     />
                     <svg
                         className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
@@ -164,13 +163,13 @@ const GestionCV = () => {
             {/* Sub-tabs */}
             <div className="flex gap-2 mb-6 justify-center">
                 <button
-                    className={`px-4 py-2 rounded-t font-semibold border-b-2 ${tab === 'pending' ? 'border-blue-600 text-blue-700 bg-blue-50' : 'border-transparent text-gray-500 bg-gray-100 hover:bg-gray-200'}`}
+                    className={`px-4 py-2 rounded-t font-semibold border-b-2 ${tab === 'pending' ? 'border-blue-600 text-blue-700 dark:!text-blue-700 bg-blue-50 dark:!bg-blue-50' : 'border-transparent text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'}`}
                     onClick={() => setTab('pending')}
                 >
                     {t('cvEnAttente')}
                 </button>
                 <button
-                    className={`px-4 py-2 rounded-t font-semibold border-b-2 ${tab === 'nonpending' ? 'border-blue-600 text-blue-700 bg-blue-50' : 'border-transparent text-gray-500 bg-gray-100 hover:bg-gray-200'}`}
+                    className={`px-4 py-2 rounded-t font-semibold border-b-2 ${tab === 'nonpending' ? 'border-blue-600 text-blue-700 dark:!text-blue-700 bg-blue-50 dark:!bg-blue-50' : 'border-transparent text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'}`}
                     onClick={() => setTab('nonpending')}
                 >
                     {t('cvAcceptesRefaire')}
@@ -187,20 +186,20 @@ const GestionCV = () => {
                                 className={`border rounded-lg p-4 cursor-pointer shadow hover:shadow-lg transition ${statusColors.PENDING}`}
                                 onClick={() => openModal(cv)}
                             >
-                                <h4 className="font-bold text-center">{cv.etudiantPrenom} {cv.etudiantNom}</h4>
-                                <div className="border-b my-2"></div>
-                                <p className="text-gray-500">{t('discipline')}: {translateDiscipline(cv.discipline, locale)}</p>
-                                <p className="text-gray-500">{t('email')}: {cv.etudiantEmail}</p>
+                                <h4 className="font-bold text-center text-gray-900 dark:!text-gray-900">{cv.etudiantPrenom} {cv.etudiantNom}</h4>
+                                <div className="border-b my-2 border-gray-300 dark:!border-gray-300"></div>
+                                <p className="text-gray-700 dark:!text-gray-700">{t('discipline')}: {translateDiscipline(cv.discipline, locale)}</p>
+                                <p className="text-gray-700 dark:!text-gray-700">{t('email')}: {cv.etudiantEmail}</p>
                             </div>
                         ))}
-                        {pendingCvs.length === 0 && <div className="text-center text-gray-400">{t('aucunCV')}</div>}
+                        {pendingCvs.length === 0 && <div className="text-center text-gray-400 dark:text-gray-500">{t('aucunCV')}</div>}
                     </div>
                 </div>
             ) : (
                 <div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <h3 className="text-lg font-bold mb-4 text-center">{t('accepte')}</h3>
+                            <h3 className="text-lg font-bold mb-4 text-center text-gray-900 dark:text-gray-100">{t('accepte')}</h3>
                             <div className="flex flex-col gap-4">
                                 {approvedCvs.map(cv => (
                                     <div
@@ -208,17 +207,17 @@ const GestionCV = () => {
                                         className={`border rounded-lg p-4 cursor-pointer shadow hover:shadow-lg transition ${statusColors.APPROVED}`}
                                         onClick={() => openModal(cv)}
                                     >
-                                        <h4 className="font-bold text-center">{cv.etudiantPrenom} {cv.etudiantNom}</h4>
-                                        <div className="border-b my-2"></div>
-                                        <p className="text-gray-500">{t('discipline')}: {translateDiscipline(cv.discipline, locale)}</p>
-                                        <p className="text-gray-500">{t('email')}: {cv.etudiantEmail}</p>
+                                        <h4 className="font-bold text-center text-gray-900 dark:!text-gray-900">{cv.etudiantPrenom} {cv.etudiantNom}</h4>
+                                        <div className="border-b my-2 border-gray-300 dark:!border-gray-300"></div>
+                                        <p className="text-gray-700 dark:!text-gray-700">{t('discipline')}: {translateDiscipline(cv.discipline, locale)}</p>
+                                        <p className="text-gray-700 dark:!text-gray-700">{t('email')}: {cv.etudiantEmail}</p>
                                     </div>
                                 ))}
-                                {approvedCvs.length === 0 && <div className="text-center text-gray-400">{t('aucunCV')}</div>}
+                                {approvedCvs.length === 0 && <div className="text-center text-gray-400 dark:text-gray-500">{t('aucunCV')}</div>}
                             </div>
                         </div>
                         <div>
-                            <h3 className="text-lg font-bold mb-4 text-center">{t('aRefaire')}</h3>
+                            <h3 className="text-lg font-bold mb-4 text-center text-gray-900 dark:text-gray-100">{t('aRefaire')}</h3>
                             <div className="flex flex-col gap-4">
                                 {rejectedCvs.map(cv => (
                                     <div
@@ -226,13 +225,13 @@ const GestionCV = () => {
                                         className={`border rounded-lg p-4 cursor-pointer shadow hover:shadow-lg transition ${statusColors.REJECTED}`}
                                         onClick={() => openModal(cv)}
                                     >
-                                        <h4 className="font-bold text-center">{cv.etudiantPrenom} {cv.etudiantNom}</h4>
-                                        <div className="border-b my-2"></div>
-                                        <p className="text-gray-500">{t('discipline')}: {translateDiscipline(cv.discipline, locale)}</p>
-                                        <p className="text-gray-500">{t('email')}: {cv.etudiantEmail}</p>
+                                        <h4 className="font-bold text-center text-gray-900 dark:!text-gray-900">{cv.etudiantPrenom} {cv.etudiantNom}</h4>
+                                        <div className="border-b my-2 border-gray-300 dark:!border-gray-300"></div>
+                                        <p className="text-gray-700 dark:!text-gray-700">{t('discipline')}: {translateDiscipline(cv.discipline, locale)}</p>
+                                        <p className="text-gray-700 dark:!text-gray-700">{t('email')}: {cv.etudiantEmail}</p>
                                     </div>
                                 ))}
-                                {rejectedCvs.length === 0 && <div className="text-center text-gray-400">{t('aucunCV')}</div>}
+                                {rejectedCvs.length === 0 && <div className="text-center text-gray-400 dark:text-gray-500">{t('aucunCV')}</div>}
                             </div>
                         </div>
                     </div>
@@ -245,7 +244,7 @@ const GestionCV = () => {
                     onClick={closeModal}
                 >
                     <div
-                        className="bg-white rounded-lg p-6 md:p-8 w-[90vw] max-w-3xl shadow-2xl relative max-h-[70vh] overflow-auto"
+                        className="bg-white dark:bg-gray-800 rounded-lg p-6 md:p-8 w-[90vw] max-w-3xl shadow-2xl relative max-h-[70vh] overflow-auto text-gray-900 dark:text-gray-100"
                         onClick={e => e.stopPropagation()}
                     >
                         <button
@@ -255,13 +254,13 @@ const GestionCV = () => {
                         >&times;</button>
 
                         <div className="mb-3">
-                            <span className="font-semibold">{t('nomEtudiant')}</span> {selectedCv.etudiantPrenom} {selectedCv.etudiantNom}
+                            <span className="font-semibold">{t('nomEtudiant')}</span> <span className="dark:!text-gray-900">{selectedCv.etudiantPrenom} {selectedCv.etudiantNom}</span>
                         </div>
                         <div className="mb-3">
-                            <span className="font-semibold">{t('nomFichier')}</span> {selectedCv.name}
+                            <span className="font-semibold">{t('nomFichier')}</span> <span className="dark:!text-gray-900">{selectedCv.name}</span>
                         </div>
                         <div className="mb-3">
-                            <span className="font-semibold">{t('discipline')}:</span> {translateDiscipline(selectedCv.discipline, locale)}
+                            <span className="font-semibold">{t('discipline')}:</span> <span className="dark:!text-gray-900">{translateDiscipline(selectedCv.discipline, locale)}</span>
                         </div>
                         <div className="mb-4">
                             {pdfUrl ? (
@@ -299,14 +298,14 @@ const GestionCV = () => {
                                     </button>
                                     {isRejecting && (
                                         <div className="mt-6 ">
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                                 {t('raisonRejet')}
                                             </label>
                                             <textarea
                                                 value={rejectionReason}
                                                 onChange={(e) => setRejectionReason(e.target.value)}
                                                 placeholder={t('expliquerRejet')}
-                                                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                                                 rows="3"
                                                 disabled={isProcessing}
                                             />

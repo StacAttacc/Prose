@@ -107,10 +107,10 @@ const StageApplicantsPage = () => {
     return (
         <div className="p-4 md:p-6 flex flex-col items-center">
             <div className="flex flex-col items-center text-center mb-6">
-                <h1 className="text-2xl font-bold">
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                     {t('candidaturesPourStage')} {stageTitle ? `"${stageTitle}"` : `#${id}`}
                 </h1>
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                     {t('nombreCandidatures', { count: filtered.length, plural: filtered.length > 1 ? 's' : '' })}
                 </p>
             </div>
@@ -119,7 +119,7 @@ const StageApplicantsPage = () => {
                 <div className="relative">
                     <input
                         placeholder={t('rechercheNomEmail')}
-                        className="w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition"
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 dark:placeholder-gray-400"
                         value={q}
                         onChange={(e) => setQ(e.target.value)}
                         aria-label={t('recherche')}
@@ -131,32 +131,32 @@ const StageApplicantsPage = () => {
                 </div>
             </div>
 
-            <div className="w-full max-w-5xl bg-white rounded-2xl border border-gray-100 shadow-md overflow-hidden">
+            <div className="w-full max-w-5xl bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-md overflow-hidden">
                 {error && <ErrorBanner message={error}/>}
 
                 <div className="overflow-x-auto">
                     <table className="min-w-full text-sm">
                         <thead>
-                        <tr className="bg-gray-50 text-left border-b">
-                            <th className="py-3 px-4 font-medium text-gray-600">{t('candidat')}</th>
-                            <th className="py-3 px-4 font-medium text-gray-600">{t('cv')}</th>
-                            <th className="py-3 px-4 font-medium text-gray-600">{t('lettreMotivation')}</th>
-                            <th className="py-3 px-4 font-medium text-gray-600">{t('statut')}</th>
-                            <th className="py-3 px-4 font-medium text-gray-600">{t('entrevue')}</th>
-                            <th className="py-3 px-4 font-medium text-gray-600">Status Entente</th>
-                            <th className="py-3 px-4 font-medium text-gray-600">{t('action')}</th>
+                        <tr className="bg-gray-50 dark:bg-gray-700 text-left border-b dark:border-gray-600">
+                            <th className="py-3 px-4 font-medium text-gray-600 dark:text-gray-300">{t('candidat')}</th>
+                            <th className="py-3 px-4 font-medium text-gray-600 dark:text-gray-300">{t('cv')}</th>
+                            <th className="py-3 px-4 font-medium text-gray-600 dark:text-gray-300">{t('lettreMotivation')}</th>
+                            <th className="py-3 px-4 font-medium text-gray-600 dark:text-gray-300">{t('statut')}</th>
+                            <th className="py-3 px-4 font-medium text-gray-600 dark:text-gray-300">{t('entrevue')}</th>
+                            <th className="py-3 px-4 font-medium text-gray-600 dark:text-gray-300">Status Entente</th>
+                            <th className="py-3 px-4 font-medium text-gray-600 dark:text-gray-300">{t('action')}</th>
                         </tr>
                         </thead>
                         <tbody>
                         {loading ? (
                             <tr>
-                                <td className="py-8 px-4 text-gray-500 text-center" colSpan={7}>
+                                <td className="py-8 px-4 text-gray-500 dark:text-gray-400 text-center" colSpan={7}>
                                     {t('chargement')}
                                 </td>
                             </tr>
                         ) : filtered.length === 0 ? (
                             <tr>
-                                <td className="py-8 px-4 text-gray-500 text-center" colSpan={7}>
+                                <td className="py-8 px-4 text-gray-500 dark:text-gray-400 text-center" colSpan={7}>
                                     {t('aucuneCandidatureTrouvee')}
                                 </td>
                             </tr>
