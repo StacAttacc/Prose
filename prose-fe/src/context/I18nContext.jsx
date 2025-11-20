@@ -107,7 +107,7 @@ const translations = {
     // Notifications
     miseAJourDemandeApprobationStage: 'demande(s) d\'approbation de stage(s) mise(s) à jour',
     signatureEntenteNotification: 'nouveau(x) document(s) à signer',
-    nouvellesOffresStage: 'nouvelles offre(s) de stage à approuver',
+    OffresStage: 'nouvelles offre(s) de stage à approuver',
     nouvellesCandidatures: 'nouvelles candidature(s) reçue(s)',
     candidaturesUpdates: 'nouvelle(s) sur votre/vos candidature(s)',
     reponsesEtudiantsOffres: 'nouvelle(s) décision(s) au(x) stages(s)',

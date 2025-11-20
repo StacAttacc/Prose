@@ -5,26 +5,13 @@ export function getDefaultNavigationPath(role) {
     return "/";
 }
 
-export function getNotificationNavigationPath({role, notification = null, isGrouped = false, groupType = null}) {
-    let type;
-    if (isGrouped === true && groupType != null) {
-        type = groupType;
-    } else if (groupType != null) {
-        // Utiliser groupType même si isGrouped est false (pour les notifications individuelles)
-        type = groupType;
-    } else if (notification != null && notification.type) {
-        type = notification.type;
-    } else {
-        return {
-            path: getDefaultNavigationPath(role)
-        };
-    }
+export function getNotificationNavigationPath({role, notification = null, isGrouped, groupType}) {
     if (role === "EMPLOYEUR") {
-        return getEmployeurPaths({role, notification, isGrouped, type});
+        return getEmployeurPaths({role, notification, isGrouped, type: groupType});
     } else if (role === "ETUDIANT") {
-        return getEtudiantPaths({role, notification, isGrouped, type});
+        return getEtudiantPaths({role, notification, isGrouped, type: groupType});
     } else if (role === "GESTIONNAIRE") {
-        return getGestionnairePaths({role, notification, isGrouped, type});
+        return getGestionnairePaths({role, notification, isGrouped, type: groupType});
     } else {
         return {
             path: "/login"
@@ -32,7 +19,7 @@ export function getNotificationNavigationPath({role, notification = null, isGrou
     }
 }
 
-function getEmployeurPaths({role, notification = null, isGrouped = false, type}) {
+function getEmployeurPaths({role, notification = null, isGrouped, type}) {
     switch (type) {
         case "etudiant_offre_decision":
             return isGrouped ? {
@@ -69,7 +56,7 @@ function getEmployeurPaths({role, notification = null, isGrouped = false, type})
     }
 }
 
-function getEtudiantPaths({role, notification = null, isGrouped = false, type}) {
+function getEtudiantPaths({role, notification = null, isGrouped, type}) {
     switch (type) {
         case "cv_decision":
             return {
@@ -103,7 +90,7 @@ function getEtudiantPaths({role, notification = null, isGrouped = false, type}) 
     }
 }
 
-function getGestionnairePaths({role, notification = null, isGrouped = false, type}) {
+function getGestionnairePaths({role, notification = null, isGrouped, type}) {
     switch (type) {
         case "etudiant_offre_decision":
             return isGrouped ? {

@@ -12,9 +12,9 @@ describe('notificationText utils', () => {
     describe('labelForKey', () => {
         it('returns translated label for stage', () => {
             vi.mocked(I18nContext.useI18n).mockReturnValue({
-                t: (key) => key === 'nouvellesOffresStage' ? 'New Internship Offers' : key
+                t: (key) => key === 'nouvellesOffresStage' ? 'new internship offer(s) to approve' : key
             });
-            expect(labelForKey('stage')).toBe('New Internship Offers');
+            expect(labelForKey('creation_stage')).toBe('new internship offer(s) to approve');
         });
 
         it('returns translated label for postulation', () => {
@@ -33,16 +33,16 @@ describe('notificationText utils', () => {
 
         it('returns translated label for gestionnaire_cv', () => {
             vi.mocked(I18nContext.useI18n).mockReturnValue({
-                t: (key) => key === 'nouveauxCVs' ? 'New CVs' : key
+                t: (key) => key === 'nouveauxCVs' ? 'new CV(s) to review' : key
             });
-            expect(labelForKey('gestionnaire_cv')).toBe('New CVs');
+            expect(labelForKey('new_cv')).toBe('new CV(s) to review');
         });
 
         it('returns translated label for etudiant_cv', () => {
             vi.mocked(I18nContext.useI18n).mockReturnValue({
-                t: (key) => key === 'changementCV' ? 'CV Change' : key
+                t: (key) => key === 'changementCV' ? 'update on your CV' : key
             });
-            expect(labelForKey('etudiant_cv')).toBe('CV Change');
+            expect(labelForKey('cv_decision')).toBe('update on your CV');
         });
 
         it('returns translated label for convocation', () => {
