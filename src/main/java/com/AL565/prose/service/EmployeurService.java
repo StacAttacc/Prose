@@ -193,6 +193,11 @@ public class EmployeurService {
                             ETUDIANT_OFFRE_DECISION_NOTIFICATION,
                             employeurEmail
                     );
+            List<Notification> demandeApprobationStages = notificationRepository
+                    .findNotificationsByTypeAndFirstRecipientReadAtIsNullAndTargetEmail(
+                            DEMANDE_APPROBATION_STAGE_NOTIFICATION,
+                            employeurEmail
+                    );
 
             NotificationGroupDTO etudiantOffreDecisionsGroup = NotificationGroupDTO.toDTO(
                     ETUDIANT_OFFRE_DECISION_NOTIFICATION.getDisplayName(),
@@ -206,11 +211,16 @@ public class EmployeurService {
                     POSTULATION_NOTIFICATION.getDisplayName(),
                     postulations
             );
+            NotificationGroupDTO demandeApprobationStagesGroup = NotificationGroupDTO.toDTO(
+                    DEMANDE_APPROBATION_STAGE_NOTIFICATION.getDisplayName(),
+                    demandeApprobationStages
+            );
 
             return NotificationsResponseDTO.toDTO(List.of(
                     postulationsGroup,
                     signatureEntentesGroup,
-                    etudiantOffreDecisionsGroup
+                    etudiantOffreDecisionsGroup,
+                    demandeApprobationStagesGroup
             ));
         } catch (Exception e) {
             throw new NotificationExceptions.NotificationFetchException();

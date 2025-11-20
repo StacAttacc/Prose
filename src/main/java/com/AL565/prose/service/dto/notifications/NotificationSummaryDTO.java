@@ -37,6 +37,7 @@ public class NotificationSummaryDTO {
         switch (n) {
             case CreationStageNotification sn -> stageId = sn.getStageId();
             case NouveauCvNotification gcn -> cvId = gcn.getCvId();
+            case DemandeApprobationStageNotification dasn -> stageId = dasn.getStageId();
             case CandidatureDecisionNotification cdn -> {
                     candidatureId = cdn.getCandidatureId();
                     etudiantId = cdn.getEtudiantId();

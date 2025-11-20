@@ -80,6 +80,8 @@ public class GestionnaireService {
 
         Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(updatedStage.getEmployeurEmail());
 
+        createNotificationForApprovedOrRejectedStage(updatedStage);
+
         return StageDTO.fromModel(updatedStage, employeur);
     }
 
@@ -97,6 +99,8 @@ public class GestionnaireService {
         Stage updatedStage = stageRepository.save(stage);
 
         Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(updatedStage.getEmployeurEmail());
+
+        createNotificationForApprovedOrRejectedStage(updatedStage);
 
         return StageDTO.fromModel(updatedStage, employeur);
     }
@@ -255,22 +259,34 @@ public class GestionnaireService {
         if (cv.getStatus() == CvStatus.PENDING) {
             return;
         }
-        String statusMessageFR = switch (cv.getStatus()) {
-            case APPROVED -> "approuvé";
-            case REJECTED -> "rejeté";
-            default -> "";
-        };
-        String statusMessageEN = switch (cv.getStatus()) {
-            case APPROVED -> "approved";
-            case REJECTED -> "rejected";
-            default -> "";
-        };
         notification.setFirstRecipientReadAt(LocalDateTime.now());
         notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
         notification.setType(CV_DECISION_NOTIFICATION);
         notification.setTargetEmail(cv.getEtudiant().getEmail());
-        notification.setMessageFR("Votre CV a été " + statusMessageFR);
-        notification.setMessageEN("Your CV has been " + statusMessageEN);
+        notification.setMessageFR("Votre CV a été " + translateStatusMessage(cv.getStatus(), "FR"));
+        notification.setMessageEN("Your CV has been " + translateStatusMessage(cv.getStatus(), "EN"));
+        notificationRepository.save(notification);
+    }
+
+    @Transactional
+    protected void createNotificationForApprovedOrRejectedStage(Stage stage) {
+        if (stage.getStatus() == OfferStatus.SOUMISE) {
+            return;
+        }
+
+        String messageFR = "Votre offre de stage '" + stage.getTitle()
+                + "' a été " + translateStatusMessage(stage.getStatus(), "FR");
+        String messageEN = "Your internship offer '" + stage.getTitle()
+                + "' has been " + translateStatusMessage(stage.getStatus(), "EN");
+
+        DemandeApprobationStageNotification notification = new DemandeApprobationStageNotification();
+        notification.setCreatedAt(LocalDateTime.now());
+        notification.setType(DEMANDE_APPROBATION_STAGE_NOTIFICATION);
+        notification.setTargetEmail(stage.getEmployeurEmail());
+        notification.setStageId(stage.getId());
+        notification.setMessageFR(messageFR);
+        notification.setMessageEN(messageEN);
+
         notificationRepository.save(notification);
     }
 
@@ -298,5 +314,21 @@ public class GestionnaireService {
         etudiant.setProfesseurResponsable(professeur);
 
         etudiantRepository.save(etudiant);
+    }
+
+    private String translateStatusMessage(CvStatus status, String language) {
+        return switch (status) {
+            case APPROVED -> language.equals("FR") ? "approuvé" : "approved";
+            case REJECTED -> language.equals("FR") ? "rejeté" : "rejected";
+            default -> "";
+        };
+    }
+
+    private String translateStatusMessage(OfferStatus status, String language) {
+        return switch (status) {
+            case APPROUVEE -> language.equals("FR") ? "approuvée" : "approved";
+            case REJETEE -> language.equals("FR") ? "rejetée" : "rejected";
+            default -> "";
+        };
     }
 }
