@@ -145,6 +145,44 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
         }
     }, [status, t]);
 
+    // Déterminer si l'utilisateur peut encore signer l'entente
+    const canUserSignEntente = useMemo(() => {
+        if (!ententeData || !user) return false;
+        
+        const isEmployeur = user?.role === "EMPLOYEUR" || user?.role === "Employeur";
+        const isEtudiant = user?.role === "ETUDIANT" || user?.role === "Etudiant";
+        const isGestionnaire = user?.role === "GESTIONNAIRE" || user?.role === "Gestionnaire";
+        
+        const ententeStatus = ententeData.status;
+        
+        // L'employeur peut signer si :
+        // - Le statut est A_SIGNER (personne n'a signé)
+        // - Le statut est SIGNEE_ETUDIANT (l'étudiant a signé, l'employeur doit signer)
+        // - Le statut est SIGNEE_EMPLOYEUR et l'employeur n'a pas encore signé (cas théorique)
+        if (isEmployeur) {
+            return (ententeStatus === "A_SIGNER" || 
+                   ententeStatus === "SIGNEE_ETUDIANT") && 
+                   !ententeData.dateSignatureEmployeur;
+        }
+        
+        // L'étudiant peut signer si :
+        // - Le statut est A_SIGNER
+        // - Le statut est SIGNEE_EMPLOYEUR (l'employeur a signé, l'étudiant doit signer)
+        if (isEtudiant) {
+            return (ententeStatus === "A_SIGNER" || 
+                   ententeStatus === "SIGNEE_EMPLOYEUR") && 
+                   !ententeData.dateSignatureEtudiant;
+        }
+        
+        // Le gestionnaire peut signer seulement si les deux autres ont signé
+        if (isGestionnaire) {
+            return ententeStatus === "SIGNEE_ETUDIANT_ET_EMPLOYEUR" && 
+                   !ententeData.dateSignatureGestionnaire;
+        }
+        
+        return false;
+    }, [ententeData, user]);
+
     const statusBadgeClass = useMemo(() => {
         switch (status) {
             case "SOUMISE":
@@ -449,15 +487,7 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                                         <span className="text-sm text-gray-500 italic px-4 py-2">{t('verification')}</span>
                                     ) : ententeExists ? (
                                         <>
-                                            {ententeData?.status === "SIGNEE_ETUDIANT" ? (
-                                                <button
-                                                    onClick={() => setShowEntenteModal(true)}
-                                                    className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br transition-all"
-                                                    type="button"
-                                                >
-                                                    {t('voirEtSignerEntente')}
-                                                </button>
-                                            ) : ententeData?.status === "SIGNEE" ? (
+                                            {ententeData?.status === "SIGNEE" ? (
                                                 <div className="flex gap-2">
                                                     <button
                                                         onClick={() => setShowEntenteModal(true)}
@@ -489,6 +519,14 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                                                         {t('telechargerEntenteStage')}
                                                     </button>
                                                 </div>
+                                            ) : canUserSignEntente ? (
+                                                <button
+                                                    onClick={() => setShowEntenteModal(true)}
+                                                    className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br transition-all"
+                                                    type="button"
+                                                >
+                                                    {t('voirEtSignerEntente')}
+                                                </button>
                                             ) : (
                                                 <button
                                                     onClick={() => setShowEntenteModal(true)}

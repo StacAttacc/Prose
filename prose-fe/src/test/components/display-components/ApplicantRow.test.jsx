@@ -99,6 +99,7 @@ describe('ApplicantRow', () => {
       voirEtSignerEntente: 'Voir et signer l\'entente',
       voirEntente: 'Voir l\'entente',
       telecharger: 'Télécharger',
+      telechargerEntenteStage: 'Télécharger',
       enAttenteGestionnaireEntente: 'En attente du gestionnaire pour l\'entente de stage',
       erreurLorsSignature: 'Erreur lors de la signature'
     };

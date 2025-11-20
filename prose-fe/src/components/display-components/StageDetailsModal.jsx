@@ -3,7 +3,6 @@ import { useAuth } from "../../context/AuthContext.jsx";
 import { useI18n } from "../../context/I18nContext.jsx";
 import ErrorBanner from "./ErrorBanner.jsx";
 import CandidatureForm from "../etudiant-components/CandidatureForm.jsx";
-import { generateEntente } from "../../services/GestionnaireService.js";
 
 export default function StageDetailsModal({
                                               stage,
@@ -15,8 +14,6 @@ export default function StageDetailsModal({
                                               showPostulerButton = false,
                                               onCandidatureSuccess,
                                               candidatureId,
-                                              // ⬇️ NEW: on contrôle l’affichage du bouton d’entente depuis le parent
-                                              allowGenerateEntente = false,
                                           }) {
     const { user } = useAuth();
     const { t } = useI18n();
@@ -26,10 +23,6 @@ export default function StageDetailsModal({
     const [showCandidatureForm, setShowCandidatureForm] = useState(false);
     const [candidatureSuccess, setCandidatureSuccess] = useState(false);
     const [isRejecting, setIsRejecting] = useState(false);
-
-    // Génération d’entente
-    const [ententeDownloading, setEntenteDownloading] = useState(false);
-    const [ententeError, setEntenteError] = useState("");
 
     const shouldShowManagementButtons =
         showManagementButtons && user?.role === "GESTIONNAIRE";
@@ -87,43 +80,6 @@ export default function StageDetailsModal({
         setShowCandidatureForm(false);
         setCandidatureSuccess(true);
         if (onCandidatureSuccess) onCandidatureSuccess(stage);
-    };
-
-    const handleGenerateEntente = async () => {
-        if (!candidatureId || !Number.isFinite(Number(candidatureId))) {
-            setEntenteError(t('aucunIdCandidature'));
-            return;
-        }
-        setEntenteError("");
-        setEntenteDownloading(true);
-        try {
-            const entente = await generateEntente(Number(candidatureId), user?.token);
-            const b64 = entente?.documentPdfBase64;
-            const name = entente?.documentName || "entente.pdf";
-            if (b64) {
-                const bin = atob(b64);
-                const bytes = new Uint8Array(bin.length);
-                for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-                const blob = new Blob([bytes], { type: "application/pdf" });
-                const url = URL.createObjectURL(blob);
-
-                const a = document.createElement("a");
-                a.href = url;
-                a.download = name;
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-                URL.revokeObjectURL(url);
-            } else {
-                alert(t('ententeGenereeSucces'));
-            }
-        } catch (e) {
-            console.error("Erreur lors de la génération de l'entente:", e);
-            const msg = e?.response?.data?.message || e?.message || t('erreurInconnue');
-            setEntenteError(String(msg));
-        } finally {
-            setEntenteDownloading(false);
-        }
     };
 
     if (!isOpen || !stage) return null;
@@ -224,12 +180,6 @@ export default function StageDetailsModal({
                             </div>
                         )}
 
-                        {ententeError && (
-                            <div className="mt-4">
-                                <ErrorBanner message={ententeError} />
-                            </div>
-                        )}
-
                         <div className="mt-6">
                             <div className="w-full">
                                 {shouldShowManagementButtons && (
@@ -278,23 +228,6 @@ export default function StageDetailsModal({
                                         )}
                                     </div>
                                 )}
-
-                                {/* Bouton ENTENTE indépendant (affiché seulement si autorisé + id valide) */}
-                                {allowGenerateEntente &&
-                                    Number.isFinite(Number(candidatureId)) && (
-                                        <div className="mb-4">
-                                            <button
-                                                onClick={handleGenerateEntente}
-                                                className="mt-1 text-white bg-emerald-600 hover:bg-emerald-700 focus:ring-4 focus:outline-none focus:ring-emerald-300 font-medium rounded-lg text-sm px-5 py-2.5 disabled:opacity-50"
-                                                disabled={ententeDownloading}
-                                                title={t('genererEtTelechargerEntente')}
-                                            >
-                                                {ententeDownloading
-                                                    ? t('generationPDF')
-                                                    : t('genererEntente')}
-                                            </button>
-                                        </div>
-                                    )}
 
                                 <div className="flex justify-end space-x-4">
                                     <button
