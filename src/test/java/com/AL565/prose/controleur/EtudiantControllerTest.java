@@ -71,12 +71,6 @@ class EtudiantControllerTest {
     private PasswordEncoder passwordEncoder;
 
     @MockitoBean
-    private PostulationNotificationRepository postulationNotificationRepository;
-
-    @MockitoBean
-    private CvNotificationRepository cvNotificationRepository;
-
-    @MockitoBean
     private JwtTokenProvider jwtTokenProvider;
 
     @Test

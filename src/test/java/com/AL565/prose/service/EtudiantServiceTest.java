@@ -45,14 +45,6 @@ class EtudiantServiceTest {
     @Mock
     private NotificationRepository notificationRepository;
     @Mock
-    private CvNotificationRepository cvNotificationRepository;
-    @Mock
-    private ConvocationNotificationRepository convocationNotificationRepository;
-    @Mock
-    private PostulationNotificationRepository postulationNotificationRepository;
-    @Mock
-    private EtudiantOffreDecisionNotificationRepository etudiantOffreDecisionNotificationRepository;
-    @Mock
     private NotificationsHelper notificationsHelper;
     @Mock
     private PasswordEncoder passwordEncoder;

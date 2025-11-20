@@ -28,6 +28,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import static com.AL565.prose.model.notifications.NotificationType.*;
+
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -186,34 +188,34 @@ public class GestionnaireService {
     public NotificationsResponseDTO getGestionnaireNotifications() throws Exception {
         try {
                 List<Notification> stages = notificationRepository
-                        .findNotificationsByTypeAndFirstRecipientReadAtIsNull(NotificationType.STAGE_NOTIFICATION);
+                        .findNotificationsByTypeAndFirstRecipientReadAtIsNull(STAGE_NOTIFICATION);
                 List<Notification> postulations = notificationRepository
-                        .findNotificationsByTypeAndSecondRecipientReadAtIsNull(NotificationType.POSTULATION_NOTIFICATION);
+                        .findNotificationsByTypeAndSecondRecipientReadAtIsNull(POSTULATION_NOTIFICATION);
                 List<Notification> cvs = notificationRepository
-                        .findNotificationsByTypeAndFirstRecipientReadAtIsNull(NotificationType.CV_NOTIFICATTION);
+                        .findNotificationsByTypeAndFirstRecipientReadAtIsNull(NEW_CV_NOTIFICATION);
                 List<Notification> convocations = notificationRepository
-                        .findNotificationsByTypeAndSecondRecipientReadAtIsNull(NotificationType.CONVOCATION_NOTIFICATION);
+                        .findNotificationsByTypeAndSecondRecipientReadAtIsNull(CONVOCATION_NOTIFICATION);
                 List<Notification> candidatureDecisions = notificationRepository
-                        .findNotificationsByTypeAndSecondRecipientReadAtIsNull(NotificationType.CANDIDATURE_DECISION_NOTIFICATION);
+                        .findNotificationsByTypeAndSecondRecipientReadAtIsNull(CANDIDATURE_DECISION_NOTIFICATION);
                 List<Notification> etudiantOffresResponses = notificationRepository
-                        .findNotificationsByTypeAndSecondRecipientReadAtIsNull(NotificationType.ETUDIANT_OFFRE_DECCISION_NOTIFICATION);
+                        .findNotificationsByTypeAndSecondRecipientReadAtIsNull(ETUDIANT_OFFRE_DECISION_NOTIFICATION);
                 List<SignatureEntenteNotification> signatureEntentes = signatureEntenteNotificationRepository
                         .findByThirdRecipientReadAtIsNullAndFirstRecipientReadAtIsNotNullAndSecondRecipientReadAtIsNotNull();
 
                 NotificationGroupDTO stagesGroup = NotificationGroupDTO
-                        .toDTO(NotificationType.STAGE_NOTIFICATION.getDisplayName(), stages);
+                        .toDTO(STAGE_NOTIFICATION.getDisplayName(), stages);
                 NotificationGroupDTO postulationGroup = NotificationGroupDTO
-                        .toDTO(NotificationType.POSTULATION_NOTIFICATION.getDisplayName(), postulations);
+                        .toDTO(POSTULATION_NOTIFICATION.getDisplayName(), postulations);
                 NotificationGroupDTO cvsGroup = NotificationGroupDTO
-                        .toDTO(NotificationType.CV_NOTIFICATTION.getDisplayName(), cvs);
+                        .toDTO(NEW_CV_NOTIFICATION.getDisplayName(), cvs);
                 NotificationGroupDTO convocationsGroup = NotificationGroupDTO
-                        .toDTO(NotificationType.CONVOCATION_NOTIFICATION.getDisplayName(), convocations);
+                        .toDTO(CONVOCATION_NOTIFICATION.getDisplayName(), convocations);
                 NotificationGroupDTO candidatureDecisionsGroup = NotificationGroupDTO
-                        .toDTO(NotificationType.CANDIDATURE_DECISION_NOTIFICATION.getDisplayName(), candidatureDecisions);
+                        .toDTO(CANDIDATURE_DECISION_NOTIFICATION.getDisplayName(), candidatureDecisions);
                 NotificationGroupDTO etudiantOffresResponsesGroup = NotificationGroupDTO
-                        .toDTO(NotificationType.ETUDIANT_OFFRE_DECCISION_NOTIFICATION.getDisplayName(), etudiantOffresResponses);
+                        .toDTO(ETUDIANT_OFFRE_DECISION_NOTIFICATION.getDisplayName(), etudiantOffresResponses);
                 NotificationGroupDTO signatureEntentesGroup = NotificationGroupDTO
-                        .toDTO(NotificationType.SIGNATURE_ENTENTE_NOTIFICATION.getDisplayName(), signatureEntentes);
+                        .toDTO(SIGNATURE_ENTENTE_NOTIFICATION.getDisplayName(), signatureEntentes);
 
             return NotificationsResponseDTO
                     .toDTO(List.of(stagesGroup,
@@ -236,7 +238,7 @@ public class GestionnaireService {
             case POSTULATION_NOTIFICATION,
                  CONVOCATION_NOTIFICATION,
                  CANDIDATURE_DECISION_NOTIFICATION,
-                 ETUDIANT_OFFRE_DECCISION_NOTIFICATION -> markPostulationAsReadBySecondRecipient(notificationId);
+                 ETUDIANT_OFFRE_DECISION_NOTIFICATION -> markPostulationAsReadBySecondRecipient(notificationId);
             case SIGNATURE_ENTENTE_NOTIFICATION -> {
                 if (notification instanceof SignatureEntenteNotification signatureNotification) {
                     signatureNotification.setThirdRecipientReadAt(LocalDateTime.now());
@@ -249,7 +251,7 @@ public class GestionnaireService {
 
     @Transactional
     public void createStudentNotificationForReviewedCV(CV cv) {
-        CvNotification notification = new CvNotification();
+        NouveauCvNotification notification = new NouveauCvNotification();
         if (cv.getStatus() == CvStatus.PENDING) {
             return;
         }
@@ -263,10 +265,9 @@ public class GestionnaireService {
             case REJECTED -> "rejected";
             default -> "";
         };
-        notification.setSecondRecipientReadAt(null);
         notification.setFirstRecipientReadAt(LocalDateTime.now());
         notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
-        notification.setType(NotificationType.CV_NOTIFICATTION);
+        notification.setType(CV_DECISION_NOTIFICATION);
         notification.setTargetEmail(cv.getEtudiant().getEmail());
         notification.setMessageFR("Votre CV a été " + statusMessageFR);
         notification.setMessageEN("Your CV has been " + statusMessageEN);

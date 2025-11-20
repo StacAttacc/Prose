@@ -19,6 +19,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static com.AL565.prose.model.notifications.NotificationType.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -26,10 +27,6 @@ import static org.mockito.Mockito.*;
 class NotificationsServiceLayerTest {
     @Mock
     private NotificationRepository notificationRepository;
-    @Mock
-    private PostulationNotificationRepository postulationNotificationRepository;
-    @Mock
-    private CvNotificationRepository cvNotificationRepository;
     @Mock
     private EtudiantRepository etudiantRepository;
     @Mock
@@ -46,12 +43,6 @@ class NotificationsServiceLayerTest {
     private EmployeurRepository employeurRepository;
     @Mock
     private CandidatureRepository candidatureRepository;
-    @Mock
-    private EtudiantOffreDecisionNotificationRepository etudiantOffreDecisionNotificationRepository;
-    @Mock
-    private ConvocationNotificationRepository convocationNotificationRepository;
-    @Mock
-    private CandidatureDecisionNotificationRepository candidatureDecisionNotificationRepository;
     @Mock
     private SignatureEntenteNotificationRepository signatureEntenteNotificationRepository;
     @Mock
@@ -73,93 +64,94 @@ class NotificationsServiceLayerTest {
     @DisplayName("getStageNotifications() returns stage notifications from repository")
     void getNotifications_returnsNotifications() throws Exception {
         StageNotification n1 = new StageNotification();
-        n1.setType(NotificationType.STAGE_NOTIFICATION);
+        n1.setType(STAGE_NOTIFICATION);
         n1.setMessageEN("Stage submitted");
         n1.setCreatedAt(LocalDateTime.now());
 
         StageNotification n2 = new StageNotification();
-        n2.setType(NotificationType.STAGE_NOTIFICATION);
+        n2.setType(STAGE_NOTIFICATION);
         n2.setMessageEN("Stage updated");
         n2.setCreatedAt(LocalDateTime.now());
 
         PostulationNotification n3 = new PostulationNotification();
-        n3.setType(NotificationType.POSTULATION_NOTIFICATION);
+        n3.setType(POSTULATION_NOTIFICATION);
         n3.setMessageEN("New application");
         n3.setCreatedAt(LocalDateTime.now());
 
-        CvNotification n4 = new CvNotification();
-        n4.setType(NotificationType.CV_NOTIFICATTION);
+        NouveauCvNotification n4 = new NouveauCvNotification();
+        n4.setType(NEW_CV_NOTIFICATION);
         n4.setMessageEN("New CV uploaded");
         n4.setCreatedAt(LocalDateTime.now());
 
-        CvNotification n5 = new CvNotification();
-        n5.setType(NotificationType.CV_NOTIFICATTION);
+        NouveauCvNotification n5 = new NouveauCvNotification();
+        n5.setType(CV_DECISION_NOTIFICATION);
         n5.setMessageEN("CV processed");
         n5.setCreatedAt(LocalDateTime.now());
 
         EtudiantOffreDecisionNotification n6 = new EtudiantOffreDecisionNotification();
-        n6.setType(NotificationType.ETUDIANT_OFFRE_DECCISION_NOTIFICATION);
+        n6.setType(ETUDIANT_OFFRE_DECISION_NOTIFICATION);
         n6.setMessageEN("Offer decision made");
         n6.setCreatedAt(LocalDateTime.now());
 
         ConvocationNotification n7 = new ConvocationNotification();
-        n7.setType(NotificationType.CONVOCATION_NOTIFICATION);
+        n7.setType(CONVOCATION_NOTIFICATION);
         n7.setMessageEN("New convocation");
         n7.setCreatedAt(LocalDateTime.now());
 
         CandidatureDecisionNotification n8 = new CandidatureDecisionNotification();
-        n8.setType(NotificationType.CANDIDATURE_DECISION_NOTIFICATION);
+        n8.setType(CANDIDATURE_DECISION_NOTIFICATION);
         n8.setMessageEN("Candidature decision made");
         n8.setCreatedAt(LocalDateTime.now());
 
         SignatureEntenteNotification n9 = new SignatureEntenteNotification();
-        n9.setType(NotificationType.SIGNATURE_ENTENTE_NOTIFICATION);
+        n9.setType(SIGNATURE_ENTENTE_NOTIFICATION);
         n9.setMessageEN("Entente needs to be signed");
         n9.setCreatedAt(LocalDateTime.now());
 
-        when(notificationRepository.findNotificationsByTypeAndFirstRecipientReadAtIsNull(NotificationType.STAGE_NOTIFICATION))
-                .thenReturn(List.of(n1, n2));
+        when(notificationRepository.findNotificationsByTypeAndFirstRecipientReadAtIsNull(
+                STAGE_NOTIFICATION
+        )).thenReturn(List.of(n1, n2));
 
-        when(notificationRepository.findNotificationsByTypeAndSecondRecipientReadAtIsNull(NotificationType.POSTULATION_NOTIFICATION))
-                .thenReturn(List.of(n3));
+        when(notificationRepository.findNotificationsByTypeAndSecondRecipientReadAtIsNull(
+                POSTULATION_NOTIFICATION
+        )).thenReturn(List.of(n3));
 
-        when(notificationRepository.findNotificationsByTypeAndFirstRecipientReadAtIsNull(NotificationType.CV_NOTIFICATTION))
-                .thenReturn(List.of(n4));
+        when(notificationRepository.findNotificationsByTypeAndFirstRecipientReadAtIsNull(
+                NEW_CV_NOTIFICATION
+        )).thenReturn(List.of(n4));
 
-        when(cvNotificationRepository.findCvNotificationsByFirstRecipientReadAtIsNotNullAndSecondRecipientReadAtIsNullAndTargetEmail(
+        when(notificationRepository.findNotificationsByTypeAndFirstRecipientReadAtIsNullAndTargetEmail(
+                CV_DECISION_NOTIFICATION,
                 "dummy@email.com"
         )).thenReturn(List.of(n5));
 
-        when(postulationNotificationRepository.findByFirstRecipientReadAtIsNullAndTargetEmail(
+        when(notificationRepository.findNotificationsByTypeAndFirstRecipientReadAtIsNullAndTargetEmail(
+                POSTULATION_NOTIFICATION,
                 "dummy@email.com"
         )).thenReturn(List.of(n3));
 
-        when(signatureEntenteNotificationRepository.findSignatureEntenteNotificationsByFirstRecipientReadAtIsNullAndTargetEmployeurEmail(
+        when(notificationRepository.findNotificationsByTypeAndFirstRecipientReadAtIsNullAndTargetEmail(
+                SIGNATURE_ENTENTE_NOTIFICATION,
                 "dummy@email.com"
         )).thenReturn(List.of(n9));
 
-        when(etudiantOffreDecisionNotificationRepository.findByTargetEmailAndFirstRecipientReadAtIsNull(
+        when(notificationRepository.findNotificationsByTypeAndFirstRecipientReadAtIsNullAndTargetEmail(
+                ETUDIANT_OFFRE_DECISION_NOTIFICATION,
                 "dummy@email.com"
         )).thenReturn(List.of(n6));
 
-
-        when(etudiantOffreDecisionNotificationRepository.findByTargetEmailAndFirstRecipientReadAtIsNull(
-                "dummy@email.com"
-        )).thenReturn(List.of(n6));
-
-        when(convocationNotificationRepository.findByFirstRecipientReadAtIsNullAndTargetEmail(
+        when(notificationRepository.findNotificationsByTypeAndFirstRecipientReadAtIsNullAndTargetEmail(
+                CONVOCATION_NOTIFICATION,
                 "dummy@email.com"
         )).thenReturn(List.of(n7));
 
-        when(candidatureDecisionNotificationRepository.findCandidatureDecisionNotificationsByFirstRecipientReadAtIsNullAndTargetEmail(
+        when(notificationRepository.findNotificationsByTypeAndFirstRecipientReadAtIsNullAndTargetEmail(
+                CANDIDATURE_DECISION_NOTIFICATION,
                 "dummy@email.com"
         )).thenReturn(List.of(n8));
 
-        when(signatureEntenteNotificationRepository.findSignatureEntenteNotificationsBySecondRecipientReadAtIsNullAndTargetEtudiantEmail(
-                "dummy@email.com"
-        )).thenReturn(List.of(n9));
-
-        when(signatureEntenteNotificationRepository.findSignatureEntenteNotificationsBySecondRecipientReadAtIsNullAndTargetEtudiantEmail(
+        when(notificationRepository.findNotificationsByTypeAndSecondRecipientReadAtIsNullAndTargetEmail(
+                SIGNATURE_ENTENTE_NOTIFICATION,
                 "dummy@email.com"
         )).thenReturn(List.of(n9));
 

@@ -63,7 +63,7 @@ function getEmployeurPaths({role, notification = null, isGrouped = false, type})
 
 function getEtudiantPaths({role, notification = null, isGrouped = false, type}) {
     switch (type) {
-        case "cv":
+        case "cv_decision":
             return {
                 path: `/etudiant/mon-cv`,
             };
@@ -118,7 +118,7 @@ function getGestionnairePaths({role, notification = null, isGrouped = false, typ
                 path: "/gestionnaire/list-stages",
                 state: { openStageId: notification?.stageId }
             };
-        case "cv":
+        case "new_cv":
             return isGrouped ? {
                 path: "/gestionnaire/gestion-cv",
             } : {

@@ -3,7 +3,7 @@ package com.AL565.prose.controleur;
 import com.AL565.prose.controller.GestionnaireController;
 import com.AL565.prose.model.*;
 import com.AL565.prose.model.auth.Credentials;
-import com.AL565.prose.model.notifications.CvNotification;
+import com.AL565.prose.model.notifications.NouveauCvNotification;
 import com.AL565.prose.model.notifications.NotificationType;
 import com.AL565.prose.model.notifications.PostulationNotification;
 import com.AL565.prose.model.notifications.StageNotification;
@@ -72,12 +72,6 @@ class GestionnaireControllerTest {
 
     @MockitoBean
     private GestionnaireRepository gestionnaireRepository;
-
-    @MockitoBean
-    private PostulationNotificationRepository postulationNotificationRepository;
-
-    @MockitoBean
-    private CvNotificationRepository cvNotificationRepository;
 
     @MockitoBean
     private CvRepository cvRepository;
@@ -424,8 +418,8 @@ class GestionnaireControllerTest {
         n3.setMessageEN("New application");
         n3.setCreatedAt(LocalDateTime.now());
 
-        CvNotification n4 = new CvNotification();
-        n4.setType(NotificationType.CV_NOTIFICATTION);
+        NouveauCvNotification n4 = new NouveauCvNotification();
+        n4.setType(NotificationType.NEW_CV_NOTIFICATION);
         n4.setMessageEN("New CV uploaded");
         n4.setCreatedAt(LocalDateTime.now());
 
@@ -434,7 +428,7 @@ class GestionnaireControllerTest {
         NotificationGroupDTO postulationGroup = NotificationGroupDTO
                 .toDTO(NotificationType.POSTULATION_NOTIFICATION.getDisplayName(), List.of(n3));
         NotificationGroupDTO cvGroup = NotificationGroupDTO
-                .toDTO(NotificationType.CV_NOTIFICATTION.getDisplayName(), List.of(n4));
+                .toDTO(NotificationType.NEW_CV_NOTIFICATION.getDisplayName(), List.of(n4));
         NotificationsResponseDTO response = NotificationsResponseDTO.toDTO(List.of(stageGroup, postulationGroup, cvGroup));
 
         when(gestionnaireService.getGestionnaireNotifications()).thenReturn(response);

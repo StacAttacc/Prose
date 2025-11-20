@@ -2,9 +2,8 @@ package com.AL565.prose.service;
 
 import com.AL565.prose.model.CvStatus;
 import com.AL565.prose.model.auth.Credentials;
-import com.AL565.prose.model.notifications.CvNotification;
+import com.AL565.prose.model.notifications.NouveauCvNotification;
 import com.AL565.prose.model.notifications.Notification;
-import com.AL565.prose.repository.CvNotificationRepository;
 import com.AL565.prose.repository.NotificationRepository;
 import com.AL565.prose.service.dto.EtudiantCvDTO;
 import com.AL565.prose.model.CV;
@@ -38,9 +37,6 @@ class EtudiantServiceCvTest {
 
     @Mock
     private NotificationRepository notificationRepository;
-
-    @Mock
-    private CvNotificationRepository cvNotificationRepository;
 
     @InjectMocks
     private EtudiantService etudiantService;
@@ -96,7 +92,7 @@ class EtudiantServiceCvTest {
         cv.setEtudiant(etudiant);
         cv.setId(1L);
 
-        CvNotification gcn = new CvNotification();
+        NouveauCvNotification gcn = new NouveauCvNotification();
         gcn.setCvId(cv.getId());
         gcn.setId(1L);
 

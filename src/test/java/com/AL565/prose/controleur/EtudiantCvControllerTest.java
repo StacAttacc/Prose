@@ -51,12 +51,6 @@ class EtudiantCvControllerTest {
     @MockitoBean
     private NotificationRepository notificationRepository;
 
-    @MockitoBean
-    private PostulationNotificationRepository postulationNotificationRepository;
-
-    @MockitoBean
-    private CvNotificationRepository cvNotificationRepository;
-
     @Autowired
     private EtudiantService etudiantService;
 

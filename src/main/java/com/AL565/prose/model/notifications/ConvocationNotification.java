@@ -15,6 +15,5 @@ import lombok.Setter;
 @AllArgsConstructor
 public class ConvocationNotification extends Notification {
     private Long candidatureId;
-    private String targetEmail;
     private Long etudiantId;
 }

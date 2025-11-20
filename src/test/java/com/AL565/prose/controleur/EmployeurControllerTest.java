@@ -86,12 +86,6 @@ class EmployeurControllerTest {
     private NotificationRepository notificationRepository;
 
     @MockitoBean
-    private PostulationNotificationRepository postulationNotificationRepository;
-
-    @MockitoBean
-    private CvNotificationRepository cvNotificationRepository;
-
-    @MockitoBean
     private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
     @Autowired

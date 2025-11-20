@@ -21,5 +21,6 @@ public abstract class Notification {
     private LocalDateTime createdAt;
     private String messageFR;
     private String messageEN;
+    private String targetEmail;
     private NotificationType type;
 }
