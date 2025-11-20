@@ -1,6 +1,6 @@
 export function getDefaultNavigationPath(role) {
     if (role === "GESTIONNAIRE") return "/gestionnaire/candidatures";
-    if (role === "EMPLOYEUR") return `/employeur/posted-stages`;
+    if (role === "EMPLOYEUR") return `/employeur/stages/posted-stages`;
     if (role === "ETUDIANT") return `/etudiant/mon-cv`;
     return "/";
 }
@@ -48,12 +48,17 @@ function getEmployeurPaths({role, notification = null, isGrouped = false, type})
         case "signature_entente":
             return isGrouped ? {
                 path: getDefaultNavigationPath(role),
-            } : notification?.stageId ? {
+            } : {
                 path: `/employeur/stages/${notification.stageId}/candidatures`,
                 state: { openEntenteId: notification?.signatureEntenteCandidatureId }
+            };
+        case "demande_approbation_stage":
+            return isGrouped ? {
+                path: getDefaultNavigationPath(role),
             } : {
                 path: getDefaultNavigationPath(role),
-            };
+                state: { openDemandeApprobationStageId: notification?.stageId }
+            }
         default:
             return {
                 path: getDefaultNavigationPath(role),
