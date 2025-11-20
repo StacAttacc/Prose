@@ -1,30 +1,17 @@
 export function getDefaultNavigationPath(role) {
     if (role === "GESTIONNAIRE") return "/gestionnaire/candidatures";
-    if (role === "EMPLOYEUR") return `/employeur/posted-stages`;
+    if (role === "EMPLOYEUR") return `/employeur/stages/posted-stages`;
     if (role === "ETUDIANT") return `/etudiant/mon-cv`;
     return "/";
 }
 
-export function getNotificationNavigationPath({role, notification = null, isGrouped = false, groupType = null}) {
-    let type;
-    if (isGrouped === true && groupType != null) {
-        type = groupType;
-    } else if (groupType != null) {
-        // Utiliser groupType même si isGrouped est false (pour les notifications individuelles)
-        type = groupType;
-    } else if (notification != null && notification.type) {
-        type = notification.type;
-    } else {
-        return {
-            path: getDefaultNavigationPath(role)
-        };
-    }
+export function getNotificationNavigationPath({role, notification = null, isGrouped, groupType}) {
     if (role === "EMPLOYEUR") {
-        return getEmployeurPaths({role, notification, isGrouped, type});
+        return getEmployeurPaths({role, notification, isGrouped, type: groupType});
     } else if (role === "ETUDIANT") {
-        return getEtudiantPaths({role, notification, isGrouped, type});
+        return getEtudiantPaths({role, notification, isGrouped, type: groupType});
     } else if (role === "GESTIONNAIRE") {
-        return getGestionnairePaths({role, notification, isGrouped, type});
+        return getGestionnairePaths({role, notification, isGrouped, type: groupType});
     } else {
         return {
             path: "/login"
@@ -32,7 +19,7 @@ export function getNotificationNavigationPath({role, notification = null, isGrou
     }
 }
 
-function getEmployeurPaths({role, notification = null, isGrouped = false, type}) {
+function getEmployeurPaths({role, notification = null, isGrouped, type}) {
     switch (type) {
         case "etudiant_offre_decision":
             return isGrouped ? {
@@ -51,12 +38,17 @@ function getEmployeurPaths({role, notification = null, isGrouped = false, type})
         case "signature_entente":
             return isGrouped ? {
                 path: getDefaultNavigationPath(role),
-            } : notification?.stageId ? {
+            } : {
                 path: `/employeur/stages/${notification.stageId}/candidatures`,
                 state: { openEntenteId: notification?.signatureEntenteCandidatureId }
+            };
+        case "demande_approbation_stage":
+            return isGrouped ? {
+                path: getDefaultNavigationPath(role),
             } : {
                 path: getDefaultNavigationPath(role),
-            };
+                state: { openDemandeApprobationStageId: notification?.stageId }
+            }
         default:
             return {
                 path: getDefaultNavigationPath(role),
@@ -64,9 +56,9 @@ function getEmployeurPaths({role, notification = null, isGrouped = false, type})
     }
 }
 
-function getEtudiantPaths({role, notification = null, isGrouped = false, type}) {
+function getEtudiantPaths({role, notification = null, isGrouped, type}) {
     switch (type) {
-        case "etudiant_cv":
+        case "cv_decision":
             return {
                 path: `/etudiant/mon-cv`,
             };
@@ -75,21 +67,21 @@ function getEtudiantPaths({role, notification = null, isGrouped = false, type}) 
                 path: `/etudiant/stages/candidatures`,
             } : {
                 path: `/etudiant/stages/candidatures`,
-                state: { openCandidatureId: notification?.convocation }
+                state: { openCandidatureId: notification?.candidatureId }
             };
         case "candidature_decision":
             return isGrouped ? {
                 path: `/etudiant/stages/candidatures`,
             } : {
                 path: `/etudiant/stages/candidatures`,
-                state: { openCandidatureId: notification?.candidatureDecisionId }
+                state: { openCandidatureId: notification?.candidatureId }
             };
         case "signature_entente":
             return isGrouped ? {
                 path: `/etudiant/stages/candidatures`,
             } : {
                 path: `/etudiant/stages/candidatures`,
-                state: { openEntenteId: notification?.signatureEntenteCandidatureId }
+                state: { openEntenteId: notification?.candidatureId }
             };
         default:
             return {
@@ -98,14 +90,14 @@ function getEtudiantPaths({role, notification = null, isGrouped = false, type}) 
     }
 }
 
-function getGestionnairePaths({role, notification = null, isGrouped = false, type}) {
+function getGestionnairePaths({role, notification = null, isGrouped, type}) {
     switch (type) {
         case "etudiant_offre_decision":
             return isGrouped ? {
                 path: getDefaultNavigationPath(role),
             } : {
                 path: getDefaultNavigationPath(role),
-                state: { etudiantOffreDecisionId: notification?.etudiantOffreDecisionId }
+                state: { etudiantOffreDecisionId: notification?.candidatureId }
             };
         case "postulation":
             return isGrouped ? {
@@ -114,14 +106,14 @@ function getGestionnairePaths({role, notification = null, isGrouped = false, typ
                 path: getDefaultNavigationPath(role),
                 state: { openEtudiantId: notification?.etudiantId }
             };
-        case "stage":
+        case "creation_stage":
             return isGrouped ? {
                 path: "/gestionnaire/list-stages"
             } : {
                 path: "/gestionnaire/list-stages",
                 state: { openStageId: notification?.stageId }
             };
-        case "gestionnaire_cv":
+        case "new_cv":
             return isGrouped ? {
                 path: "/gestionnaire/gestion-cv",
             } : {
@@ -148,8 +140,8 @@ function getGestionnairePaths({role, notification = null, isGrouped = false, typ
             } : {
                 path: getDefaultNavigationPath(role),
                 state: { 
-                    openCandidatureId: notification?.signatureEntenteCandidatureId,
-                    openTab: "APPROVED" // Ouvrir l'onglet APPROVED car l'entente est signée par étudiant et employeur
+                    openCandidatureId: notification?.candidatureId,
+                    openTab: "APPROVED"
                 }
             };
         default:

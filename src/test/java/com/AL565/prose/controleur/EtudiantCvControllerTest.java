@@ -4,10 +4,7 @@ import com.AL565.prose.controller.EtudiantController;
 import com.AL565.prose.model.CvStatus;
 import com.AL565.prose.repository.*;
 import com.AL565.prose.security.JwtTokenProvider;
-import com.AL565.prose.service.EmployeurService;
-import com.AL565.prose.service.EtudiantService;
-import com.AL565.prose.service.GestionnaireService;
-import com.AL565.prose.service.ProfesseurService;
+import com.AL565.prose.service.*;
 import com.AL565.prose.service.dto.EtudiantCvDTO;
 import com.AL565.prose.model.CV;
 import org.junit.jupiter.api.Test;
@@ -15,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -53,20 +51,20 @@ class EtudiantCvControllerTest {
     @MockitoBean
     private NotificationRepository notificationRepository;
 
-    @MockitoBean
-    private PostulationNotificationRepository postulationNotificationRepository;
-
-    @MockitoBean
-    private EtudiantCvNotificationRepository etudiantCvNotificationRepository;
-
-    @MockitoBean
-    private GestionnaireCvNotificationRepository gestionnaireCvNotificationRepository;
-
     @Autowired
     private EtudiantService etudiantService;
 
     @MockitoBean
     private JwtTokenProvider jwtTokenProvider;
+
+    @MockitoBean
+    private EntenteService ententeService;
+
+    @MockitoBean
+    private PasswordEncoder passwordenCoder;
+
+    @MockitoBean
+    private EtudiantRepository etudiantRepository;
 
     @Test
     @WithMockUser(username = "testuser", roles = {"ETUDIANT"})

@@ -25,6 +25,8 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.AL565.prose.model.notifications.NotificationType.*;
+
 @Service
 @AllArgsConstructor
 public class EmployeurService {
@@ -35,9 +37,6 @@ public class EmployeurService {
     private NotificationRepository notificationRepository;
     private CandidatureRepository candidatureRepository;
     private NotificationsHelper notificationsHelper;
-    private PostulationNotificationRepository postulationNotificationRepository;
-    private EtudiantOffreDecisionNotificationRepository etudiantOffreDecisionNotificationRepository;
-    private SignatureEntenteNotificationRepository signatureEntenteNotificationRepository;
 
     public void enregistrer(EmployeurPasswordDTO employeurDTO) throws EmailAlreadyExistsException {
         if (proseUserRepository.findByCredentials_Username(employeurDTO.getEmail()).isPresent()) {
@@ -70,11 +69,10 @@ public class EmployeurService {
             throw new IllegalArgumentException("stage must not be null");
         }
         String employeurName = employeur.getFirstName() + " " + employeur.getLastName();
-        StageNotification notification = new StageNotification();
-        notification.setFirstRecipientReadAt(null);
-        notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
-        notification.setStage(stage);
-        notification.setType(NotificationType.STAGE_NOTIFICATION);
+        CreationStageNotification notification = new CreationStageNotification();
+        notification.setCreatedAt(LocalDateTime.now());
+        notification.setStageId(stage.getId());
+        notification.setType(CREATION_STAGE_NOTIFICATION);
         notification.setMessageFR(employeurName + " a créé le stage " + stage.getTitle());
         notification.setMessageEN(employeurName + " has created the internship " + stage.getTitle());
         notificationRepository.save(notification);
@@ -167,48 +165,62 @@ public class EmployeurService {
                 + etudiantName + " for the internship " + candidature.getStage().getTitle();
 
         CandidatureDecisionNotification notification = new CandidatureDecisionNotification();
-        notification.setFirstRecipientReadAt(null);
-        notification.setSecondRecipientReadAt(null);
-        notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
-        notification.setType(NotificationType.CANDIDATURE_DECISION_NOTIFICATION);
+        notification.setCreatedAt(LocalDateTime.now());
+        notification.setType(CANDIDATURE_DECISION_NOTIFICATION);
         notification.setMessageFR(notifMessageFR);
         notification.setMessageEN(notifMessageEN);
-        notification.setCandidatureDecisionId(candidature.getId());
-        notification.setCandidatureDecisionEtudiantEmail(candidature.getEtudiant().getEmail());
-        notification.setCandidatureDecisionEtudiantId(candidature.getEtudiant().getId());
+        notification.setCandidatureId(candidature.getId());
+        notification.setTargetEmail(candidature.getEtudiant().getEmail());
+        notification.setEtudiantId(candidature.getEtudiant().getId());
         notificationRepository.save(notification);
     }
 
     @Transactional
     public NotificationsResponseDTO getEmployeurNotifications(String employeurEmail) throws Exception {
         try {
-            List<PostulationNotification> postulations =
-                    postulationNotificationRepository
-                            .findByFirstRecipientReadAtAndEmployeurEmail(
-                                    null,
-                                    employeurEmail
-                            );
-            List<SignatureEntenteNotification> signatureEntentes =
-                    signatureEntenteNotificationRepository
-                            .findSignatureEntenteNotificationsByFirstRecipientReadAtAndSignatureEntenteEmployeurEmail(
-                                    null,
-                                    employeurEmail
-                            );
-            List<EtudiantOffreDecisionNotification> etudiantOffreDecisions =
-                    etudiantOffreDecisionNotificationRepository
-                            .findByEmployeurResponseEmailAndFirstRecipientReadAt(employeurEmail, null);
+            List<Notification> postulations = notificationRepository
+                    .findNotificationsByTypeAndFirstRecipientReadAtIsNullAndTargetEmail(
+                            POSTULATION_NOTIFICATION,
+                            employeurEmail
+                );
+            List<Notification> signatureEntentes = notificationRepository
+                    .findNotificationsByTypeAndFirstRecipientReadAtIsNullAndTargetEmail(
+                            SIGNATURE_ENTENTE_NOTIFICATION,
+                            employeurEmail
+                    );
+            List<Notification> etudiantOffreDecisions = notificationRepository
+                    .findNotificationsByTypeAndFirstRecipientReadAtIsNullAndTargetEmail(
+                            ETUDIANT_OFFRE_DECISION_NOTIFICATION,
+                            employeurEmail
+                    );
+            List<Notification> demandeApprobationStages = notificationRepository
+                    .findNotificationsByTypeAndFirstRecipientReadAtIsNullAndTargetEmail(
+                            DEMANDE_APPROBATION_STAGE_NOTIFICATION,
+                            employeurEmail
+                    );
 
-            NotificationGroupDTO etudiantOffreDecisionsGroup = NotificationGroupDTO
-                    .toDTO(NotificationType.ETUDIANT_OFFRE_DECCISION_NOTIFICATION.getDisplayName(), etudiantOffreDecisions);
-            NotificationGroupDTO signatureEntentesGroup = NotificationGroupDTO
-                    .toDTO(NotificationType.SIGNATURE_ENTENTE_NOTIFICATION.getDisplayName(), signatureEntentes);
-            NotificationGroupDTO postulationsGroup = NotificationGroupDTO
-                    .toDTO(NotificationType.POSTULATION_NOTIFICATION.getDisplayName(), postulations);
+            NotificationGroupDTO etudiantOffreDecisionsGroup = NotificationGroupDTO.toDTO(
+                    ETUDIANT_OFFRE_DECISION_NOTIFICATION.getDisplayName(),
+                    etudiantOffreDecisions
+            );
+            NotificationGroupDTO signatureEntentesGroup = NotificationGroupDTO.toDTO(
+                    SIGNATURE_ENTENTE_NOTIFICATION.getDisplayName(),
+                    signatureEntentes
+            );
+            NotificationGroupDTO postulationsGroup = NotificationGroupDTO.toDTO(
+                    POSTULATION_NOTIFICATION.getDisplayName(),
+                    postulations
+            );
+            NotificationGroupDTO demandeApprobationStagesGroup = NotificationGroupDTO.toDTO(
+                    DEMANDE_APPROBATION_STAGE_NOTIFICATION.getDisplayName(),
+                    demandeApprobationStages
+            );
 
             return NotificationsResponseDTO.toDTO(List.of(
                     postulationsGroup,
                     signatureEntentesGroup,
-                    etudiantOffreDecisionsGroup
+                    etudiantOffreDecisionsGroup,
+                    demandeApprobationStagesGroup
             ));
         } catch (Exception e) {
             throw new NotificationExceptions.NotificationFetchException();
@@ -247,15 +259,13 @@ public class EmployeurService {
                 + " for an interview";
 
         ConvocationNotification notification = new ConvocationNotification();
-        notification.setFirstRecipientReadAt(null);
-        notification.setSecondRecipientReadAt(null);
-        notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
-        notification.setCandidatureConvocationId(candidature.getId());
+        notification.setCreatedAt(LocalDateTime.now());
+        notification.setCandidatureId(candidature.getId());
         notification.setType(NotificationType.CONVOCATION_NOTIFICATION);
         notification.setMessageFR(notifMessageFR);
         notification.setMessageEN(notifMessageEN);
-        notification.setEtudiantConvocationEmail(candidature.getEtudiant().getEmail());
-        notification.setEtudiantConvocationId(candidature.getEtudiant().getId());
+        notification.setTargetEmail(candidature.getEtudiant().getEmail());
+        notification.setEtudiantId(candidature.getEtudiant().getId());
         notificationRepository.save(notification);
     }
 }
