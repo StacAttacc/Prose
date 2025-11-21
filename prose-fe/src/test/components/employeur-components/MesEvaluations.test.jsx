@@ -15,6 +15,12 @@ vi.mock('../../../context/AuthContext', () => ({
     })
 }));
 
+vi.mock('../../../context/YearContext', () => ({
+    useYear: () => ({
+        selectedYear: '2025'
+    })
+}));
+
 vi.mock('../../../services/EmployeurService');
 
 
@@ -157,7 +163,7 @@ describe('MesEvaluations', () => {
         renderComponent();
 
         await waitFor(() => {
-            expect(spy).toHaveBeenCalledWith(1, 'fake-token');
+            expect(spy).toHaveBeenCalledWith(1, 'fake-token', '2025');
         });
     });
 

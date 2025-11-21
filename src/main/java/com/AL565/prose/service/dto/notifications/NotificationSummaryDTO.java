@@ -23,11 +23,6 @@ public class NotificationSummaryDTO {
     private Long stageId;
     private Long cvId;
     private Long candidatureId;
-    private Long candidatureDecisionId;
-    private Long candidatureResponseId;
-    private Long candidaturePostulationId;
-    private Long etudiantOffreDecisionId;
-    private Long signatureEntenteCandidatureId;
     private Long etudiantId;
     private Long convocation;
 
@@ -36,58 +31,34 @@ public class NotificationSummaryDTO {
 
         Long stageId = null;
         Long candidatureId = null;
-        Long candidatureDecisionId = null;
         Long cvId = null;
         Long etudiantId = null;
-        Long convocation = null;
-        Long etudiantOffreDecisionId = null;
-        Long candidaturePostulationId = null;
-        Long signatureEntenteCandidatureId = null;
 
         switch (n) {
-            case StageNotification sn -> {
-                if (sn.getStage() != null) stageId = sn.getStage().getId();
-            }
+            case CreationStageNotification sn -> stageId = sn.getStageId();
+            case NouveauCvNotification gcn -> cvId = gcn.getCvId();
+            case DemandeApprobationStageNotification dasn -> stageId = dasn.getStageId();
             case CandidatureDecisionNotification cdn -> {
-                if (cdn.getCandidatureDecisionId() != null) {
-                    candidatureDecisionId = cdn.getCandidatureDecisionId();
-                    etudiantId = cdn.getCandidatureDecisionEtudiantId();
-                }
+                    candidatureId = cdn.getCandidatureId();
+                    etudiantId = cdn.getEtudiantId();
             }
             case PostulationNotification pn -> {
-                if (pn.getCandidaturePostulationId() != null) {
-                    candidaturePostulationId = pn.getCandidaturePostulationId();
-                    stageId = pn.getStagePostulationId();
-                    etudiantId = pn.getEtudiantPostulationId();
-                }
+                    candidatureId = pn.getCandidatureId();
+                    stageId = pn.getStageId();
+                    etudiantId = pn.getEtudiantId();
             }
             case EtudiantOffreDecisionNotification ern -> {
-                Long candidatureResponseId = ern.getCandidatureResponseId();
-                Long stageResponseId = ern.getStageResponseId();
-                Long etudiantResponseId = ern.getEtudiantResponseId();
-                if (candidatureResponseId != null) {
-                    etudiantOffreDecisionId = candidatureResponseId;
-                    if (stageResponseId != null) stageId = stageResponseId;
-                    if (etudiantResponseId != null) etudiantId = etudiantResponseId;
-                }
-            }
-            case GestionnaireCvNotification gcn -> {
-                if (gcn.getCv() != null) {
-                    cvId = gcn.getCv().getId();
-                }
+                    candidatureId = ern.getCandidatureId();
+                    stageId = ern.getStageId();
+                    etudiantId = ern.getEtudiantId();
             }
             case ConvocationNotification cn -> {
-                Long candidatureConvocationId = cn.getCandidatureConvocationId();
-                if (candidatureConvocationId != null) {
-                    convocation = candidatureConvocationId;
-                    etudiantId = cn.getEtudiantConvocationId();
-                }
+                    candidatureId = cn.getCandidatureId();
+                    etudiantId = cn.getEtudiantId();
             }
             case SignatureEntenteNotification sen -> {
-                if (sen.getSignatureEntenteCandidatureId() != null) {
-                    signatureEntenteCandidatureId = sen.getSignatureEntenteCandidatureId();
-                    stageId = sen.getSignatureEntenteStageId();
-                }
+                    candidatureId = sen.getCandidatureId();
+                    stageId = sen.getStageId();
             }
             default -> {
             }
@@ -105,11 +76,6 @@ public class NotificationSummaryDTO {
                 .candidatureId(candidatureId)
                 .etudiantId(etudiantId)
                 .cvId(cvId)
-                .convocation(convocation)
-                .candidatureDecisionId(candidatureDecisionId)
-                .etudiantOffreDecisionId(etudiantOffreDecisionId)
-                .candidaturePostulationId(candidaturePostulationId)
-                .signatureEntenteCandidatureId(signatureEntenteCandidatureId)
                 .build();
     }
 }

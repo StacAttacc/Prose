@@ -3,10 +3,10 @@ package com.AL565.prose.controleur;
 import com.AL565.prose.controller.GestionnaireController;
 import com.AL565.prose.model.*;
 import com.AL565.prose.model.auth.Credentials;
-import com.AL565.prose.model.notifications.GestionnaireCvNotification;
+import com.AL565.prose.model.notifications.NouveauCvNotification;
 import com.AL565.prose.model.notifications.NotificationType;
 import com.AL565.prose.model.notifications.PostulationNotification;
-import com.AL565.prose.model.notifications.StageNotification;
+import com.AL565.prose.model.notifications.CreationStageNotification;
 import com.AL565.prose.repository.*;
 import com.AL565.prose.security.JwtTokenProvider;
 import com.AL565.prose.service.*;
@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -70,19 +71,16 @@ class GestionnaireControllerTest {
     private NotificationRepository notificationRepository;
 
     @MockitoBean
-    private PostulationNotificationRepository postulationNotificationRepository;
-
-    @MockitoBean
-    private EtudiantCvNotificationRepository etudiantCvNotificationRepository;
-
-    @MockitoBean
-    private GestionnaireCvNotificationRepository gestionnaireCvNotificationRepository;
+    private GestionnaireRepository gestionnaireRepository;
 
     @MockitoBean
     private CvRepository cvRepository;
 
     @MockitoBean
     private JwtTokenProvider jwtTokenProvider;
+
+    @MockitoBean
+    private PasswordEncoder passwordEncoder;
 
     @Autowired
     ObjectMapper objectMapper;
@@ -405,13 +403,13 @@ class GestionnaireControllerTest {
     @Test
     @DisplayName("GET /gestionnaire/notifications/all -> 200 + list of notifications (updated DTO)")
     void getStageNotifications_returnsOkWithList() throws Exception {
-        StageNotification n1 = new StageNotification();
-        n1.setType(NotificationType.STAGE_NOTIFICATION);
+        CreationStageNotification n1 = new CreationStageNotification();
+        n1.setType(NotificationType.CREATION_STAGE_NOTIFICATION);
         n1.setMessageEN("Stage submitted");
         n1.setCreatedAt(LocalDateTime.now());
 
-        StageNotification n2 = new StageNotification();
-        n2.setType(NotificationType.STAGE_NOTIFICATION);
+        CreationStageNotification n2 = new CreationStageNotification();
+        n2.setType(NotificationType.CREATION_STAGE_NOTIFICATION);
         n2.setMessageEN("Stage updated");
         n2.setCreatedAt(LocalDateTime.now());
 
@@ -420,17 +418,17 @@ class GestionnaireControllerTest {
         n3.setMessageEN("New application");
         n3.setCreatedAt(LocalDateTime.now());
 
-        GestionnaireCvNotification n4 = new GestionnaireCvNotification();
-        n4.setType(NotificationType.GESTIONNAIRE_CV_NOTIFICATION);
+        NouveauCvNotification n4 = new NouveauCvNotification();
+        n4.setType(NotificationType.NEW_CV_NOTIFICATION);
         n4.setMessageEN("New CV uploaded");
         n4.setCreatedAt(LocalDateTime.now());
 
         NotificationGroupDTO stageGroup = NotificationGroupDTO
-                .toDTO(NotificationType.STAGE_NOTIFICATION.getDisplayName(), List.of(n1, n2));
+                .toDTO(NotificationType.CREATION_STAGE_NOTIFICATION.getDisplayName(), List.of(n1, n2));
         NotificationGroupDTO postulationGroup = NotificationGroupDTO
                 .toDTO(NotificationType.POSTULATION_NOTIFICATION.getDisplayName(), List.of(n3));
         NotificationGroupDTO cvGroup = NotificationGroupDTO
-                .toDTO(NotificationType.GESTIONNAIRE_CV_NOTIFICATION.getDisplayName(), List.of(n4));
+                .toDTO(NotificationType.NEW_CV_NOTIFICATION.getDisplayName(), List.of(n4));
         NotificationsResponseDTO response = NotificationsResponseDTO.toDTO(List.of(stageGroup, postulationGroup, cvGroup));
 
         when(gestionnaireService.getGestionnaireNotifications()).thenReturn(response);

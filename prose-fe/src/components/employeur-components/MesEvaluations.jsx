@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useI18n } from '../../context/I18nContext';
+import { useYear } from '../../context/YearContext';
 import { getEntentesForEvaluation } from '../../services/EmployeurService';
 import { useAuth } from '../../context/AuthContext';
 import { FaCheckCircle, FaExclamationCircle, FaStar } from 'react-icons/fa';
 
 const MesEvaluations = () => {
     const { t } = useI18n();
+    const { selectedYear } = useYear();
     const navigate = useNavigate();
     const { user } = useAuth();
     const [ententes, setEntentes] = useState([]);
@@ -14,22 +16,24 @@ const MesEvaluations = () => {
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        loadEntentes();
-    }, []);
-
-    const loadEntentes = async () => {
-        try {
-            setLoading(true);
-            setError(null);
-            const data = await getEntentesForEvaluation(user.id, user.token);
-            setEntentes(data || []);
-        } catch (err) {
-            console.error('Erreur lors du chargement des ententes:', err);
-            setError(t('evaluations.errorLoading'));
-        } finally {
-            setLoading(false);
+        async function loadEntentes() {
+            try {
+                setLoading(true);
+                setError(null);
+                const data = await getEntentesForEvaluation(user.id, user.token, selectedYear);
+                setEntentes(data || []);
+            } catch (err) {
+                console.error('Erreur lors du chargement des ententes:', err);
+                setError(t('evaluations.errorLoading'));
+            } finally {
+                setLoading(false);
+            }
         }
-    };
+
+        if (user?.id && user?.token && selectedYear) {
+            loadEntentes();
+        }
+    }, [user.id, user.token, selectedYear, t]);
 
     const handleEvaluate = (entente) => {
         navigate(`/employeur/evaluations/evaluer/${entente.id}`);

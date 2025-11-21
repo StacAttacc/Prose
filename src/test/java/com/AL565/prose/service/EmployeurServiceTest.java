@@ -48,10 +48,6 @@ class EmployeurServiceTest {
     @Mock
     private NotificationRepository notificationRepository;
     @Mock
-    private PostulationNotificationRepository postulationNotificationRepository;
-    @Mock
-    private EtudiantOffreDecisionNotificationRepository etudiantOffreDecisionNotificationRepository;
-    @Mock
     private NotificationsHelper notificationsHelper;
 
     @InjectMocks

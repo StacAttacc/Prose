@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -40,6 +41,7 @@ public class EntenteService {
     private final EmployeurRepository employeurRepository;
     private final GestionnaireRepository gestionnaireRepository;
     private final NotificationRepository notificationRepository;
+    private final SignatureEntenteNotificationRepository signatureEntenteNotificationRepository;
 
     @Transactional
     public EntenteDTO getEntenteByCandidatureId(Long candidatureId) throws Exception {
@@ -108,11 +110,46 @@ public class EntenteService {
         notification.setMessageFR(messageFR);
         notification.setMessageEN(messageEN);
         notification.setType(NotificationType.SIGNATURE_ENTENTE_NOTIFICATION);
-        notification.setSignatureEntenteCandidatureId(entente.getCandidature().getId());
+        notification.setCandidatureId(entente.getCandidature().getId());
         notification
-                .setSignatureEntenteEmployeurEmail(entente.getCandidature().getStage().getEmployeurEmail());
-        notification.setSignatureEntenteEtudiantEmail(entente.getCandidature().getEtudiant().getEmail());
-        notification.setSignatureEntenteStageId(entente.getCandidature().getStageId());
+                .setTargetEmployeurEmail(entente.getCandidature().getStage().getEmployeurEmail());
+        notification.setTargetEtudiantEmail(entente.getCandidature().getEtudiant().getEmail());
+        notification.setStageId(entente.getCandidature().getStageId());
+
+        notificationRepository.save(notification);
+    }
+
+    @Transactional
+    public void createNotificationForGestionnaireWhenBothSigned(Entente entente) {
+        List<SignatureEntenteNotification> existingNotifications = signatureEntenteNotificationRepository
+                .findByThirdRecipientReadAtIsNullAndFirstRecipientReadAtIsNotNullAndSecondRecipientReadAtIsNotNull()
+                .stream()
+                .filter(n -> n.getCandidatureId() != null
+                        && n.getCandidatureId().equals(entente.getCandidature().getId()))
+                .toList();
+        
+        if (!existingNotifications.isEmpty()) {
+            return;
+        }
+        
+        String etudiantNom = entente.getCandidature().getEtudiant().getFirstName() + " " 
+                + entente.getCandidature().getEtudiant().getLastName();
+        String stageTitre = entente.getCandidature().getStage().getTitle();
+        
+        String messageFR = "L'étudiant " + etudiantNom + " et l'employeur ont tous deux signé l'entente de stage pour " + stageTitre;
+        String messageEN = "Student " + etudiantNom + " and employer have both signed the internship agreement for " + stageTitre;
+        
+        SignatureEntenteNotification notification = new SignatureEntenteNotification();
+        notification.setCreatedAt(LocalDateTime.now());
+        notification.setMessageFR(messageFR);
+        notification.setMessageEN(messageEN);
+        notification.setType(NotificationType.SIGNATURE_ENTENTE_NOTIFICATION);
+        notification.setCandidatureId(entente.getCandidature().getId());
+        notification.setTargetEmployeurEmail(entente.getCandidature().getStage().getEmployeurEmail());
+        notification.setTargetEtudiantEmail(entente.getCandidature().getEtudiant().getEmail());
+        notification.setFirstRecipientReadAt(LocalDateTime.now());
+        notification.setSecondRecipientReadAt(LocalDateTime.now());
+        notification.setStageId(entente.getCandidature().getStageId());
 
         notificationRepository.save(notification);
     }
@@ -134,6 +171,8 @@ public class EntenteService {
             if (entente.getDateSignatureEmployeur() != null) {
                 // Les deux (étudiant et employeur) ont signé, mais pas encore le gestionnaire
                 entente.setStatus(EntenteStatus.SIGNEE_ETUDIANT_ET_EMPLOYEUR);
+                // Notifier le gestionnaire que les deux parties ont signé
+                createNotificationForGestionnaireWhenBothSigned(entente);
             } else {
                 entente.setStatus(EntenteStatus.SIGNEE_ETUDIANT);
             }
@@ -142,6 +181,8 @@ public class EntenteService {
             if (entente.getDateSignatureEtudiant() != null) {
                 // Les deux (étudiant et employeur) ont signé, mais pas encore le gestionnaire
                 entente.setStatus(EntenteStatus.SIGNEE_ETUDIANT_ET_EMPLOYEUR);
+                // Notifier le gestionnaire que les deux parties ont signé
+                createNotificationForGestionnaireWhenBothSigned(entente);
             } else {
                 entente.setStatus(EntenteStatus.SIGNEE_EMPLOYEUR);
             }

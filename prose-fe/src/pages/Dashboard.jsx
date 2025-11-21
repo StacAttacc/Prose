@@ -70,7 +70,13 @@ export default function Dashboard() {
                                 </div>
                             </div>
                             <div className="ml-auto">
-                                <p className="text-white text-lg">{t('welcome')} {user.firstName + " " + user.lastName}
+                                <p className="text-white text-lg">{t('welcome')} {
+                                    // Si firstName et lastName sont identiques, n'afficher que firstName
+                                    // Sinon, afficher firstName + lastName
+                                    (user.firstName && user.lastName && user.firstName.trim() === user.lastName.trim())
+                                        ? user.firstName.trim()
+                                        : [user.firstName, user.lastName].filter(Boolean).join(" ")
+                                }
                                     <button type="button"
                                             className="text-white bg-gradient-to-r
                                     from-red-400 via-red-500 to-red-600

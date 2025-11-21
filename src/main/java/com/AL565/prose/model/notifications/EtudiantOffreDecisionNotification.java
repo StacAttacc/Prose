@@ -14,9 +14,8 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EtudiantOffreDecisionNotification extends Notification {
-    private Long candidatureResponseId;
-    private Long etudiantResponseId;
-    private Long stageResponseId;
-    private String employeurResponseEmail;
+    private Long candidatureId;
+    private Long etudiantId;
+    private Long stageId;
     private boolean isOffreAcceptedByStudent;
 }

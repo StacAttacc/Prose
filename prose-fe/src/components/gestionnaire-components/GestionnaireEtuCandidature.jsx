@@ -113,14 +113,54 @@ export default function GestionnaireEtuCandidature() {
 
         const openEtudiantId = location?.state?.openEtudiantId;
         const etudiantOffreDecisionId = location?.state?.etudiantOffreDecisionId;
+        const openCandidatureId = location?.state?.openCandidatureId;
+        const openTab = location?.state?.openTab;
 
-        if (openEtudiantId && !modalStudent) {
+        if (openCandidatureId) {
+            // Navigation depuis une notification de signature d'entente
+            const match = students.find((s) =>
+                (s.applications || []).some(
+                    (a) => String(a.id) === String(openCandidatureId)
+                )
+            );
+            if (match) {
+                if (openTab && tab !== openTab) setTab(openTab);
+                const application = (match.applications || []).find(
+                    (a) => String(a.id) === String(openCandidatureId)
+                );
+                if (application && user?.token) {
+                    // Charger l'entente avant d'ouvrir la modal
+                    (async () => {
+                        try {
+                            const result = await checkEntenteExists(openCandidatureId, user.token);
+                            if (result.exists) {
+                                setEntenteDataMap(prev => ({
+                                    ...prev,
+                                    [openCandidatureId]: result.data
+                                }));
+                            }
+                            // Ouvrir la modal de l'entente directement
+                            setSelectedCandidatureForEntente({ id: openCandidatureId });
+                            setShowEntenteModal(true);
+                        } catch (error) {
+                            console.error("Erreur lors du chargement de l'entente:", error);
+                            // Ouvrir quand même la modal, elle chargera l'entente elle-même
+                            setSelectedCandidatureForEntente({ id: openCandidatureId });
+                            setShowEntenteModal(true);
+                        }
+                    })();
+                }
+            }
+            navigate(location.pathname, { replace: true, state: {} });
+        }
+        else if (openEtudiantId && !modalStudent) {
             const stu = students.find((s) => String(s.id) === String(openEtudiantId));
             if (stu) {
                 if (tab !== "APPLIED") setTab("APPLIED");
                 setModalFilterStatuses(null);
                 setModalStudent(stu);
             }
+            navigate(location.pathname, { replace: true, state: {} });
         }
         else if (etudiantOffreDecisionId) {
             const match = students.find((s) =>
@@ -137,9 +177,6 @@ export default function GestionnaireEtuCandidature() {
                     openStageModal(application);
                 }
             }
-        }
-
-        if (openEtudiantId || etudiantOffreDecisionId) {
             navigate(location.pathname, { replace: true, state: {} });
         }
     }, [
@@ -147,6 +184,8 @@ export default function GestionnaireEtuCandidature() {
         students,
         location?.state?.openEtudiantId,
         location?.state?.etudiantOffreDecisionId,
+        location?.state?.openCandidatureId,
+        location?.state?.openTab,
         tab,
         modalStudent,
         navigate,

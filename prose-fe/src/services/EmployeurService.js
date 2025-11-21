@@ -117,8 +117,10 @@ export async function convoquerEntrevue(candidatureId, interviewData, token) {
     return await parseJsonOrThrow(res);
 }
 
-export async function getEntentesForEvaluation(employeurId, token) {
+export async function getEntentesForEvaluation(employeurId, token, year) {
+    const params = year ? { year } : {};
     const res = await http.get(`/api/employeur/${employeurId}/evaluations/ententes`, {
+        params,
         headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'

@@ -10,9 +10,9 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-@DiscriminatorValue("etudiant_cv")
+@DiscriminatorValue("demande_approbation_stage")
 @NoArgsConstructor
 @AllArgsConstructor
-public class EtudiantCvNotification extends Notification {
-    private String etudiantEmail;
+public class DemandeApprobationStageNotification extends Notification{
+    private Long stageId;
 }

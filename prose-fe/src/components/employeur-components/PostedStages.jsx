@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, {useEffect, useMemo, useState} from "react";
+import {useLocation, useNavigate} from "react-router-dom";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useI18n } from "../../context/I18nContext.jsx";
 import { useYear } from "../../context/YearContext.jsx";
@@ -13,6 +13,7 @@ export default function PostedStages() {
     const { t, locale } = useI18n();
     const { selectedYear } = useYear();
     const navigate = useNavigate();
+    const location = useLocation();
 
     const [stages, setStages] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -47,6 +48,47 @@ export default function PostedStages() {
             fetchAllStages();
         }
     }, [user.email, user.token, selectedYear]);
+
+    useEffect(() => {
+        if (!stages.length) return;
+
+        const openStageFromNotif = location?.state?.openDemandeApprobationStageId;
+        if (!openStageFromNotif) return;
+
+        const stageToScrollTo = stages.find(
+            s => String(s.id) === String(openStageFromNotif)
+        );
+
+        if (!stageToScrollTo) return;
+
+        handleStageClick(stageToScrollTo);
+
+        const scrollTimeout = setTimeout(() => {
+            requestAnimationFrame(() => {
+                const el = document.getElementById(`stage-${stageToScrollTo.id}`);
+                if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    el.classList.add('ring-2', 'ring-teal-500');
+
+                    const removeTimeout = setTimeout(() => {
+                        el.classList.remove("ring-2", "ring-teal-500");
+                        clearTimeout(removeTimeout);
+                    }, 6000);
+                }
+
+                return () => clearTimeout(scrollTimeout);
+            });
+        }, 250);
+
+        navigate(location?.pathname, { replace: true, state: {} });
+
+        return () => {
+            clearTimeout(scrollTimeout);
+        };
+    }, [
+        location.key,
+        stages
+    ]);
 
     const filteredStages = useMemo(() => {
         return stages.filter((stage) => {
@@ -188,6 +230,7 @@ export default function PostedStages() {
                         return (
                             <div
                                 key={stage.id}
+                                id={`stage-${stage.id}`}
                                 className="bg-white rounded-lg shadow-md border border-gray-200 p-6 hover:shadow-lg transition-shadow"
                             >
                                 <div className="mb-4">

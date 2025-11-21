@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 
 @Component
@@ -20,7 +21,7 @@ public class NotificationsHelper {
         try {
             Notification notification = notificationRepository.findById(notificationId)
                     .orElseThrow(NotificationExceptions.NotificationFetchException::new);
-            notification.setFirstRecipientReadAt(OffsetDateTime.now().toLocalDateTime());
+            notification.setFirstRecipientReadAt(LocalDateTime.now());
             notificationRepository.save(notification);
         } catch (Exception e) {
             throw new NotificationExceptions.NotificationFetchException();

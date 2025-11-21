@@ -63,9 +63,10 @@ public class EvaluationController {
 
     @GetMapping("/ententes")
     public ResponseEntity<List<EntenteDTO>> getEntentesForEvaluation(
-            @PathVariable Long employeurId) {
+            @PathVariable Long employeurId,
+            @RequestParam(required = false) String year) {
         try {
-            List<EntenteDTO> ententes = evaluationService.getEntentesForEvaluation(employeurId);
+            List<EntenteDTO> ententes = evaluationService.getEntentesForEvaluation(employeurId, year);
             return ResponseEntity.ok(ententes);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

@@ -125,7 +125,7 @@ class EvaluationControllerTest {
         ententeDTO.setEtudiantNom("Dupont");
         ententeDTO.setHasEvaluation(false);
 
-        when(evaluationService.getEntentesForEvaluation(1L)).thenReturn(java.util.List.of(ententeDTO));
+        when(evaluationService.getEntentesForEvaluation(eq(1L), any())).thenReturn(java.util.List.of(ententeDTO));
 
         mockMvc.perform(get("/api/employeur/1/evaluations/ententes"))
                 .andExpect(status().isOk())

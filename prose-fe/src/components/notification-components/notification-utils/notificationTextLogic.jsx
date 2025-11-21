@@ -2,23 +2,35 @@ import {useI18n} from "../../../context/I18nContext.jsx";
 
 export function labelForKey(key) {
     switch (key) {
-        case "stage": return useI18n().t('nouvellesOffresStage');
+        case "creation_stage": return useI18n().t('nouvellesOffresStage');
         case "postulation": return useI18n().t('nouvellesCandidatures');
         case "etudiant_offre_decision": return useI18n().t('reponsesEtudiantsOffres');
-        case "gestionnaire_cv": return useI18n().t('nouveauxCVs');
-        case "etudiant_cv": return useI18n().t('changementCV');
+        case "new_cv": return useI18n().t('nouveauxCVs');
+        case "cv_decision": return useI18n().t('changementCV');
         case "convocation": return useI18n().t('nouvellesConvocations');
         case "candidature_decision": return useI18n().t('candidaturesUpdates');
         case "signature_entente": return useI18n().t('signatureEntenteNotification');
+        case "demande_approbation_stage": return useI18n().t('miseAJourDemandeApprobationStage');
         default: return `${key} notification(s)`;
     }
 }
 
 export function shortText(notification, max = 80) {
     if (!notification.messageFR && !notification.messageEN) return "";
-    if (useI18n().locale === 'en')
-        return notification.messageEN.length > max
-            ? notification.messageEN.slice(0, max - 3) + "..."
-            : notification.messageEN;
-    return notification.messageFR.length > max ? notification.messageFR.slice(0, max - 3) + "..." : notification.messageFR;
+    const message = useI18n().locale === 'en' 
+        ? (notification.messageEN || "") 
+        : (notification.messageFR || "");
+
+    return message.length <= max ? message : message.slice(0, max - 3) + "...";
+}
+
+export function notificationTime(timestamp) {
+    const date = new Date(timestamp);
+    return date.toLocaleDateString(useI18n().locale, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
 }

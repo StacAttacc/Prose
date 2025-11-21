@@ -107,13 +107,18 @@ public class EvaluationService {
     }
 
     @Transactional(readOnly = true)
-    public List<com.AL565.prose.service.dto.EntenteDTO> getEntentesForEvaluation(Long employeurId) {
-        if (!employeurRepository.existsById(employeurId)) {
-            throw new EntityNotFoundException("Employeur non trouvé avec l'ID: " + employeurId);
-        }
+    public List<com.AL565.prose.service.dto.EntenteDTO> getEntentesForEvaluation(Long employeurId, String year) {
+        Employeur employeur = employeurRepository.findById(employeurId)
+                .orElseThrow(() -> new EntityNotFoundException("Employeur non trouvé avec l'ID: " + employeurId));
+
+        int yearNumber = year != null ? Integer.parseInt(year) : java.time.LocalDate.now().getYear();
 
         List<Entente> ententes = ententeRepository.findAll().stream()
                 .filter(e -> e.getStatus() == EntenteStatus.SIGNEE)
+                .filter(e -> e.getCandidature().getStage().getEmployeurEmail() != null &&
+                            e.getCandidature().getStage().getEmployeurEmail().equals(employeur.getCredentials().getUsername()))
+                .filter(e -> e.getCandidature().getStage().getStartDate() != null &&
+                            e.getCandidature().getStage().getStartDate().getYear() == yearNumber)
                 .collect(Collectors.toList());
 
         return ententes.stream()

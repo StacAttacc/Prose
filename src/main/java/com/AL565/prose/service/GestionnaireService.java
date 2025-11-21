@@ -21,11 +21,14 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+
+import static com.AL565.prose.model.notifications.NotificationType.*;
 
 @Service
 @Transactional
@@ -41,6 +44,7 @@ public class GestionnaireService {
     private final PasswordEncoder passwordEncoder;
     private final CandidatureRepository candidatureRepository;
     private final NotificationRepository notificationRepository;
+    private final SignatureEntenteNotificationRepository signatureEntenteNotificationRepository;
     private final NotificationsHelper notificationsHelper;
 
     public void saveGestionnaire(GestionnairePasswordDTO dto) {
@@ -76,6 +80,8 @@ public class GestionnaireService {
 
         Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(updatedStage.getEmployeurEmail());
 
+        createNotificationForApprovedOrRejectedStage(updatedStage);
+
         return StageDTO.fromModel(updatedStage, employeur);
     }
 
@@ -93,6 +99,8 @@ public class GestionnaireService {
         Stage updatedStage = stageRepository.save(stage);
 
         Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(updatedStage.getEmployeurEmail());
+
+        createNotificationForApprovedOrRejectedStage(updatedStage);
 
         return StageDTO.fromModel(updatedStage, employeur);
     }
@@ -184,30 +192,34 @@ public class GestionnaireService {
     public NotificationsResponseDTO getGestionnaireNotifications() throws Exception {
         try {
                 List<Notification> stages = notificationRepository
-                        .findNotificationsByTypeAndFirstRecipientReadAt(NotificationType.STAGE_NOTIFICATION, null);
+                        .findNotificationsByTypeAndFirstRecipientReadAtIsNull(CREATION_STAGE_NOTIFICATION);
                 List<Notification> postulations = notificationRepository
-                        .findNotificationsByTypeAndSecondRecipientReadAt(NotificationType.POSTULATION_NOTIFICATION, null);
+                        .findNotificationsByTypeAndSecondRecipientReadAtIsNull(POSTULATION_NOTIFICATION);
                 List<Notification> cvs = notificationRepository
-                        .findNotificationsByTypeAndFirstRecipientReadAt(NotificationType.GESTIONNAIRE_CV_NOTIFICATION, null);
+                        .findNotificationsByTypeAndFirstRecipientReadAtIsNull(NEW_CV_NOTIFICATION);
                 List<Notification> convocations = notificationRepository
-                        .findNotificationsByTypeAndSecondRecipientReadAt(NotificationType.CONVOCATION_NOTIFICATION, null);
+                        .findNotificationsByTypeAndSecondRecipientReadAtIsNull(CONVOCATION_NOTIFICATION);
                 List<Notification> candidatureDecisions = notificationRepository
-                        .findNotificationsByTypeAndSecondRecipientReadAt(NotificationType.CANDIDATURE_DECISION_NOTIFICATION, null);
+                        .findNotificationsByTypeAndSecondRecipientReadAtIsNull(CANDIDATURE_DECISION_NOTIFICATION);
                 List<Notification> etudiantOffresResponses = notificationRepository
-                        .findNotificationsByTypeAndSecondRecipientReadAt(NotificationType.ETUDIANT_OFFRE_DECCISION_NOTIFICATION, null);
+                        .findNotificationsByTypeAndSecondRecipientReadAtIsNull(ETUDIANT_OFFRE_DECISION_NOTIFICATION);
+                List<SignatureEntenteNotification> signatureEntentes = signatureEntenteNotificationRepository
+                        .findByThirdRecipientReadAtIsNullAndFirstRecipientReadAtIsNotNullAndSecondRecipientReadAtIsNotNull();
 
                 NotificationGroupDTO stagesGroup = NotificationGroupDTO
-                        .toDTO(NotificationType.STAGE_NOTIFICATION.getDisplayName(), stages);
+                        .toDTO(CREATION_STAGE_NOTIFICATION.getDisplayName(), stages);
                 NotificationGroupDTO postulationGroup = NotificationGroupDTO
-                        .toDTO(NotificationType.POSTULATION_NOTIFICATION.getDisplayName(), postulations);
+                        .toDTO(POSTULATION_NOTIFICATION.getDisplayName(), postulations);
                 NotificationGroupDTO cvsGroup = NotificationGroupDTO
-                        .toDTO(NotificationType.GESTIONNAIRE_CV_NOTIFICATION.getDisplayName(), cvs);
+                        .toDTO(NEW_CV_NOTIFICATION.getDisplayName(), cvs);
                 NotificationGroupDTO convocationsGroup = NotificationGroupDTO
-                        .toDTO(NotificationType.CONVOCATION_NOTIFICATION.getDisplayName(), convocations);
+                        .toDTO(CONVOCATION_NOTIFICATION.getDisplayName(), convocations);
                 NotificationGroupDTO candidatureDecisionsGroup = NotificationGroupDTO
-                        .toDTO(NotificationType.CANDIDATURE_DECISION_NOTIFICATION.getDisplayName(), candidatureDecisions);
+                        .toDTO(CANDIDATURE_DECISION_NOTIFICATION.getDisplayName(), candidatureDecisions);
                 NotificationGroupDTO etudiantOffresResponsesGroup = NotificationGroupDTO
-                        .toDTO(NotificationType.ETUDIANT_OFFRE_DECCISION_NOTIFICATION.getDisplayName(), etudiantOffresResponses);
+                        .toDTO(ETUDIANT_OFFRE_DECISION_NOTIFICATION.getDisplayName(), etudiantOffresResponses);
+                NotificationGroupDTO signatureEntentesGroup = NotificationGroupDTO
+                        .toDTO(SIGNATURE_ENTENTE_NOTIFICATION.getDisplayName(), signatureEntentes);
 
             return NotificationsResponseDTO
                     .toDTO(List.of(stagesGroup,
@@ -215,7 +227,8 @@ public class GestionnaireService {
                             cvsGroup,
                             convocationsGroup,
                             candidatureDecisionsGroup,
-                            etudiantOffresResponsesGroup));
+                            etudiantOffresResponsesGroup,
+                            signatureEntentesGroup));
         } catch (Exception e) {
             throw new NotificationExceptions.NotificationFetchException();
         }
@@ -229,33 +242,51 @@ public class GestionnaireService {
             case POSTULATION_NOTIFICATION,
                  CONVOCATION_NOTIFICATION,
                  CANDIDATURE_DECISION_NOTIFICATION,
-                 ETUDIANT_OFFRE_DECCISION_NOTIFICATION -> markPostulationAsReadBySecondRecipient(notificationId);
+                 ETUDIANT_OFFRE_DECISION_NOTIFICATION -> markPostulationAsReadBySecondRecipient(notificationId);
+            case SIGNATURE_ENTENTE_NOTIFICATION -> {
+                if (notification instanceof SignatureEntenteNotification signatureNotification) {
+                    signatureNotification.setThirdRecipientReadAt(LocalDateTime.now());
+                    signatureEntenteNotificationRepository.save(signatureNotification);
+                }
+            }
             default-> notificationsHelper.markNotificationAsReadByFirstRecipient(notificationId);
         }
     }
 
     @Transactional
     public void createStudentNotificationForReviewedCV(CV cv) {
-        EtudiantCvNotification notification = new EtudiantCvNotification();
+        NouveauCvNotification notification = new NouveauCvNotification();
         if (cv.getStatus() == CvStatus.PENDING) {
             return;
         }
-        String statusMessageFR = switch (cv.getStatus()) {
-            case APPROVED -> "approuvé";
-            case REJECTED -> "rejeté";
-            default -> "";
-        };
-        String statusMessageEN = switch (cv.getStatus()) {
-            case APPROVED -> "approved";
-            case REJECTED -> "rejected";
-            default -> "";
-        };
-        notification.setFirstRecipientReadAt(null);
+        notification.setFirstRecipientReadAt(LocalDateTime.now());
         notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
-        notification.setType(NotificationType.ETUDIANT_CV_NOTIFICATION);
-        notification.setEtudiantEmail(cv.getEtudiant().getEmail());
-        notification.setMessageFR("Votre CV a été " + statusMessageFR);
-        notification.setMessageEN("Your CV has been " + statusMessageEN);
+        notification.setType(CV_DECISION_NOTIFICATION);
+        notification.setTargetEmail(cv.getEtudiant().getEmail());
+        notification.setMessageFR("Votre CV a été " + translateStatusMessage(cv.getStatus(), "FR"));
+        notification.setMessageEN("Your CV has been " + translateStatusMessage(cv.getStatus(), "EN"));
+        notificationRepository.save(notification);
+    }
+
+    @Transactional
+    protected void createNotificationForApprovedOrRejectedStage(Stage stage) {
+        if (stage.getStatus() == OfferStatus.SOUMISE) {
+            return;
+        }
+
+        String messageFR = "Votre offre de stage '" + stage.getTitle()
+                + "' a été " + translateStatusMessage(stage.getStatus(), "FR");
+        String messageEN = "Your internship offer '" + stage.getTitle()
+                + "' has been " + translateStatusMessage(stage.getStatus(), "EN");
+
+        DemandeApprobationStageNotification notification = new DemandeApprobationStageNotification();
+        notification.setCreatedAt(LocalDateTime.now());
+        notification.setType(DEMANDE_APPROBATION_STAGE_NOTIFICATION);
+        notification.setTargetEmail(stage.getEmployeurEmail());
+        notification.setStageId(stage.getId());
+        notification.setMessageFR(messageFR);
+        notification.setMessageEN(messageEN);
+
         notificationRepository.save(notification);
     }
 
@@ -264,7 +295,7 @@ public class GestionnaireService {
         try {
             Notification notification = notificationRepository.findById(notificationId)
                     .orElseThrow(NotificationExceptions.NotificationFetchException::new);
-            notification.setSecondRecipientReadAt(OffsetDateTime.now().toLocalDateTime());
+            notification.setSecondRecipientReadAt(LocalDateTime.now());
             notificationRepository.save(notification);
         } catch (Exception e) {
             throw new NotificationExceptions.NotificationFetchException();
@@ -283,5 +314,21 @@ public class GestionnaireService {
         etudiant.setProfesseurResponsable(professeur);
 
         etudiantRepository.save(etudiant);
+    }
+
+    private String translateStatusMessage(CvStatus status, String language) {
+        return switch (status) {
+            case APPROVED -> language.equals("FR") ? "approuvé" : "approved";
+            case REJECTED -> language.equals("FR") ? "rejeté" : "rejected";
+            default -> "";
+        };
+    }
+
+    private String translateStatusMessage(OfferStatus status, String language) {
+        return switch (status) {
+            case APPROUVEE -> language.equals("FR") ? "approuvée" : "approved";
+            case REJETEE -> language.equals("FR") ? "rejetée" : "rejected";
+            default -> "";
+        };
     }
 }
