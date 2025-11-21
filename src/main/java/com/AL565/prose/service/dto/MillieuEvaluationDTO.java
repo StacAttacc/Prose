@@ -54,14 +54,6 @@ public class MillieuEvaluationDTO {
 
     private LocalDateTime tempsSignature;
 
-    public boolean getDesireAutreStagiaires() {
-        return desireAutreStagiaires;
-    }
-
-    public boolean getQuartsVariables() {
-        return quartsVariables;
-    }
-
     public static MillieuEvaluation toModel(MillieuEvaluationDTO dto) {
         return MillieuEvaluation.builder()
                 .id(dto.getId())
@@ -73,7 +65,7 @@ public class MillieuEvaluationDTO {
                 .communicationSuperviseurFacile(dto.getCommunicationSuperviseurFacile())
                 .dateStage(dto.getDateStage())
                 .debutQuarts(dto.getDebutQuarts())
-                .desireAutreStagiaires(dto.getDesireAutreStagiaires())
+                .desireAutreStagiaires(dto.isDesireAutreStagiaires())
                 .equipementAdequat(dto.getEquipementAdequat())
                 .faciliteIntegration(dto.getFaciliteIntegration())
                 .finQuarts(dto.getFinQuarts())
@@ -86,7 +78,7 @@ public class MillieuEvaluationDTO {
                 .numeroTelephone(dto.getNumeroTelephone())
                 .personneContact(dto.getPersonneContact())
                 .privilegieStage(dto.getPrivilegieStage())
-                .quartsVariables(dto.getQuartsVariables())
+                .quartsVariables(dto.isQuartsVariables())
                 .salaire(dto.getSalaire())
                 .salaireIneteressant(dto.getSalaireIneteressant())
                 .tachesCoformes(dto.getTachesCoformes())
@@ -95,6 +87,42 @@ public class MillieuEvaluationDTO {
                 .tempsSignature(dto.getTempsSignature())
                 .ville(dto.getVille())
                 .volumeTravailAcceptable(dto.getVolumeTravailAcceptable())
+                .build();
+    }
+
+    public static MillieuEvaluationDTO toDTO(MillieuEvaluation model) {
+        return MillieuEvaluationDTO.builder()
+                .id(model.getId())
+                .accessibleTransportCommun(model.getAccessibleTransportCommun())
+                .addresse(model.getAddresse())
+                .climatTravailAgreable(model.getClimatTravailAgreable())
+                .codePostal(model.getCodePostal())
+                .commentaires(model.getCommentaires())
+                .communicationSuperviseurFacile(model.getCommunicationSuperviseurFacile())
+                .dateStage(model.getDateStage())
+                .debutQuarts(model.getDebutQuarts())
+                .desireAutreStagiaires(model.isDesireAutreStagiaires())
+                .equipementAdequat(model.getEquipementAdequat())
+                .faciliteIntegration(model.getFaciliteIntegration())
+                .finQuarts(model.getFinQuarts())
+                .hrSemaineMois(model.getHrSemaineMois())
+                .hygieneRespectable(model.getHygieneRespectable())
+                .nbStagiaires(model.getNbStagiaires())
+                .nomEntreprise(model.getNomEntreprise())
+                .nomStagiaire(model.getNomStagiaire())
+                .numeroStage(model.getNumeroStage())
+                .numeroTelephone(model.getNumeroTelephone())
+                .personneContact(model.getPersonneContact())
+                .privilegieStage(model.getPrivilegieStage())
+                .quartsVariables(model.isQuartsVariables())
+                .salaire(model.getSalaire())
+                .salaireIneteressant(model.getSalaireIneteressant())
+                .tachesCoformes(model.getTachesCoformes())
+                .telecopieur(model.getTelecopieur())
+                .tempsEstReel(model.getTempsEstReel())
+                .tempsSignature(model.getTempsSignature())
+                .ville(model.getVille())
+                .volumeTravailAcceptable(model.getVolumeTravailAcceptable())
                 .build();
     }
 }
