@@ -56,6 +56,10 @@ public class Stage {
 
     private String employeurEmail;
 
+    @OneToOne
+    @JoinColumn(name = "millieu_evaluation_id")
+    private MillieuEvaluation evaluationMillieu;
+
 
     @Column(nullable = false, updatable = false)
     private OffsetDateTime createdAt = OffsetDateTime.now();
