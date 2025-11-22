@@ -35,7 +35,6 @@ public class Stage {
     @CollectionTable(name = "stage_skill", joinColumns = @JoinColumn(name = "stage_id"))
     private List<String> skills = new ArrayList<>();
 
-
     private LocalDate startDate;
 
     private LocalDate endDate;
@@ -55,11 +54,6 @@ public class Stage {
     private OfferStatus status = OfferStatus.SOUMISE;
 
     private String employeurEmail;
-
-    @OneToOne
-    @JoinColumn(name = "millieu_evaluation_id")
-    private MillieuEvaluation evaluationMillieu;
-
 
     @Column(nullable = false, updatable = false)
     private OffsetDateTime createdAt = OffsetDateTime.now();

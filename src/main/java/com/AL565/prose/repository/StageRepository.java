@@ -11,6 +11,4 @@ public interface StageRepository extends JpaRepository<Stage, Long> {
 
     List<Stage> findByEmployeurEmail(String employeurEmail);
     List<Stage> findByStatus(OfferStatus status);
-
-    List<Stage> findAllByEvaluationMillieuIsNull();
 }

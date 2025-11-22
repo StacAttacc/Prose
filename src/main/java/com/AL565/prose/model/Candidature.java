@@ -2,18 +2,7 @@ package com.AL565.prose.model;
 
 import java.time.LocalDateTime;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Basic;
-import jakarta.persistence.Column;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
@@ -64,6 +53,10 @@ public class Candidature {
 
     @Column(name = "decision", length = 500)
     private String decision;
+
+    @OneToOne
+    @JoinColumn(name = "millieu_evaluation_id")
+    private MillieuEvaluation evaluationMillieu;
 
     public Long getStageId() {
         return stage.getId();

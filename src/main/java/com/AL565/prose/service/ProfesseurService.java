@@ -1,20 +1,18 @@
 package com.AL565.prose.service;
 
-import com.AL565.prose.repository.EmployeurRepository;
-import com.AL565.prose.repository.MillieuEvaluationRepository;
-import com.AL565.prose.repository.ProfesseurRepository;
-import com.AL565.prose.repository.StageRepository;
+import com.AL565.prose.model.Etudiant;
+import com.AL565.prose.model.Professeur;
+import com.AL565.prose.model.Stage;
+import com.AL565.prose.repository.*;
+import com.AL565.prose.service.dto.CandidatureDTO;
 import com.AL565.prose.service.dto.MillieuEvaluationDTO;
 import com.AL565.prose.service.dto.ProfesseurPasswordDTO;
-import com.AL565.prose.service.dto.StageDTO;
-import com.AL565.prose.service.dto.StageSimpleDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import com.AL565.prose.utils.SessionYearHelper;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -25,8 +23,7 @@ public class ProfesseurService {
     private PasswordEncoder passwordEncoder;
 
     private MillieuEvaluationRepository millieuEvaluationRepository;
-    private StageRepository stageRepository;
-    private EmployeurRepository employeurRepository;
+    private CandidatureRepository candidatureRepository;
 
     public void register(ProfesseurPasswordDTO professeur) {
         if (professeurRepository.findByCredentials_Username(professeur.getEmail()).isPresent()) {
@@ -41,14 +38,20 @@ public class ProfesseurService {
         millieuEvaluationRepository.save(MillieuEvaluationDTO.toModel(evaluation));
     }
 
-    public List<StageSimpleDTO> getAllStagesAwaitingEvaluation(String year) {
+    public List<CandidatureDTO> getAllStagesAwaitingEvaluation(String year, String professeurId) {
         int yearNumber = SessionYearHelper.getSessionYear(year);
 
-        return stageRepository.findAllByEvaluationMillieuIsNull().stream()
-                .filter(stage -> stage.getStartDate().getYear() == yearNumber)
-                .map(stage -> {
-                    return StageSimpleDTO.toDTO(stage, employeurRepository.getEmployeurByCredentials_Username(stage.getEmployeurEmail()));
+        return candidatureRepository.findAllByEvaluationMillieuIsNull().stream()
+                .filter(candidature -> {
+                    Stage stage = candidature.getStage();
+                    return stage.getStartDate().getYear() == yearNumber;
                 })
+                .filter(candidature -> {
+                    Etudiant etudiant = candidature.getEtudiant();
+                    Professeur professeurResponsable = etudiant.getProfesseurResponsable();
+                    return professeurResponsable.getId().equals(Long.parseLong(professeurId));
+                })
+                .map(CandidatureDTO::toDTO)
                 .toList();
     }
 }

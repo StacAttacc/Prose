@@ -1,9 +1,9 @@
 package com.AL565.prose.controller;
 
 import com.AL565.prose.service.ProfesseurService;
+import com.AL565.prose.service.dto.CandidatureDTO;
 import com.AL565.prose.service.dto.MillieuEvaluationDTO;
 import com.AL565.prose.service.dto.ReturnEntityDTO;
-import com.AL565.prose.service.dto.StageSimpleDTO;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,11 +27,11 @@ public class ProfesseurController {
 
     }
 
-    @GetMapping("/stages-awaiting-evaluation")
-    public ResponseEntity<ReturnEntityDTO<List<StageSimpleDTO>>> getStagesAwaitingEvaluation(@RequestParam String year) {
+    @GetMapping("/{professeurId}/millieus-awaiting-evaluation")
+    public ResponseEntity<ReturnEntityDTO<List<CandidatureDTO>>> getStagesAwaitingEvaluation(@RequestParam String year, @PathVariable String professeurId) {
         try {
-            List<StageSimpleDTO> stages = professeurService.getAllStagesAwaitingEvaluation(year);
-            return ResponseEntity.ok(new ReturnEntityDTO<>("Stages trouvés", stages));
+            List<CandidatureDTO> candidatures = professeurService.getAllStagesAwaitingEvaluation(year, professeurId);
+            return ResponseEntity.ok(new ReturnEntityDTO<>("Candidatures trouvés", candidatures));
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(new ReturnEntityDTO<>("Erreur interne du serveur", null));
         }

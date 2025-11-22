@@ -37,4 +37,5 @@ public class ProfesseurServiceTest {
 
         verify(millieuEvaluationRepository, times(1)).save(any());
     }
+
 }
