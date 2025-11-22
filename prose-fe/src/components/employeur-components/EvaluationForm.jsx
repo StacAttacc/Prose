@@ -1,43 +1,176 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useI18n } from '../../context/I18nContext';
-import {
-    createEvaluation,
-    getEntentesForEvaluation
-} from '../../services/EmployeurService';
+import { createEvaluation, getEntentesForEvaluation } from '../../services/EmployeurService';
 import { useAuth } from '../../context/AuthContext';
-import { FaStar, FaArrowLeft, FaSave } from 'react-icons/fa';
+import { FaArrowLeft, FaSave } from 'react-icons/fa';
+import EvaluationSignatureModal from '../display-components/EvaluationSignatureModal';
+
+const SCALE_OPTIONS = ['totalementAccord', 'plutotAccord', 'plutotDesaccord', 'totalementDesaccord', 'na'];
+const APPRECIATION_OPTIONS = ['depasseBeaucoup', 'depasse', 'repondPleinement', 'repondPartiellement', 'repondPas'];
+const ACCUEIL_OPTIONS = ['oui', 'non', 'peutEtre'];
+
+const initialFormState = (ententeId) => ({
+    ententeId: Number(ententeId) || null,
+    nomEleve: '',
+    programmeEtudes: '',
+    nomEntreprise: '',
+    nomSuperviseur: '',
+    fonction: '',
+    telephone: '',
+    productivitePlanificationOrganisation: '',
+    productiviteComprendDirectives: '',
+    productiviteMaintientRythme: '',
+    productiviteEtablitPriorites: '',
+    productiviteRespectEcheanciers: '',
+    productiviteCommentaires: '',
+    qualiteRespectMandats: '',
+    qualiteAttentionDetails: '',
+    qualiteVerifieTravail: '',
+    qualitePerfectionnement: '',
+    qualiteAnalyseProblemes: '',
+    qualiteCommentaires: '',
+    relationsContactFacile: '',
+    relationsTravailEquipe: '',
+    relationsAdaptationCulture: '',
+    relationsAccepteCritiques: '',
+    relationsRespectueux: '',
+    relationsEcouteActive: '',
+    relationsCommentaires: '',
+    habiletesInteretMotivation: '',
+    habiletesExprimeIdees: '',
+    habiletesInitiative: '',
+    habiletesTravailSecuritaire: '',
+    habiletesSensResponsabilites: '',
+    habiletesPonctualiteAssiduite: '',
+    habiletesCommentaires: '',
+    appreciationGlobale: '',
+    appreciationPrecisions: '',
+    evaluationDiscutee: null,
+    heuresEncadrement: '',
+    accueillirProchainStage: '',
+    formationSuffisante: '',
+    signataireNom: '',
+    signataireFonction: '',
+    signataireDate: '',
+});
+
+const SCALE_FIELDS = [
+    'productivitePlanificationOrganisation',
+    'productiviteComprendDirectives',
+    'productiviteMaintientRythme',
+    'productiviteEtablitPriorites',
+    'productiviteRespectEcheanciers',
+    'qualiteRespectMandats',
+    'qualiteAttentionDetails',
+    'qualiteVerifieTravail',
+    'qualitePerfectionnement',
+    'qualiteAnalyseProblemes',
+    'relationsContactFacile',
+    'relationsTravailEquipe',
+    'relationsAdaptationCulture',
+    'relationsAccepteCritiques',
+    'relationsRespectueux',
+    'relationsEcouteActive',
+    'habiletesInteretMotivation',
+    'habiletesExprimeIdees',
+    'habiletesInitiative',
+    'habiletesTravailSecuritaire',
+    'habiletesSensResponsabilites',
+    'habiletesPonctualiteAssiduite',
+];
 
 const EvaluationForm = () => {
-    const { t } = useI18n();
+const { t } = useI18n();
     const navigate = useNavigate();
     const { ententeId } = useParams();
     const { user } = useAuth();
 
+    const [formData, setFormData] = useState(() => initialFormState(ententeId));
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(false);
     const [entente, setEntente] = useState(null);
+    const [showSignatureModal, setShowSignatureModal] = useState(false);
 
-    const [formData, setFormData] = useState({
-        ententeId: parseInt(ententeId),
-        productivite: 0,
-        qualiteTravail: 0,
-        relationsInterpersonnelles: 0,
-        habiletesPersonnelles: 0,
-        appreciationGlobale: 0,
-        commentaires: '',
-        pointsForts: '',
-        pointsAmelioration: '',
-        heureEncadrement: '',
-        gardeContact: false,
-        rehireEtudiant: false
-    });
+    const scaleSections = useMemo(() => ([
+        {
+            key: 'productivity',
+            title: t('evaluations.sections.productivity.title'),
+            description: t('evaluations.sections.productivity.description'),
+            fields: [
+                { name: 'productivitePlanificationOrganisation', label: t('evaluations.sections.productivity.planificationOrganisation') },
+                { name: 'productiviteComprendDirectives', label: t('evaluations.sections.productivity.comprendDirectives') },
+                { name: 'productiviteMaintientRythme', label: t('evaluations.sections.productivity.maintientRythme') },
+                { name: 'productiviteEtablitPriorites', label: t('evaluations.sections.productivity.etablitPriorites') },
+                { name: 'productiviteRespectEcheanciers', label: t('evaluations.sections.productivity.respectEcheanciers') },
+            ],
+            commentField: 'productiviteCommentaires',
+            commentPlaceholder: t('evaluations.sections.productivity.commentPlaceholder'),
+        },
+        {
+            key: 'quality',
+            title: t('evaluations.sections.quality.title'),
+            description: t('evaluations.sections.quality.description'),
+            fields: [
+                { name: 'qualiteRespectMandats', label: t('evaluations.sections.quality.respectMandats') },
+                { name: 'qualiteAttentionDetails', label: t('evaluations.sections.quality.attentionDetails') },
+                { name: 'qualiteVerifieTravail', label: t('evaluations.sections.quality.verifieTravail') },
+                { name: 'qualitePerfectionnement', label: t('evaluations.sections.quality.perfectionnement') },
+                { name: 'qualiteAnalyseProblemes', label: t('evaluations.sections.quality.analyseProblemes') },
+            ],
+            commentField: 'qualiteCommentaires',
+            commentPlaceholder: t('evaluations.sections.quality.commentPlaceholder'),
+        },
+        {
+            key: 'relations',
+            title: t('evaluations.sections.relations.title'),
+            description: t('evaluations.sections.relations.description'),
+            fields: [
+                { name: 'relationsContactFacile', label: t('evaluations.sections.relations.contactFacile') },
+                { name: 'relationsTravailEquipe', label: t('evaluations.sections.relations.travailEquipe') },
+                { name: 'relationsAdaptationCulture', label: t('evaluations.sections.relations.adaptationCulture') },
+                { name: 'relationsAccepteCritiques', label: t('evaluations.sections.relations.accepteCritiques') },
+                { name: 'relationsRespectueux', label: t('evaluations.sections.relations.respectueux') },
+                { name: 'relationsEcouteActive', label: t('evaluations.sections.relations.ecouteActive') },
+            ],
+            commentField: 'relationsCommentaires',
+            commentPlaceholder: t('evaluations.sections.relations.commentPlaceholder'),
+        },
+        {
+            key: 'skills',
+            title: t('evaluations.sections.skills.title'),
+            description: t('evaluations.sections.skills.description'),
+            fields: [
+                { name: 'habiletesInteretMotivation', label: t('evaluations.sections.skills.interetMotivation') },
+                { name: 'habiletesExprimeIdees', label: t('evaluations.sections.skills.exprimeIdees') },
+                { name: 'habiletesInitiative', label: t('evaluations.sections.skills.initiative') },
+                { name: 'habiletesTravailSecuritaire', label: t('evaluations.sections.skills.travailSecuritaire') },
+                { name: 'habiletesSensResponsabilites', label: t('evaluations.sections.skills.sensResponsabilites') },
+                { name: 'habiletesPonctualiteAssiduite', label: t('evaluations.sections.skills.ponctualiteAssiduite') },
+            ],
+            commentField: 'habiletesCommentaires',
+            commentPlaceholder: t('evaluations.sections.skills.commentPlaceholder'),
+        },
+    ]), [t]);
 
     useEffect(() => {
         loadData();
-    }, [ententeId]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [ententeId, user?.id, user?.token]);
+
+    useEffect(() => {
+        if (!entente) return;
+        setFormData((prev) => ({
+            ...prev,
+            ententeId: Number(ententeId) || prev.ententeId,
+            nomEleve: prev.nomEleve || `${entente.etudiantPrenom ?? ''} ${entente.etudiantNom ?? ''}`.trim(),
+            nomEntreprise: prev.nomEntreprise || entente.stageTitle || prev.nomEntreprise,
+            signataireNom: prev.signataireNom || `${user?.firstName ?? ''} ${user?.lastName ?? ''}`.trim(),
+            signataireFonction: prev.signataireFonction || user?.company || prev.signataireFonction,
+        }));
+    }, [entente, ententeId, user]);
 
     const loadData = async () => {
         try {
@@ -66,57 +199,82 @@ const EvaluationForm = () => {
         }
     };
 
-    const handleRatingChange = (field, value) => {
-        setFormData(prev => ({
-            ...prev,
-            [field]: value
-        }));
+    const handleFieldChange = (name, value) => {
+        setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleInputChange = (e) => {
-        const { name, value, type, checked } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: type === 'checkbox' ? checked : value
-        }));
+    const handleInputChange = (event) => {
+        const { name, value } = event.target;
+        handleFieldChange(name, value);
     };
 
     const validateForm = () => {
-        const requiredRatings = [
-            'productivite',
-            'qualiteTravail',
-            'relationsInterpersonnelles',
-            'habiletesPersonnelles',
-            'appreciationGlobale'
-        ];
-
-        for (const field of requiredRatings) {
-            if (!formData[field] || formData[field] === 0) {
-                setError(t('evaluations.allRatingsRequired'));
-                return false;
-            }
+        const missingScale = SCALE_FIELDS.find(field => !formData[field]);
+        if (missingScale) {
+            setError(t('evaluations.validation.scaleMissing'));
+            return false;
         }
 
-        if (!formData.heureEncadrement || formData.heureEncadrement.trim() === '') {
-            setError(t('evaluations.supervisorRequired'));
+        const requiredTextFields = [
+            'nomEleve',
+            'programmeEtudes',
+            'nomEntreprise',
+            'nomSuperviseur',
+            'fonction',
+            'telephone',
+            'heuresEncadrement',
+            'signataireNom',
+            'signataireFonction',
+            'signataireDate'
+        ];
+
+        const missingText = requiredTextFields.find(field => !formData[field]?.trim());
+        if (missingText) {
+            setError(t('evaluations.validation.requiredFields'));
+            return false;
+        }
+
+        if (!formData.appreciationGlobale) {
+            setError(t('evaluations.validation.appreciationRequired'));
+            return false;
+        }
+
+        if (formData.evaluationDiscutee === null) {
+            setError(t('evaluations.validation.discussionRequired'));
+            return false;
+        }
+
+        if (!formData.accueillirProchainStage) {
+            setError(t('evaluations.validation.receptionRequired'));
             return false;
         }
 
         return true;
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const handleSubmit = async (event) => {
+        event.preventDefault();
 
         if (!validateForm()) {
             return;
         }
 
+        // Ouvrir le modal de signature au lieu de soumettre directement
+        setShowSignatureModal(true);
+    };
+
+    const handleSignAndSubmit = async (password) => {
         try {
             setSaving(true);
             setError(null);
 
-            await createEvaluation(user.id, formData, user.token);
+            // Ajouter le mot de passe au formData pour la signature
+            const dataToSubmit = {
+                ...formData,
+                password: password
+            };
+
+            await createEvaluation(user.id, dataToSubmit, user.token);
 
             setSuccess(true);
             setTimeout(() => {
@@ -124,42 +282,57 @@ const EvaluationForm = () => {
             }, 2000);
         } catch (err) {
             console.error('Erreur lors de la sauvegarde:', err);
-            setError(t('evaluations.errorSaving'));
+            throw new Error(err.response?.data?.message || t('evaluations.errorSaving'));
         } finally {
             setSaving(false);
         }
     };
 
-    const renderStarRating = (field, label) => {
-        const currentValue = formData[field];
-
-        return (
-            <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {label} <span className="text-red-500">*</span>
-                </label>
-                <div className="flex gap-2">
-                    {[1, 2, 3, 4, 5].map((value) => (
-                        <button
-                            key={value}
-                            type="button"
-                            onClick={() => handleRatingChange(field, value)}
-                            className={`text-3xl transition-colors duration-200 ${
-                                value <= currentValue
-                                    ? 'text-yellow-400 hover:text-yellow-500'
-                                    : 'text-gray-300 hover:text-gray-400'
-                            }`}
-                        >
-                            <FaStar />
-                        </button>
-                    ))}
-                    <span className="ml-3 text-gray-600 font-medium">
-                        {currentValue > 0 ? `${currentValue}/5` : t('evaluations.notRated')}
-                    </span>
-                </div>
+    const renderScaleLegend = () => (
+        <div className="grid grid-cols-[2fr,1fr,1fr,1fr,1fr,1fr] gap-2 mb-4 pb-2 border-b-2 border-gray-300">
+            <div className="text-sm font-semibold text-gray-700">
+                {t('evaluations.sections.criteria')}
             </div>
-        );
-    };
+            {SCALE_OPTIONS.map(option => (
+                <div key={option} className="text-xs font-medium text-center text-gray-600">
+                    {t(`evaluations.scale.${option}`)}
+                </div>
+            ))}
+        </div>
+    );
+
+    const renderScaleQuestion = (fieldName, label) => (
+        <div key={fieldName} className="grid grid-cols-[2fr,1fr,1fr,1fr,1fr,1fr] gap-2 items-center py-3 border-b border-gray-100 hover:bg-gray-50">
+            <div className="text-sm text-gray-700">
+                {label} <span className="text-red-500">*</span>
+            </div>
+            {SCALE_OPTIONS.map(option => (
+                <div key={option} className="flex justify-center">
+                    <label className="cursor-pointer">
+                        <input
+                            type="radio"
+                            name={fieldName}
+                            value={option}
+                            className="sr-only"
+                            checked={formData[fieldName] === option}
+                            onChange={() => handleFieldChange(fieldName, option)}
+                        />
+                        <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                            formData[fieldName] === option
+                                ? 'bg-blue-600 border-blue-600'
+                                : 'bg-white border-gray-300'
+                        }`}>
+                            {formData[fieldName] === option && (
+                                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                                </svg>
+                            )}
+                        </div>
+                    </label>
+                </div>
+            ))}
+        </div>
+    );
 
     if (loading) {
         return (
@@ -217,122 +390,320 @@ const EvaluationForm = () => {
                 </div>
             )}
 
-            <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-8">
-                {/* Section des évaluations par critères */}
-                <div className="mb-8">
+            <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-8 space-y-10">
+                <section>
                     <h2 className="text-xl font-semibold text-gray-900 mb-6 border-b pb-2">
-                        {t('evaluations.performanceCriteria')}
+                        {t('evaluations.generalInfoSection')}
                     </h2>
+                    <div className="grid gap-6 md:grid-cols-2">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                {t('evaluations.studentName')} <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                name="nomEleve"
+                                value={formData.nomEleve}
+                                onChange={handleInputChange}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder={t('evaluations.studentNamePlaceholder')}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                {t('evaluations.programLabel')} <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                name="programmeEtudes"
+                                value={formData.programmeEtudes}
+                                onChange={handleInputChange}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder={t('evaluations.programPlaceholder')}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                {t('evaluations.companyName')} <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                name="nomEntreprise"
+                                value={formData.nomEntreprise}
+                                onChange={handleInputChange}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder={t('evaluations.companyPlaceholder')}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                {t('evaluations.supervisorName')} <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                name="nomSuperviseur"
+                                value={formData.nomSuperviseur}
+                                onChange={handleInputChange}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder={t('evaluations.supervisorNamePlaceholder')}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                {t('evaluations.supervisorRole')} <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                name="fonction"
+                                value={formData.fonction}
+                                onChange={handleInputChange}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder={t('evaluations.supervisorRolePlaceholder')}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                {t('evaluations.supervisorPhone')} <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                name="telephone"
+                                value={formData.telephone}
+                                onChange={handleInputChange}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder={t('evaluations.supervisorPhonePlaceholder')}
+                            />
+                        </div>
+                    </div>
+                </section>
 
-                    {renderStarRating('productivite', t('evaluations.productivity'))}
-                    {renderStarRating('qualiteTravail', t('evaluations.workQuality'))}
-                    {renderStarRating('relationsInterpersonnelles', t('evaluations.interpersonalRelations'))}
-                    {renderStarRating('habiletesPersonnelles', t('evaluations.personalSkills'))}
-                    {renderStarRating('appreciationGlobale', t('evaluations.overallAppreciation'))}
-                </div>
+                {scaleSections.map(section => (
+                    <section key={section.key}>
+                        <h2 className="text-xl font-semibold text-gray-900 mb-2">{section.title}</h2>
+                        <p className="text-sm text-gray-600 mb-6">{section.description}</p>
+                        <div className="bg-white border border-gray-200 rounded-lg p-4">
+                            {renderScaleLegend()}
+                            <div>
+                                {section.fields.map(field => renderScaleQuestion(field.name, field.label))}
+                            </div>
+                        </div>
+                        <div className="mt-4">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                {t('evaluations.sectionComment')}
+                            </label>
+                            <textarea
+                                name={section.commentField}
+                                value={formData[section.commentField]}
+                                onChange={handleInputChange}
+                                rows={3}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder={section.commentPlaceholder}
+                            />
+                        </div>
+                    </section>
+                ))}
 
-                {/* Section des commentaires */}
-                <div className="mb-8">
+                <section>
                     <h2 className="text-xl font-semibold text-gray-900 mb-6 border-b pb-2">
-                        {t('evaluations.comments')}
+                        {t('evaluations.appreciationSection')}
                     </h2>
+                    <p className="text-sm text-gray-600 mb-4">
+                        {t('evaluations.appreciationDescription')}
+                    </p>
 
-                    <div className="mb-6">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            {t('evaluations.generalComments')}
-                        </label>
-                        <textarea
-                            name="commentaires"
-                            value={formData.commentaires}
-                            onChange={handleInputChange}
-                            rows={4}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            placeholder={t('evaluations.generalCommentsPlaceholder')}
-                        />
+                    <div className="bg-white border border-gray-200 rounded-lg p-4">
+                        {/* Légende */}
+                        <div className="grid grid-cols-[2fr,1fr,1fr,1fr,1fr,1fr] gap-2 mb-4 pb-2 border-b-2 border-gray-300">
+                            <div className="text-sm font-semibold text-gray-700">
+                                {t('evaluations.appreciationSection')}
+                            </div>
+                            {APPRECIATION_OPTIONS.map(option => (
+                                <div key={option} className="text-xs font-medium text-center text-gray-600">
+                                    {t(`evaluations.appreciation.${option}`)}
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Ligne d'évaluation */}
+                        <div className="grid grid-cols-[2fr,1fr,1fr,1fr,1fr,1fr] gap-2 items-center py-3">
+                            <div className="text-sm text-gray-700">
+                                {t('evaluations.appreciationSection')} <span className="text-red-500">*</span>
+                            </div>
+                            {APPRECIATION_OPTIONS.map(option => (
+                                <div key={option} className="flex justify-center">
+                                    <label className="cursor-pointer">
+                                        <input
+                                            type="radio"
+                                            name="appreciationGlobale"
+                                            className="sr-only"
+                                            value={option}
+                                            checked={formData.appreciationGlobale === option}
+                                            onChange={() => handleFieldChange('appreciationGlobale', option)}
+                                        />
+                                        <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                                            formData.appreciationGlobale === option
+                                                ? 'bg-blue-600 border-blue-600'
+                                                : 'bg-white border-gray-300'
+                                        }`}>
+                                            {formData.appreciationGlobale === option && (
+                                                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                                                </svg>
+                                            )}
+                                        </div>
+                                    </label>
+                                </div>
+                            ))}
+                        </div>
                     </div>
 
-                    <div className="mb-6">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            {t('evaluations.strengths')}
-                        </label>
-                        <textarea
-                            name="pointsForts"
-                            value={formData.pointsForts}
-                            onChange={handleInputChange}
-                            rows={3}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            placeholder={t('evaluations.strengthsPlaceholder')}
-                        />
+                    <textarea
+                        name="appreciationPrecisions"
+                        value={formData.appreciationPrecisions}
+                        onChange={handleInputChange}
+                        rows={3}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mt-4"
+                        placeholder={t('evaluations.appreciationPlaceholder')}
+                    />
+                </section>
+
+                <section className="grid gap-6 md:grid-cols-2">
+                    <div>
+                        <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                            {t('evaluations.discussionSection')}
+                        </h2>
+                        <p className="text-sm text-gray-600 mb-3">
+                            {t('evaluations.discussionQuestion')}
+                        </p>
+                        <div className="flex gap-3">
+                            {[true, false].map(value => (
+                                <label
+                                    key={value ? 'yes' : 'no'}
+                                    className={`cursor-pointer px-4 py-2 rounded border text-sm transition-colors ${
+                                        formData.evaluationDiscutee === value
+                                            ? 'bg-blue-600 text-white border-blue-600'
+                                            : 'bg-white text-gray-700 border-gray-300'
+                                    }`}
+                                >
+                                    <input
+                                        type="radio"
+                                        name="evaluationDiscutee"
+                                        value={value ? 'true' : 'false'}
+                                        className="sr-only"
+                                        checked={formData.evaluationDiscutee === value}
+                                        onChange={event => handleFieldChange('evaluationDiscutee', event.target.value === 'true')}
+                                    />
+                                    {t(value ? 'evaluations.option.yes' : 'evaluations.option.no')}
+                                </label>
+                            ))}
+                        </div>
                     </div>
-
-                    <div className="mb-6">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            {t('evaluations.areasForImprovement')}
-                        </label>
-                        <textarea
-                            name="pointsAmelioration"
-                            value={formData.pointsAmelioration}
-                            onChange={handleInputChange}
-                            rows={3}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            placeholder={t('evaluations.areasForImprovementPlaceholder')}
-                        />
-                    </div>
-                </div>
-
-                {/* Section informations complémentaires */}
-                <div className="mb-8">
-                    <h2 className="text-xl font-semibold text-gray-900 mb-6 border-b pb-2">
-                        {t('evaluations.additionalInfo')}
-                    </h2>
-
-                    <div className="mb-6">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            {t('evaluations.supervisorName')} <span className="text-red-500">*</span>
-                        </label>
+                    <div>
+                        <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                            {t('evaluations.supervisionHours')}
+                        </h2>
                         <input
                             type="text"
-                            name="heureEncadrement"
-                            value={formData.heureEncadrement}
+                            name="heuresEncadrement"
+                            value={formData.heuresEncadrement}
                             onChange={handleInputChange}
                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            placeholder={t('evaluations.supervisorNamePlaceholder')}
-                            required
+                            placeholder={t('evaluations.supervisionHoursPlaceholder')}
                         />
                     </div>
+                </section>
 
-                    <div className="mb-4">
-                        <label className="flex items-center">
-                            <input
-                                type="checkbox"
-                                name="gardeContact"
-                                checked={formData.gardeContact}
-                                onChange={handleInputChange}
-                                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                            />
-                            <span className="ml-2 text-sm text-gray-700">
-                                {t('evaluations.keepContact')}
-                            </span>
-                        </label>
+                <section>
+                    <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                        {t('evaluations.accueillirSection')}
+                    </h2>
+                    <p className="text-sm text-gray-600 mb-3">
+                        {t('evaluations.accueillirQuestion')}
+                    </p>
+                    <div className="flex flex-wrap gap-3">
+                        {ACCUEIL_OPTIONS.map(option => (
+                            <label
+                                key={option}
+                                className={`cursor-pointer px-4 py-2 rounded border text-sm transition-colors ${
+                                    formData.accueillirProchainStage === option
+                                        ? 'bg-blue-600 text-white border-blue-600'
+                                        : 'bg-white text-gray-700 border-gray-300'
+                                }`}
+                            >
+                                <input
+                                    type="radio"
+                                    name="accueillirProchainStage"
+                                    value={option}
+                                    className="sr-only"
+                                    checked={formData.accueillirProchainStage === option}
+                                    onChange={() => handleFieldChange('accueillirProchainStage', option)}
+                                />
+                                {t(`evaluations.accueillirOptions.${option}`)}
+                            </label>
+                        ))}
                     </div>
+                </section>
 
-                    <div className="mb-6">
-                        <label className="flex items-center">
+                <section>
+                    <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                        {t('evaluations.trainingSection')}
+                    </h2>
+                    <textarea
+                        name="formationSuffisante"
+                        value={formData.formationSuffisante}
+                        onChange={handleInputChange}
+                        rows={4}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder={t('evaluations.trainingPlaceholder')}
+                    />
+                </section>
+
+                <section>
+                    <h2 className="text-xl font-semibold text-gray-900 mb-6 border-b pb-2">
+                        {t('evaluations.signatureSection')}
+                    </h2>
+                    <div className="grid gap-6 md:grid-cols-3">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                {t('evaluations.signerName')} <span className="text-red-500">*</span>
+                            </label>
                             <input
-                                type="checkbox"
-                                name="rehireEtudiant"
-                                checked={formData.rehireEtudiant}
+                                type="text"
+                                name="signataireNom"
+                                value={formData.signataireNom}
                                 onChange={handleInputChange}
-                                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder={t('evaluations.signerNamePlaceholder')}
                             />
-                            <span className="ml-2 text-sm text-gray-700">
-                                {t('evaluations.wouldRehire')}
-                            </span>
-                        </label>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                {t('evaluations.signerRole')} <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                name="signataireFonction"
+                                value={formData.signataireFonction}
+                                onChange={handleInputChange}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder={t('evaluations.signerRolePlaceholder')}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                {t('evaluations.signerDate')} <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                                type="date"
+                                name="signataireDate"
+                                value={formData.signataireDate}
+                                onChange={handleInputChange}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                        </div>
                     </div>
-                </div>
+                </section>
 
-                {/* Boutons d'action */}
                 <div className="flex gap-4 pt-6 border-t">
                     <button
                         type="button"
@@ -355,12 +726,24 @@ const EvaluationForm = () => {
                         ) : (
                             <>
                                 <FaSave className="mr-2" />
-                                {t('common.submit')}
+                                {t('evaluations.signature.sign')}
                             </>
                         )}
                     </button>
                 </div>
             </form>
+            {/* Modal de signature */}
+            <EvaluationSignatureModal
+                evaluation={{
+                    nomEleve: formData.nomEleve,
+                    nomEntreprise: formData.nomEntreprise,
+                    programmeEtudes: formData.programmeEtudes
+                }}
+                isOpen={showSignatureModal}
+                onClose={() => setShowSignatureModal(false)}
+                onSign={handleSignAndSubmit}
+                isCreating={true}
+            />
         </div>
     );
 };

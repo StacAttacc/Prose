@@ -9,6 +9,7 @@ import com.AL565.prose.repository.*;
 import com.AL565.prose.service.dto.EvaluationDTO;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +24,7 @@ public class EvaluationService {
     private final EvaluationRepository evaluationRepository;
     private final EntenteRepository ententeRepository;
     private final EmployeurRepository employeurRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public EvaluationDTO createEvaluation(Long employeurId, EvaluationDTO evaluationDTO) {
@@ -40,23 +42,64 @@ public class EvaluationService {
             throw new IllegalStateException("Une évaluation existe déjà pour ce stage");
         }
 
+        String password = evaluationDTO.getPassword();
+        if (password == null || password.isEmpty()) {
+            throw new IllegalArgumentException("Le mot de passe est requis pour créer et signer l'évaluation");
+        }
+
+        if (!passwordEncoder.matches(password, employeur.getPassword())) {
+            throw new IllegalArgumentException("Mot de passe incorrect");
+        }
+
         Etudiant etudiant = entente.getCandidature().getEtudiant();
 
         Evaluation evaluation = Evaluation.builder()
                 .entente(entente)
                 .employeur(employeur)
                 .etudiant(etudiant)
-                .productivite(evaluationDTO.getProductivite())
-                .qualiteTravail(evaluationDTO.getQualiteTravail())
-                .relationsInterpersonnelles(evaluationDTO.getRelationsInterpersonnelles())
-                .habiletesPersonnelles(evaluationDTO.getHabiletesPersonnelles())
+                .nomEleve(evaluationDTO.getNomEleve() != null ? evaluationDTO.getNomEleve() : etudiant.getFirstName() + " " + etudiant.getLastName())
+                .programmeEtudes(evaluationDTO.getProgrammeEtudes())
+                .nomEntreprise(evaluationDTO.getNomEntreprise() != null ? evaluationDTO.getNomEntreprise() : employeur.getCompany())
+                .nomSuperviseur(evaluationDTO.getNomSuperviseur())
+                .fonction(evaluationDTO.getFonction())
+                .telephone(evaluationDTO.getTelephone())
+                .productivitePlanificationOrganisation(evaluationDTO.getProductivitePlanificationOrganisation())
+                .productiviteComprendDirectives(evaluationDTO.getProductiviteComprendDirectives())
+                .productiviteMaintientRythme(evaluationDTO.getProductiviteMaintientRythme())
+                .productiviteEtablitPriorites(evaluationDTO.getProductiviteEtablitPriorites())
+                .productiviteRespectEcheanciers(evaluationDTO.getProductiviteRespectEcheanciers())
+                .productiviteCommentaires(evaluationDTO.getProductiviteCommentaires())
+                .qualiteRespectMandats(evaluationDTO.getQualiteRespectMandats())
+                .qualiteAttentionDetails(evaluationDTO.getQualiteAttentionDetails())
+                .qualiteVerifieTravail(evaluationDTO.getQualiteVerifieTravail())
+                .qualitePerfectionnement(evaluationDTO.getQualitePerfectionnement())
+                .qualiteAnalyseProblemes(evaluationDTO.getQualiteAnalyseProblemes())
+                .qualiteCommentaires(evaluationDTO.getQualiteCommentaires())
+                .relationsContactFacile(evaluationDTO.getRelationsContactFacile())
+                .relationsTravailEquipe(evaluationDTO.getRelationsTravailEquipe())
+                .relationsAdaptationCulture(evaluationDTO.getRelationsAdaptationCulture())
+                .relationsAccepteCritiques(evaluationDTO.getRelationsAccepteCritiques())
+                .relationsRespectueux(evaluationDTO.getRelationsRespectueux())
+                .relationsEcouteActive(evaluationDTO.getRelationsEcouteActive())
+                .relationsCommentaires(evaluationDTO.getRelationsCommentaires())
+                .habiletesInteretMotivation(evaluationDTO.getHabiletesInteretMotivation())
+                .habiletesExprimeIdees(evaluationDTO.getHabiletesExprimeIdees())
+                .habiletesInitiative(evaluationDTO.getHabiletesInitiative())
+                .habiletesTravailSecuritaire(evaluationDTO.getHabiletesTravailSecuritaire())
+                .habiletesSensResponsabilites(evaluationDTO.getHabiletesSensResponsabilites())
+                .habiletesPonctualiteAssiduite(evaluationDTO.getHabiletesPonctualiteAssiduite())
+                .habiletesCommentaires(evaluationDTO.getHabiletesCommentaires())
                 .appreciationGlobale(evaluationDTO.getAppreciationGlobale())
-                .commentaires(evaluationDTO.getCommentaires())
-                .pointsForts(evaluationDTO.getPointsForts())
-                .pointsAmelioration(evaluationDTO.getPointsAmelioration())
-                .heureEncadrement(evaluationDTO.getHeureEncadrement())
-                .gardeContact(evaluationDTO.getGardeContact())
-                .rehireEtudiant(evaluationDTO.getRehireEtudiant())
+                .appreciationPrecisions(evaluationDTO.getAppreciationPrecisions())
+                .evaluationDiscutee(evaluationDTO.getEvaluationDiscutee())
+                .heuresEncadrement(evaluationDTO.getHeuresEncadrement())
+                .accueillirProchainStage(evaluationDTO.getAccueillirProchainStage())
+                .formationSuffisante(evaluationDTO.getFormationSuffisante())
+                .signataireNom(evaluationDTO.getSignataireNom())
+                .signataireFonction(evaluationDTO.getSignataireFonction())
+                .signataireDate(evaluationDTO.getSignataireDate())
+                .signatureEmployeur(employeur.getEmail())  // Signature immédiate
+                .dateSignature(LocalDateTime.now())         // Date de signature
                 .dateEvaluation(evaluationDTO.getDateEvaluation() != null ? evaluationDTO.getDateEvaluation() : LocalDateTime.now())
                 .dateCreation(LocalDateTime.now())
                 .build();

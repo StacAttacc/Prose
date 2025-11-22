@@ -1,6 +1,8 @@
 package com.AL565.prose.service;
 
 import com.AL565.prose.model.*;
+import com.AL565.prose.model.auth.Credentials;
+import com.AL565.prose.model.auth.Role;
 import com.AL565.prose.model.entente.Entente;
 import com.AL565.prose.model.entente.EntenteStatus;
 import com.AL565.prose.repository.*;
@@ -12,9 +14,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -33,6 +35,8 @@ class EvaluationServiceTest {
     @Mock
     private EmployeurRepository employeurRepository;
 
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
     @InjectMocks
     private EvaluationService evaluationService;
@@ -49,6 +53,11 @@ class EvaluationServiceTest {
         employeur.setFirstName("Entreprise");
         employeur.setLastName("Test");
         employeur.setCompany("Entreprise Test");
+        employeur.setCredentials(new Credentials(
+            "employeur@test.com",
+            "$2a$10$encodedPasswordHash", // Mock encoded password
+            Role.EMPLOYEUR
+        ));
 
         Etudiant etudiant = new Etudiant();
         etudiant.setId(2L);
@@ -78,50 +87,115 @@ class EvaluationServiceTest {
                 .entente(entente)
                 .employeur(employeur)
                 .etudiant(etudiant)
-                .productivite(4)
-                .qualiteTravail(5)
-                .relationsInterpersonnelles(4)
-                .habiletesPersonnelles(4)
-                .appreciationGlobale(4)
-                .commentaires("Très bon stagiaire")
-                .pointsForts("Motivé et autonome")
-                .pointsAmelioration("Peut améliorer la communication")
-                .heureEncadrement("M. Martin")
-                .gardeContact(true)
-                .rehireEtudiant(true)
+                .nomEleve("Jean Dupont")
+                .programmeEtudes("Informatique")
+                .nomEntreprise("Entreprise Test")
+                .nomSuperviseur("M. Martin")
+                .fonction("Responsable TI")
+                .telephone("514-555-1234")
+                .productivitePlanificationOrganisation("totalementAccord")
+                .productiviteComprendDirectives("totalementAccord")
+                .productiviteMaintientRythme("totalementAccord")
+                .productiviteEtablitPriorites("plutotAccord")
+                .productiviteRespectEcheanciers("plutotAccord")
+                .productiviteCommentaires("Très efficace")
+                .qualiteRespectMandats("totalementAccord")
+                .qualiteAttentionDetails("plutotAccord")
+                .qualiteVerifieTravail("totalementAccord")
+                .qualitePerfectionnement("plutotAccord")
+                .qualiteAnalyseProblemes("plutotAccord")
+                .qualiteCommentaires("Bon souci du détail")
+                .relationsContactFacile("totalementAccord")
+                .relationsTravailEquipe("totalementAccord")
+                .relationsAdaptationCulture("plutotAccord")
+                .relationsAccepteCritiques("totalementAccord")
+                .relationsRespectueux("totalementAccord")
+                .relationsEcouteActive("plutotAccord")
+                .relationsCommentaires("Excellente collaboration")
+                .habiletesInteretMotivation("totalementAccord")
+                .habiletesExprimeIdees("plutotAccord")
+                .habiletesInitiative("totalementAccord")
+                .habiletesTravailSecuritaire("totalementAccord")
+                .habiletesSensResponsabilites("plutotAccord")
+                .habiletesPonctualiteAssiduite("totalementAccord")
+                .habiletesCommentaires("Toujours ponctuel")
+                .appreciationGlobale("depasse")
+                .appreciationPrecisions("Performance remarquable")
+                .evaluationDiscutee(true)
+                .heuresEncadrement("2h/semaine")
+                .accueillirProchainStage("oui")
+                .formationSuffisante("Oui, formation adéquate")
+                .signataireNom("M. Martin")
+                .signataireFonction("Responsable TI")
+                .signataireDate(java.time.LocalDate.now())
                 .dateEvaluation(LocalDateTime.now())
                 .dateCreation(LocalDateTime.now())
                 .build();
 
         evaluationDTO = EvaluationDTO.builder()
                 .ententeId(5L)
-                .productivite(4)
-                .qualiteTravail(5)
-                .relationsInterpersonnelles(4)
-                .habiletesPersonnelles(4)
-                .appreciationGlobale(4)
-                .commentaires("Très bon stagiaire")
-                .pointsForts("Motivé et autonome")
-                .pointsAmelioration("Peut améliorer la communication")
-                .heureEncadrement("M. Martin")
-                .gardeContact(true)
-                .rehireEtudiant(true)
+                .nomEleve("Jean Dupont")
+                .programmeEtudes("Informatique")
+                .nomEntreprise("Entreprise Test")
+                .nomSuperviseur("M. Martin")
+                .fonction("Responsable TI")
+                .telephone("514-555-1234")
+                .productivitePlanificationOrganisation("totalementAccord")
+                .productiviteComprendDirectives("totalementAccord")
+                .productiviteMaintientRythme("totalementAccord")
+                .productiviteEtablitPriorites("plutotAccord")
+                .productiviteRespectEcheanciers("plutotAccord")
+                .productiviteCommentaires("Très efficace")
+                .qualiteRespectMandats("totalementAccord")
+                .qualiteAttentionDetails("plutotAccord")
+                .qualiteVerifieTravail("totalementAccord")
+                .qualitePerfectionnement("plutotAccord")
+                .qualiteAnalyseProblemes("plutotAccord")
+                .qualiteCommentaires("Bon souci du détail")
+                .relationsContactFacile("totalementAccord")
+                .relationsTravailEquipe("totalementAccord")
+                .relationsAdaptationCulture("plutotAccord")
+                .relationsAccepteCritiques("totalementAccord")
+                .relationsRespectueux("totalementAccord")
+                .relationsEcouteActive("plutotAccord")
+                .relationsCommentaires("Excellente collaboration")
+                .habiletesInteretMotivation("totalementAccord")
+                .habiletesExprimeIdees("plutotAccord")
+                .habiletesInitiative("totalementAccord")
+                .habiletesTravailSecuritaire("totalementAccord")
+                .habiletesSensResponsabilites("plutotAccord")
+                .habiletesPonctualiteAssiduite("totalementAccord")
+                .habiletesCommentaires("Toujours ponctuel")
+                .appreciationGlobale("depasse")
+                .appreciationPrecisions("Performance remarquable")
+                .evaluationDiscutee(true)
+                .heuresEncadrement("2h/semaine")
+                .accueillirProchainStage("oui")
+                .formationSuffisante("Oui, formation adéquate")
+                .signataireNom("M. Martin")
+                .signataireFonction("Responsable TI")
+                .password("testPassword123") // Password for signature
                 .build();
     }
 
     @Test
     void testCreateEvaluation_Success() {
+        evaluationDTO.setPassword("testPassword123");
+
         when(employeurRepository.findById(1L)).thenReturn(Optional.of(employeur));
         when(ententeRepository.findById(5L)).thenReturn(Optional.of(entente));
         when(evaluationRepository.existsByEntenteId(5L)).thenReturn(false);
+        when(passwordEncoder.matches("testPassword123", employeur.getPassword())).thenReturn(true);
         when(evaluationRepository.save(any(Evaluation.class))).thenReturn(evaluation);
 
         EvaluationDTO result = evaluationService.createEvaluation(1L, evaluationDTO);
 
         assertNotNull(result);
-        assertEquals(4, result.getProductivite());
-        assertEquals(5, result.getQualiteTravail());
+        assertEquals("totalementAccord", result.getProductivitePlanificationOrganisation());
+        assertTrue(result.getEvaluationDiscutee());
+        assertEquals("oui", result.getAccueillirProchainStage());
         verify(evaluationRepository, times(1)).save(any(Evaluation.class));
+        verify(passwordEncoder, times(1)).matches("testPassword123", employeur.getPassword());
     }
 
     @Test
