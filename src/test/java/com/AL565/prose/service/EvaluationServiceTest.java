@@ -155,26 +155,4 @@ class EvaluationServiceTest {
         );
     }
 
-    @Test
-    void testUpdateEvaluation_Success() {
-        evaluationDTO.setProductivite(5);
-        evaluationDTO.setCommentaires("Excellent stagiaire");
-
-        when(evaluationRepository.findById(6L)).thenReturn(Optional.of(evaluation));
-        when(evaluationRepository.save(any(Evaluation.class))).thenReturn(evaluation);
-
-        EvaluationDTO result = evaluationService.updateEvaluation(1L, 6L, evaluationDTO);
-
-        assertNotNull(result);
-        verify(evaluationRepository, times(1)).save(any(Evaluation.class));
-    }
-
-    @Test
-    void testUpdateEvaluation_Unauthorized() {
-        when(evaluationRepository.findById(6L)).thenReturn(Optional.of(evaluation));
-
-        assertThrows(IllegalStateException.class, () ->
-            evaluationService.updateEvaluation(999L, 6L, evaluationDTO)
-        );
-    }
 }

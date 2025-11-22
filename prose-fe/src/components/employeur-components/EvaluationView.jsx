@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useI18n } from '../../context/I18nContext';
 import { getEvaluationByEntente } from '../../services/EmployeurService';
 import { useAuth } from '../../context/AuthContext';
-import { FaStar, FaArrowLeft, FaEdit, FaCheckCircle } from 'react-icons/fa';
+import { FaStar, FaArrowLeft, FaCheckCircle } from 'react-icons/fa';
 
 const EvaluationView = () => {
     const { t } = useI18n();
@@ -106,13 +106,6 @@ const EvaluationView = () => {
                             </p>
                         )}
                     </div>
-                    <button
-                        onClick={() => navigate(`/employeur/evaluations/evaluer/${ententeId}`)}
-                        className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200 font-medium text-sm flex items-center"
-                    >
-                        <FaEdit className="mr-2" />
-                        {t('common.edit')}
-                    </button>
                 </div>
             </div>
 

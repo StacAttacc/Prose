@@ -67,32 +67,6 @@ public class EvaluationService {
         return EvaluationDTO.toDTO(evaluation);
     }
 
-    @Transactional
-    public EvaluationDTO updateEvaluation(Long employeurId, Long evaluationId, EvaluationDTO evaluationDTO) {
-        Evaluation evaluation = evaluationRepository.findById(evaluationId)
-                .orElseThrow(() -> new EntityNotFoundException("Évaluation non trouvée avec l'ID: " + evaluationId));
-
-        if (!evaluation.getEmployeur().getId().equals(employeurId)) {
-            throw new IllegalStateException("Vous n'êtes pas autorisé à modifier cette évaluation");
-        }
-
-        evaluation.setProductivite(evaluationDTO.getProductivite());
-        evaluation.setQualiteTravail(evaluationDTO.getQualiteTravail());
-        evaluation.setRelationsInterpersonnelles(evaluationDTO.getRelationsInterpersonnelles());
-        evaluation.setHabiletesPersonnelles(evaluationDTO.getHabiletesPersonnelles());
-        evaluation.setAppreciationGlobale(evaluationDTO.getAppreciationGlobale());
-        evaluation.setCommentaires(evaluationDTO.getCommentaires());
-        evaluation.setPointsForts(evaluationDTO.getPointsForts());
-        evaluation.setPointsAmelioration(evaluationDTO.getPointsAmelioration());
-        evaluation.setHeureEncadrement(evaluationDTO.getHeureEncadrement());
-        evaluation.setGardeContact(evaluationDTO.getGardeContact());
-        evaluation.setRehireEtudiant(evaluationDTO.getRehireEtudiant());
-        evaluation.setDateModification(LocalDateTime.now());
-
-        evaluation = evaluationRepository.save(evaluation);
-
-        return EvaluationDTO.toDTO(evaluation);
-    }
 
     @Transactional(readOnly = true)
     public EvaluationDTO getEvaluationByEntente(Long employeurId, Long ententeId) {

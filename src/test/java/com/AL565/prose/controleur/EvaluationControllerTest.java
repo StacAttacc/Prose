@@ -98,16 +98,6 @@ class EvaluationControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
-    @Test
-    void testUpdateEvaluation_Success() throws Exception {
-        when(evaluationService.updateEvaluation(eq(1L), eq(1L), any(EvaluationDTO.class))).thenReturn(evaluationDTO);
-
-        mockMvc.perform(put("/api/employeur/1/evaluations/1")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(evaluationDTO)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1));
-    }
 
     @Test
     void testGetEvaluationByEntente_Success() throws Exception {

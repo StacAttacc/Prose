@@ -3,8 +3,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useI18n } from '../../context/I18nContext';
 import {
     createEvaluation,
-    updateEvaluation,
-    getEvaluationByEntente,
     getEntentesForEvaluation
 } from '../../services/EmployeurService';
 import { useAuth } from '../../context/AuthContext';
@@ -21,7 +19,6 @@ const EvaluationForm = () => {
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(false);
     const [entente, setEntente] = useState(null);
-    const [existingEvaluation, setExistingEvaluation] = useState(null);
 
     const [formData, setFormData] = useState({
         ententeId: parseInt(ententeId),
@@ -58,26 +55,8 @@ const EvaluationForm = () => {
             setEntente(currentEntente);
 
             if (currentEntente.hasEvaluation) {
-                try {
-                    const evaluation = await getEvaluationByEntente(user.id, ententeId, user.token);
-                    setExistingEvaluation(evaluation);
-                    setFormData({
-                        ententeId: parseInt(ententeId),
-                        productivite: evaluation.productivite || 0,
-                        qualiteTravail: evaluation.qualiteTravail || 0,
-                        relationsInterpersonnelles: evaluation.relationsInterpersonnelles || 0,
-                        habiletesPersonnelles: evaluation.habiletesPersonnelles || 0,
-                        appreciationGlobale: evaluation.appreciationGlobale || 0,
-                        commentaires: evaluation.commentaires || '',
-                        pointsForts: evaluation.pointsForts || '',
-                        pointsAmelioration: evaluation.pointsAmelioration || '',
-                        heureEncadrement: evaluation.heureEncadrement || '',
-                        gardeContact: evaluation.gardeContact || false,
-                        rehireEtudiant: evaluation.rehireEtudiant || false
-                    });
-                } catch (err) {
-                    console.error('Erreur lors du chargement de l\'évaluation:', err);
-                }
+                navigate('/employeur/evaluations');
+                return;
             }
         } catch (err) {
             console.error('Erreur lors du chargement des données:', err);
@@ -137,11 +116,7 @@ const EvaluationForm = () => {
             setSaving(true);
             setError(null);
 
-            if (existingEvaluation) {
-                await updateEvaluation(user.id, existingEvaluation.id, formData, user.token);
-            } else {
-                await createEvaluation(user.id, formData, user.token);
-            }
+            await createEvaluation(user.id, formData, user.token);
 
             setSuccess(true);
             setTimeout(() => {
@@ -216,9 +191,7 @@ const EvaluationForm = () => {
                 </button>
 
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                    {existingEvaluation
-                        ? t('evaluations.editEvaluation')
-                        : t('evaluations.newEvaluation')}
+                    {t('evaluations.newEvaluation')}
                 </h1>
                 <p className="text-gray-600">
                     {t('evaluations.evaluatingStudent')}: <span className="font-semibold">
@@ -382,7 +355,7 @@ const EvaluationForm = () => {
                         ) : (
                             <>
                                 <FaSave className="mr-2" />
-                                {existingEvaluation ? t('common.update') : t('common.submit')}
+                                {t('common.submit')}
                             </>
                         )}
                     </button>
