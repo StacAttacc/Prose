@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useI18n } from "../../context/I18nContext.jsx";
 import { useYear } from "../../context/YearContext.jsx";
-import { associerProfesseurEtudiant, getStageApplicantsManager } from "../../services/GestionnaireService.js";
+import { associerProfesseurEtudiant, getAllEtudiants, getAllProfesseurs } from "../../services/GestionnaireService.js";
 import ErrorBanner from "../display-components/ErrorBanner.jsx";
 import ScrollToTop from "../common/ScrollToTop.jsx";
 
@@ -12,8 +12,12 @@ export default function AssociationProfesseurEtudiant() {
     const { selectedYear } = useYear();
     const token = user?.token;
 
-    const [etudiantEmail, setEtudiantEmail] = useState("");
-    const [professeurEmail, setProfesseurEmail] = useState("");
+    const [selectedEtudiantId, setSelectedEtudiantId] = useState("");
+    const [selectedProfesseurId, setSelectedProfesseurId] = useState("");
+    const [etudiants, setEtudiants] = useState([]);
+    const [professeurs, setProfesseurs] = useState([]);
+    const [loadingEtudiants, setLoadingEtudiants] = useState(true);
+    const [loadingProfesseurs, setLoadingProfesseurs] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(false);
@@ -24,34 +28,68 @@ export default function AssociationProfesseurEtudiant() {
     useEffect(() => {
         if (token) {
             loadAssociations();
+            loadEtudiants();
+            loadProfesseurs();
         }
     }, [token, selectedYear]);
+
+    const loadEtudiants = async () => {
+        try {
+            setLoadingEtudiants(true);
+            console.log('Chargement des étudiants...');
+            const data = await getAllEtudiants(token);
+            console.log('Étudiants chargés:', data);
+            setEtudiants(Array.isArray(data) ? data : []);
+        } catch (err) {
+            console.error('Erreur lors du chargement des étudiants:', err);
+            console.error('Détails de l\'erreur:', err?.response?.data);
+            console.error('Status:', err?.response?.status);
+            setEtudiants([]);
+        } finally {
+            console.log('Fin du chargement des étudiants');
+            setLoadingEtudiants(false);
+        }
+    };
+
+    const loadProfesseurs = async () => {
+        try {
+            setLoadingProfesseurs(true);
+            console.log('Chargement des professeurs...');
+            const data = await getAllProfesseurs(token);
+            console.log('Professeurs chargés:', data);
+            setProfesseurs(Array.isArray(data) ? data : []);
+        } catch (err) {
+            console.error('Erreur lors du chargement des professeurs:', err);
+            console.error('Détails de l\'erreur:', err?.response?.data);
+            console.error('Status:', err?.response?.status);
+            setProfesseurs([]);
+        } finally {
+            console.log('Fin du chargement des professeurs');
+            setLoadingProfesseurs(false);
+        }
+    };
 
     const loadAssociations = async () => {
         try {
             setLoadingAssociations(true);
-            const data = await getStageApplicantsManager(token, selectedYear);
+            // Utiliser getAllEtudiants pour obtenir tous les étudiants avec leur professeur responsable
+            const etudiants = await getAllEtudiants(token);
             
             // Extraire les associations (étudiants avec professeur responsable)
-            const associationsMap = new Map();
+            const associationsList = [];
             
-            data.forEach(dto => {
-                const etudiant = dto?.etudiant;
+            etudiants.forEach(etudiant => {
                 if (etudiant && etudiant.professeurResponsable) {
-                    const etudiantId = etudiant.id || etudiant.email;
-                    // Éviter les doublons
-                    if (!associationsMap.has(etudiantId)) {
-                        associationsMap.set(etudiantId, {
-                            etudiantEmail: etudiant.email || '',
-                            etudiantNom: `${etudiant.firstName || ''} ${etudiant.lastName || ''}`.trim() || etudiant.email,
-                            professeurEmail: etudiant.professeurResponsable?.email || '',
-                            professeurNom: `${etudiant.professeurResponsable?.firstName || ''} ${etudiant.professeurResponsable?.lastName || ''}`.trim() || etudiant.professeurResponsable?.email
-                        });
-                    }
+                    associationsList.push({
+                        etudiantEmail: etudiant.email || '',
+                        etudiantNom: `${etudiant.firstName || ''} ${etudiant.lastName || ''}`.trim() || etudiant.email,
+                        professeurEmail: etudiant.professeurResponsable?.email || '',
+                        professeurNom: `${etudiant.professeurResponsable?.firstName || ''} ${etudiant.professeurResponsable?.lastName || ''}`.trim() || etudiant.professeurResponsable?.email
+                    });
                 }
             });
             
-            setAssociations(Array.from(associationsMap.values()));
+            setAssociations(associationsList);
         } catch (err) {
             console.error('Erreur lors du chargement des associations:', err);
             setAssociations([]);
@@ -63,23 +101,24 @@ export default function AssociationProfesseurEtudiant() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         
-        if (!etudiantEmail.trim() || !professeurEmail.trim()) {
-            setError(t('selectionnerEtudiantEtProfesseur') || 'Veuillez entrer l\'email de l\'étudiant et l\'email du professeur');
+        if (!selectedEtudiantId || !selectedProfesseurId) {
+            setError(t('selectionnerEtudiantEtProfesseur') || 'Veuillez sélectionner un étudiant et un professeur');
             return;
         }
 
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(etudiantEmail.trim())) {
-            setError('L\'email de l\'étudiant n\'est pas valide');
+        const selectedEtudiant = etudiants.find(e => e.id === parseInt(selectedEtudiantId) || e.email === selectedEtudiantId);
+        const selectedProfesseur = professeurs.find(p => p.id === parseInt(selectedProfesseurId) || p.email === selectedProfesseurId);
+
+        if (!selectedEtudiant || !selectedProfesseur) {
+            setError('Étudiant ou professeur non trouvé');
             return;
         }
-        if (!emailRegex.test(professeurEmail.trim())) {
-            setError('L\'email du professeur n\'est pas valide');
-            return;
-        }
+
+        const etudiantEmail = selectedEtudiant.email;
+        const professeurEmail = selectedProfesseur.email;
 
         const etudiantDejaAssocie = associations.find(assoc => 
-            assoc.etudiantEmail.toLowerCase() === etudiantEmail.trim().toLowerCase()
+            assoc.etudiantEmail.toLowerCase() === etudiantEmail.toLowerCase()
         );
         if (etudiantDejaAssocie) {
             setError(`Cet étudiant (${etudiantDejaAssocie.etudiantEmail}) est déjà associé au professeur ${etudiantDejaAssocie.professeurNom || etudiantDejaAssocie.professeurEmail}`);
@@ -91,11 +130,11 @@ export default function AssociationProfesseurEtudiant() {
             setError(null);
             setSuccess(false);
             
-            await associerProfesseurEtudiant(professeurEmail, etudiantEmail.trim(), token);
+            await associerProfesseurEtudiant(professeurEmail, etudiantEmail, token);
             
             setSuccess(true);
-            setEtudiantEmail("");
-            setProfesseurEmail("");
+            setSelectedEtudiantId("");
+            setSelectedProfesseurId("");
             
             await loadAssociations();
         } catch (err) {
@@ -267,42 +306,63 @@ export default function AssociationProfesseurEtudiant() {
             <form onSubmit={handleSubmit} className="max-w-4xl mx-auto">
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 mb-6">
                     <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">
-                        {t('Veuillez entrer l\'email de l\'étudiant') || 'Email de l\'étudiant'}
+                        {t('etudiant') || 'Étudiant'}
                     </h2>
                     
                     <div className="mb-4">
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            {t('etudiant') || 'Email de l\'étudiant'}
+                            {t('selectionnerEtudiant') || 'Sélectionner un étudiant'} <span className="text-red-500">*</span>
                         </label>
-                        <input
-                            type="email"
-                            value={etudiantEmail}
-                            onChange={(e) => setEtudiantEmail(e.target.value)}
-                            placeholder={t('Veuillez entrer l\'email de l\'étudiant') || 'etudiant@example.com'}
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 dark:placeholder-gray-400"
-                            required
-                        />
+                        {loadingEtudiants ? (
+                            <div className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400">
+                                {t('chargement') || 'Chargement...'}
+                            </div>
+                        ) : (
+                            <select
+                                value={selectedEtudiantId}
+                                onChange={(e) => setSelectedEtudiantId(e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                                required
+                            >
+                                <option value="">{t('selectionnerEtudiant') || 'Sélectionner un étudiant'}</option>
+                                {etudiants.map((etudiant) => (
+                                    <option key={etudiant.id || etudiant.email} value={etudiant.id || etudiant.email}>
+                                        {etudiant.firstName} {etudiant.lastName} ({etudiant.email})
+                                    </option>
+                                ))}
+                            </select>
+                        )}
                     </div>
                 </div>
 
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 mb-6">
                     <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">
-                        {t('Veuillez entrer l\'email du professeur') || 'Sélectionner un professeur'}
+                        {t('professeur') || 'Professeur'}
                     </h2>
                     
                     <div className="mb-4">
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            {t('emailProfesseur') || 'Email du professeur'}
+                            {t('selectionnerProfesseur') || 'Sélectionner un professeur'} <span className="text-red-500">*</span>
                         </label>
-                        <input
-                            type="email"
-                            value={professeurEmail}
-                            onChange={(e) => setProfesseurEmail(e.target.value)}
-                            placeholder={t('Veuillez entrer l\'email du professeur') || 'professeur@example.com'}
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 dark:placeholder-gray-400"
-                            required
-                        />
-                      
+                        {loadingProfesseurs ? (
+                            <div className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400">
+                                {t('chargement') || 'Chargement...'}
+                            </div>
+                        ) : (
+                            <select
+                                value={selectedProfesseurId}
+                                onChange={(e) => setSelectedProfesseurId(e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                                required
+                            >
+                                <option value="">{t('selectionnerProfesseur') || 'Sélectionner un professeur'}</option>
+                                {professeurs.map((professeur) => (
+                                    <option key={professeur.id || professeur.email} value={professeur.id || professeur.email}>
+                                        {professeur.firstName} {professeur.lastName} ({professeur.email})
+                                    </option>
+                                ))}
+                            </select>
+                        )}
                     </div>
                 </div>
 
@@ -310,8 +370,8 @@ export default function AssociationProfesseurEtudiant() {
                     <button
                         type="button"
                         onClick={() => {
-                            setEtudiantEmail("");
-                            setProfesseurEmail("");
+                            setSelectedEtudiantId("");
+                            setSelectedProfesseurId("");
                             setError(null);
                             setSuccess(false);
                             loadAssociations();
@@ -323,7 +383,7 @@ export default function AssociationProfesseurEtudiant() {
                     </button>
                     <button
                         type="submit"
-                        disabled={submitting || !etudiantEmail.trim() || !professeurEmail.trim()}
+                        disabled={submitting || !selectedEtudiantId || !selectedProfesseurId}
                         className="px-6 py-2 bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 font-medium rounded-lg text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {submitting ? (t('associationEnCours') || 'Association en cours...') : (t('associer') || 'Associer')}

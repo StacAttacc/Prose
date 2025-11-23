@@ -24,6 +24,10 @@ const translations = {
     informationsPersonnelles: 'Informations Personnelles',
     selectionnerDiscipline: 'Choisir une Discipline',
     professeurCreeAvecSucces: 'Le professeur a été créé avec succès',
+    selectionnerEtudiant: 'Sélectionner un étudiant',
+    selectionnerProfesseur: 'Sélectionner un professeur',
+    aucunEtudiant: 'Aucun étudiant disponible',
+    aucunProfesseur: 'Aucun professeur disponible',
     
     // GestionnaireEtuCandidature
     statusCandidatures: 'Statut des candidatures',
@@ -98,6 +102,7 @@ const translations = {
     entreprisePlaceholder: 'Ma Compagnie Inc.',
     emailPlaceholderSignup: 'name@example.com',
     passwordPlaceholderSignup: 'Min 10 caractères',
+    emailInvalide: 'Veuillez entrer une adresse email valide (exemple: nom@domaine.com)',
     motDePasseRespecte: 'Mot de passe respecté!',
     min10Caracteres: 'Min 10 characters',
     creation: 'Création...',
@@ -575,6 +580,10 @@ const translations = {
     informationsPersonnelles: 'Personal Information',
     selectionnerDiscipline: 'Choose a Discipline',
     professeurCreeAvecSucces: 'The professor has been created successfully',
+    selectionnerEtudiant: 'Select a student',
+    selectionnerProfesseur: 'Select a professor',
+    aucunEtudiant: 'No students available',
+    aucunProfesseur: 'No professors available',
     
     // GestionnaireEtuCandidature
     statusCandidatures: 'Application Status',
@@ -649,6 +658,7 @@ const translations = {
     entreprisePlaceholder: 'My Company Inc.',
     emailPlaceholderSignup: 'name@example.com',
     passwordPlaceholderSignup: 'Min 10 characters',
+    emailInvalide: 'Please enter a valid email address (example: name@domain.com)',
     motDePasseRespecte: 'Password meets requirements!',
     min10Caracteres: 'Min 10 characters',
     creation: 'Creating...',

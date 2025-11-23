@@ -54,20 +54,20 @@ describe('AssociationProfesseurEtudiant', () => {
   const mockT = (key, defaultValue) => {
     const translations = {
       'Faire une demande': 'Association Professeur - Étudiant',
-      'Veuillez entrer l\'email de l\'étudiant': 'Email de l\'étudiant',
-      'etudiant': 'Email de l\'étudiant',
-      'Veuillez entrer l\'email du professeur': 'Sélectionner un professeur',
-      'Email du professeur': 'Email du professeur',
-      'emailProfesseur': 'Email du professeur',
+      'etudiant': 'Étudiant',
+      'professeur': 'Professeur',
+      'selectionnerEtudiant': 'Sélectionner un étudiant',
+      'selectionnerProfesseur': 'Sélectionner un professeur',
       'reinitialiser': 'Réinitialiser',
       'associer': 'Associer',
       'associationEnCours': 'Association en cours...',
       'associationReussie': 'Association réussie avec succès!',
-      'selectionnerEtudiantEtProfesseur': 'Veuillez entrer l\'email de l\'étudiant et l\'email du professeur',
+      'selectionnerEtudiantEtProfesseur': 'Veuillez sélectionner un étudiant et un professeur',
       'erreurAssociation': 'Erreur lors de l\'association',
       'associationsExistantes': 'Associations existantes',
-      'professeur': 'Professeur',
-      'chargement': 'Chargement des associations...'
+      'chargement': 'Chargement...',
+      'aucunEtudiant': 'Aucun étudiant disponible',
+      'aucunProfesseur': 'Aucun professeur disponible'
     };
     return translations[key] || defaultValue || key;
   };
@@ -95,28 +95,39 @@ describe('AssociationProfesseurEtudiant', () => {
       setSelectedYear: vi.fn()
     });
 
-    // Mock getStageApplicantsManager pour retourner une liste vide par défaut
-    vi.spyOn(GestionnaireService, 'getStageApplicantsManager').mockResolvedValue([]);
+    // Mock getAllEtudiants et getAllProfesseurs pour retourner des listes vides par défaut
+    vi.spyOn(GestionnaireService, 'getAllEtudiants').mockResolvedValue([]);
+    vi.spyOn(GestionnaireService, 'getAllProfesseurs').mockResolvedValue([]);
   });
 
-  it('devrait afficher le formulaire avec les champs email', async () => {
+  it('devrait afficher le formulaire avec les dropdowns', async () => {
+    const mockEtudiants = [
+      { id: 1, email: 'etudiant1@test.com', firstName: 'John', lastName: 'Doe' },
+      { id: 2, email: 'etudiant2@test.com', firstName: 'Jane', lastName: 'Smith' }
+    ];
+    const mockProfesseurs = [
+      { id: 1, email: 'prof1@test.com', firstName: 'Robert', lastName: 'Duval' },
+      { id: 2, email: 'prof2@test.com', firstName: 'Alice', lastName: 'Johnson' }
+    ];
+
+    vi.spyOn(GestionnaireService, 'getAllEtudiants').mockResolvedValue(mockEtudiants);
+    vi.spyOn(GestionnaireService, 'getAllProfesseurs').mockResolvedValue(mockProfesseurs);
+
     renderWithProviders(<AssociationProfesseurEtudiant />);
 
     await waitFor(() => {
       expect(screen.getByText('Association Professeur - Étudiant')).toBeInTheDocument();
     });
 
-    const etudiantLabels = screen.getAllByText(/Email de l'étudiant/i);
-    expect(etudiantLabels.length).toBeGreaterThan(0);
-    
-    // Vérifier que les inputs existent (le label du professeur peut être traduit différemment)
-    const inputs = screen.getAllByRole('textbox');
-    expect(inputs.length).toBe(2);
+    // Vérifier que les selects existent
+    const selects = screen.getAllByRole('combobox');
+    expect(selects.length).toBe(2);
     
     // Vérifier que les deux sections sont présentes (utiliser getAllByText car il peut y avoir plusieurs occurrences)
-    const etudiantTexts = screen.getAllByText(/Email de l'étudiant/i);
+    const etudiantTexts = screen.getAllByText(/Étudiant/i);
     expect(etudiantTexts.length).toBeGreaterThan(0);
-    expect(screen.getByText(/Sélectionner un professeur/i)).toBeInTheDocument();
+    const professeurTexts = screen.getAllByText(/Professeur/i);
+    expect(professeurTexts.length).toBeGreaterThan(0);
   });
 
   it('devrait afficher les boutons Réinitialiser et Associer', async () => {
@@ -137,40 +148,63 @@ describe('AssociationProfesseurEtudiant', () => {
     });
   });
 
-  it('devrait activer le bouton Associer quand les deux emails sont remplis', async () => {
+  it('devrait activer le bouton Associer quand les deux sélections sont faites', async () => {
     const user = userEvent.setup();
+    const mockEtudiants = [
+      { id: 1, email: 'etudiant@test.com', firstName: 'John', lastName: 'Doe' }
+    ];
+    const mockProfesseurs = [
+      { id: 1, email: 'professeur@test.com', firstName: 'Robert', lastName: 'Duval' }
+    ];
+
+    vi.spyOn(GestionnaireService, 'getAllEtudiants').mockResolvedValue(mockEtudiants);
+    vi.spyOn(GestionnaireService, 'getAllProfesseurs').mockResolvedValue(mockProfesseurs);
+
     renderWithProviders(<AssociationProfesseurEtudiant />);
 
-    const inputs = screen.getAllByRole('textbox');
-    const etudiantInput = inputs[0];
-    const professeurInput = inputs[1];
+    await waitFor(() => {
+      const selects = screen.getAllByRole('combobox');
+      expect(selects.length).toBe(2);
+    });
+
+    const selects = screen.getAllByRole('combobox');
+    const etudiantSelect = selects[0];
+    const professeurSelect = selects[1];
     const submitButton = screen.getByRole('button', { name: /Associer/i });
 
-    await user.type(etudiantInput, 'etudiant@test.com');
-    await user.type(professeurInput, 'professeur@test.com');
+    await user.selectOptions(etudiantSelect, '1');
+    await user.selectOptions(professeurSelect, '1');
 
     expect(submitButton).not.toBeDisabled();
   });
 
   it('devrait appeler le service avec les bons paramètres lors de la soumission', async () => {
     const user = userEvent.setup();
+    const mockEtudiants = [
+      { id: 1, email: 'etudiant@test.com', firstName: 'John', lastName: 'Doe' }
+    ];
+    const mockProfesseurs = [
+      { id: 1, email: 'professeur@test.com', firstName: 'Robert', lastName: 'Duval' }
+    ];
+
     const mockAssocier = vi.spyOn(GestionnaireService, 'associerProfesseurEtudiant').mockResolvedValue({});
-    const mockGetAssociations = vi.spyOn(GestionnaireService, 'getStageApplicantsManager').mockResolvedValue([]);
+    vi.spyOn(GestionnaireService, 'getAllEtudiants').mockResolvedValue(mockEtudiants);
+    vi.spyOn(GestionnaireService, 'getAllProfesseurs').mockResolvedValue(mockProfesseurs);
 
     renderWithProviders(<AssociationProfesseurEtudiant />);
 
     await waitFor(() => {
-      const inputs = screen.getAllByRole('textbox');
-      expect(inputs.length).toBe(2);
+      const selects = screen.getAllByRole('combobox');
+      expect(selects.length).toBe(2);
     });
 
-    const inputs = screen.getAllByRole('textbox');
-    const etudiantInput = inputs[0];
-    const professeurInput = inputs[1];
+    const selects = screen.getAllByRole('combobox');
+    const etudiantSelect = selects[0];
+    const professeurSelect = selects[1];
     const submitButton = screen.getByRole('button', { name: /Associer/i });
 
-    await user.type(etudiantInput, 'etudiant@test.com');
-    await user.type(professeurInput, 'professeur@test.com');
+    await user.selectOptions(etudiantSelect, '1');
+    await user.selectOptions(professeurSelect, '1');
     await user.click(submitButton);
 
     await waitFor(() => {
@@ -182,28 +216,35 @@ describe('AssociationProfesseurEtudiant', () => {
     });
 
     mockAssocier.mockRestore();
-    mockGetAssociations.mockRestore();
   });
 
   it('devrait afficher un message de succès après une association réussie', async () => {
     const user = userEvent.setup();
+    const mockEtudiants = [
+      { id: 1, email: 'etudiant@test.com', firstName: 'John', lastName: 'Doe' }
+    ];
+    const mockProfesseurs = [
+      { id: 1, email: 'professeur@test.com', firstName: 'Robert', lastName: 'Duval' }
+    ];
+
     vi.spyOn(GestionnaireService, 'associerProfesseurEtudiant').mockResolvedValue({});
-    vi.spyOn(GestionnaireService, 'getStageApplicantsManager').mockResolvedValue([]);
+    vi.spyOn(GestionnaireService, 'getAllEtudiants').mockResolvedValue(mockEtudiants);
+    vi.spyOn(GestionnaireService, 'getAllProfesseurs').mockResolvedValue(mockProfesseurs);
 
     renderWithProviders(<AssociationProfesseurEtudiant />);
 
     await waitFor(() => {
-      const inputs = screen.getAllByRole('textbox');
-      expect(inputs.length).toBe(2);
+      const selects = screen.getAllByRole('combobox');
+      expect(selects.length).toBe(2);
     });
 
-    const inputs = screen.getAllByRole('textbox');
-    const etudiantInput = inputs[0];
-    const professeurInput = inputs[1];
+    const selects = screen.getAllByRole('combobox');
+    const etudiantSelect = selects[0];
+    const professeurSelect = selects[1];
     const submitButton = screen.getByRole('button', { name: /Associer/i });
 
-    await user.type(etudiantInput, 'etudiant@test.com');
-    await user.type(professeurInput, 'professeur@test.com');
+    await user.selectOptions(etudiantSelect, '1');
+    await user.selectOptions(professeurSelect, '1');
     await user.click(submitButton);
 
     await waitFor(() => {
@@ -211,72 +252,112 @@ describe('AssociationProfesseurEtudiant', () => {
     });
   });
 
-  it('devrait vider les champs après une association réussie', async () => {
+  it('devrait vider les sélections après une association réussie', async () => {
     const user = userEvent.setup();
+    const mockEtudiants = [
+      { id: 1, email: 'etudiant@test.com', firstName: 'John', lastName: 'Doe' }
+    ];
+    const mockProfesseurs = [
+      { id: 1, email: 'professeur@test.com', firstName: 'Robert', lastName: 'Duval' }
+    ];
+
     vi.spyOn(GestionnaireService, 'associerProfesseurEtudiant').mockResolvedValue({});
-    vi.spyOn(GestionnaireService, 'getStageApplicantsManager').mockResolvedValue([]);
+    vi.spyOn(GestionnaireService, 'getAllEtudiants').mockResolvedValue(mockEtudiants);
+    vi.spyOn(GestionnaireService, 'getAllProfesseurs').mockResolvedValue(mockProfesseurs);
 
     renderWithProviders(<AssociationProfesseurEtudiant />);
 
     await waitFor(() => {
-      const inputs = screen.getAllByRole('textbox');
-      expect(inputs.length).toBe(2);
+      const selects = screen.getAllByRole('combobox');
+      expect(selects.length).toBe(2);
     });
 
-    const inputs = screen.getAllByRole('textbox');
-    const etudiantInput = inputs[0];
-    const professeurInput = inputs[1];
+    const selects = screen.getAllByRole('combobox');
+    const etudiantSelect = selects[0];
+    const professeurSelect = selects[1];
     const submitButton = screen.getByRole('button', { name: /Associer/i });
 
-    await user.type(etudiantInput, 'etudiant@test.com');
-    await user.type(professeurInput, 'professeur@test.com');
+    await user.selectOptions(etudiantSelect, '1');
+    await user.selectOptions(professeurSelect, '1');
     await user.click(submitButton);
 
     await waitFor(() => {
-      expect(etudiantInput).toHaveValue('');
-      expect(professeurInput).toHaveValue('');
+      expect(etudiantSelect).toHaveValue('');
+      expect(professeurSelect).toHaveValue('');
     });
   });
 
-  it('devrait afficher un message d\'erreur si les champs sont vides lors de la soumission', async () => {
-    const user = userEvent.setup();
+  it('devrait désactiver le bouton si les sélections sont vides', async () => {
+    const mockEtudiants = [
+      { id: 1, email: 'etudiant@test.com', firstName: 'John', lastName: 'Doe' }
+    ];
+    const mockProfesseurs = [
+      { id: 1, email: 'professeur@test.com', firstName: 'Robert', lastName: 'Duval' }
+    ];
+
+    vi.spyOn(GestionnaireService, 'getAllEtudiants').mockResolvedValue(mockEtudiants);
+    vi.spyOn(GestionnaireService, 'getAllProfesseurs').mockResolvedValue(mockProfesseurs);
+
     renderWithProviders(<AssociationProfesseurEtudiant />);
 
-    const inputs = screen.getAllByRole('textbox');
-    const etudiantInput = inputs[0];
-    const professeurInput = inputs[1];
+    await waitFor(() => {
+      const submitButton = screen.getByRole('button', { name: /Associer/i });
+      expect(submitButton).toBeDisabled();
+    });
+  });
+
+  it('devrait désactiver le bouton si seulement l\'étudiant est sélectionné', async () => {
+    const user = userEvent.setup();
+    const mockEtudiants = [
+      { id: 1, email: 'etudiant@test.com', firstName: 'John', lastName: 'Doe' }
+    ];
+    const mockProfesseurs = [
+      { id: 1, email: 'professeur@test.com', firstName: 'Robert', lastName: 'Duval' }
+    ];
+
+    vi.spyOn(GestionnaireService, 'getAllEtudiants').mockResolvedValue(mockEtudiants);
+    vi.spyOn(GestionnaireService, 'getAllProfesseurs').mockResolvedValue(mockProfesseurs);
+
+    renderWithProviders(<AssociationProfesseurEtudiant />);
+
+    await waitFor(() => {
+      const selects = screen.getAllByRole('combobox');
+      expect(selects.length).toBe(2);
+    });
+
+    const selects = screen.getAllByRole('combobox');
+    const etudiantSelect = selects[0];
     const submitButton = screen.getByRole('button', { name: /Associer/i });
-    
-    await user.type(etudiantInput, 'test');
-    await user.clear(etudiantInput);
-    await user.type(professeurInput, 'test');
-    await user.clear(professeurInput);
+
+    await user.selectOptions(etudiantSelect, '1');
     
     expect(submitButton).toBeDisabled();
   });
 
-  it('devrait afficher un message d\'erreur si seulement l\'email de l\'étudiant est rempli', async () => {
+  it('devrait désactiver le bouton si seulement le professeur est sélectionné', async () => {
     const user = userEvent.setup();
+    const mockEtudiants = [
+      { id: 1, email: 'etudiant@test.com', firstName: 'John', lastName: 'Doe' }
+    ];
+    const mockProfesseurs = [
+      { id: 1, email: 'professeur@test.com', firstName: 'Robert', lastName: 'Duval' }
+    ];
+
+    vi.spyOn(GestionnaireService, 'getAllEtudiants').mockResolvedValue(mockEtudiants);
+    vi.spyOn(GestionnaireService, 'getAllProfesseurs').mockResolvedValue(mockProfesseurs);
+
     renderWithProviders(<AssociationProfesseurEtudiant />);
 
-    const inputs = screen.getAllByRole('textbox');
-    const etudiantInput = inputs[0];
+    await waitFor(() => {
+      const selects = screen.getAllByRole('combobox');
+      expect(selects.length).toBe(2);
+    });
+
+    const selects = screen.getAllByRole('combobox');
+    const professeurSelect = selects[1];
     const submitButton = screen.getByRole('button', { name: /Associer/i });
 
-    await user.type(etudiantInput, 'etudiant@test.com');
-    
-    expect(submitButton).toBeDisabled();
-  });
-
-  it('devrait afficher un message d\'erreur si seulement l\'email du professeur est rempli', async () => {
-    const user = userEvent.setup();
-    renderWithProviders(<AssociationProfesseurEtudiant />);
-
-    const inputs = screen.getAllByRole('textbox');
-    const professeurInput = inputs[1];
-    const submitButton = screen.getByRole('button', { name: /Associer/i });
-
-    await user.type(professeurInput, 'professeur@test.com');
+    await user.selectOptions(professeurSelect, '1');
     
     expect(submitButton).toBeDisabled();
   });
@@ -284,6 +365,12 @@ describe('AssociationProfesseurEtudiant', () => {
   it('devrait afficher une erreur du backend si l\'association échoue', async () => {
     const user = userEvent.setup();
     const errorMessage = 'Un des utilisateurs n\'existe pas';
+    const mockEtudiants = [
+      { id: 1, email: 'etudiant@test.com', firstName: 'John', lastName: 'Doe' }
+    ];
+    const mockProfesseurs = [
+      { id: 1, email: 'professeur@test.com', firstName: 'Robert', lastName: 'Duval' }
+    ];
     
     vi.spyOn(GestionnaireService, 'associerProfesseurEtudiant').mockRejectedValue({
       response: {
@@ -291,22 +378,23 @@ describe('AssociationProfesseurEtudiant', () => {
         status: 404
       }
     });
-    vi.spyOn(GestionnaireService, 'getStageApplicantsManager').mockResolvedValue([]);
+    vi.spyOn(GestionnaireService, 'getAllEtudiants').mockResolvedValue(mockEtudiants);
+    vi.spyOn(GestionnaireService, 'getAllProfesseurs').mockResolvedValue(mockProfesseurs);
 
     renderWithProviders(<AssociationProfesseurEtudiant />);
 
     await waitFor(() => {
-      const inputs = screen.getAllByRole('textbox');
-      expect(inputs.length).toBe(2);
+      const selects = screen.getAllByRole('combobox');
+      expect(selects.length).toBe(2);
     });
 
-    const inputs = screen.getAllByRole('textbox');
-    const etudiantInput = inputs[0];
-    const professeurInput = inputs[1];
+    const selects = screen.getAllByRole('combobox');
+    const etudiantSelect = selects[0];
+    const professeurSelect = selects[1];
     const submitButton = screen.getByRole('button', { name: /Associer/i });
 
-    await user.type(etudiantInput, 'etudiant@test.com');
-    await user.type(professeurInput, 'professeur@test.com');
+    await user.selectOptions(etudiantSelect, '1');
+    await user.selectOptions(professeurSelect, '1');
     await user.click(submitButton);
 
     await waitFor(() => {
@@ -318,6 +406,12 @@ describe('AssociationProfesseurEtudiant', () => {
   it('devrait afficher une erreur si l\'étudiant est déjà associé', async () => {
     const user = userEvent.setup();
     const errorMessage = 'Etudiant already associated';
+    const mockEtudiants = [
+      { id: 1, email: 'etudiant@test.com', firstName: 'John', lastName: 'Doe' }
+    ];
+    const mockProfesseurs = [
+      { id: 1, email: 'professeur@test.com', firstName: 'Robert', lastName: 'Duval' }
+    ];
     
     vi.spyOn(GestionnaireService, 'associerProfesseurEtudiant').mockRejectedValue({
       response: {
@@ -325,22 +419,23 @@ describe('AssociationProfesseurEtudiant', () => {
         status: 409
       }
     });
-    vi.spyOn(GestionnaireService, 'getStageApplicantsManager').mockResolvedValue([]);
+    vi.spyOn(GestionnaireService, 'getAllEtudiants').mockResolvedValue(mockEtudiants);
+    vi.spyOn(GestionnaireService, 'getAllProfesseurs').mockResolvedValue(mockProfesseurs);
 
     renderWithProviders(<AssociationProfesseurEtudiant />);
 
     await waitFor(() => {
-      const inputs = screen.getAllByRole('textbox');
-      expect(inputs.length).toBe(2);
+      const selects = screen.getAllByRole('combobox');
+      expect(selects.length).toBe(2);
     });
 
-    const inputs = screen.getAllByRole('textbox');
-    const etudiantInput = inputs[0];
-    const professeurInput = inputs[1];
+    const selects = screen.getAllByRole('combobox');
+    const etudiantSelect = selects[0];
+    const professeurSelect = selects[1];
     const submitButton = screen.getByRole('button', { name: /Associer/i });
 
-    await user.type(etudiantInput, 'etudiant@test.com');
-    await user.type(professeurInput, 'professeur@test.com');
+    await user.selectOptions(etudiantSelect, '1');
+    await user.selectOptions(professeurSelect, '1');
     await user.click(submitButton);
 
     await waitFor(() => {
@@ -350,28 +445,36 @@ describe('AssociationProfesseurEtudiant', () => {
 
   it('devrait afficher "Association en cours..." pendant la soumission', async () => {
     const user = userEvent.setup();
+    const mockEtudiants = [
+      { id: 1, email: 'etudiant@test.com', firstName: 'John', lastName: 'Doe' }
+    ];
+    const mockProfesseurs = [
+      { id: 1, email: 'professeur@test.com', firstName: 'Robert', lastName: 'Duval' }
+    ];
+
     let resolvePromise;
     const promise = new Promise((resolve) => {
       resolvePromise = resolve;
     });
     
     vi.spyOn(GestionnaireService, 'associerProfesseurEtudiant').mockReturnValue(promise);
-    vi.spyOn(GestionnaireService, 'getStageApplicantsManager').mockResolvedValue([]);
+    vi.spyOn(GestionnaireService, 'getAllEtudiants').mockResolvedValue(mockEtudiants);
+    vi.spyOn(GestionnaireService, 'getAllProfesseurs').mockResolvedValue(mockProfesseurs);
 
     renderWithProviders(<AssociationProfesseurEtudiant />);
 
     await waitFor(() => {
-      const inputs = screen.getAllByRole('textbox');
-      expect(inputs.length).toBe(2);
+      const selects = screen.getAllByRole('combobox');
+      expect(selects.length).toBe(2);
     });
 
-    const inputs = screen.getAllByRole('textbox');
-    const etudiantInput = inputs[0];
-    const professeurInput = inputs[1];
+    const selects = screen.getAllByRole('combobox');
+    const etudiantSelect = selects[0];
+    const professeurSelect = selects[1];
     const submitButton = screen.getByRole('button', { name: /Associer/i });
 
-    await user.type(etudiantInput, 'etudiant@test.com');
-    await user.type(professeurInput, 'professeur@test.com');
+    await user.selectOptions(etudiantSelect, '1');
+    await user.selectOptions(professeurSelect, '1');
     await user.click(submitButton);
 
     await waitFor(() => {
@@ -383,55 +486,73 @@ describe('AssociationProfesseurEtudiant', () => {
 
   it('devrait réinitialiser le formulaire quand on clique sur Réinitialiser', async () => {
     const user = userEvent.setup();
+    const mockEtudiants = [
+      { id: 1, email: 'etudiant@test.com', firstName: 'John', lastName: 'Doe' }
+    ];
+    const mockProfesseurs = [
+      { id: 1, email: 'professeur@test.com', firstName: 'Robert', lastName: 'Duval' }
+    ];
+
+    vi.spyOn(GestionnaireService, 'getAllEtudiants').mockResolvedValue(mockEtudiants);
+    vi.spyOn(GestionnaireService, 'getAllProfesseurs').mockResolvedValue(mockProfesseurs);
+
     renderWithProviders(<AssociationProfesseurEtudiant />);
 
     await waitFor(() => {
-      const inputs = screen.getAllByRole('textbox');
-      expect(inputs.length).toBe(2);
+      const selects = screen.getAllByRole('combobox');
+      expect(selects.length).toBe(2);
     });
 
-    const inputs = screen.getAllByRole('textbox');
-    const etudiantInput = inputs[0];
-    const professeurInput = inputs[1];
+    const selects = screen.getAllByRole('combobox');
+    const etudiantSelect = selects[0];
+    const professeurSelect = selects[1];
     const resetButton = screen.getByRole('button', { name: /Réinitialiser/i });
 
-    await user.type(etudiantInput, 'etudiant@test.com');
-    await user.type(professeurInput, 'professeur@test.com');
+    await user.selectOptions(etudiantSelect, '1');
+    await user.selectOptions(professeurSelect, '1');
 
-    expect(etudiantInput).toHaveValue('etudiant@test.com');
-    expect(professeurInput).toHaveValue('professeur@test.com');
+    expect(etudiantSelect).toHaveValue('1');
+    expect(professeurSelect).toHaveValue('1');
 
     await user.click(resetButton);
 
-    expect(etudiantInput).toHaveValue('');
-    expect(professeurInput).toHaveValue('');
+    expect(etudiantSelect).toHaveValue('');
+    expect(professeurSelect).toHaveValue('');
   });
 
-  it('devrait supprimer les espaces de l\'email de l\'étudiant avant l\'envoi', async () => {
+  it('devrait utiliser les emails des sélections pour l\'association', async () => {
     const user = userEvent.setup();
+    const mockEtudiants = [
+      { id: 1, email: 'etudiant@test.com', firstName: 'John', lastName: 'Doe' }
+    ];
+    const mockProfesseurs = [
+      { id: 1, email: 'professeur@test.com', firstName: 'Robert', lastName: 'Duval' }
+    ];
+
     const mockAssocier = vi.spyOn(GestionnaireService, 'associerProfesseurEtudiant').mockResolvedValue({});
-    vi.spyOn(GestionnaireService, 'getStageApplicantsManager').mockResolvedValue([]);
+    vi.spyOn(GestionnaireService, 'getAllEtudiants').mockResolvedValue(mockEtudiants);
+    vi.spyOn(GestionnaireService, 'getAllProfesseurs').mockResolvedValue(mockProfesseurs);
 
     renderWithProviders(<AssociationProfesseurEtudiant />);
 
     await waitFor(() => {
-      const inputs = screen.getAllByRole('textbox');
-      expect(inputs.length).toBe(2);
+      const selects = screen.getAllByRole('combobox');
+      expect(selects.length).toBe(2);
     });
 
-    const inputs = screen.getAllByRole('textbox');
-    const etudiantInput = inputs[0];
-    const professeurInput = inputs[1];
+    const selects = screen.getAllByRole('combobox');
+    const etudiantSelect = selects[0];
+    const professeurSelect = selects[1];
     const submitButton = screen.getByRole('button', { name: /Associer/i });
 
-    await user.type(etudiantInput, '  etudiant@test.com  ');
-    await user.type(professeurInput, 'professeur@test.com');
+    await user.selectOptions(etudiantSelect, '1');
+    await user.selectOptions(professeurSelect, '1');
     await user.click(submitButton);
 
     await waitFor(() => {
       expect(mockAssocier).toHaveBeenCalledWith(
         'professeur@test.com',
-        'etudiant@test.com', // Les espaces doivent être supprimés
+        'etudiant@test.com',
         'mock-token-123'
       );
     });
@@ -441,29 +562,37 @@ describe('AssociationProfesseurEtudiant', () => {
 
   it('devrait désactiver le bouton Réinitialiser pendant la soumission', async () => {
     const user = userEvent.setup();
+    const mockEtudiants = [
+      { id: 1, email: 'etudiant@test.com', firstName: 'John', lastName: 'Doe' }
+    ];
+    const mockProfesseurs = [
+      { id: 1, email: 'professeur@test.com', firstName: 'Robert', lastName: 'Duval' }
+    ];
+
     let resolvePromise;
     const promise = new Promise((resolve) => {
       resolvePromise = resolve;
     });
     
     vi.spyOn(GestionnaireService, 'associerProfesseurEtudiant').mockReturnValue(promise);
-    vi.spyOn(GestionnaireService, 'getStageApplicantsManager').mockResolvedValue([]);
+    vi.spyOn(GestionnaireService, 'getAllEtudiants').mockResolvedValue(mockEtudiants);
+    vi.spyOn(GestionnaireService, 'getAllProfesseurs').mockResolvedValue(mockProfesseurs);
 
     renderWithProviders(<AssociationProfesseurEtudiant />);
 
     await waitFor(() => {
-      const inputs = screen.getAllByRole('textbox');
-      expect(inputs.length).toBe(2);
+      const selects = screen.getAllByRole('combobox');
+      expect(selects.length).toBe(2);
     });
 
-    const inputs = screen.getAllByRole('textbox');
-    const etudiantInput = inputs[0];
-    const professeurInput = inputs[1];
+    const selects = screen.getAllByRole('combobox');
+    const etudiantSelect = selects[0];
+    const professeurSelect = selects[1];
     const submitButton = screen.getByRole('button', { name: /Associer/i });
     const resetButton = screen.getByRole('button', { name: /Réinitialiser/i });
 
-    await user.type(etudiantInput, 'etudiant@test.com');
-    await user.type(professeurInput, 'professeur@test.com');
+    await user.selectOptions(etudiantSelect, '1');
+    await user.selectOptions(professeurSelect, '1');
     await user.click(submitButton);
 
     await waitFor(() => {
@@ -475,36 +604,37 @@ describe('AssociationProfesseurEtudiant', () => {
 
   it('devrait charger et afficher les associations existantes', async () => {
     const user = userEvent.setup();
-    const mockAssociations = [
+    const mockEtudiants = [
       {
-        etudiant: {
-          id: 1,
-          email: 'etudiant1@test.com',
-          firstName: 'John',
-          lastName: 'Doe',
-          professeurResponsable: {
-            email: 'prof1@test.com',
-            firstName: 'Robert',
-            lastName: 'Smith'
-          }
+        id: 1,
+        email: 'etudiant1@test.com',
+        firstName: 'John',
+        lastName: 'Doe',
+        professeurResponsable: {
+          email: 'prof1@test.com',
+          firstName: 'Robert',
+          lastName: 'Smith'
         }
       },
       {
-        etudiant: {
-          id: 2,
-          email: 'etudiant2@test.com',
-          firstName: 'Jane',
-          lastName: 'Doe',
-          professeurResponsable: {
-            email: 'prof2@test.com',
-            firstName: 'Alice',
-            lastName: 'Johnson'
-          }
+        id: 2,
+        email: 'etudiant2@test.com',
+        firstName: 'Jane',
+        lastName: 'Doe',
+        professeurResponsable: {
+          email: 'prof2@test.com',
+          firstName: 'Alice',
+          lastName: 'Johnson'
         }
       }
     ];
+    const mockProfesseurs = [
+      { id: 1, email: 'prof1@test.com', firstName: 'Robert', lastName: 'Smith' },
+      { id: 2, email: 'prof2@test.com', firstName: 'Alice', lastName: 'Johnson' }
+    ];
 
-    vi.spyOn(GestionnaireService, 'getStageApplicantsManager').mockResolvedValue(mockAssociations);
+    vi.spyOn(GestionnaireService, 'getAllEtudiants').mockResolvedValue(mockEtudiants);
+    vi.spyOn(GestionnaireService, 'getAllProfesseurs').mockResolvedValue(mockProfesseurs);
 
     renderWithProviders(<AssociationProfesseurEtudiant />);
 
@@ -527,90 +657,73 @@ describe('AssociationProfesseurEtudiant', () => {
     expect(screen.getByText('prof1@test.com')).toBeInTheDocument();
   });
 
-  it('devrait afficher une erreur si l\'email de l\'étudiant est invalide', async () => {
+  it('devrait afficher une erreur si aucun étudiant ou professeur n\'est sélectionné', async () => {
     const user = userEvent.setup();
+    const mockEtudiants = [
+      { id: 1, email: 'etudiant@test.com', firstName: 'John', lastName: 'Doe' }
+    ];
+    const mockProfesseurs = [
+      { id: 1, email: 'professeur@test.com', firstName: 'Robert', lastName: 'Duval' }
+    ];
+
+    vi.spyOn(GestionnaireService, 'getAllEtudiants').mockResolvedValue(mockEtudiants);
+    vi.spyOn(GestionnaireService, 'getAllProfesseurs').mockResolvedValue(mockProfesseurs);
+
     renderWithProviders(<AssociationProfesseurEtudiant />);
 
     await waitFor(() => {
-      const inputs = screen.getAllByRole('textbox');
-      expect(inputs.length).toBe(2);
+      const selects = screen.getAllByRole('combobox');
+      expect(selects.length).toBe(2);
     });
 
-    const inputs = screen.getAllByRole('textbox');
-    const etudiantInput = inputs[0];
-    const professeurInput = inputs[1];
-    const form = etudiantInput.closest('form');
-
-    await user.type(etudiantInput, 'email-invalide');
-    await user.type(professeurInput, 'professeur@test.com');
+    const selects = screen.getAllByRole('combobox');
+    const form = selects[0].closest('form');
     
-    // Soumettre le formulaire directement pour contourner la validation HTML5
+    // Soumettre le formulaire sans sélection
     fireEvent.submit(form);
 
     await waitFor(() => {
-      expect(screen.getByText("L'email de l'étudiant n'est pas valide")).toBeInTheDocument();
-    });
-  });
-
-  it('devrait afficher une erreur si l\'email du professeur est invalide', async () => {
-    const user = userEvent.setup();
-    renderWithProviders(<AssociationProfesseurEtudiant />);
-
-    await waitFor(() => {
-      const inputs = screen.getAllByRole('textbox');
-      expect(inputs.length).toBe(2);
-    });
-
-    const inputs = screen.getAllByRole('textbox');
-    const etudiantInput = inputs[0];
-    const professeurInput = inputs[1];
-    const form = etudiantInput.closest('form');
-
-    await user.type(etudiantInput, 'etudiant@test.com');
-    await user.type(professeurInput, 'email-invalide');
-    
-    // Soumettre le formulaire directement pour contourner la validation HTML5
-    fireEvent.submit(form);
-
-    await waitFor(() => {
-      expect(screen.getByText("L'email du professeur n'est pas valide")).toBeInTheDocument();
+      expect(screen.getByTestId('error-banner')).toBeInTheDocument();
     });
   });
 
   it('devrait afficher une erreur si l\'étudiant est déjà dans la liste des associations', async () => {
     const user = userEvent.setup();
-    const mockAssociations = [
+    const mockEtudiants = [
       {
-        etudiant: {
-          id: 1,
-          email: 'etudiant@test.com',
-          firstName: 'John',
-          lastName: 'Doe',
-          professeurResponsable: {
-            email: 'prof@test.com',
-            firstName: 'Robert',
-            lastName: 'Smith'
-          }
+        id: 1,
+        email: 'etudiant@test.com',
+        firstName: 'John',
+        lastName: 'Doe',
+        professeurResponsable: {
+          email: 'prof@test.com',
+          firstName: 'Robert',
+          lastName: 'Smith'
         }
       }
     ];
+    const mockProfesseurs = [
+      { id: 1, email: 'prof@test.com', firstName: 'Robert', lastName: 'Smith' },
+      { id: 2, email: 'professeur2@test.com', firstName: 'Alice', lastName: 'Johnson' }
+    ];
 
-    vi.spyOn(GestionnaireService, 'getStageApplicantsManager').mockResolvedValue(mockAssociations);
+    vi.spyOn(GestionnaireService, 'getAllEtudiants').mockResolvedValue(mockEtudiants);
+    vi.spyOn(GestionnaireService, 'getAllProfesseurs').mockResolvedValue(mockProfesseurs);
 
     renderWithProviders(<AssociationProfesseurEtudiant />);
 
     await waitFor(() => {
-      const inputs = screen.getAllByRole('textbox');
-      expect(inputs.length).toBe(2);
+      const selects = screen.getAllByRole('combobox');
+      expect(selects.length).toBe(2);
     });
 
-    const inputs = screen.getAllByRole('textbox');
-    const etudiantInput = inputs[0];
-    const professeurInput = inputs[1];
+    const selects = screen.getAllByRole('combobox');
+    const etudiantSelect = selects[0];
+    const professeurSelect = selects[1];
     const submitButton = screen.getByRole('button', { name: /Associer/i });
 
-    await user.type(etudiantInput, 'etudiant@test.com');
-    await user.type(professeurInput, 'professeur2@test.com');
+    await user.selectOptions(etudiantSelect, '1');
+    await user.selectOptions(professeurSelect, '2');
     await user.click(submitButton);
 
     await waitFor(() => {

@@ -230,6 +230,44 @@ export async function associerProfesseurEtudiant(professeurEmail, etudiantEmail,
     }
 }
 
+export async function getAllEtudiants(token) {
+    try {
+        console.log('Appel getAllEtudiants avec token:', token ? 'présent' : 'absent');
+        // http gère automatiquement le token via l'intercepteur
+        const res = await http.get("/gestionnaire/etudiants/all");
+        console.log('Réponse getAllEtudiants:', res.data);
+        // ReturnEntityDTO structure: { message: "...", data: [...] }
+        const data = res.data?.data;
+        console.log('Données extraites getAllEtudiants:', data);
+        return Array.isArray(data) ? data : [];
+    } catch (error) {
+        console.error('Erreur lors de la récupération des étudiants:', error);
+        console.error('Error response:', error?.response?.data);
+        console.error('Error status:', error?.response?.status);
+        console.error('Error message:', error?.message);
+        throw error;
+    }
+}
+
+export async function getAllProfesseurs(token) {
+    try {
+        console.log('Appel getAllProfesseurs avec token:', token ? 'présent' : 'absent');
+        // http gère automatiquement le token via l'intercepteur
+        const res = await http.get("/gestionnaire/professeurs/all");
+        console.log('Réponse getAllProfesseurs:', res.data);
+        // ReturnEntityDTO structure: { message: "...", data: [...] }
+        const data = res.data?.data;
+        console.log('Données extraites getAllProfesseurs:', data);
+        return Array.isArray(data) ? data : [];
+    } catch (error) {
+        console.error('Erreur lors de la récupération des professeurs:', error);
+        console.error('Error response:', error?.response?.data);
+        console.error('Error status:', error?.response?.status);
+        console.error('Error message:', error?.message);
+        throw error;
+    }
+}
+
 export async function createProfesseur(professeurData, token) {
     try {
         // Utiliser l'instance http qui gère automatiquement le token
