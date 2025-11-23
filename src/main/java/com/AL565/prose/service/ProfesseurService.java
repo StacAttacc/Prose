@@ -5,6 +5,7 @@ import com.AL565.prose.model.Professeur;
 import com.AL565.prose.model.Stage;
 import com.AL565.prose.repository.*;
 import com.AL565.prose.service.dto.CandidatureDTO;
+import com.AL565.prose.service.dto.CandidatureEvaluationDTO;
 import com.AL565.prose.service.dto.MillieuEvaluationDTO;
 import com.AL565.prose.service.dto.ProfesseurPasswordDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
@@ -38,7 +39,7 @@ public class ProfesseurService {
         millieuEvaluationRepository.save(MillieuEvaluationDTO.toModel(evaluation));
     }
 
-    public List<CandidatureDTO> getAllCandidaturesProfesseurRelated(String year, String professeurId) {
+    public List<CandidatureEvaluationDTO> getAllCandidaturesProfesseurRelated(String year, String professeurId) {
         int yearNumber = SessionYearHelper.getSessionYear(year);
 
         return candidatureRepository.findAllByEtudiant_ProfesseurResponsable_Id(Long.parseLong(professeurId))
@@ -47,7 +48,7 @@ public class ProfesseurService {
                     Stage stage = candidature.getStage();
                     return stage.getStartDate().getYear() == yearNumber;
                 })
-                .map(CandidatureDTO::toDTO)
+                .map(CandidatureEvaluationDTO::toDTO)
                 .toList();
     }
 }

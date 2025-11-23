@@ -2,6 +2,7 @@ package com.AL565.prose.controller;
 
 import com.AL565.prose.service.ProfesseurService;
 import com.AL565.prose.service.dto.CandidatureDTO;
+import com.AL565.prose.service.dto.CandidatureEvaluationDTO;
 import com.AL565.prose.service.dto.MillieuEvaluationDTO;
 import com.AL565.prose.service.dto.ReturnEntityDTO;
 import lombok.AllArgsConstructor;
@@ -27,10 +28,10 @@ public class ProfesseurController {
 
     }
 
-    @GetMapping("/{professeurId}/millieus-awaiting-evaluation")
-    public ResponseEntity<ReturnEntityDTO<List<CandidatureDTO>>> getCandidaturesAwaitingEvaluation(@RequestParam String year, @PathVariable String professeurId) {
+    @GetMapping("/{professeurId}/mes-etudiants-candidatures")
+    public ResponseEntity<ReturnEntityDTO<List<CandidatureEvaluationDTO>>> getCandidaturesAwaitingEvaluation(@RequestParam String year, @PathVariable String professeurId) {
         try {
-            List<CandidatureDTO> candidatures = professeurService.getAllCandidaturesProfesseurRelated(year, professeurId);
+            List<CandidatureEvaluationDTO> candidatures = professeurService.getAllCandidaturesProfesseurRelated(year, professeurId);
             return ResponseEntity.ok(new ReturnEntityDTO<>("Candidatures trouvés", candidatures));
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(new ReturnEntityDTO<>("Erreur interne du serveur", null));

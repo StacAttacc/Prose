@@ -7,6 +7,7 @@ import com.AL565.prose.repository.CandidatureRepository;
 import com.AL565.prose.repository.MillieuEvaluationRepository;
 import com.AL565.prose.repository.ProfesseurRepository;
 import com.AL565.prose.service.dto.CandidatureDTO;
+import com.AL565.prose.service.dto.CandidatureEvaluationDTO;
 import com.AL565.prose.service.dto.MillieuEvaluationDTO;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -84,7 +85,7 @@ public class ProfesseurServiceTest {
 
         when(candidatureRepository.findAllByEtudiant_ProfesseurResponsable_Id(anyLong())).thenReturn(List.of(candidature1, candidature2,  candidature3));
 
-        List<CandidatureDTO> candidatures = professeurService.getAllCandidaturesProfesseurRelated(year, professeurId);
+        List<CandidatureEvaluationDTO> candidatures = professeurService.getAllCandidaturesProfesseurRelated(year, professeurId);
 
         assertThat(candidatures.size()).isEqualTo(Integer.parseInt(expected));
     }
