@@ -7,6 +7,10 @@ const translations = {
     // Dashboard
     year: 'Année',
     language: 'Langue',
+    lightMode: 'Mode clair',
+    darkMode: 'Mode sombre',
+    switchToLightMode: 'Basculer vers le mode clair',
+    switchToDarkMode: 'Basculer vers le mode sombre',
     welcome: 'Bienvenue',
     logout: 'Quitter',
     creerStage: 'Créer un stage',
@@ -549,6 +553,10 @@ const translations = {
     // Dashboard
     year: 'Year',
     language: 'Language',
+    lightMode: 'Light mode',
+    darkMode: 'Dark mode',
+    switchToLightMode: 'Switch to light mode',
+    switchToDarkMode: 'Switch to dark mode',
     welcome: 'Welcome',
     logout: 'Logout',
     creerStage: 'Create a stage',

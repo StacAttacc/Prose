@@ -145,7 +145,6 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
         }
     }, [status, t]);
 
-    // Déterminer si l'utilisateur peut encore signer l'entente
     const canUserSignEntente = useMemo(() => {
         if (!ententeData || !user) return false;
         
@@ -155,26 +154,19 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
         
         const ententeStatus = ententeData.status;
         
-        // L'employeur peut signer si :
-        // - Le statut est A_SIGNER (personne n'a signé)
-        // - Le statut est SIGNEE_ETUDIANT (l'étudiant a signé, l'employeur doit signer)
-        // - Le statut est SIGNEE_EMPLOYEUR et l'employeur n'a pas encore signé (cas théorique)
+       
         if (isEmployeur) {
             return (ententeStatus === "A_SIGNER" || 
                    ententeStatus === "SIGNEE_ETUDIANT") && 
                    !ententeData.dateSignatureEmployeur;
         }
         
-        // L'étudiant peut signer si :
-        // - Le statut est A_SIGNER
-        // - Le statut est SIGNEE_EMPLOYEUR (l'employeur a signé, l'étudiant doit signer)
         if (isEtudiant) {
             return (ententeStatus === "A_SIGNER" || 
                    ententeStatus === "SIGNEE_EMPLOYEUR") && 
                    !ententeData.dateSignatureEtudiant;
         }
         
-        // Le gestionnaire peut signer seulement si les deux autres ont signé
         if (isGestionnaire) {
             return ententeStatus === "SIGNEE_ETUDIANT_ET_EMPLOYEUR" && 
                    !ententeData.dateSignatureGestionnaire;
@@ -186,15 +178,15 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
     const statusBadgeClass = useMemo(() => {
         switch (status) {
             case "SOUMISE":
-                return "bg-gray-100 text-gray-800 border border-gray-300";
+                return "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600";
             case "ACCEPTEE":
-                return "bg-green-100 text-green-800 border border-green-300";
+                return "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border border-green-300 dark:border-green-600";
             case "CONVOQUEE":
-                return "bg-blue-100 text-blue-800 border border-blue-300";
+                return "bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border border-blue-300 dark:border-blue-600";
             case "REFUSEE":
-                return "bg-rose-100 text-rose-800 border border-rose-300";
+                return "bg-rose-100 dark:bg-rose-900/30 text-rose-800 dark:text-rose-300 border border-rose-300 dark:border-rose-600";
             default:
-                return "bg-slate-100 text-slate-700 border border-slate-300";
+                return "bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600";
         }
     }, [status]);
 
@@ -330,13 +322,13 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
         <>
 
 
-            <tr className="border-b hover:bg-gray-50 transition">
+            <tr className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
                 <td className="py-3 px-4 align-top">
-                    <div className="font-medium text-gray-800">{fullName}</div>
+                    <div className="font-medium text-gray-800 dark:text-gray-100">{fullName}</div>
                     {email ? (
-                        <div className="text-xs text-gray-500">{email}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">{email}</div>
                     ) : (
-                        <div className="text-xs text-gray-400">{t('emailNonDisponible')}</div>
+                        <div className="text-xs text-gray-400 dark:text-gray-500">{t('emailNonDisponible')}</div>
                     )}
                 </td>
 
@@ -345,29 +337,29 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                         <button
                             onClick={() => openDocument("cv")}
                             disabled={docState.loading && docState.kind === "cv"}
-                            className="text-blue-600 hover:underline disabled:opacity-60"
+                            className="text-blue-600 dark:text-blue-400 hover:underline disabled:opacity-60"
                         >
                             {docState.loading && docState.kind === "cv" ? t('ouverture') : t('voirLeCV')}
                         </button>
                     ) : (
-                        <span className="text-gray-400">{t('cvNonDisponible')}</span>
+                        <span className="text-gray-400 dark:text-gray-500">{t('cvNonDisponible')}</span>
                     )}
                 </td>
 
 
-                <td className="py-3 px-4 align-top text-gray-700">
+                <td className="py-3 px-4 align-top text-gray-700 dark:text-gray-300">
                     {letterData ? (
                         <button
                             onClick={() => openDocument("letter")}
                             disabled={docState.loading && docState.kind === "letter"}
-                            className="text-blue-600 hover:underline disabled:opacity-60"
+                            className="text-blue-600 dark:text-blue-400 hover:underline disabled:opacity-60"
                         >
                             {docState.loading && docState.kind === "letter"
                                 ? t('ouverture')
                                 : t('voirLaLettre')}
                         </button>
                     ) : (
-                        <span className="text-gray-400">{t('aucuneLettreMotivation')}</span>
+                        <span className="text-gray-400 dark:text-gray-500">{t('aucuneLettreMotivation')}</span>
                     )}
                 </td>
 
@@ -375,13 +367,13 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                     {status === "ACCEPTEE" ? (
                         <div className="flex justify-center">
                             <span
-                                className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${statusBadgeClass}`}>
+                                className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${statusBadgeClass} dark:border-opacity-50`}>
                                 {statusLabel}
                             </span>
                         </div>
                     ) : (
                         <span
-                            className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${statusBadgeClass}`}>
+                            className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${statusBadgeClass} dark:border-opacity-50`}>
                             {statusLabel}
                         </span>
                     )}
@@ -390,14 +382,14 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                 <td className="py-3 px-4 align-top">
                     {localStatus === "CONVOQUEE" && applicant?.dateDecision ? (
                         <div className="text-sm">
-                            <div className="font-medium text-gray-800">
+                            <div className="font-medium text-gray-800 dark:text-gray-200">
                                 {new Date(applicant.dateDecision).toLocaleDateString('fr-FR', {
                                     day: '2-digit',
                                     month: 'long',
                                     year: 'numeric'
                                 })}
                             </div>
-                            <div className="text-gray-500">
+                            <div className="text-gray-500 dark:text-gray-400">
                                 {new Date(applicant.dateDecision).toLocaleTimeString('fr-FR', {
                                     hour: '2-digit',
                                     minute: '2-digit'
@@ -405,7 +397,7 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                             </div>
                         </div>
                     ) : (
-                        <span className="text-sm text-gray-400">—</span>
+                        <span className="text-sm text-gray-400 dark:text-gray-500">—</span>
                     )}
                 </td>
 
@@ -413,23 +405,23 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                     {status === "CONFIRMER" ? (
                         <>
                             {checkingEntente ? (
-                                <span className="text-sm text-gray-500 italic">{t('verification')}</span>
+                                <span className="text-sm text-gray-500 dark:text-gray-400 italic">{t('verification')}</span>
                             ) : ententeExists ? (
                                 <>
                                     {ententeData?.status === "SIGNEE" ? (
-                                        <span className="text-sm text-green-600 font-medium">
+                                        <span className="text-sm text-green-600 dark:text-green-400 font-medium">
                                             {t('ententeSigneeParToutesLesParties')}
                                         </span>
                                     ) : (
-                                        <span className="text-sm text-gray-500">{t('enAttenteDeSignature')}</span>
+                                        <span className="text-sm text-gray-500 dark:text-gray-400">{t('enAttenteDeSignature')}</span>
                                     )}
                                 </>
                             ) : (
-                                <span className="text-sm text-gray-400">{t('ententeNonGeneree')}</span>
+                                <span className="text-sm text-gray-400 dark:text-gray-500">{t('ententeNonGeneree')}</span>
                             )}
                         </>
                     ) : (
-                        <span className="text-sm text-gray-400">—</span>
+                        <span className="text-sm text-gray-400 dark:text-gray-500">—</span>
                     )}
                 </td>
 
@@ -478,13 +470,13 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                             )}
 
                             {(localStatus === "ACCEPTEE" || localStatus === "REFUSEE") && (
-                                <span className="text-sm text-gray-400 italic px-4 py-2">{t('traite')}</span>
+                                <span className="text-sm text-gray-400 dark:text-gray-500 italic px-4 py-2">{t('traite')}</span>
                             )}
 
                             {status === "CONFIRMER" && (
                                 <>
                                     {checkingEntente ? (
-                                        <span className="text-sm text-gray-500 italic px-4 py-2">{t('verification')}</span>
+                                        <span className="text-sm text-gray-500 dark:text-gray-400 italic px-4 py-2">{t('verification')}</span>
                                     ) : ententeExists ? (
                                         <>
                                             {ententeData?.status === "SIGNEE" ? (
@@ -538,7 +530,7 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                                             )}
                                         </>
                                     ) : (
-                                        <span className="text-sm text-gray-500 italic px-4 py-2">
+                                        <span className="text-sm text-gray-500 dark:text-gray-400 italic px-4 py-2">
                                             {t('enAttenteGestionnaireEntente')}
                                         </span>
                                     )}

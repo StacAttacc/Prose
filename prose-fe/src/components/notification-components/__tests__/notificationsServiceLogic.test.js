@@ -23,7 +23,6 @@ describe('notificationsServiceLogic', () => {
             GestionnaireService.getGestionnaireNotifications.mockResolvedValue({ data: [] });
 
             await fetchNotifications(user);
-
             expect(GestionnaireService.getGestionnaireNotifications).toHaveBeenCalledWith('token123');
         });
 

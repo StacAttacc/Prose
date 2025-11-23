@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useI18n } from "../context/I18nContext";
+import { ThemeToggle } from "../components/common/ThemeToggle";
 import Login from "../components/Login";
 import SignUp from "../components/SignUp";
 
@@ -18,8 +19,8 @@ export default function PageAuthentification() {
 
     return (
         <div className="min-h-screen grid lg:grid-cols-2">
-            {/* Sélecteur de langue en haut à droite */}
-            <div className="absolute top-4 right-4 z-50">
+            {/* Sélecteur de langue et toggle de thème en haut à droite */}
+            <div className="absolute top-4 right-4 z-50 flex items-center gap-2">
                 <div className="flex items-center gap-2 bg-teal-700/90 px-3 py-2 rounded-lg border border-white/20 shadow-lg">
                     <label className="text-white text-sm font-medium whitespace-nowrap">{t('language')}:</label>
                     <select
@@ -31,6 +32,7 @@ export default function PageAuthentification() {
                         <option value="en">English</option>
                     </select>
                 </div>
+                <ThemeToggle />
             </div>
             
             {/* LEFT HERO (unique, commun aux deux) */}
@@ -57,7 +59,7 @@ export default function PageAuthentification() {
             </div>
 
             {/* RIGHT PANEL : on alterne Login / SignUp */}
-            <div className="bg-white text-gray-800 grid place-items-center p-6 md:p-10">
+            <div className="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 grid place-items-center p-6 md:p-10">
                 <div className="w-full max-w-md">
                     {mode === "login" ? (
                         <Login onSwitchToSignup={() => setMode("signup")} />

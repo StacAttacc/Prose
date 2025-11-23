@@ -4,10 +4,10 @@ import {NotificationItem} from "./NotificationItem.jsx";
 export function NotificationGroupDropdown ({dropdownId, list, typeKey, markAndNavigate, setOpenType, setReadCounter, markAndReload}) {
     return (
         <div id={dropdownId} className="origin-top absolute left-1/2 transform -translate-x-1/2 mt-2 w-80 z-50" role="menu">
-            <div className="bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden">
                 <div className="p-2 flex flex-col">
                     <div className="px-3 py-2 border-b flex items-center justify-between">
-                        <div className="text-sm font-semibold text-gray-800">
+                        <div className="text-sm font-semibold text-gray-800 dark:text-gray-100">
                             {labelForKey(typeKey)}
                         </div>
                     </div>
@@ -28,7 +28,7 @@ export function NotificationGroupDropdown ({dropdownId, list, typeKey, markAndNa
                         <button
                             type="button"
                             onClick={(e) => { e.stopPropagation(); setOpenType(null); }}
-                            className="inline-flex items-center py-1 px-3 text-sm font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200"
+                            className="inline-flex items-center py-1 px-3 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded hover:bg-gray-200 dark:hover:bg-gray-600"
                             aria-label="Close notifications dropdown"
                         >
                             Fermer
