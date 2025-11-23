@@ -14,6 +14,7 @@ import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.dto.notifications.NotificationGroupDTO;
 import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
 import com.AL565.prose.service.exceptions.EtudiantAlreadyAssociatedException;
+import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
@@ -632,5 +633,119 @@ class GestionnaireControllerTest {
                         .content(content)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isConflict());
+    }
+
+    @Test
+    @DisplayName("createProfesseur - Succès")
+    void createProfesseur_success() throws Exception {
+        ProfesseurPasswordDTO dto = new ProfesseurPasswordDTO();
+        dto.setFirstName("Robert");
+        dto.setLastName("Duval");
+        dto.setEmail("robert.duval@example.com");
+        dto.setPassword("password123");
+        dto.setDiscipline("INFORMATIQUE");
+
+        doNothing().when(gestionnaireService).createProfesseur(any(ProfesseurPasswordDTO.class));
+
+        String content = objectMapper.writeValueAsString(dto);
+
+        mockMvc.perform(post("/gestionnaire/professeurs/create")
+                        .content(content)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf()))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.message", is("Professeur créé avec succès")));
+    }
+
+    @Test
+    @DisplayName("createProfesseur - Email déjà existant")
+    void createProfesseur_emailAlreadyExists() throws Exception {
+        ProfesseurPasswordDTO dto = new ProfesseurPasswordDTO();
+        dto.setFirstName("Robert");
+        dto.setLastName("Duval");
+        dto.setEmail("robert.duval@example.com");
+        dto.setPassword("password123");
+        dto.setDiscipline("INFORMATIQUE");
+
+        doThrow(new EmailAlreadyExistsException("Un compte avec cet email existe déjà"))
+                .when(gestionnaireService).createProfesseur(any(ProfesseurPasswordDTO.class));
+
+        String content = objectMapper.writeValueAsString(dto);
+
+        mockMvc.perform(post("/gestionnaire/professeurs/create")
+                        .content(content)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf()))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message", is("Un compte avec cet email existe déjà")));
+    }
+
+    @Test
+    @DisplayName("createProfesseur - Prénom manquant")
+    void createProfesseur_missingFirstName() throws Exception {
+        ProfesseurPasswordDTO dto = new ProfesseurPasswordDTO();
+        dto.setFirstName(null);
+        dto.setLastName("Duval");
+        dto.setEmail("robert.duval@example.com");
+        dto.setPassword("password123");
+        dto.setDiscipline("INFORMATIQUE");
+
+        doThrow(new IllegalArgumentException("Le prénom est requis"))
+                .when(gestionnaireService).createProfesseur(any(ProfesseurPasswordDTO.class));
+
+        String content = objectMapper.writeValueAsString(dto);
+
+        mockMvc.perform(post("/gestionnaire/professeurs/create")
+                        .content(content)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf()))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message", is("Le prénom est requis")));
+    }
+
+    @Test
+    @DisplayName("createProfesseur - Discipline invalide")
+    void createProfesseur_invalidDiscipline() throws Exception {
+        ProfesseurPasswordDTO dto = new ProfesseurPasswordDTO();
+        dto.setFirstName("Robert");
+        dto.setLastName("Duval");
+        dto.setEmail("robert.duval@example.com");
+        dto.setPassword("password123");
+        dto.setDiscipline("INVALID_DISCIPLINE");
+
+        doThrow(new IllegalArgumentException("Discipline invalide"))
+                .when(gestionnaireService).createProfesseur(any(ProfesseurPasswordDTO.class));
+
+        String content = objectMapper.writeValueAsString(dto);
+
+        mockMvc.perform(post("/gestionnaire/professeurs/create")
+                        .content(content)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf()))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message", is("Discipline invalide")));
+    }
+
+    @Test
+    @DisplayName("createProfesseur - Erreur serveur")
+    void createProfesseur_serverError() throws Exception {
+        ProfesseurPasswordDTO dto = new ProfesseurPasswordDTO();
+        dto.setFirstName("Robert");
+        dto.setLastName("Duval");
+        dto.setEmail("robert.duval@example.com");
+        dto.setPassword("password123");
+        dto.setDiscipline("INFORMATIQUE");
+
+        doThrow(new RuntimeException("Erreur serveur"))
+                .when(gestionnaireService).createProfesseur(any(ProfesseurPasswordDTO.class));
+
+        String content = objectMapper.writeValueAsString(dto);
+
+        mockMvc.perform(post("/gestionnaire/professeurs/create")
+                        .content(content)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf()))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.message", is("Erreur lors de la création du professeur")));
     }
 }

@@ -57,6 +57,9 @@ class GestionnaireServiceTest {
     @Mock
     private NotificationRepository notificationRepository;
 
+    @Mock
+    private ProfesseurService professeurService;
+
     @InjectMocks
     private GestionnaireService gestionnaireService;
 
@@ -516,5 +519,145 @@ class GestionnaireServiceTest {
 
         assertThatThrownBy(() -> gestionnaireService.associateProfesseurToEtudiant(new ProfesseurAssociationDTO(etudiant.getEmail(), professeur.getEmail())))
                 .isInstanceOf(EtudiantAlreadyAssociatedException.class);
+    }
+
+    @Test
+    @DisplayName("createProfesseur - Succès")
+    void createProfesseur_success() {
+        ProfesseurPasswordDTO dto = new ProfesseurPasswordDTO();
+        dto.setFirstName("Robert");
+        dto.setLastName("Duval");
+        dto.setEmail("robert.duval@example.com");
+        dto.setPassword("password123");
+        dto.setDiscipline("INFORMATIQUE");
+
+        doNothing().when(professeurService).register(any(ProfesseurPasswordDTO.class));
+
+        gestionnaireService.createProfesseur(dto);
+
+        verify(professeurService, times(1)).register(any(ProfesseurPasswordDTO.class));
+    }
+
+    @Test
+    @DisplayName("createProfesseur - Prénom manquant")
+    void createProfesseur_missingFirstName() {
+        ProfesseurPasswordDTO dto = new ProfesseurPasswordDTO();
+        dto.setFirstName(null);
+        dto.setLastName("Duval");
+        dto.setEmail("robert.duval@example.com");
+        dto.setPassword("password123");
+        dto.setDiscipline("INFORMATIQUE");
+
+        assertThatThrownBy(() -> gestionnaireService.createProfesseur(dto))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Le prénom est requis");
+    }
+
+    @Test
+    @DisplayName("createProfesseur - Prénom vide")
+    void createProfesseur_emptyFirstName() {
+        ProfesseurPasswordDTO dto = new ProfesseurPasswordDTO();
+        dto.setFirstName("   ");
+        dto.setLastName("Duval");
+        dto.setEmail("robert.duval@example.com");
+        dto.setPassword("password123");
+        dto.setDiscipline("INFORMATIQUE");
+
+        assertThatThrownBy(() -> gestionnaireService.createProfesseur(dto))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Le prénom est requis");
+    }
+
+    @Test
+    @DisplayName("createProfesseur - Nom manquant")
+    void createProfesseur_missingLastName() {
+        ProfesseurPasswordDTO dto = new ProfesseurPasswordDTO();
+        dto.setFirstName("Robert");
+        dto.setLastName(null);
+        dto.setEmail("robert.duval@example.com");
+        dto.setPassword("password123");
+        dto.setDiscipline("INFORMATIQUE");
+
+        assertThatThrownBy(() -> gestionnaireService.createProfesseur(dto))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Le nom est requis");
+    }
+
+    @Test
+    @DisplayName("createProfesseur - Email manquant")
+    void createProfesseur_missingEmail() {
+        ProfesseurPasswordDTO dto = new ProfesseurPasswordDTO();
+        dto.setFirstName("Robert");
+        dto.setLastName("Duval");
+        dto.setEmail(null);
+        dto.setPassword("password123");
+        dto.setDiscipline("INFORMATIQUE");
+
+        assertThatThrownBy(() -> gestionnaireService.createProfesseur(dto))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("L'email est requis");
+    }
+
+    @Test
+    @DisplayName("createProfesseur - Mot de passe manquant")
+    void createProfesseur_missingPassword() {
+        ProfesseurPasswordDTO dto = new ProfesseurPasswordDTO();
+        dto.setFirstName("Robert");
+        dto.setLastName("Duval");
+        dto.setEmail("robert.duval@example.com");
+        dto.setPassword(null);
+        dto.setDiscipline("INFORMATIQUE");
+
+        assertThatThrownBy(() -> gestionnaireService.createProfesseur(dto))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Le mot de passe est requis");
+    }
+
+    @Test
+    @DisplayName("createProfesseur - Discipline manquante")
+    void createProfesseur_missingDiscipline() {
+        ProfesseurPasswordDTO dto = new ProfesseurPasswordDTO();
+        dto.setFirstName("Robert");
+        dto.setLastName("Duval");
+        dto.setEmail("robert.duval@example.com");
+        dto.setPassword("password123");
+        dto.setDiscipline(null);
+
+        assertThatThrownBy(() -> gestionnaireService.createProfesseur(dto))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("La discipline est requise");
+    }
+
+    @Test
+    @DisplayName("createProfesseur - Discipline invalide")
+    void createProfesseur_invalidDiscipline() {
+        ProfesseurPasswordDTO dto = new ProfesseurPasswordDTO();
+        dto.setFirstName("Robert");
+        dto.setLastName("Duval");
+        dto.setEmail("robert.duval@example.com");
+        dto.setPassword("password123");
+        dto.setDiscipline("INVALID_DISCIPLINE");
+
+        assertThatThrownBy(() -> gestionnaireService.createProfesseur(dto))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Discipline invalide");
+    }
+
+    @Test
+    @DisplayName("createProfesseur - Email déjà existant")
+    void createProfesseur_emailAlreadyExists() {
+        ProfesseurPasswordDTO dto = new ProfesseurPasswordDTO();
+        dto.setFirstName("Robert");
+        dto.setLastName("Duval");
+        dto.setEmail("robert.duval@example.com");
+        dto.setPassword("password123");
+        dto.setDiscipline("INFORMATIQUE");
+
+        doThrow(new EmailAlreadyExistsException("Un compte avec cet email existe déjà"))
+                .when(professeurService).register(any(ProfesseurPasswordDTO.class));
+
+        assertThatThrownBy(() -> gestionnaireService.createProfesseur(dto))
+                .isInstanceOf(EmailAlreadyExistsException.class)
+                .hasMessageContaining("Un compte avec cet email existe déjà");
     }
 }
