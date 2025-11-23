@@ -362,12 +362,12 @@ class GestionnaireServiceTest {
         when(etudiantRepository.findAll()).thenReturn(List.of(john, umberto));
 
         when(candidatureRepository.findByEtudiant_Credentials_Username(john.getEmail())).thenReturn(List.of(
-                new Candidature(1L, john, null, null, stage, LocalDateTime.now(), CandidatureStatus.SOUMISE, null, "Pending")
+                new Candidature(1L, john, null, null, stage, LocalDateTime.now(), CandidatureStatus.SOUMISE, null, "Pending", null)
         ));
 
         when(candidatureRepository.findByEtudiant_Credentials_Username(umberto.getEmail())).thenReturn(List.of(
-                new Candidature(2L, umberto, null, null, stage, LocalDateTime.now(), CandidatureStatus.SOUMISE, null, "Pending"),
-                new Candidature(3L, umberto, null, null, stage2, LocalDateTime.now(), CandidatureStatus.SOUMISE, null, "Pending")
+                new Candidature(2L, umberto, null, null, stage, LocalDateTime.now(), CandidatureStatus.SOUMISE, null, "Pending", null),
+                new Candidature(3L, umberto, null, null, stage2, LocalDateTime.now(), CandidatureStatus.SOUMISE, null, "Pending", null)
         ));
 
         when(employeurRepository.getEmployeurByCredentials_Username(anyString())).thenReturn(
@@ -406,12 +406,12 @@ class GestionnaireServiceTest {
         when(etudiantRepository.findAll()).thenReturn(List.of(john, umberto));
 
         when(candidatureRepository.findByEtudiant_Credentials_Username(john.getEmail())).thenReturn(List.of(
-                new Candidature(1L, john, null, null, stage, LocalDateTime.now(), CandidatureStatus.ACCEPTEE, null, "Pending")
+                new Candidature(1L, john, null, null, stage, LocalDateTime.now(), CandidatureStatus.ACCEPTEE, null, "Pending", null)
         ));
 
         when(candidatureRepository.findByEtudiant_Credentials_Username(umberto.getEmail())).thenReturn(List.of(
-                new Candidature(2L, umberto, null, null, stage, LocalDateTime.now(), CandidatureStatus.ACCEPTEE, null, "Pending"),
-                new Candidature(3L, umberto, null, null, stage2, LocalDateTime.now(), CandidatureStatus.REFUSEE, null, "Pending")
+                new Candidature(2L, umberto, null, null, stage, LocalDateTime.now(), CandidatureStatus.ACCEPTEE, null, "Pending", null),
+                new Candidature(3L, umberto, null, null, stage2, LocalDateTime.now(), CandidatureStatus.REFUSEE, null, "Pending", null)
         ));
 
         when(employeurRepository.getEmployeurByCredentials_Username(anyString())).thenReturn(
@@ -460,13 +460,13 @@ class GestionnaireServiceTest {
         when(etudiantRepository.findAll()).thenReturn(List.of(john, umberto));
 
         when(candidatureRepository.findByEtudiant_Credentials_Username(john.getEmail())).thenReturn(List.of(
-                new Candidature(1L, john, null, null, stage, LocalDateTime.now(), CandidatureStatus.SOUMISE, null, "Pending"),
-                new Candidature(4L, john, null, null, stage3, LocalDateTime.now(), CandidatureStatus.SOUMISE, null, "Pending")
+                new Candidature(1L, john, null, null, stage, LocalDateTime.now(), CandidatureStatus.SOUMISE, null, "Pending", null),
+                new Candidature(4L, john, null, null, stage3, LocalDateTime.now(), CandidatureStatus.SOUMISE, null, "Pending", null)
         ));
 
         when(candidatureRepository.findByEtudiant_Credentials_Username(umberto.getEmail())).thenReturn(List.of(
-                new Candidature(2L, umberto, null, null, stage, LocalDateTime.now(), CandidatureStatus.SOUMISE, null, "Pending"),
-                new Candidature(3L, umberto, null, null, stage2, LocalDateTime.now(), CandidatureStatus.SOUMISE, null, "Pending")
+                new Candidature(2L, umberto, null, null, stage, LocalDateTime.now(), CandidatureStatus.SOUMISE, null, "Pending", null),
+                new Candidature(3L, umberto, null, null, stage2, LocalDateTime.now(), CandidatureStatus.SOUMISE, null, "Pending", null)
         ));
 
         when(employeurRepository.getEmployeurByCredentials_Username(anyString())).thenReturn(

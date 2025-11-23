@@ -28,9 +28,9 @@ public class ProfesseurController {
     }
 
     @GetMapping("/{professeurId}/millieus-awaiting-evaluation")
-    public ResponseEntity<ReturnEntityDTO<List<CandidatureDTO>>> getStagesAwaitingEvaluation(@RequestParam String year, @PathVariable String professeurId) {
+    public ResponseEntity<ReturnEntityDTO<List<CandidatureDTO>>> getCandidaturesAwaitingEvaluation(@RequestParam String year, @PathVariable String professeurId) {
         try {
-            List<CandidatureDTO> candidatures = professeurService.getAllStagesAwaitingEvaluation(year, professeurId);
+            List<CandidatureDTO> candidatures = professeurService.getAllCandidaturesProfesseurRelated(year, professeurId);
             return ResponseEntity.ok(new ReturnEntityDTO<>("Candidatures trouvés", candidatures));
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(new ReturnEntityDTO<>("Erreur interne du serveur", null));

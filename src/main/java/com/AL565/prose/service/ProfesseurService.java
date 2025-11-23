@@ -38,18 +38,14 @@ public class ProfesseurService {
         millieuEvaluationRepository.save(MillieuEvaluationDTO.toModel(evaluation));
     }
 
-    public List<CandidatureDTO> getAllStagesAwaitingEvaluation(String year, String professeurId) {
+    public List<CandidatureDTO> getAllCandidaturesProfesseurRelated(String year, String professeurId) {
         int yearNumber = SessionYearHelper.getSessionYear(year);
 
-        return candidatureRepository.findAllByEvaluationMillieuIsNull().stream()
+        return candidatureRepository.findAllByEtudiant_ProfesseurResponsable_Id(Long.parseLong(professeurId))
+                .stream()
                 .filter(candidature -> {
                     Stage stage = candidature.getStage();
                     return stage.getStartDate().getYear() == yearNumber;
-                })
-                .filter(candidature -> {
-                    Etudiant etudiant = candidature.getEtudiant();
-                    Professeur professeurResponsable = etudiant.getProfesseurResponsable();
-                    return professeurResponsable.getId().equals(Long.parseLong(professeurId));
                 })
                 .map(CandidatureDTO::toDTO)
                 .toList();

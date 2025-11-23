@@ -152,7 +152,7 @@ class EmployeurControllerTest {
         Stage stage = new Stage(
                 1L, "Démissioner", "Partir immédiatement!", "Rien", new ArrayList<>(),
                 LocalDate.now(), LocalDate.now(), "Chez vous", null, "Remote", "0$",
-                OfferStatus.APPROUVEE, "jemployeur1@gmail.com", null, OffsetDateTime.now(), OffsetDateTime.now()
+                OfferStatus.APPROUVEE, "jemployeur1@gmail.com", OffsetDateTime.now(), OffsetDateTime.now()
         );
 
         CandidatureDTO candidatureDTO = new CandidatureDTO(

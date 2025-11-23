@@ -14,5 +14,5 @@ public interface CandidatureRepository extends JpaRepository<Candidature, Long> 
 
     List<Candidature> findByEtudiant_Credentials_Username(String username);
 
-    List<Candidature> findAllByEvaluationMillieuIsNull();
+    List<Candidature> findAllByEtudiant_ProfesseurResponsable_Id(long id);
 }
