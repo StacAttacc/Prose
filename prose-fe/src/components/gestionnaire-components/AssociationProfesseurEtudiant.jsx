@@ -325,11 +325,15 @@ export default function AssociationProfesseurEtudiant() {
                                 required
                             >
                                 <option value="">{t('selectionnerEtudiant') || 'Sélectionner un étudiant'}</option>
-                                {etudiants.map((etudiant) => (
-                                    <option key={etudiant.id || etudiant.email} value={etudiant.id || etudiant.email}>
-                                        {etudiant.firstName} {etudiant.lastName} ({etudiant.email})
-                                    </option>
-                                ))}
+                                {etudiants.length === 0 ? (
+                                    <option value="" disabled>{t('aucunEtudiant') || 'Aucun étudiant disponible'}</option>
+                                ) : (
+                                    etudiants.map((etudiant) => (
+                                        <option key={etudiant.id || etudiant.email} value={etudiant.id || etudiant.email}>
+                                            {etudiant.firstName} {etudiant.lastName} ({etudiant.email})
+                                        </option>
+                                    ))
+                                )}
                             </select>
                         )}
                     </div>
@@ -356,11 +360,15 @@ export default function AssociationProfesseurEtudiant() {
                                 required
                             >
                                 <option value="">{t('selectionnerProfesseur') || 'Sélectionner un professeur'}</option>
-                                {professeurs.map((professeur) => (
-                                    <option key={professeur.id || professeur.email} value={professeur.id || professeur.email}>
-                                        {professeur.firstName} {professeur.lastName} ({professeur.email})
-                                    </option>
-                                ))}
+                                {professeurs.length === 0 ? (
+                                    <option value="" disabled>{t('aucunProfesseur') || 'Aucun professeur disponible'}</option>
+                                ) : (
+                                    professeurs.map((professeur) => (
+                                        <option key={professeur.id || professeur.email} value={professeur.id || professeur.email}>
+                                            {professeur.firstName} {professeur.lastName} ({professeur.email})
+                                        </option>
+                                    ))
+                                )}
                             </select>
                         )}
                     </div>
