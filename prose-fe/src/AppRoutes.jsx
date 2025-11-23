@@ -21,6 +21,7 @@ import StageApplicants from "./components/employeur-components/StageApplicants.j
 import GestionnaireEtuCandidature from "./components/gestionnaire-components/GestionnaireEtuCandidature.jsx";
 import GenererEntente from "./components/gestionnaire-components/GenererEntente.jsx";
 import AssociationProfesseurEtudiant from "./components/gestionnaire-components/AssociationProfesseurEtudiant.jsx";
+import CreationProfesseur from "./components/gestionnaire-components/CreationProfesseur.jsx";
 
 export default function AppRoutes() {
     const {user, loading} = useAuth();
@@ -82,6 +83,7 @@ export default function AppRoutes() {
                     <Route path="gestionnaire/candidatures" element={<GestionnaireEtuCandidature/>}/>
                     <Route path="gestionnaire/entente" element={<GenererEntente/>}/>
                     <Route path="gestionnaire/association-professeur-etudiant" element={<AssociationProfesseurEtudiant/>}/>
+                    <Route path="gestionnaire/creer-professeur" element={<CreationProfesseur/>}/>
                 </Route>
             </Route>
         </Routes>

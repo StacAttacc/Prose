@@ -19,6 +19,11 @@ const translations = {
     gestionCVs: 'Gestion des CVs',
     voirCandidaturesNav: 'Voir les candidature(s)',
     voirStages: 'Voir Stages',
+    creerUnProfesseur: 'Créer un Professeur',
+    creationProfesseur: 'Création de Professeur',
+    informationsPersonnelles: 'Informations Personnelles',
+    selectionnerDiscipline: 'Choisir une Discipline',
+    professeurCreeAvecSucces: 'Le professeur a été créé avec succès',
     
     // GestionnaireEtuCandidature
     statusCandidatures: 'Statut des candidatures',
@@ -565,6 +570,11 @@ const translations = {
     gestionCVs: 'CV Management',
     voirCandidaturesNav: 'View application(s)',
     voirStages: 'View Stages',
+    creerUnProfesseur: 'Create a Professor',
+    creationProfesseur: 'Professor Creation',
+    informationsPersonnelles: 'Personal Information',
+    selectionnerDiscipline: 'Choose a Discipline',
+    professeurCreeAvecSucces: 'The professor has been created successfully',
     
     // GestionnaireEtuCandidature
     statusCandidatures: 'Application Status',
