@@ -58,6 +58,9 @@ class GestionnaireServiceTest {
     private NotificationRepository notificationRepository;
 
     @Mock
+    private CvRepository cvRepository;
+
+    @Mock
     private ProfesseurService professeurService;
 
     @InjectMocks
@@ -659,5 +662,227 @@ class GestionnaireServiceTest {
         assertThatThrownBy(() -> gestionnaireService.createProfesseur(dto))
                 .isInstanceOf(EmailAlreadyExistsException.class)
                 .hasMessageContaining("Un compte avec cet email existe déjà");
+    }
+
+    @Test
+    @DisplayName("assignStageToStudent - Succès")
+    void assignStageToStudent_success() {
+        AssignStageDTO dto = new AssignStageDTO();
+        dto.setEtudiantEmail("etudiant@example.com");
+        dto.setStageId(1L);
+        dto.setComment("Stage attribué par le gestionnaire");
+
+        Etudiant etudiant = new Etudiant("John", "Doe", 
+                new Credentials("etudiant@example.com", "password123", Role.ETUDIANT), 
+                Discipline.INFORMATIQUE);
+        CV cv = CV.builder()
+                .id(1L)
+                .etudiant(etudiant)
+                .status(CvStatus.APPROVED)
+                .build();
+        Stage stage = Stage.builder()
+                .id(1L)
+                .title("Stage en développement")
+                .status(OfferStatus.APPROUVEE)
+                .employeurEmail("employeur@example.com")
+                .build();
+
+        when(etudiantRepository.findEtudiantByCredentials_Username("etudiant@example.com"))
+                .thenReturn(Optional.of(etudiant));
+        when(cvRepository.findByEtudiant_Credentials_Username("etudiant@example.com"))
+                .thenReturn(Optional.of(cv));
+        when(stageRepository.findById(1L)).thenReturn(Optional.of(stage));
+        when(candidatureRepository.existsByEtudiant_Credentials_UsernameAndStage_Id("etudiant@example.com", 1L))
+                .thenReturn(false);
+        when(candidatureRepository.save(any(Candidature.class))).thenAnswer(invocation -> {
+            Candidature c = invocation.getArgument(0);
+            c.setId(1L);
+            return c;
+        });
+
+        CandidatureDTO result = gestionnaireService.assignStageToStudent(dto);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getStageId()).isEqualTo(1L);
+        verify(candidatureRepository, times(1)).save(any(Candidature.class));
+        verify(notificationRepository, times(1)).save(any(com.AL565.prose.model.notifications.Notification.class));
+    }
+
+    @Test
+    @DisplayName("assignStageToStudent - Email étudiant manquant")
+    void assignStageToStudent_missingEmail() {
+        AssignStageDTO dto = new AssignStageDTO();
+        dto.setEtudiantEmail(null);
+        dto.setStageId(1L);
+
+        assertThatThrownBy(() -> gestionnaireService.assignStageToStudent(dto))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("L'email de l'étudiant est requis");
+    }
+
+    @Test
+    @DisplayName("assignStageToStudent - Stage ID manquant")
+    void assignStageToStudent_missingStageId() {
+        AssignStageDTO dto = new AssignStageDTO();
+        dto.setEtudiantEmail("etudiant@example.com");
+        dto.setStageId(null);
+
+        assertThatThrownBy(() -> gestionnaireService.assignStageToStudent(dto))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("L'ID du stage est requis");
+    }
+
+    @Test
+    @DisplayName("assignStageToStudent - Étudiant non trouvé")
+    void assignStageToStudent_studentNotFound() {
+        AssignStageDTO dto = new AssignStageDTO();
+        dto.setEtudiantEmail("etudiant@example.com");
+        dto.setStageId(1L);
+
+        when(etudiantRepository.findEtudiantByCredentials_Username("etudiant@example.com"))
+                .thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> gestionnaireService.assignStageToStudent(dto))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Étudiant non trouvé");
+    }
+
+    @Test
+    @DisplayName("assignStageToStudent - CV non trouvé")
+    void assignStageToStudent_cvNotFound() {
+        AssignStageDTO dto = new AssignStageDTO();
+        dto.setEtudiantEmail("etudiant@example.com");
+        dto.setStageId(1L);
+
+        Etudiant etudiant = new Etudiant("John", "Doe", 
+                new Credentials("etudiant@example.com", "password123", Role.ETUDIANT), 
+                Discipline.INFORMATIQUE);
+
+        when(etudiantRepository.findEtudiantByCredentials_Username("etudiant@example.com"))
+                .thenReturn(Optional.of(etudiant));
+        when(cvRepository.findByEtudiant_Credentials_Username("etudiant@example.com"))
+                .thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> gestionnaireService.assignStageToStudent(dto))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("L'étudiant n'a pas de CV");
+    }
+
+    @Test
+    @DisplayName("assignStageToStudent - CV non approuvé")
+    void assignStageToStudent_cvNotApproved() {
+        AssignStageDTO dto = new AssignStageDTO();
+        dto.setEtudiantEmail("etudiant@example.com");
+        dto.setStageId(1L);
+
+        Etudiant etudiant = new Etudiant("John", "Doe", 
+                new Credentials("etudiant@example.com", "password123", Role.ETUDIANT), 
+                Discipline.INFORMATIQUE);
+        CV cv = CV.builder()
+                .id(1L)
+                .etudiant(etudiant)
+                .status(CvStatus.PENDING)
+                .build();
+
+        when(etudiantRepository.findEtudiantByCredentials_Username("etudiant@example.com"))
+                .thenReturn(Optional.of(etudiant));
+        when(cvRepository.findByEtudiant_Credentials_Username("etudiant@example.com"))
+                .thenReturn(Optional.of(cv));
+
+        assertThatThrownBy(() -> gestionnaireService.assignStageToStudent(dto))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("L'étudiant doit avoir un CV approuvé");
+    }
+
+    @Test
+    @DisplayName("assignStageToStudent - Stage non trouvé")
+    void assignStageToStudent_stageNotFound() {
+        AssignStageDTO dto = new AssignStageDTO();
+        dto.setEtudiantEmail("etudiant@example.com");
+        dto.setStageId(1L);
+
+        Etudiant etudiant = new Etudiant("John", "Doe", 
+                new Credentials("etudiant@example.com", "password123", Role.ETUDIANT), 
+                Discipline.INFORMATIQUE);
+        CV cv = CV.builder()
+                .id(1L)
+                .etudiant(etudiant)
+                .status(CvStatus.APPROVED)
+                .build();
+
+        when(etudiantRepository.findEtudiantByCredentials_Username("etudiant@example.com"))
+                .thenReturn(Optional.of(etudiant));
+        when(cvRepository.findByEtudiant_Credentials_Username("etudiant@example.com"))
+                .thenReturn(Optional.of(cv));
+        when(stageRepository.findById(1L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> gestionnaireService.assignStageToStudent(dto))
+                .isInstanceOf(NoSuchElementException.class);
+    }
+
+    @Test
+    @DisplayName("assignStageToStudent - Stage non approuvé")
+    void assignStageToStudent_stageNotApproved() {
+        AssignStageDTO dto = new AssignStageDTO();
+        dto.setEtudiantEmail("etudiant@example.com");
+        dto.setStageId(1L);
+
+        Etudiant etudiant = new Etudiant("John", "Doe", 
+                new Credentials("etudiant@example.com", "password123", Role.ETUDIANT), 
+                Discipline.INFORMATIQUE);
+        CV cv = CV.builder()
+                .id(1L)
+                .etudiant(etudiant)
+                .status(CvStatus.APPROVED)
+                .build();
+        Stage stage = Stage.builder()
+                .id(1L)
+                .title("Stage en développement")
+                .status(OfferStatus.SOUMISE)
+                .build();
+
+        when(etudiantRepository.findEtudiantByCredentials_Username("etudiant@example.com"))
+                .thenReturn(Optional.of(etudiant));
+        when(cvRepository.findByEtudiant_Credentials_Username("etudiant@example.com"))
+                .thenReturn(Optional.of(cv));
+        when(stageRepository.findById(1L)).thenReturn(Optional.of(stage));
+
+        assertThatThrownBy(() -> gestionnaireService.assignStageToStudent(dto))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Le stage doit être approuvé");
+    }
+
+    @Test
+    @DisplayName("assignStageToStudent - Candidature déjà existante")
+    void assignStageToStudent_candidatureAlreadyExists() {
+        AssignStageDTO dto = new AssignStageDTO();
+        dto.setEtudiantEmail("etudiant@example.com");
+        dto.setStageId(1L);
+
+        Etudiant etudiant = new Etudiant("John", "Doe", 
+                new Credentials("etudiant@example.com", "password123", Role.ETUDIANT), 
+                Discipline.INFORMATIQUE);
+        CV cv = CV.builder()
+                .id(1L)
+                .etudiant(etudiant)
+                .status(CvStatus.APPROVED)
+                .build();
+        Stage stage = Stage.builder()
+                .id(1L)
+                .title("Stage en développement")
+                .status(OfferStatus.APPROUVEE)
+                .build();
+
+        when(etudiantRepository.findEtudiantByCredentials_Username("etudiant@example.com"))
+                .thenReturn(Optional.of(etudiant));
+        when(cvRepository.findByEtudiant_Credentials_Username("etudiant@example.com"))
+                .thenReturn(Optional.of(cv));
+        when(stageRepository.findById(1L)).thenReturn(Optional.of(stage));
+        when(candidatureRepository.existsByEtudiant_Credentials_UsernameAndStage_Id("etudiant@example.com", 1L))
+                .thenReturn(true);
+
+        assertThatThrownBy(() -> gestionnaireService.assignStageToStudent(dto))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Une candidature existe déjà");
     }
 }

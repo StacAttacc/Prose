@@ -16,6 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/gestionnaire")
@@ -210,6 +211,25 @@ public class GestionnaireController {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ReturnEntityDTO<>("Erreur lors de la création du professeur", null));
+        }
+    }
+
+    @PostMapping("/stages/assign")
+    public ResponseEntity<ReturnEntityDTO<CandidatureDTO>> assignStageToStudent(@RequestBody AssignStageDTO assignStageDTO) {
+        try {
+            CandidatureDTO candidature = gestionnaireService.assignStageToStudent(assignStageDTO);
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(new ReturnEntityDTO<>("Stage attribué à l'étudiant avec succès", candidature));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ReturnEntityDTO<>(e.getMessage(), null));
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ReturnEntityDTO<>("Stage non trouvé", null));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ReturnEntityDTO<>("Erreur lors de l'attribution du stage", null));
         }
     }
 }

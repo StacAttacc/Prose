@@ -347,6 +347,80 @@ public class GestionnaireService {
         professeurService.register(professeurDTO);
     }
 
+    @Transactional
+    public CandidatureDTO assignStageToStudent(AssignStageDTO dto) {
+        // Validation des champs requis
+        if (dto.getEtudiantEmail() == null || dto.getEtudiantEmail().trim().isEmpty()) {
+            throw new IllegalArgumentException("L'email de l'étudiant est requis");
+        }
+        if (dto.getStageId() == null) {
+            throw new IllegalArgumentException("L'ID du stage est requis");
+        }
+
+        // 1. Vérifier que l'étudiant existe
+        Etudiant etudiant = etudiantRepository.findEtudiantByCredentials_Username(dto.getEtudiantEmail())
+                .orElseThrow(() -> new IllegalArgumentException("Étudiant non trouvé"));
+
+        // 2. Vérifier que l'étudiant a un CV approuvé
+        CV cv = cvRepository.findByEtudiant_Credentials_Username(dto.getEtudiantEmail())
+                .orElseThrow(() -> new IllegalArgumentException("L'étudiant n'a pas de CV"));
+
+        if (cv.getStatus() != CvStatus.APPROVED) {
+            throw new IllegalArgumentException("L'étudiant doit avoir un CV approuvé pour qu'un stage lui soit attribué");
+        }
+
+        // 3. Vérifier que le stage existe et est approuvé
+        Stage stage = stageRepository.findById(dto.getStageId())
+                .orElseThrow(() -> new NoSuchElementException("Stage non trouvé"));
+
+        if (stage.getStatus() != OfferStatus.APPROUVEE) {
+            throw new IllegalArgumentException("Le stage doit être approuvé pour être attribué à un étudiant");
+        }
+
+        // 4. Vérifier qu'il n'y a pas déjà une candidature pour cet étudiant et ce stage
+        if (candidatureRepository.existsByEtudiant_Credentials_UsernameAndStage_Id(
+                dto.getEtudiantEmail(), dto.getStageId())) {
+            throw new IllegalArgumentException("Une candidature existe déjà pour cet étudiant et ce stage");
+        }
+
+        // 5. Créer la candidature avec le statut ACCEPTEE
+        Candidature candidature = Candidature.builder()
+                .etudiant(etudiant)
+                .cv(cv)
+                .stage(stage)
+                .motivationLetter(null) // Pas de lettre de motivation pour une attribution directe
+                .dateCandidature(LocalDateTime.now())
+                .status(CandidatureStatus.ACCEPTEE)
+                .dateDecision(LocalDateTime.now())
+                .decision(dto.getComment() != null ? dto.getComment() : "Stage attribué par le gestionnaire")
+                .build();
+
+        Candidature savedCandidature = candidatureRepository.save(candidature);
+
+        // 6. Créer une notification pour l'étudiant
+        createNotificationForAssignedStage(savedCandidature);
+
+        return CandidatureDTO.toDTO(savedCandidature);
+    }
+
+    @Transactional
+    private void createNotificationForAssignedStage(Candidature candidature) {
+        String stageTitle = candidature.getStage().getTitle();
+
+        String messageFR = "Un stage vous a été attribué : " + stageTitle;
+        String messageEN = "An internship has been assigned to you: " + stageTitle;
+
+        CandidatureDecisionNotification notification = new CandidatureDecisionNotification();
+        notification.setCreatedAt(LocalDateTime.now());
+        notification.setType(CANDIDATURE_DECISION_NOTIFICATION);
+        notification.setMessageFR(messageFR);
+        notification.setMessageEN(messageEN);
+        notification.setCandidatureId(candidature.getId());
+        notification.setTargetEmail(candidature.getEtudiant().getEmail());
+        notification.setEtudiantId(candidature.getEtudiant().getId());
+        notificationRepository.save(notification);
+    }
+
     private String translateStatusMessage(CvStatus status, String language) {
         return switch (status) {
             case APPROVED -> language.equals("FR") ? "approuvé" : "approved";
