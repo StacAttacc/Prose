@@ -41,6 +41,7 @@ public class GestionnaireService {
     private final EmployeurRepository employeurRepository;
     private final EtudiantRepository etudiantRepository;
     private final ProfesseurRepository professeurRepository;
+    private final ProfesseurService professeurService;
     private final PasswordEncoder passwordEncoder;
     private final CandidatureRepository candidatureRepository;
     private final NotificationRepository notificationRepository;
@@ -314,6 +315,36 @@ public class GestionnaireService {
         etudiant.setProfesseurResponsable(professeur);
 
         etudiantRepository.save(etudiant);
+    }
+
+    @Transactional
+    public void createProfesseur(ProfesseurPasswordDTO professeurDTO) {
+        // Validation des champs requis
+        if (professeurDTO.getFirstName() == null || professeurDTO.getFirstName().trim().isEmpty()) {
+            throw new IllegalArgumentException("Le prénom est requis");
+        }
+        if (professeurDTO.getLastName() == null || professeurDTO.getLastName().trim().isEmpty()) {
+            throw new IllegalArgumentException("Le nom est requis");
+        }
+        if (professeurDTO.getEmail() == null || professeurDTO.getEmail().trim().isEmpty()) {
+            throw new IllegalArgumentException("L'email est requis");
+        }
+        if (professeurDTO.getPassword() == null || professeurDTO.getPassword().trim().isEmpty()) {
+            throw new IllegalArgumentException("Le mot de passe est requis");
+        }
+        if (professeurDTO.getDiscipline() == null || professeurDTO.getDiscipline().trim().isEmpty()) {
+            throw new IllegalArgumentException("La discipline est requise");
+        }
+
+        // Vérifier que la discipline est valide
+        try {
+            Discipline.valueOf(professeurDTO.getDiscipline().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Discipline invalide");
+        }
+
+        // Créer le professeur via le service
+        professeurService.register(professeurDTO);
     }
 
     private String translateStatusMessage(CvStatus status, String language) {
