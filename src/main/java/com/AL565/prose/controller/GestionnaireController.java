@@ -1,13 +1,16 @@
 package com.AL565.prose.controller;
 
+import com.AL565.prose.model.Discipline;
 import com.AL565.prose.repository.GestionnaireRepository;
 import com.AL565.prose.security.JwtTokenProvider;
 import com.AL565.prose.security.exceptions.UserNotFoundException;
 import com.AL565.prose.service.GestionnaireService;
 import com.AL565.prose.service.EntenteService;
+import com.AL565.prose.service.ProfesseurService;
 import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
 import com.AL565.prose.service.exceptions.EtudiantAlreadyAssociatedException;
+import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +26,7 @@ public class GestionnaireController {
 
     private final GestionnaireService gestionnaireService;
     private final EntenteService ententeService;
+    private final ProfesseurService professeurService;
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
     private final GestionnaireRepository gestionnaireRepository;
@@ -190,6 +194,55 @@ public class GestionnaireController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Etudiant already associated");
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("Erreur interne du serveur");
+        }
+    }
+
+    @PostMapping("/professeurs/create")
+    public ResponseEntity<ReturnEntityDTO<String>> createProfesseur(@RequestBody ProfesseurPasswordDTO professeurDTO) {
+        try {
+            // Validation des champs requis
+            if (professeurDTO.getFirstName() == null || professeurDTO.getFirstName().trim().isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(new ReturnEntityDTO<>("Le prénom est requis", null));
+            }
+            if (professeurDTO.getLastName() == null || professeurDTO.getLastName().trim().isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(new ReturnEntityDTO<>("Le nom est requis", null));
+            }
+            if (professeurDTO.getEmail() == null || professeurDTO.getEmail().trim().isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(new ReturnEntityDTO<>("L'email est requis", null));
+            }
+            if (professeurDTO.getPassword() == null || professeurDTO.getPassword().trim().isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(new ReturnEntityDTO<>("Le mot de passe est requis", null));
+            }
+            if (professeurDTO.getDiscipline() == null || professeurDTO.getDiscipline().trim().isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(new ReturnEntityDTO<>("La discipline est requise", null));
+            }
+
+            // Vérifier que la discipline est valide
+            try {
+                Discipline.valueOf(professeurDTO.getDiscipline().toUpperCase());
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(new ReturnEntityDTO<>("Discipline invalide", null));
+            }
+
+            professeurService.register(professeurDTO);
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(new ReturnEntityDTO<>("Professeur créé avec succès", null));
+        } catch (EmailAlreadyExistsException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(new ReturnEntityDTO<>("Un compte avec cet email existe déjà", null));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ReturnEntityDTO<>(e.getMessage(), null));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ReturnEntityDTO<>("Erreur lors de la création du professeur", null));
         }
     }
 }
