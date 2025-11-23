@@ -212,4 +212,26 @@ public class GestionnaireController {
                     .body(new ReturnEntityDTO<>("Erreur lors de la création du professeur", null));
         }
     }
+
+    @GetMapping("/etudiants/all")
+    public ResponseEntity<ReturnEntityDTO<List<EtudiantDTO>>> getAllEtudiants() {
+        try {
+            List<EtudiantDTO> etudiants = gestionnaireService.getAllEtudiants();
+            return ResponseEntity.ok(new ReturnEntityDTO<>("Liste des étudiants", etudiants));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ReturnEntityDTO<>("Erreur lors de la récupération des étudiants", null));
+        }
+    }
+
+    @GetMapping("/professeurs/all")
+    public ResponseEntity<ReturnEntityDTO<List<ProfesseurDTO>>> getAllProfesseurs() {
+        try {
+            List<ProfesseurDTO> professeurs = gestionnaireService.getAllProfesseurs();
+            return ResponseEntity.ok(new ReturnEntityDTO<>("Liste des professeurs", professeurs));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ReturnEntityDTO<>("Erreur lors de la récupération des professeurs", null));
+        }
+    }
 }

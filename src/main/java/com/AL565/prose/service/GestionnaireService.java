@@ -347,6 +347,18 @@ public class GestionnaireService {
         professeurService.register(professeurDTO);
     }
 
+    public List<EtudiantDTO> getAllEtudiants() {
+        return etudiantRepository.findAll().stream()
+                .map(etudiant -> EtudiantDTO.toDTOTokenless(etudiant))
+                .toList();
+    }
+
+    public List<ProfesseurDTO> getAllProfesseurs() {
+        return professeurRepository.findAll().stream()
+                .map(professeur -> ProfesseurDTO.toDTOTokenless(professeur))
+                .toList();
+    }
+
     private String translateStatusMessage(CvStatus status, String language) {
         return switch (status) {
             case APPROVED -> language.equals("FR") ? "approuvé" : "approved";
