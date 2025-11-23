@@ -1,4 +1,5 @@
 import axios from "axios";
+import { http } from "./http.js";
 
 const BASE_URL_GESTIONNAIRE = "http://localhost:8080/gestionnaire";
 
@@ -225,6 +226,70 @@ export async function associerProfesseurEtudiant(professeurEmail, etudiantEmail,
         return res.data;
     } catch (error) {
         console.error('Erreur lors de l\'association:', error);
+        throw error;
+    }
+}
+
+export async function getAllEtudiants(token) {
+    try {
+        console.log('Appel getAllEtudiants avec token:', token ? 'présent' : 'absent');
+        // http gère automatiquement le token via l'intercepteur
+        const res = await http.get("/gestionnaire/etudiants/all");
+        console.log('Réponse getAllEtudiants:', res.data);
+        // ReturnEntityDTO structure: { message: "...", data: [...] }
+        const data = res.data?.data;
+        console.log('Données extraites getAllEtudiants:', data);
+        return Array.isArray(data) ? data : [];
+    } catch (error) {
+        console.error('Erreur lors de la récupération des étudiants:', error);
+        console.error('Error response:', error?.response?.data);
+        console.error('Error status:', error?.response?.status);
+        console.error('Error message:', error?.message);
+        throw error;
+    }
+}
+
+export async function getAllProfesseurs(token) {
+    try {
+        console.log('Appel getAllProfesseurs avec token:', token ? 'présent' : 'absent');
+        // http gère automatiquement le token via l'intercepteur
+        const res = await http.get("/gestionnaire/professeurs/all");
+        console.log('Réponse getAllProfesseurs:', res.data);
+        // ReturnEntityDTO structure: { message: "...", data: [...] }
+        const data = res.data?.data;
+        console.log('Données extraites getAllProfesseurs:', data);
+        return Array.isArray(data) ? data : [];
+    } catch (error) {
+        console.error('Erreur lors de la récupération des professeurs:', error);
+        console.error('Error response:', error?.response?.data);
+        console.error('Error status:', error?.response?.status);
+        console.error('Error message:', error?.message);
+        throw error;
+    }
+}
+
+export async function createProfesseur(professeurData, token) {
+    try {
+        // Utiliser l'instance http qui gère automatiquement le token
+        // Si token est fourni, on l'utilise, sinon http utilise celui de l'intercepteur
+        const config = token ? {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        } : {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        };
+        
+        const res = await http.post("/gestionnaire/professeurs/create", professeurData, config);
+        return res.data;
+    } catch (error) {
+        console.error('Erreur lors de la création du professeur:', error);
+        console.error('Token utilisé:', token ? 'Token présent' : 'Token manquant - utilisation de http');
+        console.error('Response:', error?.response?.data);
+        console.error('Status:', error?.response?.status);
         throw error;
     }
 }
