@@ -48,8 +48,8 @@ public class MillieuEvaluationDTO {
 
     private int privilegieStage;
     private int nbStagiaires;
-    private boolean desireAutreStagiaires;
-    private boolean quartsVariables;
+    private Boolean desireAutreStagiaires;
+    private Boolean quartsVariables;
     private List<LocalDateTime> debutQuarts;
     private List<LocalDateTime> finQuarts;
 
@@ -67,7 +67,7 @@ public class MillieuEvaluationDTO {
                 .communicationSuperviseurFacile(dto.getCommunicationSuperviseurFacile())
                 .dateStage(dto.getDateStage())
                 .debutQuarts(dto.getDebutQuarts())
-                .desireAutreStagiaires(dto.isDesireAutreStagiaires())
+                .desireAutreStagiaires(dto.getDesireAutreStagiaires())
                 .equipementAdequat(dto.getEquipementAdequat())
                 .faciliteIntegration(dto.getFaciliteIntegration())
                 .finQuarts(dto.getFinQuarts())
@@ -80,7 +80,7 @@ public class MillieuEvaluationDTO {
                 .numeroTelephone(dto.getNumeroTelephone())
                 .personneContact(dto.getPersonneContact())
                 .privilegieStage(dto.getPrivilegieStage())
-                .quartsVariables(dto.isQuartsVariables())
+                .quartsVariables(dto.getQuartsVariables())
                 .salaire(dto.getSalaire())
                 .salaireIneteressant(dto.getSalaireIneteressant())
                 .tachesCoformes(dto.getTachesCoformes())
@@ -103,7 +103,7 @@ public class MillieuEvaluationDTO {
                 .communicationSuperviseurFacile(model.getCommunicationSuperviseurFacile())
                 .dateStage(model.getDateStage())
                 .debutQuarts(model.getDebutQuarts())
-                .desireAutreStagiaires(model.isDesireAutreStagiaires())
+                .desireAutreStagiaires(model.getDesireAutreStagiaires())
                 .equipementAdequat(model.getEquipementAdequat())
                 .faciliteIntegration(model.getFaciliteIntegration())
                 .finQuarts(model.getFinQuarts())
@@ -116,7 +116,7 @@ public class MillieuEvaluationDTO {
                 .numeroTelephone(model.getNumeroTelephone())
                 .personneContact(model.getPersonneContact())
                 .privilegieStage(model.getPrivilegieStage())
-                .quartsVariables(model.isQuartsVariables())
+                .quartsVariables(model.getQuartsVariables())
                 .salaire(model.getSalaire())
                 .salaireIneteressant(model.getSalaireIneteressant())
                 .tachesCoformes(model.getTachesCoformes())

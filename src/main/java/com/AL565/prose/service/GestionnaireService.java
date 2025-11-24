@@ -159,6 +159,11 @@ public class GestionnaireService {
         List <EtudiantCandidaturesDTO> etudiantCandidaturesDTO = new ArrayList<>();
 
         etudiants.forEach(etudiant -> {
+            // Précondition : L'étudiant doit avoir un professeur associé
+            if (etudiant.getProfesseurResponsable() == null) {
+                return; // Ignorer les étudiants sans professeur
+            }
+            
             List<Candidature> candidatures = candidatureRepository.findByEtudiant_Credentials_Username(etudiant.getEmail());
 
             List<EtudiantCandidatureDTO> etudiantCandidature = candidatures.stream().map(candidature -> {

@@ -324,13 +324,17 @@ export default function EvaluationMilieuStageView() {
                         <div>
                             <p className="text-sm text-gray-500">{t('gestionnaire.desireAutreStagiaires') || 'Désire autres stagiaires'}</p>
                             <p className="text-gray-900 font-medium">
-                                {evaluation.desireAutreStagiaires ? t('common.yes') || 'Oui' : t('common.no') || 'Non'}
+                                {evaluation.desireAutreStagiaires === null || evaluation.desireAutreStagiaires === undefined
+                                    ? '-' 
+                                    : evaluation.desireAutreStagiaires ? (t('common.yes') || 'Oui') : (t('common.no') || 'Non')}
                             </p>
                         </div>
                         <div>
                             <p className="text-sm text-gray-500">{t('gestionnaire.quartsVariables') || 'Quarts variables'}</p>
                             <p className="text-gray-900 font-medium">
-                                {evaluation.quartsVariables ? t('common.yes') || 'Oui' : t('common.no') || 'Non'}
+                                {evaluation.quartsVariables === null || evaluation.quartsVariables === undefined
+                                    ? '-' 
+                                    : evaluation.quartsVariables ? (t('common.yes') || 'Oui') : (t('common.no') || 'Non')}
                             </p>
                         </div>
                     </div>

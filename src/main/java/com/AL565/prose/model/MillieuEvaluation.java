@@ -54,8 +54,8 @@ public class MillieuEvaluation {
 
     private int privilegieStage;
     private int nbStagiaires;
-    private boolean desireAutreStagiaires;
-    private boolean quartsVariables;
+    private Boolean desireAutreStagiaires;
+    private Boolean quartsVariables;
     
     @ElementCollection
     @CollectionTable(name = "millieu_evaluation_debut_quarts", joinColumns = @JoinColumn(name = "millieu_evaluation_id"))

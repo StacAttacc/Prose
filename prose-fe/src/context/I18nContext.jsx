@@ -145,6 +145,12 @@ const translations = {
     aConvouquePourEntrevue: 'a convoqué',
     pourUneEntrevue: 'pour une entrevue',
     aCreeLeStage: 'a créé le stage',
+    
+    // Common
+    'common.yes': 'Oui',
+    'common.no': 'Non',
+    'common.error': 'Erreur',
+    'common.back': 'Retour',
 
     
     // GestionCV
@@ -761,7 +767,13 @@ const translations = {
     pourUneEntrevue: 'for an interview',
     aCreeLeStage: 'created the internship',
     
-    // GestionCV
+    // Common
+    'common.yes': 'Yes',
+    'common.no': 'No',
+    'common.error': 'Error',
+    'common.back': 'Back',
+
+        // GestionCV
     rechercherParNom: 'Search by student name...',
     cvEnAttente: 'CVs Pending Approval',
     cvAcceptesRefaire: 'Approved & To Redo CVs',
