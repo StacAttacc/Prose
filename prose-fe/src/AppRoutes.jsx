@@ -22,6 +22,11 @@ import GestionnaireEtuCandidature from "./components/gestionnaire-components/Ges
 import GenererEntente from "./components/gestionnaire-components/GenererEntente.jsx";
 import AssociationProfesseurEtudiant from "./components/gestionnaire-components/AssociationProfesseurEtudiant.jsx";
 import CreationProfesseur from "./components/gestionnaire-components/CreationProfesseur.jsx";
+import ListeCandidaturesProfesseur from "./components/professeur-components/ListeCandidaturesProfesseur.jsx";
+import EvaluationMilieuTravail from "./components/professeur-components/EvaluationMilieuTravail.jsx";
+import ListeEtudiantsEnStage from "./components/gestionnaire-components/ListeEtudiantsEnStage.jsx";
+import EvaluationMilieuStageGestionnaire from "./components/gestionnaire-components/EvaluationMilieuStageGestionnaire.jsx";
+import EvaluationMilieuStageView from "./components/gestionnaire-components/EvaluationMilieuStageView.jsx";
 
 export default function AppRoutes() {
     const {user, loading} = useAuth();
@@ -43,7 +48,7 @@ export default function AppRoutes() {
             : user?.role === "EMPLOYEUR"
                 ? <Navigate to="/employeur/stages/posted-stages" replace/>
                 : user?.role === "PROFESSEUR"
-                    ? <div>Bienvenue Professeur</div>
+                    ? <Navigate to="/professeur/candidatures" replace/>
                     : user?.role === "GESTIONNAIRE"
                         ? <GestionnaireEtuCandidature/>
                         : <div>Rôle inconnu</div>;
@@ -84,6 +89,13 @@ export default function AppRoutes() {
                     <Route path="gestionnaire/entente" element={<GenererEntente/>}/>
                     <Route path="gestionnaire/association-professeur-etudiant" element={<AssociationProfesseurEtudiant/>}/>
                     <Route path="gestionnaire/creer-professeur" element={<CreationProfesseur/>}/>
+
+                    <Route path="professeur/candidatures" element={<ListeCandidaturesProfesseur/>}/>
+                    <Route path="professeur/evaluations/evaluer/:candidatureId" element={<EvaluationMilieuTravail/>}/>
+
+                    <Route path="gestionnaire/evaluations-milieu" element={<ListeEtudiantsEnStage/>}/>
+                    <Route path="gestionnaire/evaluations-milieu/evaluer/:candidatureId" element={<EvaluationMilieuStageGestionnaire/>}/>
+                    <Route path="gestionnaire/evaluations-milieu/voir/:candidatureId" element={<EvaluationMilieuStageView/>}/>
                 </Route>
             </Route>
         </Routes>

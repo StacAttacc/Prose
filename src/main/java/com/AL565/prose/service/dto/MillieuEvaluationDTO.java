@@ -2,6 +2,7 @@ package com.AL565.prose.service.dto;
 
 import com.AL565.prose.model.CoteEvaluation;
 import com.AL565.prose.model.MillieuEvaluation;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -52,6 +53,7 @@ public class MillieuEvaluationDTO {
     private List<LocalDateTime> debutQuarts;
     private List<LocalDateTime> finQuarts;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private LocalDateTime tempsSignature;
 
     public static MillieuEvaluation toModel(MillieuEvaluationDTO dto) {

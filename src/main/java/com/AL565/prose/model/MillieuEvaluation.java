@@ -1,9 +1,9 @@
 package com.AL565.prose.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.ArrayList;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -16,6 +16,7 @@ import java.util.List;
 @Builder
 public class MillieuEvaluation {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "millieu_evaluation_id")
     private Long id;
 
@@ -35,7 +36,11 @@ public class MillieuEvaluation {
     private CoteEvaluation faciliteIntegration;
     private CoteEvaluation tempsEstReel;
 
-    private List<String> hrSemaineMois;
+    @ElementCollection
+    @CollectionTable(name = "millieu_evaluation_hr_semaine_mois", joinColumns = @JoinColumn(name = "millieu_evaluation_id"))
+    @Column(name = "hr_semaine_mois")
+    @Builder.Default
+    private List<String> hrSemaineMois = new ArrayList<>();
 
     private CoteEvaluation hygieneRespectable;
     private CoteEvaluation climatTravailAgreable;
@@ -51,8 +56,18 @@ public class MillieuEvaluation {
     private int nbStagiaires;
     private boolean desireAutreStagiaires;
     private boolean quartsVariables;
-    private List<LocalDateTime> debutQuarts;
-    private List<LocalDateTime> finQuarts;
+    
+    @ElementCollection
+    @CollectionTable(name = "millieu_evaluation_debut_quarts", joinColumns = @JoinColumn(name = "millieu_evaluation_id"))
+    @Column(name = "debut_quart")
+    @Builder.Default
+    private List<LocalDateTime> debutQuarts = new ArrayList<>();
+    
+    @ElementCollection
+    @CollectionTable(name = "millieu_evaluation_fin_quarts", joinColumns = @JoinColumn(name = "millieu_evaluation_id"))
+    @Column(name = "fin_quart")
+    @Builder.Default
+    private List<LocalDateTime> finQuarts = new ArrayList<>();
 
     private LocalDateTime tempsSignature;
 }

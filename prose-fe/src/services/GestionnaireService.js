@@ -309,3 +309,76 @@ export async function assignStageToStudent(etudiantEmail, stageId, comment, toke
         throw error;
     }
 }
+
+/**
+ * Récupère les candidatures avec stage en cours (CONFIRMER ou ACCEPTEE) pour l'évaluation du milieu
+ * @param {string} year - Année de la session (optionnel)
+ * @param {string} token - Token d'authentification
+ * @returns {Promise<Array>} Liste des candidatures avec stage en cours
+ */
+export async function getCandidaturesEnStage(year, token) {
+    try {
+        const params = {};
+        if (year && year !== null && year !== undefined && year !== '') {
+            params.year = year.toString();
+        }
+        
+        // Utiliser la même méthode que getStageApplicantsManager
+        const res = await axios.get(`${BASE_URL_GESTIONNAIRE}/getCandidatures`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                Accept: "application/json",
+            },
+            params: params
+        });
+        
+        // Filtrer pour ne garder que les candidatures avec stage en cours (CONFIRMER ou ACCEPTEE)
+        const allEtudiants = res.data?.data || [];
+        const candidaturesEnStage = [];
+        
+        allEtudiants.forEach(etudiant => {
+            if (etudiant.candidatures && Array.isArray(etudiant.candidatures)) {
+                etudiant.candidatures.forEach(candidature => {
+                    if (candidature.status === 'CONFIRMER' || candidature.status === 'ACCEPTEE') {
+                        candidaturesEnStage.push({
+                            ...candidature,
+                            etudiant: {
+                                id: etudiant.id,
+                                firstName: etudiant.firstName,
+                                lastName: etudiant.lastName,
+                                email: etudiant.email,
+                                professeurResponsable: etudiant.professeurResponsable
+                            }
+                        });
+                    }
+                });
+            }
+        });
+        
+        return candidaturesEnStage;
+    } catch (error) {
+        console.error('Erreur lors de la récupération des candidatures en stage:', error);
+        throw error;
+    }
+}
+
+/**
+ * Évalue le milieu de stage pour une candidature
+ * @param {Object} evaluation - Les données d'évaluation du milieu de stage
+ * @param {string} token - Token d'authentification
+ * @returns {Promise<Object>} Réponse du serveur
+ */
+export async function evaluateWorkplaceForCandidature(candidatureId, evaluation, token) {
+    try {
+        const res = await axios.post(`${BASE_URL_GESTIONNAIRE}/candidatures/${candidatureId}/evaluate-milieu`, evaluation, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        return res.data;
+    } catch (error) {
+        console.error('Erreur lors de l\'évaluation du milieu de stage:', error);
+        throw error;
+    }
+}

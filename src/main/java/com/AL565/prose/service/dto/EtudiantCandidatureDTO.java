@@ -20,6 +20,7 @@ public class EtudiantCandidatureDTO {
     private LocalDateTime datePostulation;
     private String decision;
     private LocalDateTime dateDecision;
+    private MillieuEvaluationDTO evaluationMillieu;
 
     public static EtudiantCandidatureDTO toDTO (Candidature candidature, Employeur employeur) {
         var stage = candidature.getStage();
@@ -42,6 +43,8 @@ public class EtudiantCandidatureDTO {
                 .datePostulation(candidature.getDateCandidature())
                 .decision(candidature.getDecision())
                 .dateDecision(candidature.getDateDecision())
+                .evaluationMillieu(candidature.getEvaluationMillieu() != null ?
+                        MillieuEvaluationDTO.toDTO(candidature.getEvaluationMillieu()) : null)
                 .build();
     }
 }
