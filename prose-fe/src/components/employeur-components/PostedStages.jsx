@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import {useLocation, useNavigate} from "react-router-dom";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useI18n } from "../../context/I18nContext.jsx";
 import { useYear } from "../../context/YearContext.jsx";
@@ -13,6 +13,7 @@ export default function PostedStages() {
     const { t, locale } = useI18n();
     const { selectedYear } = useYear();
     const navigate = useNavigate();
+    const location = useLocation();
 
     const [stages, setStages] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -47,6 +48,52 @@ export default function PostedStages() {
             fetchAllStages();
         }
     }, [user.email, user.token, selectedYear]);
+
+    useEffect(() => {
+        if (!stages.length) return;
+
+        const openStageFromNotif = location?.state?.openDemandeApprobationStageId;
+        if (!openStageFromNotif) return;
+
+        const stageToScrollTo = stages.find(
+            s => String(s.id) === String(openStageFromNotif)
+        );
+
+        if (!stageToScrollTo) {
+            return;
+        }
+
+        setSearchTerm("");
+        setLocationFilter("");
+        setCompensationFilter("");
+        setStatusFilter("");
+
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                const el = document.getElementById(`stage-${stageToScrollTo.id}`);
+                console.log('Element found:', el);
+                
+                if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    el.classList.add('ring-2', 'ring-teal-500');
+
+                    setTimeout(() => {
+                        handleStageClick(stageToScrollTo);
+                    }, 1000);
+
+                    setTimeout(() => {
+                        el.classList.remove('ring-2', 'ring-teal-500');
+                    }, 6000);
+
+                    setTimeout(() => {
+                        navigate(location?.pathname, { replace: true, state: {} });
+                    }, 100);
+                } else {
+                    console.error('Element not found in DOM');
+                }
+            });
+        });
+    }, [stages, location?.state?.openDemandeApprobationStageId]);
 
     const filteredStages = useMemo(() => {
         return stages.filter((stage) => {
@@ -188,6 +235,7 @@ export default function PostedStages() {
                         return (
                             <div
                                 key={stage.id}
+                                id={`stage-${stage.id}`}
                                 className="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-shadow"
                             >
                                 <div className="mb-4">
