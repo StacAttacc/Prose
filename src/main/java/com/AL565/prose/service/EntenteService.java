@@ -72,13 +72,19 @@ public class EntenteService {
         if (existingEntente.isPresent()) {
             Entente entente = existingEntente.get();
             Stage stage = candidature.getStage();
-            Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(stage.getEmployeurEmail());
+            Employeur employeur = null;
+            if (stage.getEmployeurEmail() != null && !stage.getEmployeurEmail().trim().isEmpty()) {
+                employeur = employeurRepository.getEmployeurByCredentials_Username(stage.getEmployeurEmail());
+            }
             return EntenteDTO.toDTO(entente, employeur);
         }
 
         Etudiant etudiant = candidature.getEtudiant();
         Stage stage = candidature.getStage();
-        Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(stage.getEmployeurEmail());
+        Employeur employeur = null;
+        if (stage.getEmployeurEmail() != null && !stage.getEmployeurEmail().trim().isEmpty()) {
+            employeur = employeurRepository.getEmployeurByCredentials_Username(stage.getEmployeurEmail());
+        }
 
         byte[] pdfData = generateContractPdfWithSignatures(candidature, etudiant, employeur, stage, null, null, null);
 
@@ -176,7 +182,7 @@ public class EntenteService {
             } else {
                 entente.setStatus(EntenteStatus.SIGNEE_ETUDIANT);
             }
-        } else if (employeur.getEmail().equals(userEmail)) {
+        } else if (employeur != null && employeur.getEmail().equals(userEmail)) {
             entente.setDateSignatureEmployeur(now);
             if (entente.getDateSignatureEtudiant() != null) {
                 // Les deux (étudiant et employeur) ont signé, mais pas encore le gestionnaire
@@ -236,8 +242,8 @@ public class EntenteService {
             }
 
             String nomEtudiant = etudiant.getFirstName() + " " + etudiant.getLastName();
-            String nomEmployeur = employeur.getFirstName() + " " + employeur.getLastName();
-            String nomEntreprise = employeur.getCompany() != null ? employeur.getCompany() : "[nom_entreprise]";
+            String nomEmployeur = employeur != null ? (employeur.getFirstName() + " " + employeur.getLastName()) : "[nom_employeur]";
+            String nomEntreprise = employeur != null && employeur.getCompany() != null ? employeur.getCompany() : "[nom_entreprise]";
             String adresseStage = stage.getLocation() != null ? stage.getLocation() : "[offre_lieuStage]";
             String dateDebut = stage.getStartDate() != null ? stage.getStartDate().toString() : "xx";
             String dateFin = stage.getEndDate() != null ? stage.getEndDate().toString() : "xx";

@@ -383,14 +383,14 @@ public class GestionnaireService {
             throw new IllegalArgumentException("Une candidature existe déjà pour cet étudiant et ce stage");
         }
 
-        // 5. Créer la candidature avec le statut ACCEPTEE
+        // 5. Créer la candidature avec le statut CONFIRMER
         Candidature candidature = Candidature.builder()
                 .etudiant(etudiant)
                 .cv(cv)
                 .stage(stage)
                 .motivationLetter(null) // Pas de lettre de motivation pour une attribution directe
                 .dateCandidature(LocalDateTime.now())
-                .status(CandidatureStatus.ACCEPTEE)
+                .status(CandidatureStatus.CONFIRMER)
                 .dateDecision(LocalDateTime.now())
                 .decision(dto.getComment() != null ? dto.getComment() : "Stage attribué par le gestionnaire")
                 .build();

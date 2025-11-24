@@ -110,10 +110,12 @@ export default function StageDetailsModal({
             setShowAssignForm(false);
             
             // Afficher un message de succès
-            alert('Stage attribué avec succès et entente générée !');
+            setAssignSuccess(true);
             
-            // Fermer le modal
-            handleClose();
+            // Fermer le modal après 2 secondes
+            setTimeout(() => {
+                handleClose();
+            }, 2000);
         } catch (err) {
             console.error('Erreur lors de l\'attribution du stage:', err);
             const errorMessage = err?.response?.data?.message || err?.message || 'Erreur lors de l\'attribution du stage';
