@@ -261,7 +261,6 @@ export default function GestionnaireEtuCandidature() {
         if (list.length > 0 && user?.token && tab === "APPROVED") {
             checkEntentes();
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [list, user?.token, tab]);
 
     useEffect(() => {
@@ -350,9 +349,9 @@ export default function GestionnaireEtuCandidature() {
     };
 
     return (
-        <div className="min-h-screen bg-white">
+        <div className="min-h-screen bg-white dark:bg-gray-900">
             <div className="mx-auto max-w-5xl px-4 pt-6 pb-16">
-                <h1 className="text-teal-700 text-2xl md:text-3xl font-semibold text-center">
+                <h1 className="text-teal-700 dark:text-teal-400 text-2xl md:text-3xl font-semibold text-center">
                     {t('statusCandidatures')}
                 </h1>
 
@@ -362,8 +361,8 @@ export default function GestionnaireEtuCandidature() {
                         className={`justify-self-start rounded-md px-4 py-2 text-sm font-medium border
               ${
                             tab === "ZERO"
-                                ? "bg-white text-teal-700 border-teal-600"
-                                : "bg-white text-gray-700 border-gray-300 hover:border-teal-600 hover:text-teal-700"
+                                ? "bg-white dark:bg-gray-800 text-teal-700 dark:text-teal-400 border-teal-600 dark:border-teal-500"
+                                : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-teal-600 dark:hover:border-teal-500 hover:text-teal-700 dark:hover:text-teal-400"
                         }`}
                     >
                         {t('aucuneCandidature')} ({counts.ZERO})
@@ -374,8 +373,8 @@ export default function GestionnaireEtuCandidature() {
                         className={`justify-self-center rounded-md px-4 py-2 text-sm font-medium border
               ${
                             tab === "APPLIED"
-                                ? "bg-white text-teal-700 border-teal-600"
-                                : "bg-white text-gray-700 border-gray-300 hover:border-teal-600 hover:text-teal-700"
+                                ? "bg-white dark:bg-gray-800 text-teal-700 dark:text-teal-400 border-teal-600 dark:border-teal-500"
+                                : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-teal-600 dark:hover:border-teal-500 hover:text-teal-700 dark:hover:text-teal-400"
                         }`}
                     >
                         {t('candidatureSoumise')} ({counts.APPLIED})
@@ -386,8 +385,8 @@ export default function GestionnaireEtuCandidature() {
                         className={`justify-self-end rounded-md px-4 py-2 text-sm font-medium border
               ${
                             tab === "APPROVED"
-                                ? "bg-white text-teal-700 border-teal-600"
-                                : "bg-white text-gray-700 border-gray-300 hover:border-teal-600 hover:text-teal-700"
+                                ? "bg-white dark:bg-gray-800 text-teal-700 dark:text-teal-400 border-teal-600 dark:border-teal-500"
+                                : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-teal-600 dark:hover:border-teal-500 hover:text-teal-700 dark:hover:text-teal-400"
                         }`}
                     >
                         {t('stageTrouve')} ({counts.APPROVED})
@@ -400,47 +399,47 @@ export default function GestionnaireEtuCandidature() {
                     </div>
                 )}
 
-                <div className="mt-8 rounded-xl bg-white ring-1 ring-gray-200 shadow-sm overflow-hidden">
+                <div className="mt-8 rounded-xl bg-white dark:bg-gray-800 ring-1 ring-gray-200 dark:ring-gray-700 shadow-sm overflow-hidden">
                     {loading ? (
-                        <div className="py-10 text-center text-gray-700">{t('chargement')}</div>
+                        <div className="py-10 text-center text-gray-700 dark:text-gray-300">{t('chargement')}</div>
                     ) : list.length === 0 ? (
-                        <div className="py-10 text-center text-gray-700">
+                        <div className="py-10 text-center text-gray-700 dark:text-gray-300">
                             {t('aucunEtudiantCategorie')}
                         </div>
                     ) : (
                         <div className="w-full overflow-x-auto">
                             <table className="min-w-full border-separate border-spacing-0">
-                                <thead className="bg-gray-50">
+                                <thead className="bg-gray-50 dark:bg-gray-700">
                                 <tr>
-                                    <th className="text-left text-gray-800 font-semibold py-3 px-4">
+                                    <th className="text-left text-gray-800 dark:text-gray-200 font-semibold py-3 px-4">
                                         {t('etudiant')}
                                     </th>
-                                    <th className="text-left text-gray-800 font-semibold py-3 px-4">
+                                    <th className="text-left text-gray-800 dark:text-gray-200 font-semibold py-3 px-4">
                                         {t('email')}
                                     </th>
-                                    <th className="text-left text-gray-800 font-semibold py-3 px-4">
+                                    <th className="text-left text-gray-800 dark:text-gray-200 font-semibold py-3 px-4">
                                         {tab === "APPLIED" ? t('candidatures') : t('statut')}
                                     </th>
 
                                     {tab === "APPROVED" && (
-                                        <th className="text-left text-gray-800 font-semibold py-3 px-4">
+                                        <th className="text-left text-gray-800 dark:text-gray-200 font-semibold py-3 px-4">
                                             {t('details')}
                                         </th>
                                     )}
 
                                     {tab === "APPROVED" && (
-                                        <th className="text-left text-gray-800 font-semibold py-3 px-4">
+                                        <th className="text-left text-gray-800 dark:text-gray-200 font-semibold py-3 px-4">
                                             {t('statusEntente')}
                                         </th>
                                     )}
 
                                     {tab === "APPLIED" && (
-                                        <th className="text-left text-gray-800 font-semibold py-3 px-4">
+                                        <th className="text-left text-gray-800 dark:text-gray-200 font-semibold py-3 px-4">
                                             {t('action')}
                                         </th>
                                     )}
                                     {tab === "APPROVED" && (
-                                        <th className="text-left text-gray-800 font-semibold py-3 px-4">
+                                        <th className="text-left text-gray-800 dark:text-gray-200 font-semibold py-3 px-4">
                                             {t('action')}
                                         </th>
                                     )}
@@ -452,20 +451,20 @@ export default function GestionnaireEtuCandidature() {
                                     <tr
                                         key={s.id ?? s.email ?? idx}
                                         className={`${
-                                            idx % 2 === 0 ? "bg-white" : "bg-teal-50"
-                                        } hover:bg-teal-100 transition`}
+                                            idx % 2 === 0 ? "bg-white dark:bg-gray-800" : "bg-teal-50 dark:bg-teal-900/20"
+                                        } hover:bg-teal-100 dark:hover:bg-teal-900/30 transition`}
                                     >
                                         <td className="py-3 px-4 align-top">
-                                            <div className="font-medium text-gray-800">
+                                            <div className="font-medium text-gray-800 dark:text-gray-200">
                                                 {s.fullName}
                                             </div>
                                         </td>
-                                        <td className="py-3 px-4 align-top text-gray-700">
+                                        <td className="py-3 px-4 align-top text-gray-700 dark:text-gray-300">
                                             {s.email}
                                         </td>
                                         <td className="py-3 px-4 align-top">
                                             {tab === "APPLIED" ? (
-                                                <span className="text-gray-700">
+                                                <span className="text-gray-700 dark:text-gray-300">
                             {
                                 (s.applications || []).filter(
                                     (a) =>
@@ -477,11 +476,11 @@ export default function GestionnaireEtuCandidature() {
                                                     {t('candidatures')}
                           </span>
                                             ) : tab === "APPROVED" ? (
-                                                <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold bg-teal-100 text-teal-700">
+                                                <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold bg-teal-100 dark:bg-teal-900/50 text-teal-700 dark:text-teal-300">
                             {t('stageTrouve')}
                           </span>
                                             ) : (
-                                                <span className="text-gray-500">
+                                                <span className="text-gray-500 dark:text-gray-400">
                             {t('aucuneCandidature')}
                           </span>
                                             )}
@@ -498,7 +497,7 @@ export default function GestionnaireEtuCandidature() {
                                                     return (
                                                         <button
                                                             type="button"
-                                                            className="text-teal-700 hover:underline"
+                                                            className="text-teal-700 dark:text-teal-400 hover:underline"
                                                             title={t('detailsEntente')}
                                                             onClick={() => {
                                                                 if (confirmedApp) openStageModal(confirmedApp);
@@ -517,30 +516,30 @@ export default function GestionnaireEtuCandidature() {
                                                     const confirmedApp = (s.applications || []).find((a) =>
                                                         String(a.status).toUpperCase() === CONFIRMED_STATUS
                                                     ) || (s.applications || [])[0];
-                                                    if (!confirmedApp?.id) return <span className="text-sm text-gray-400">—</span>;
+                                                    if (!confirmedApp?.id) return <span className="text-sm text-gray-400 dark:text-gray-500">—</span>;
                                                     
                                                     const candidatureId = confirmedApp.id;
                                                     const ententeData = ententeDataMap[candidatureId];
                                                     const isChecking = checkingEntente[candidatureId];
                                                     
                                                     if (isChecking) {
-                                                        return <span className="text-sm text-gray-500 italic">{t('verification')}</span>;
+                                                        return <span className="text-sm text-gray-500 dark:text-gray-400 italic">{t('verification')}</span>;
                                                     }
                                                     
                                                     if (!ententeData) {
-                                                        return <span className="text-sm text-gray-400">{t('ententeNonGeneree')}</span>;
+                                                        return <span className="text-sm text-gray-400 dark:text-gray-500">{t('ententeNonGeneree')}</span>;
                                                     }
                                                     
                                                     if (ententeData.status === "SIGNEE") {
                                                         return (
-                                                            <span className="text-sm text-green-600 font-medium">
+                                                            <span className="text-sm text-green-600 dark:text-green-400 font-medium">
                                                                 {t('ententeSigneeParToutesLesParties')}
                                                             </span>
                                                         );
                                                     }
                                                     
                                                     // Autres statuts
-                                                    return <span className="text-sm text-gray-500">{t('enAttenteDeSignature')}</span>;
+                                                    return <span className="text-sm text-gray-500 dark:text-gray-400">{t('enAttenteDeSignature')}</span>;
                                                 })()}
                                             </td>
                                         )}
@@ -549,7 +548,7 @@ export default function GestionnaireEtuCandidature() {
                                             <td className="py-3 px-4 align-top">
                                                 <button
                                                     type="button"
-                                                    className="text-blue-600 hover:underline"
+                                                    className="text-blue-600 dark:text-blue-400 hover:underline"
                                                     title={t('voirCandidatures')}
                                                     onClick={() => {
                                                         setModalFilterStatuses(null);
@@ -575,7 +574,7 @@ export default function GestionnaireEtuCandidature() {
                                                     
                                                     if (isChecking) {
                                                         return (
-                                                            <span className="text-sm text-gray-500 italic">
+                                                            <span className="text-sm text-gray-500 dark:text-gray-400 italic">
                                                                 {t('verification')}
                                                             </span>
                                                         );

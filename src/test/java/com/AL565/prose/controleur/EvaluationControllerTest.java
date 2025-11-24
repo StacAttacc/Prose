@@ -57,17 +57,29 @@ class EvaluationControllerTest {
                 .etudiantPrenom("Jean")
                 .employeurNom("Entreprise Test")
                 .stageTitle("Stage Développeur Java")
-                .productivite(4)
-                .qualiteTravail(5)
-                .relationsInterpersonnelles(4)
-                .habiletesPersonnelles(4)
-                .appreciationGlobale(4)
-                .commentaires("Très bon stagiaire")
-                .pointsForts("Motivé et autonome")
-                .pointsAmelioration("Peut améliorer la communication")
-                .heureEncadrement("M. Martin")
-                .gardeContact(true)
-                .rehireEtudiant(true)
+                .nomEleve("Jean Dupont")
+                .programmeEtudes("Informatique")
+                .nomEntreprise("Entreprise Test")
+                .nomSuperviseur("M. Martin")
+                .fonction("Responsable TI")
+                .telephone("514-555-1234")
+                .productivitePlanificationOrganisation("totalementAccord")
+                .qualiteRespectMandats("plutotAccord")
+                .relationsContactFacile("totalementAccord")
+                .habiletesInteretMotivation("totalementAccord")
+                .appreciationGlobale("depasse")
+                .appreciationPrecisions("Très bon stagiaire")
+                .productiviteCommentaires("Très efficace")
+                .qualiteCommentaires("Bon souci du détail")
+                .relationsCommentaires("Travail d'équipe excellent")
+                .habiletesCommentaires("Toujours ponctuel")
+                .evaluationDiscutee(true)
+                .heuresEncadrement("2h/semaine")
+                .accueillirProchainStage("oui")
+                .formationSuffisante("Oui")
+                .signataireNom("M. Martin")
+                .signataireFonction("Responsable TI")
+                .signataireDate(java.time.LocalDate.now())
                 .dateEvaluation(LocalDateTime.now())
                 .dateCreation(LocalDateTime.now())
                 .build();
@@ -82,9 +94,9 @@ class EvaluationControllerTest {
                         .content(objectMapper.writeValueAsString(evaluationDTO)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.productivite").value(4))
-                .andExpect(jsonPath("$.qualiteTravail").value(5))
-                .andExpect(jsonPath("$.etudiantNom").value("Dupont"));
+                .andExpect(jsonPath("$.nomEleve").value("Jean Dupont"))
+                .andExpect(jsonPath("$.productivitePlanificationOrganisation").value("totalementAccord"))
+                .andExpect(jsonPath("$.appreciationGlobale").value("depasse"));
     }
 
     @Test
@@ -98,16 +110,6 @@ class EvaluationControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
-    @Test
-    void testUpdateEvaluation_Success() throws Exception {
-        when(evaluationService.updateEvaluation(eq(1L), eq(1L), any(EvaluationDTO.class))).thenReturn(evaluationDTO);
-
-        mockMvc.perform(put("/api/employeur/1/evaluations/1")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(evaluationDTO)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1));
-    }
 
     @Test
     void testGetEvaluationByEntente_Success() throws Exception {
@@ -115,7 +117,8 @@ class EvaluationControllerTest {
 
         mockMvc.perform(get("/api/employeur/1/evaluations/entente/5"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.ententeId").value(5));
+                .andExpect(jsonPath("$.ententeId").value(5))
+                .andExpect(jsonPath("$.nomSuperviseur").value("M. Martin"));
     }
 
     @Test

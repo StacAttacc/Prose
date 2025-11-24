@@ -11,11 +11,11 @@ const U = (s) => (s == null ? "" : String(s).trim().toUpperCase());
 
 const badgeClass = (st) => {
     switch (st) {
-        case STATUS.ACCEPTEE: return "border-emerald-600 bg-emerald-50 text-emerald-700";
-        case STATUS.REFUSEE: return "border-rose-600 bg-rose-50 text-rose-700";
-        case STATUS.CONVOQUEE: return "border-blue-600 bg-blue-50 text-blue-700";
+        case STATUS.ACCEPTEE: return "border-emerald-600 dark:border-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300";
+        case STATUS.REFUSEE: return "border-rose-600 dark:border-rose-400 bg-rose-50 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300";
+        case STATUS.CONVOQUEE: return "border-blue-600 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300";
         case STATUS.SOUMISE:
-        default: return "border-slate-300 bg-slate-50 text-slate-700";
+        default: return "border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-300";
     }
 };
 
@@ -59,7 +59,6 @@ export default function ApplicationsModal({
                 return filterSet.has(k);
             });
 
-        // Règle: on ne montre pas les candidatures déjà acceptées par l'étudiant
         return base.filter(
             (a) => U(a?.status ?? a?.statut ?? a?.candidatureStatus) !== "ACCEPTEE_ETUDIANT"
         );
@@ -67,13 +66,13 @@ export default function ApplicationsModal({
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
-            <div className="w-full max-w-2xl rounded-2xl bg-white shadow-xl">
-                <div className="border-b px-5 py-4">
-                    <h2 className="text-xl font-semibold text-slate-900">
+            <div className="w-full max-w-2xl rounded-2xl bg-white dark:bg-gray-800 shadow-xl">
+                <div className="border-b dark:border-gray-700 px-5 py-4">
+                    <h2 className="text-xl font-semibold text-slate-900 dark:text-gray-100">
                         Candidatures de {fullName}
                     </h2>
                     {filterSet && (
-                        <p className="mt-1 text-sm text-slate-500">
+                        <p className="mt-1 text-sm text-slate-500 dark:text-gray-400">
                             Filtre: {[...filterSet].join(" / ")}
                         </p>
                     )}
@@ -81,7 +80,7 @@ export default function ApplicationsModal({
 
                 <div className="px-5 py-4">
                     {rows.length === 0 ? (
-                        <div className="text-center text-slate-600 py-8">
+                        <div className="text-center text-slate-600 dark:text-gray-400 py-8">
                             Aucune candidature à afficher.
                         </div>
                     ) : (
@@ -89,12 +88,12 @@ export default function ApplicationsModal({
                             {/* conteneur scrollable vertical dans la modale */}
                             <div className="max-h-[420px] md:max-h-[60vh] overflow-y-auto rounded-md pr-2">
                                 <table className="min-w-full border-separate border-spacing-0">
-                                    <thead className="bg-slate-50 sticky top-0 z-10">
-                                        <tr className="text-left text-sm font-semibold text-slate-700">
-                                            <th className="px-3 py-2 bg-slate-50">Stage</th>
-                                            <th className="px-3 py-2 bg-slate-50">Entreprise</th>
-                                            <th className="px-3 py-2 bg-slate-50">Statut</th>
-                                            <th className="px-3 py-2 bg-slate-50">Action</th>
+                                    <thead className="bg-slate-50 dark:bg-gray-700 sticky top-0 z-10">
+                                        <tr className="text-left text-sm font-semibold text-slate-700 dark:text-gray-200">
+                                            <th className="px-3 py-2 bg-slate-50 dark:bg-gray-700">Stage</th>
+                                            <th className="px-3 py-2 bg-slate-50 dark:bg-gray-700">Entreprise</th>
+                                            <th className="px-3 py-2 bg-slate-50 dark:bg-gray-700">Statut</th>
+                                            <th className="px-3 py-2 bg-slate-50 dark:bg-gray-700">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -106,11 +105,11 @@ export default function ApplicationsModal({
                                             const st = U(ap?.status ?? ap?.statut ?? ap?.candidatureStatus);
 
                                             return (
-                                                <tr key={ap.id ?? i} className={i % 2 ? "bg-white" : "bg-slate-50"}>
+                                                <tr key={ap.id ?? i} className={i % 2 ? "bg-white dark:bg-gray-800" : "bg-slate-50 dark:bg-gray-700"}>
                                                     <td className="px-3 py-2 align-top">
-                                                        <div className="font-medium text-slate-900">{title}</div>
+                                                        <div className="font-medium text-slate-900 dark:text-gray-100">{title}</div>
                                                     </td>
-                                                    <td className="px-3 py-2 align-top text-slate-700">{company}</td>
+                                                    <td className="px-3 py-2 align-top text-slate-700 dark:text-gray-300">{company}</td>
                                                     <td className={`px-3 py-2 align-top ${st === STATUS.ACCEPTEE ? "text-center" : ""}`}>
                                                         {st === STATUS.ACCEPTEE ? (
                                                             <div className="flex justify-center">
@@ -126,7 +125,7 @@ export default function ApplicationsModal({
                                                     </td>
                                                     <td className="px-3 py-2 align-top">
                                                         <button
-                                                            className="text-blue-600 hover:underline"
+                                                            className="text-blue-600 dark:text-blue-400 hover:underline"
                                                             onClick={() => onSeeStage && onSeeStage(ap)}
                                                             type="button"
                                                         >
@@ -144,11 +143,11 @@ export default function ApplicationsModal({
                 </div>
 
 
-                <div className="border-t px-5 py-4 flex justify-end">
+                <div className="border-t dark:border-gray-700 px-5 py-4 flex justify-end">
                     <button
                         type="button"
                         onClick={onClose}
-                        className="rounded-md border border-slate-300 bg-white px-4 py-2 text-slate-700 hover:bg-slate-100"
+                        className="rounded-md border border-slate-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-2 text-slate-700 dark:text-gray-200 hover:bg-slate-100 dark:hover:bg-gray-600"
                     >
                         Fermer
                     </button>

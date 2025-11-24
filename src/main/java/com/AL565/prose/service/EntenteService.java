@@ -72,13 +72,19 @@ public class EntenteService {
         if (existingEntente.isPresent()) {
             Entente entente = existingEntente.get();
             Stage stage = candidature.getStage();
-            Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(stage.getEmployeurEmail());
+            Employeur employeur = null;
+            if (stage.getEmployeurEmail() != null && !stage.getEmployeurEmail().trim().isEmpty()) {
+                employeur = employeurRepository.getEmployeurByCredentials_Username(stage.getEmployeurEmail());
+            }
             return EntenteDTO.toDTO(entente, employeur);
         }
 
         Etudiant etudiant = candidature.getEtudiant();
         Stage stage = candidature.getStage();
-        Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(stage.getEmployeurEmail());
+        Employeur employeur = null;
+        if (stage.getEmployeurEmail() != null && !stage.getEmployeurEmail().trim().isEmpty()) {
+            employeur = employeurRepository.getEmployeurByCredentials_Username(stage.getEmployeurEmail());
+        }
 
         byte[] pdfData = generateContractPdfWithSignatures(candidature, etudiant, employeur, stage, null, null, null);
 
@@ -101,20 +107,42 @@ public class EntenteService {
 
     @Transactional
     public void createNotificationWhenEntenteIsGenerated(Entente entente) {
-        String messageFR = "Une entente doit être sigée pour le stage "
-                + entente.getCandidature().getStage().getTitle();
-        String messageEN = "An agreement needs to be signed for the "
-                + entente.getCandidature().getStage().getTitle() + " internship";
-        SignatureEntenteNotification notification = new SignatureEntenteNotification();
-        notification.setCreatedAt(LocalDateTime.now());
-        notification.setMessageFR(messageFR);
-        notification.setMessageEN(messageEN);
-        notification.setType(NotificationType.SIGNATURE_ENTENTE_NOTIFICATION);
-        notification.setCandidatureId(entente.getCandidature().getId());
-        notification
-                .setTargetEmployeurEmail(entente.getCandidature().getStage().getEmployeurEmail());
-        notification.setTargetEtudiantEmail(entente.getCandidature().getEtudiant().getEmail());
-        notification.setStageId(entente.getCandidature().getStageId());
+        // Vérifier si une notification existe déjà pour cette candidature ou ce stage
+        Optional<SignatureEntenteNotification> existingNotification = signatureEntenteNotificationRepository
+                .findByCandidatureId(entente.getCandidature().getId());
+        
+        if (existingNotification.isEmpty()) {
+            // Vérifier aussi par stageId si candidatureId ne trouve rien
+            existingNotification = signatureEntenteNotificationRepository
+                    .findByStageId(entente.getCandidature().getStageId());
+        }
+        
+        SignatureEntenteNotification notification;
+        if (existingNotification.isPresent()) {
+            // Mettre à jour la notification existante
+            notification = existingNotification.get();
+            notification.setCreatedAt(LocalDateTime.now());
+            notification.setMessageFR("Une entente doit être sigée pour le stage "
+                    + entente.getCandidature().getStage().getTitle());
+            notification.setMessageEN("An agreement needs to be signed for the "
+                    + entente.getCandidature().getStage().getTitle() + " internship");
+        } else {
+            // Créer une nouvelle notification
+            String messageFR = "Une entente doit être sigée pour le stage "
+                    + entente.getCandidature().getStage().getTitle();
+            String messageEN = "An agreement needs to be signed for the "
+                    + entente.getCandidature().getStage().getTitle() + " internship";
+            notification = new SignatureEntenteNotification();
+            notification.setCreatedAt(LocalDateTime.now());
+            notification.setMessageFR(messageFR);
+            notification.setMessageEN(messageEN);
+            notification.setType(NotificationType.SIGNATURE_ENTENTE_NOTIFICATION);
+            notification.setCandidatureId(entente.getCandidature().getId());
+            String employeurEmail = entente.getCandidature().getStage().getEmployeurEmail();
+            notification.setTargetEmployeurEmail(employeurEmail != null ? employeurEmail : "");
+            notification.setTargetEtudiantEmail(entente.getCandidature().getEtudiant().getEmail());
+            notification.setStageId(entente.getCandidature().getStageId());
+        }
 
         notificationRepository.save(notification);
     }
@@ -176,7 +204,7 @@ public class EntenteService {
             } else {
                 entente.setStatus(EntenteStatus.SIGNEE_ETUDIANT);
             }
-        } else if (employeur.getEmail().equals(userEmail)) {
+        } else if (employeur != null && employeur.getEmail().equals(userEmail)) {
             entente.setDateSignatureEmployeur(now);
             if (entente.getDateSignatureEtudiant() != null) {
                 // Les deux (étudiant et employeur) ont signé, mais pas encore le gestionnaire
@@ -236,8 +264,8 @@ public class EntenteService {
             }
 
             String nomEtudiant = etudiant.getFirstName() + " " + etudiant.getLastName();
-            String nomEmployeur = employeur.getFirstName() + " " + employeur.getLastName();
-            String nomEntreprise = employeur.getCompany() != null ? employeur.getCompany() : "[nom_entreprise]";
+            String nomEmployeur = employeur != null ? (employeur.getFirstName() + " " + employeur.getLastName()) : "[nom_employeur]";
+            String nomEntreprise = employeur != null && employeur.getCompany() != null ? employeur.getCompany() : "[nom_entreprise]";
             String adresseStage = stage.getLocation() != null ? stage.getLocation() : "[offre_lieuStage]";
             String dateDebut = stage.getStartDate() != null ? stage.getStartDate().toString() : "xx";
             String dateFin = stage.getEndDate() != null ? stage.getEndDate().toString() : "xx";

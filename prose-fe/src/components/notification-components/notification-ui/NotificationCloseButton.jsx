@@ -52,7 +52,7 @@ export function NotificationCloseButton({
         <button
             type="button"
             onClick={(e) => handleButtonClick(e)}
-            className="inline-flex items-center py-1 px-2 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200"
+            className="inline-flex items-center py-1 px-2 text-xs font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded hover:bg-gray-200 dark:hover:bg-gray-600"
             aria-label={buttonLabel()}
             title={buttonLabel()}
         >

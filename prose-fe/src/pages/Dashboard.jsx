@@ -7,6 +7,7 @@ import Notifications from "../components/notification-components/Notifications.j
 import {useYear} from "../context/YearContext.jsx";
 import {useI18n} from "../context/I18nContext.jsx";
 import ErrorBoundary from "../components/common/ErrorBoundary.jsx";
+import {ThemeToggle} from "../components/common/ThemeToggle.jsx";
 
 export default function Dashboard() {
     const { user } = useAuth();
@@ -47,6 +48,7 @@ export default function Dashboard() {
                                                 <option value="en">English</option>
                                             </select>
                                         </div>
+                                        <ThemeToggle />
                                         {(user.role === "GESTIONNAIRE" || user.role === "EMPLOYEUR") && (
                                             <div className="flex items-center gap-2">
                                                 <label className="text-white text-sm font-medium">{t('year')}:</label>
@@ -154,6 +156,12 @@ export default function Dashboard() {
                                             className="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2">
                                         {t('Associations') || 'Association Professeur-Étudiant'}
                                     </button>
+                                    <button onClick={() => {
+                                        nav('gestionnaire/creer-professeur')
+                                    }}
+                                            className="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2">
+                                        {t('creerUnProfesseur')}
+                                    </button>
                                 </>
                             ) : <></>}
                             {user.role === "PROFESSEUR" ? (
@@ -164,7 +172,7 @@ export default function Dashboard() {
                     </div>
                 </nav>
             </header>
-            <main className="flex">
+            <main className="flex bg-white dark:bg-gray-900 min-h-screen">
                 <div className="mx-auto">
                     <Outlet />
                 </div>

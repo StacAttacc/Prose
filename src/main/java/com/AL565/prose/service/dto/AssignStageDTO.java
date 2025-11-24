@@ -1,0 +1,15 @@
+package com.AL565.prose.service.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class AssignStageDTO {
+    private String etudiantEmail;
+    private Long stageId;
+    private String comment; // Optionnel - commentaire pour l'attribution
+}
+

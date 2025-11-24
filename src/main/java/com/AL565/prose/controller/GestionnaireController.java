@@ -8,6 +8,7 @@ import com.AL565.prose.service.EntenteService;
 import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
 import com.AL565.prose.service.exceptions.EtudiantAlreadyAssociatedException;
+import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/gestionnaire")
@@ -190,6 +192,66 @@ public class GestionnaireController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Etudiant already associated");
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("Erreur interne du serveur");
+        }
+    }
+
+    @PostMapping("/professeurs/create")
+    public ResponseEntity<ReturnEntityDTO<String>> createProfesseur(@RequestBody ProfesseurPasswordDTO professeurDTO) {
+        try {
+            gestionnaireService.createProfesseur(professeurDTO);
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(new ReturnEntityDTO<>("Professeur créé avec succès", null));
+        } catch (EmailAlreadyExistsException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(new ReturnEntityDTO<>("Un compte avec cet email existe déjà", null));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ReturnEntityDTO<>(e.getMessage(), null));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ReturnEntityDTO<>("Erreur lors de la création du professeur", null));
+        }
+    }
+
+    @PostMapping("/stages/assign")
+    public ResponseEntity<ReturnEntityDTO<CandidatureDTO>> assignStageToStudent(@RequestBody AssignStageDTO assignStageDTO) {
+        try {
+            CandidatureDTO candidature = gestionnaireService.assignStageToStudent(assignStageDTO);
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(new ReturnEntityDTO<>("Stage attribué à l'étudiant avec succès", candidature));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ReturnEntityDTO<>(e.getMessage(), null));
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ReturnEntityDTO<>("Stage non trouvé", null));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ReturnEntityDTO<>("Erreur lors de l'attribution du stage", null));
+        }
+    }
+
+    @GetMapping("/etudiants/all")
+    public ResponseEntity<ReturnEntityDTO<List<EtudiantDTO>>> getAllEtudiants() {
+        try {
+            List<EtudiantDTO> etudiants = gestionnaireService.getAllEtudiants();
+            return ResponseEntity.ok(new ReturnEntityDTO<>("Liste des étudiants", etudiants));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ReturnEntityDTO<>("Erreur lors de la récupération des étudiants", null));
+        }
+    }
+
+    @GetMapping("/professeurs/all")
+    public ResponseEntity<ReturnEntityDTO<List<ProfesseurDTO>>> getAllProfesseurs() {
+        try {
+            List<ProfesseurDTO> professeurs = gestionnaireService.getAllProfesseurs();
+            return ResponseEntity.ok(new ReturnEntityDTO<>("Liste des professeurs", professeurs));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ReturnEntityDTO<>("Erreur lors de la récupération des professeurs", null));
         }
     }
 }

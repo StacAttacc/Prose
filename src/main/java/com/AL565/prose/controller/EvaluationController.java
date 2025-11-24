@@ -32,20 +32,6 @@ public class EvaluationController {
         }
     }
 
-    @PutMapping("/{evaluationId}")
-    public ResponseEntity<EvaluationDTO> updateEvaluation(
-            @PathVariable Long employeurId,
-            @PathVariable Long evaluationId,
-            @RequestBody EvaluationDTO evaluationDTO) {
-        try {
-            EvaluationDTO updatedEvaluation = evaluationService.updateEvaluation(employeurId, evaluationId, evaluationDTO);
-            return ResponseEntity.ok(updatedEvaluation);
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
 
     @GetMapping("/entente/{ententeId}")
     public ResponseEntity<EvaluationDTO> getEvaluationByEntente(
