@@ -85,15 +85,17 @@ export default function StageDetailsModal({
             const candidatureId = candidature.id;
             await generateEntente(candidatureId, user.token);
 
+     
             // Réinitialiser le formulaire
             setSelectedEtudiantEmail("");
             setAssignComment("");
             setShowAssignForm(false);
             
-            // Fermer le modal après 2 secondes
-            setTimeout(() => {
-                handleClose();
-            }, 2000);
+            // Afficher un message de succès
+            alert('Stage attribué avec succès et entente générée !');
+            
+            // Fermer le modal
+            handleClose();
         } catch (err) {
             console.error('Erreur lors de l\'attribution du stage:', err);
             const errorMessage = err?.response?.data?.message || err?.message || 'Erreur lors de l\'attribution du stage';

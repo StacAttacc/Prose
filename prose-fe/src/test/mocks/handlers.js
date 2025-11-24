@@ -523,6 +523,82 @@ export const handlers = [
       message: 'Trouvés',
       data: stages
     });
+  }),
+
+  // GET /gestionnaire/etudiants/all - Pour charger la liste des étudiants
+  http.get(`${BASE_URL}/gestionnaire/etudiants/all`, () => {
+    return HttpResponse.json({
+      message: 'Liste des étudiants',
+      data: [
+        {
+          id: 1,
+          firstName: 'Jean',
+          lastName: 'Dupont',
+          email: 'jean.dupont@example.com',
+          program: 'Informatique'
+        },
+        {
+          id: 2,
+          firstName: 'Marie',
+          lastName: 'Martin',
+          email: 'marie.martin@example.com',
+          program: 'Génie Logiciel'
+        },
+        {
+          id: 3,
+          firstName: 'Pierre',
+          lastName: 'Bernard',
+          email: 'pierre.bernard@example.com',
+          program: 'Informatique'
+        }
+      ]
+    });
+  }),
+
+  // POST /gestionnaire/stages/assign - Pour attribuer un stage à un étudiant
+  http.post(`${BASE_URL}/gestionnaire/stages/assign`, async ({ request }) => {
+    const body = await request.json();
+    return HttpResponse.json({
+      message: 'Stage attribué avec succès',
+      data: {
+        id: 100,
+        status: 'ACCEPTEE',
+        etudiantEmail: body.etudiantEmail,
+        stageId: body.stageId,
+        comment: body.comment || null,
+        datePostulation: new Date().toISOString()
+      }
+    });
+  }),
+
+  // POST /gestionnaire/candidatures/:candidatureId/generer-entente - Pour générer une entente
+  http.post(`${BASE_URL}/gestionnaire/candidatures/:candidatureId/generer-entente`, ({ params }) => {
+    const { candidatureId } = params;
+    return HttpResponse.json({
+      message: 'Entente générée avec succès',
+      data: {
+        id: 1,
+        candidatureId: parseInt(candidatureId),
+        status: 'A_SIGNER',
+        documentPdfBase64: 'JVBERi0xLjQKJeLjz9MKMSAwIG9iago8PAovVHlwZSAvQ2F0YWxvZwovUGFnZXMgMiAwIFIKPj4KZW5kb2JqCjIgMCBvYmoKPDwKL1R5cGUgL1BhZ2VzCi9LaWRzIFszIDAgUl0KL0NvdW50IDEKPD4KZW5kb2JqCjMgMCBvYmoKPDwKL1R5cGUgL1BhZ2UKL1BhcmVudCAyIDAgUgovTWVkaWFCb3ggWzAgMCA2MTIgNzkyXQovUmVzb3VyY2VzIDw8Ci9Gb250IDw8Ci9GMSA0IDAgUgo+Pgo+PgovQ29udGVudHMgNSAwIFIKPj4KZW5kb2JqCjQgMCBvYmoKPDwKL1R5cGUgL0ZvbnQKL1N1YnR5cGUgL1R5cGUxCi9CYXNlRm9udCAvSGVsdmV0aWNhCj4+CmVuZG9iago1IDAgb2JqCjw8Ci9MZW5ndGggNDQKPj4Kc3RyZWFtCkJUCi9GMSAxMiBUZgo1MCA3MDAgVGQKKEhlbGxvIFdvcmxkKSBUagpFVApzdHJlYW0KZW5kb2JqCnhyZWYKMCA2CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAwOSAwMDAwMCBuIAowMDAwMDAwMDU4IDAwMDAwIG4gCjAwMDAwMDAxMTUgMDAwMDAgbiAKMDAwMDAwMDI2OCAwMDAwMCBuIAowMDAwMDAwMzQxIDAwMDAwIG4gCnRyYWlsZXIKPDwKL1NpemUgNgovUm9vdCAxIDAgUgo+PgpzdGFydHhyZWYKNDI3CiUlRU9G',
+        documentName: `entente_stage_${candidatureId}.pdf`
+      }
+    });
+  }),
+
+  // GET /gestionnaire/candidatures/:candidatureId/entente - Pour vérifier/récupérer une entente
+  http.get(`${BASE_URL}/gestionnaire/candidatures/:candidatureId/entente`, ({ params }) => {
+    const { candidatureId } = params;
+    return HttpResponse.json({
+      message: 'Entente trouvée',
+      data: {
+        id: 1,
+        candidatureId: parseInt(candidatureId),
+        status: 'A_SIGNER',
+        documentPdfBase64: 'JVBERi0xLjQKJeLjz9MKMSAwIG9iago8PAovVHlwZSAvQ2F0YWxvZwovUGFnZXMgMiAwIFIKPj4KZW5kb2JqCjIgMCBvYmoKPDwKL1R5cGUgL1BhZ2VzCi9LaWRzIFszIDAgUl0KL0NvdW50IDEKPD4KZW5kb2JqCjMgMCBvYmoKPDwKL1R5cGUgL1BhZ2UKL1BhcmVudCAyIDAgUgovTWVkaWFCb3ggWzAgMCA2MTIgNzkyXQovUmVzb3VyY2VzIDw8Ci9Gb250IDw8Ci9GMSA0IDAgUgo+Pgo+PgovQ29udGVudHMgNSAwIFIKPj4KZW5kb2JqCjQgMCBvYmoKPDwKL1R5cGUgL0ZvbnQKL1N1YnR5cGUgL1R5cGUxCi9CYXNlRm9udCAvSGVsdmV0aWNhCj4+CmVuZG9iago1IDAgb2JqCjw8Ci9MZW5ndGggNDQKPj4Kc3RyZWFtCkJUCi9GMSAxMiBUZgo1MCA3MDAgVGQKKEhlbGxvIFdvcmxkKSBUagpFVApzdHJlYW0KZW5kb2JqCnhyZWYKMCA2CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAwOSAwMDAwMCBuIAowMDAwMDAwMDU4IDAwMDAwIG4gCjAwMDAwMDAxMTUgMDAwMDAgbiAKMDAwMDAwMDI2OCAwMDAwMCBuIAowMDAwMDAwMzQxIDAwMDAwIG4gCnRyYWlsZXIKPDwKL1NpemUgNgovUm9vdCAxIDAgUgo+PgpzdGFydHhyZWYKNDI3CiUlRU9G',
+        documentName: `entente_stage_${candidatureId}.pdf`
+      }
+    });
   })
 ];
 

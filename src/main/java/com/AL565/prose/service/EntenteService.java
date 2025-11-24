@@ -107,20 +107,42 @@ public class EntenteService {
 
     @Transactional
     public void createNotificationWhenEntenteIsGenerated(Entente entente) {
-        String messageFR = "Une entente doit être sigée pour le stage "
-                + entente.getCandidature().getStage().getTitle();
-        String messageEN = "An agreement needs to be signed for the "
-                + entente.getCandidature().getStage().getTitle() + " internship";
-        SignatureEntenteNotification notification = new SignatureEntenteNotification();
-        notification.setCreatedAt(LocalDateTime.now());
-        notification.setMessageFR(messageFR);
-        notification.setMessageEN(messageEN);
-        notification.setType(NotificationType.SIGNATURE_ENTENTE_NOTIFICATION);
-        notification.setCandidatureId(entente.getCandidature().getId());
-        notification
-                .setTargetEmployeurEmail(entente.getCandidature().getStage().getEmployeurEmail());
-        notification.setTargetEtudiantEmail(entente.getCandidature().getEtudiant().getEmail());
-        notification.setStageId(entente.getCandidature().getStageId());
+        // Vérifier si une notification existe déjà pour cette candidature ou ce stage
+        Optional<SignatureEntenteNotification> existingNotification = signatureEntenteNotificationRepository
+                .findByCandidatureId(entente.getCandidature().getId());
+        
+        if (existingNotification.isEmpty()) {
+            // Vérifier aussi par stageId si candidatureId ne trouve rien
+            existingNotification = signatureEntenteNotificationRepository
+                    .findByStageId(entente.getCandidature().getStageId());
+        }
+        
+        SignatureEntenteNotification notification;
+        if (existingNotification.isPresent()) {
+            // Mettre à jour la notification existante
+            notification = existingNotification.get();
+            notification.setCreatedAt(LocalDateTime.now());
+            notification.setMessageFR("Une entente doit être sigée pour le stage "
+                    + entente.getCandidature().getStage().getTitle());
+            notification.setMessageEN("An agreement needs to be signed for the "
+                    + entente.getCandidature().getStage().getTitle() + " internship");
+        } else {
+            // Créer une nouvelle notification
+            String messageFR = "Une entente doit être sigée pour le stage "
+                    + entente.getCandidature().getStage().getTitle();
+            String messageEN = "An agreement needs to be signed for the "
+                    + entente.getCandidature().getStage().getTitle() + " internship";
+            notification = new SignatureEntenteNotification();
+            notification.setCreatedAt(LocalDateTime.now());
+            notification.setMessageFR(messageFR);
+            notification.setMessageEN(messageEN);
+            notification.setType(NotificationType.SIGNATURE_ENTENTE_NOTIFICATION);
+            notification.setCandidatureId(entente.getCandidature().getId());
+            String employeurEmail = entente.getCandidature().getStage().getEmployeurEmail();
+            notification.setTargetEmployeurEmail(employeurEmail != null ? employeurEmail : "");
+            notification.setTargetEtudiantEmail(entente.getCandidature().getEtudiant().getEmail());
+            notification.setStageId(entente.getCandidature().getStageId());
+        }
 
         notificationRepository.save(notification);
     }

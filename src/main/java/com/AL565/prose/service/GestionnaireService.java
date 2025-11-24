@@ -204,8 +204,15 @@ public class GestionnaireService {
                         .findNotificationsByTypeAndSecondRecipientReadAtIsNull(CANDIDATURE_DECISION_NOTIFICATION);
                 List<Notification> etudiantOffresResponses = notificationRepository
                         .findNotificationsByTypeAndSecondRecipientReadAtIsNull(ETUDIANT_OFFRE_DECISION_NOTIFICATION);
-                List<SignatureEntenteNotification> signatureEntentes = signatureEntenteNotificationRepository
+                List<SignatureEntenteNotification> signatureEntentes = new ArrayList<>();
+                try {
+                    signatureEntentes = signatureEntenteNotificationRepository
                         .findByThirdRecipientReadAtIsNullAndFirstRecipientReadAtIsNotNullAndSecondRecipientReadAtIsNotNull();
+                } catch (Exception e) {
+                    System.err.println("Erreur lors de la récupération des notifications d'entente: " + e.getMessage());
+                    e.printStackTrace();
+                    // Continuer avec une liste vide plutôt que de faire échouer toute la requête
+                }
 
                 NotificationGroupDTO stagesGroup = NotificationGroupDTO
                         .toDTO(CREATION_STAGE_NOTIFICATION.getDisplayName(), stages);
@@ -231,6 +238,8 @@ public class GestionnaireService {
                             etudiantOffresResponsesGroup,
                             signatureEntentesGroup));
         } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("Erreur lors de la récupération des notifications: " + e.getMessage());
             throw new NotificationExceptions.NotificationFetchException();
         }
     }
