@@ -119,8 +119,23 @@ describe('GestionnaireEtuCandidature - Filtrage par année', () => {
   });
 
   it('devrait afficher les étudiants de l\'année 2025 par défaut', async () => {
+    const user = userEvent.setup();
     vi.mocked(useYear).mockReturnValue({ selectedYear: '2025', setSelectedYear: vi.fn() });
     renderWithProviders(<GestionnaireEtuCandidature />, { selectedYear: '2025' });
+
+    // Attendre que les données soient chargées
+    await waitFor(() => {
+      const buttons = screen.getAllByRole('button');
+      expect(buttons.length).toBeGreaterThan(0);
+    });
+
+    // Jean Dupont a une candidature CONFIRMER, donc il est dans l'onglet APPROVED
+    // Cliquer sur l'onglet APPROVED pour voir Jean Dupont
+    const buttons = screen.getAllByRole('button');
+    const stageTrouveButton = buttons.find(btn => btn.textContent.includes('Stage Trouvé'));
+    if (stageTrouveButton) {
+      await user.click(stageTrouveButton);
+    }
 
     await waitFor(() => {
       expect(screen.getByText('Jean Dupont')).toBeInTheDocument();
@@ -133,8 +148,22 @@ describe('GestionnaireEtuCandidature - Filtrage par année', () => {
   });
 
   it('devrait filtrer les étudiants selon l\'année sélectionnée (2026)', async () => {
+    const user = userEvent.setup();
     vi.mocked(useYear).mockReturnValue({ selectedYear: '2026', setSelectedYear: vi.fn() });
     renderWithProviders(<GestionnaireEtuCandidature />, { selectedYear: '2026' });
+
+    // Attendre que les données soient chargées
+    await waitFor(() => {
+      const buttons = screen.getAllByRole('button');
+      expect(buttons.length).toBeGreaterThan(0);
+    });
+
+    // Cliquer sur l'onglet APPROVED pour voir Pierre Bernard
+    const buttons = screen.getAllByRole('button');
+    const stageTrouveButton = buttons.find(btn => btn.textContent.includes('Stage Trouvé'));
+    if (stageTrouveButton) {
+      await user.click(stageTrouveButton);
+    }
 
     await waitFor(() => {
       expect(screen.getByText('Pierre Bernard')).toBeInTheDocument();
@@ -190,8 +219,20 @@ describe('GestionnaireEtuCandidature - Filtrage par année', () => {
   });
 
   it('devrait recharger les étudiants quand l\'année change', async () => {
+    const user = userEvent.setup();
     vi.mocked(useYear).mockReturnValue({ selectedYear: '2025', setSelectedYear: vi.fn() });
     const { rerender } = renderWithProviders(<GestionnaireEtuCandidature />, { selectedYear: '2025' });
+
+    // Cliquer sur l'onglet APPROVED pour voir Jean Dupont
+    await waitFor(() => {
+      const buttons = screen.getAllByRole('button');
+      expect(buttons.length).toBeGreaterThan(0);
+    });
+    const buttons = screen.getAllByRole('button');
+    const stageTrouveButton = buttons.find(btn => btn.textContent.includes('Stage Trouvé'));
+    if (stageTrouveButton) {
+      await user.click(stageTrouveButton);
+    }
 
     await waitFor(() => {
       expect(screen.getByText('Jean Dupont')).toBeInTheDocument();
@@ -207,8 +248,22 @@ describe('GestionnaireEtuCandidature - Filtrage par année', () => {
   });
 
   it('devrait afficher les compteurs corrects pour chaque onglet', async () => {
+    const user = userEvent.setup();
     vi.mocked(useYear).mockReturnValue({ selectedYear: '2025', setSelectedYear: vi.fn() });
     renderWithProviders(<GestionnaireEtuCandidature />, { selectedYear: '2025' });
+
+    // Attendre que les données soient chargées
+    await waitFor(() => {
+      const buttons = screen.getAllByRole('button');
+      expect(buttons.length).toBeGreaterThan(0);
+    });
+
+    // Cliquer sur l'onglet APPROVED pour voir Jean Dupont
+    const buttons = screen.getAllByRole('button');
+    const stageTrouveButton = buttons.find(btn => btn.textContent.includes('Stage Trouvé'));
+    if (stageTrouveButton) {
+      await user.click(stageTrouveButton);
+    }
 
     await waitFor(() => {
       expect(screen.getByText('Jean Dupont')).toBeInTheDocument();
@@ -220,8 +275,22 @@ describe('GestionnaireEtuCandidature - Filtrage par année', () => {
   });
 
   it('devrait afficher les emails des étudiants', async () => {
+    const user = userEvent.setup();
     vi.mocked(useYear).mockReturnValue({ selectedYear: '2025', setSelectedYear: vi.fn() });
     renderWithProviders(<GestionnaireEtuCandidature />, { selectedYear: '2025' });
+
+    // Attendre que les données soient chargées
+    await waitFor(() => {
+      const buttons = screen.getAllByRole('button');
+      expect(buttons.length).toBeGreaterThan(0);
+    });
+
+    // Cliquer sur l'onglet APPROVED pour voir les étudiants
+    const buttons = screen.getAllByRole('button');
+    const stageTrouveButton = buttons.find(btn => btn.textContent.includes('Stage Trouvé'));
+    if (stageTrouveButton) {
+      await user.click(stageTrouveButton);
+    }
 
     await waitFor(() => {
       expect(screen.getByText('jean.dupont@example.com')).toBeInTheDocument();

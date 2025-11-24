@@ -112,15 +112,17 @@ export const handlers = [
     
     const mockEtudiants2025 = [
       {
-        id: 1,
-        firstName: 'Jean',
-        lastName: 'Dupont',
-        email: 'jean.dupont@example.com',
-        professeurResponsable: {
+        etudiant: {
           id: 1,
-          firstName: 'Prof',
-          lastName: 'Test',
-          email: 'prof.test@example.com'
+          firstName: 'Jean',
+          lastName: 'Dupont',
+          email: 'jean.dupont@example.com',
+          professeurResponsable: {
+            id: 1,
+            firstName: 'Prof',
+            lastName: 'Test',
+            email: 'prof.test@example.com'
+          }
         },
         candidatures: [
           {
@@ -142,21 +144,63 @@ export const handlers = [
               }
             },
             datePostulation: '2024-12-01'
+          },
+          {
+            id: 10,
+            stageId: 10,
+            status: 'SOUMISE',
+            evaluationMillieu: null,
+            stage: {
+              id: 10,
+              title: 'Stage Développement Web Soumis',
+              location: '123 Rue Test, Montréal',
+              startDate: '2025-01-15',
+              endDate: '2025-04-30',
+              employeur: {
+                id: 1,
+                company: 'Tech Corp',
+                firstName: 'John',
+                lastName: 'Doe'
+              }
+            },
+            datePostulation: '2024-12-01'
           }
         ]
       },
       {
-        id: 2,
-        firstName: 'Marie',
-        lastName: 'Martin',
-        email: 'marie.martin@example.com',
-        professeurResponsable: {
-          id: 1,
-          firstName: 'Prof',
-          lastName: 'Test',
-          email: 'prof.test@example.com'
+        etudiant: {
+          id: 2,
+          firstName: 'Marie',
+          lastName: 'Martin',
+          email: 'marie.martin@example.com',
+          professeurResponsable: {
+            id: 1,
+            firstName: 'Prof',
+            lastName: 'Test',
+            email: 'prof.test@example.com'
+          }
         },
         candidatures: [
+          {
+            id: 1,
+            stageId: 1,
+            status: 'CONFIRMER',
+            evaluationMillieu: null,
+            stage: {
+              id: 1,
+              title: 'Stage Développement Web',
+              location: '123 Rue Test, Montréal',
+              startDate: '2025-01-15',
+              endDate: '2025-04-30',
+              employeur: {
+                id: 1,
+                company: 'Tech Corp',
+                firstName: 'John',
+                lastName: 'Doe'
+              }
+            },
+            datePostulation: '2024-12-01'
+          },
           {
             id: 2,
             stageId: 2,
@@ -199,16 +243,23 @@ export const handlers = [
 
     const mockEtudiants2026 = [
       {
-        id: 3,
-        firstName: 'Pierre',
-        lastName: 'Bernard',
-        email: 'pierre.bernard@example.com',
-        professeurResponsable: null,
+        etudiant: {
+          id: 3,
+          firstName: 'Pierre',
+          lastName: 'Bernard',
+          email: 'pierre.bernard@example.com',
+          professeurResponsable: {
+            id: 1,
+            firstName: 'Prof',
+            lastName: 'Test',
+            email: 'prof.test@example.com'
+          }
+        },
         candidatures: [
           {
             id: 3,
             stageId: 3,
-            status: 'SOUMISE',
+            status: 'CONFIRMER',
             evaluationMillieu: null,
             stage: {
               id: 3,
@@ -231,11 +282,18 @@ export const handlers = [
 
     const mockEtudiants2027 = [
       {
-        id: 4,
-        firstName: 'Sophie',
-        lastName: 'Lefebvre',
-        email: 'sophie.lefebvre@example.com',
-        professeurResponsable: null,
+        etudiant: {
+          id: 4,
+          firstName: 'Sophie',
+          lastName: 'Lefebvre',
+          email: 'sophie.lefebvre@example.com',
+          professeurResponsable: {
+            id: 1,
+            firstName: 'Prof',
+            lastName: 'Test',
+            email: 'prof.test@example.com'
+          }
+        },
         candidatures: [
           {
             id: 4,
