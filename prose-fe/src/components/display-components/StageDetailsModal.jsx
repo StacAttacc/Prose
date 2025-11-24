@@ -30,6 +30,7 @@ export default function StageDetailsModal({
     const [etudiants, setEtudiants] = useState([]);
     const [loadingEtudiants, setLoadingEtudiants] = useState(false);
     const [assigning, setAssigning] = useState(false);
+    const [assignSuccess, setAssignSuccess] = useState(false);
 
     const shouldShowManagementButtons =
         showManagementButtons && user?.role === "GESTIONNAIRE";
@@ -41,6 +42,15 @@ export default function StageDetailsModal({
             loadEtudiants();
         }
     }, [showAssignForm, user?.token]);
+
+    useEffect(() => {
+        if (assignSuccess) {
+            const timer = setTimeout(() => {
+                setAssignSuccess(false);
+            }, 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [assignSuccess]);
 
     const loadEtudiants = async () => {
         if (!user?.token) {
@@ -92,10 +102,12 @@ export default function StageDetailsModal({
             setShowAssignForm(false);
             
             // Afficher un message de succès
-            alert('Stage attribué avec succès et entente générée !');
+            setAssignSuccess(true);
             
-            // Fermer le modal
-            handleClose();
+            // Fermer le modal après un court délai pour laisser voir le message
+            setTimeout(() => {
+                handleClose();
+            }, 2000);
         } catch (err) {
             console.error('Erreur lors de l\'attribution du stage:', err);
             const errorMessage = err?.response?.data?.message || err?.message || 'Erreur lors de l\'attribution du stage';
@@ -252,6 +264,12 @@ export default function StageDetailsModal({
                         </div>
 
                         {error && <ErrorBanner message={error} />}
+
+                        {assignSuccess && (
+                            <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
+                                Stage attribué avec succès et entente générée !
+                            </div>
+                        )}
 
                         {stage.status === "REJETEE" && stage.rejectionReason && (
                             <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded">

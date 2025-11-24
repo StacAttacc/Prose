@@ -388,7 +388,7 @@ describe('StageDetailsModal - Attribution de stage par gestionnaire', () => {
       await user.click(attribuerSubmitButton);
 
       await waitFor(() => {
-        expect(mockAlert).toHaveBeenCalledWith('Stage attribué avec succès et entente générée !');
+        expect(screen.getByText('Stage attribué avec succès et entente générée !')).toBeInTheDocument();
       }, { timeout: 5000 });
 
       await waitFor(() => {
@@ -569,7 +569,7 @@ describe('StageDetailsModal - Attribution de stage par gestionnaire', () => {
       await user.click(attribuerSubmitButton);
 
       await waitFor(() => {
-        expect(mockAlert).toHaveBeenCalledWith('Stage attribué avec succès et entente générée !');
+        expect(screen.getByText('Stage attribué avec succès et entente générée !')).toBeInTheDocument();
       }, { timeout: 5000 });
 
       await waitFor(() => {
