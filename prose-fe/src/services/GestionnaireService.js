@@ -293,3 +293,19 @@ export async function createProfesseur(professeurData, token) {
         throw error;
     }
 }
+
+export async function assignStageToStudent(etudiantEmail, stageId, comment, token) {
+    try {
+        const res = await http.post("/gestionnaire/stages/assign", {
+            etudiantEmail,
+            stageId,
+            comment: comment || null
+        });
+        return res.data?.data || res.data;
+    } catch (error) {
+        console.error('Erreur lors de l\'attribution du stage:', error);
+        console.error('Error response:', error?.response?.data);
+        console.error('Error status:', error?.response?.status);
+        throw error;
+    }
+}

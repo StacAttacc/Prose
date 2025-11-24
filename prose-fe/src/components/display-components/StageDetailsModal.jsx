@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useI18n } from "../../context/I18nContext.jsx";
 import ErrorBanner from "./ErrorBanner.jsx";
 import CandidatureForm from "../etudiant-components/CandidatureForm.jsx";
+import { assignStageToStudent, getAllEtudiants, generateEntente, checkEntenteExists } from "../../services/GestionnaireService.js";
 
 export default function StageDetailsModal({
                                               stage,
@@ -23,9 +24,104 @@ export default function StageDetailsModal({
     const [showCandidatureForm, setShowCandidatureForm] = useState(false);
     const [candidatureSuccess, setCandidatureSuccess] = useState(false);
     const [isRejecting, setIsRejecting] = useState(false);
+    const [showAssignForm, setShowAssignForm] = useState(false);
+    const [selectedEtudiantEmail, setSelectedEtudiantEmail] = useState("");
+    const [assignComment, setAssignComment] = useState("");
+    const [etudiants, setEtudiants] = useState([]);
+    const [loadingEtudiants, setLoadingEtudiants] = useState(false);
+    const [assigning, setAssigning] = useState(false);
 
     const shouldShowManagementButtons =
         showManagementButtons && user?.role === "GESTIONNAIRE";
+
+    const isStageApproved = stage?.status === "APPROUVEE";
+
+    useEffect(() => {
+        if (showAssignForm && user?.token) {
+            loadEtudiants();
+        }
+    }, [showAssignForm, user?.token]);
+
+    const loadEtudiants = async () => {
+        if (!user?.token) {
+            setLoadingEtudiants(false);
+            return;
+        }
+        setLoadingEtudiants(true);
+        setError("");
+        try {
+            const data = await getAllEtudiants(user.token);
+            console.log('Étudiants chargés:', data);
+            setEtudiants(Array.isArray(data) ? data : []);
+        } catch (err) {
+            console.error('Erreur lors du chargement des étudiants:', err);
+            console.error('Détails de l\'erreur:', err?.response?.data);
+            console.error('Status:', err?.response?.status);
+            setError(err?.response?.data?.message || 'Erreur lors du chargement des étudiants');
+            setEtudiants([]);
+        } finally {
+            setLoadingEtudiants(false);
+        }
+    };
+
+    const handleAssignStage = async () => {
+        if (!selectedEtudiantEmail || !user?.token) {
+            setError('Veuillez sélectionner un étudiant');
+            return;
+        }
+
+        setAssigning(true);
+        setError("");
+        try {
+            // 1. Attribuer le stage à l'étudiant
+            const candidature = await assignStageToStudent(
+                selectedEtudiantEmail,
+                stage.id,
+                assignComment,
+                user.token
+            );
+
+            // 2. Générer l'entente
+            const candidatureId = candidature.id;
+            await generateEntente(candidatureId, user.token);
+
+            // 3. Récupérer l'entente avec le PDF
+            const ententeResult = await checkEntenteExists(candidatureId, user.token);
+            
+            if (ententeResult.exists && ententeResult.data?.documentPdfBase64) {
+                // 4. Télécharger le PDF
+                const bin = atob(ententeResult.data.documentPdfBase64);
+                const bytes = new Uint8Array(bin.length);
+                for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+                const blob = new Blob([bytes], { type: "application/pdf" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = ententeResult.data.documentName || "entente_stage.pdf";
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                URL.revokeObjectURL(url);
+            }
+
+            // Réinitialiser le formulaire
+            setSelectedEtudiantEmail("");
+            setAssignComment("");
+            setShowAssignForm(false);
+            
+            // Afficher un message de succès
+            alert('Stage attribué avec succès et entente générée !');
+            
+            // Fermer le modal
+            handleClose();
+        } catch (err) {
+            console.error('Erreur lors de l\'attribution du stage:', err);
+            const errorMessage = err?.response?.data?.message || err?.message || 'Erreur lors de l\'attribution du stage';
+            setError(errorMessage);
+        } finally {
+            setAssigning(false);
+        }
+    };
 
     const handleApprove = async () => {
         if (!onApprove) return;
@@ -68,6 +164,10 @@ export default function StageDetailsModal({
         setIsRejecting(false);
         setShowCandidatureForm(false);
         setCandidatureSuccess(false);
+        setShowAssignForm(false);
+        setSelectedEtudiantEmail("");
+        setAssignComment("");
+        setError("");
         onClose();
         if (candidatureSuccess && onCandidatureSuccess) {
             onCandidatureSuccess(stage);
@@ -183,11 +283,11 @@ export default function StageDetailsModal({
                         <div className="mt-6">
                             <div className="w-full">
                                 {shouldShowManagementButtons && (
-                                    <div className="flex flex-col mb-4">
+                                    <div className="flex flex-col mb-4 gap-2">
                                         <button
                                             onClick={handleApprove}
-                                            className="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center disabled:opacity-50 mb-1"
-                                            disabled={isProcessing || isRejecting}
+                                            className="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center disabled:opacity-50"
+                                            disabled={isProcessing || isRejecting || assigning}
                                         >
                                             {isProcessing ? t('traitement') : t('approuver')}
                                         </button>
@@ -195,15 +295,29 @@ export default function StageDetailsModal({
                                         <button
                                             onClick={() => {
                                                 setIsRejecting(!isRejecting);
+                                                setShowAssignForm(false);
                                             }}
                                             className="text-white bg-gradient-to-r from-red-400 via-red-500 to-red-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center disabled:opacity-50"
-                                            disabled={isProcessing}
+                                            disabled={isProcessing || assigning}
                                         >
                                             {t('rejeter')}
                                         </button>
 
+                                        {isStageApproved && (
+                                            <button
+                                                onClick={() => {
+                                                    setShowAssignForm(!showAssignForm);
+                                                    setIsRejecting(false);
+                                                }}
+                                                className="text-white bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center disabled:opacity-50"
+                                                disabled={isProcessing || isRejecting || assigning}
+                                            >
+                                                Attribuer le stage
+                                            </button>
+                                        )}
+
                                         {isRejecting && (
-                                            <div className="mt-6">
+                                            <div className="mt-4 p-4 bg-gray-50 rounded-lg">
                                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                                     {t('raisonRejetObligatoire')}
                                                 </label>
@@ -215,13 +329,90 @@ export default function StageDetailsModal({
                                                     rows="3"
                                                     disabled={isProcessing}
                                                 />
-                                                <div className="flex justify-center">
+                                                <div className="flex justify-center mt-2">
                                                     <button
                                                         onClick={handleReject}
-                                                        className="text-white bg-gradient-to-r from-red-400 via-red-500 to-red-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center disabled:opacity-50 mt-2"
+                                                        className="text-white bg-gradient-to-r from-red-400 via-red-500 to-red-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center disabled:opacity-50"
                                                         disabled={isProcessing || !rejectionReason}
                                                     >
                                                         {isProcessing ? t('traitement') : t('confirmer')}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {showAssignForm && (
+                                            <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                                                <h3 className="text-lg font-semibold mb-4">
+                                                    Attribuer le stage à un étudiant
+                                                </h3>
+                                                
+                                                <div className="mb-4">
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                        Sélectionner un étudiant <span className="text-red-500">*</span>
+                                                    </label>
+                                                    {loadingEtudiants ? (
+                                                        <div className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-500">
+                                                            Chargement...
+                                                        </div>
+                                                    ) : error && error.includes('étudiants') ? (
+                                                        <div className="w-full px-3 py-2 border border-red-300 rounded-md bg-red-50 text-red-700">
+                                                            {error}
+                                                        </div>
+                                                    ) : (
+                                                        <select
+                                                            value={selectedEtudiantEmail}
+                                                            onChange={(e) => setSelectedEtudiantEmail(e.target.value)}
+                                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
+                                                            required
+                                                        >
+                                                            <option value="">Sélectionner un étudiant</option>
+                                                            {etudiants.length === 0 ? (
+                                                                <option value="" disabled>Aucun étudiant disponible</option>
+                                                            ) : (
+                                                                etudiants.map((etudiant) => (
+                                                                    <option key={etudiant.id || etudiant.email} value={etudiant.email}>
+                                                                        {etudiant.firstName} {etudiant.lastName} ({etudiant.email})
+                                                                    </option>
+                                                                ))
+                                                            )}
+                                                        </select>
+                                                    )}
+                                                </div>
+
+                                                <div className="mb-4">
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                        Commentaire (optionnel)
+                                                    </label>
+                                                    <textarea
+                                                        value={assignComment}
+                                                        onChange={(e) => setAssignComment(e.target.value)}
+                                                        placeholder="Ajouter un commentaire pour cette attribution..."
+                                                        className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                        rows="3"
+                                                        disabled={assigning}
+                                                    />
+                                                </div>
+
+                                                <div className="flex justify-end gap-2">
+                                                    <button
+                                                        onClick={() => {
+                                                            setShowAssignForm(false);
+                                                            setSelectedEtudiantEmail("");
+                                                            setAssignComment("");
+                                                            setError("");
+                                                        }}
+                                                        className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 disabled:opacity-50"
+                                                        disabled={assigning}
+                                                    >
+                                                        Annuler
+                                                    </button>
+                                                    <button
+                                                        onClick={handleAssignStage}
+                                                        className="px-4 py-2 bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 text-white rounded hover:from-blue-500 hover:to-blue-700 disabled:opacity-50"
+                                                        disabled={assigning || !selectedEtudiantEmail}
+                                                    >
+                                                        {assigning ? 'Attribution en cours...' : 'Attribuer'}
                                                     </button>
                                                 </div>
                                             </div>

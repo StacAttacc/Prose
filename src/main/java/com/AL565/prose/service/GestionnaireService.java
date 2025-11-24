@@ -429,6 +429,18 @@ public class GestionnaireService {
         };
     }
 
+    public List<EtudiantDTO> getAllEtudiants() {
+        return etudiantRepository.findAll().stream()
+                .map(etudiant -> EtudiantDTO.toDTOTokenless(etudiant))
+                .toList();
+    }
+
+    public List<ProfesseurDTO> getAllProfesseurs() {
+        return professeurRepository.findAll().stream()
+                .map(professeur -> ProfesseurDTO.toDTOTokenless(professeur))
+                .toList();
+    }
+
     private String translateStatusMessage(OfferStatus status, String language) {
         return switch (status) {
             case APPROUVEE -> language.equals("FR") ? "approuvée" : "approved";
