@@ -333,12 +333,36 @@ export async function getCandidaturesEnStage(year, token) {
         });
         
         // Filtrer pour ne garder que les candidatures avec stage en cours (CONFIRMER ou ACCEPTEE)
+        // ET qui ont un professeur associé (précondition)
         const allEtudiants = res.data?.data || [];
         const candidaturesEnStage = [];
         
-        allEtudiants.forEach(etudiant => {
-            if (etudiant.candidatures && Array.isArray(etudiant.candidatures)) {
-                etudiant.candidatures.forEach(candidature => {
+        console.log('Total étudiants reçus:', allEtudiants.length);
+        console.log('Structure du premier étudiant:', JSON.stringify(allEtudiants[0], null, 2));
+        
+        allEtudiants.forEach(etudiantCandidaturesDTO => {
+            // La structure est EtudiantCandidaturesDTO qui contient:
+            // - etudiant: EtudiantDTO (avec firstName, lastName, professeurResponsable)
+            // - candidatures: List<EtudiantCandidatureDTO>
+            const etudiant = etudiantCandidaturesDTO.etudiant;
+            const candidatures = etudiantCandidaturesDTO.candidatures || [];
+            
+            if (!etudiant) {
+                console.log('Élément ignoré: pas de données étudiant');
+                return;
+            }
+            
+            // Vérifier que l'étudiant a un professeur associé (précondition)
+            if (!etudiant.professeurResponsable) {
+                console.log(`Étudiant ${etudiant.firstName} ${etudiant.lastName} ignoré: pas de professeur associé`);
+                return; // Ignorer les étudiants sans professeur
+            }
+            
+            if (candidatures && Array.isArray(candidatures) && candidatures.length > 0) {
+                console.log(`Étudiant ${etudiant.firstName} ${etudiant.lastName} a ${candidatures.length} candidature(s)`);
+                candidatures.forEach(candidature => {
+                    console.log(`  - Candidature ${candidature.id}: statut = ${candidature.status}`);
+                    // Filtrer pour ne garder que les candidatures avec stage en cours
                     if (candidature.status === 'CONFIRMER' || candidature.status === 'ACCEPTEE') {
                         candidaturesEnStage.push({
                             ...candidature,
@@ -352,9 +376,12 @@ export async function getCandidaturesEnStage(year, token) {
                         });
                     }
                 });
+            } else {
+                console.log(`Étudiant ${etudiant.firstName} ${etudiant.lastName} n'a pas de candidatures`);
             }
         });
         
+        console.log('Candidatures en stage trouvées:', candidaturesEnStage.length);
         return candidaturesEnStage;
     } catch (error) {
         console.error('Erreur lors de la récupération des candidatures en stage:', error);
