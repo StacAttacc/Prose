@@ -6,7 +6,7 @@ export function NotificationItem({ notification, markAndNavigate, typeKey, setRe
     function renderCompactItem() {
         return (
             <>
-                <div className="w-7 h-7 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 text-xs">
+                <div className="w-7 h-7 rounded-full bg-gradient-to-r from-red-300 via-red-400 to-red-500 flex items-center justify-center text-yellow-300 text-xs">
                     !
                 </div>
                 <div className="min-w-0 flex-1">
