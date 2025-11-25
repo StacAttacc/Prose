@@ -57,6 +57,7 @@ public class EtudiantService {
     private final EmployeurRepository employeurRepository;
     private final CandidatureRepository candidatureRepository;
     private final NotificationRepository notificationRepository;
+    private final SignatureEntenteNotificationRepository signatureEntenteNotificationRepository;
     private final NotificationsHelper notificationsHelper;
 
     public void inscrireEtudiant(EtudiantPasswordDTO dto) {
@@ -269,8 +270,8 @@ public class EtudiantService {
                             CANDIDATURE_DECISION_NOTIFICATION,
                             etudiantEmail
                     );
-            List<Notification> signatures = notificationRepository
-                    .findNotificationsByTypeAndSecondRecipientReadAtIsNullAndTargetEmail(
+            List<SignatureEntenteNotification> signatures = signatureEntenteNotificationRepository
+                    .findSignatureEntenteNotificationsByTypeAndSecondRecipientReadAtIsNullAndTargetEtudiantEmail(
                             SIGNATURE_ENTENTE_NOTIFICATION,
                             etudiantEmail
                     );

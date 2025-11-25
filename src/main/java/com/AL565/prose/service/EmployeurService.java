@@ -35,6 +35,7 @@ public class EmployeurService {
     private PasswordEncoder passwordEncoder;
     private StageRepository stageRepository;
     private NotificationRepository notificationRepository;
+    private SignatureEntenteNotificationRepository signatureEntenteNotificationRepository;
     private CandidatureRepository candidatureRepository;
     private NotificationsHelper notificationsHelper;
 
@@ -183,8 +184,8 @@ public class EmployeurService {
                             POSTULATION_NOTIFICATION,
                             employeurEmail
                 );
-            List<Notification> signatureEntentes = notificationRepository
-                    .findNotificationsByTypeAndFirstRecipientReadAtIsNullAndTargetEmail(
+            List<SignatureEntenteNotification> signatureEntentes = signatureEntenteNotificationRepository
+                    .findSignatureEntenteNotificationsByTypeAndFirstRecipientReadAtIsNullAndTargetEmployeurEmail(
                             SIGNATURE_ENTENTE_NOTIFICATION,
                             employeurEmail
                     );
