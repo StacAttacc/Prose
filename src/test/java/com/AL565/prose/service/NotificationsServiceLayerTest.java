@@ -140,7 +140,7 @@ class NotificationsServiceLayerTest {
                 "dummy@email.com"
         )).thenReturn(List.of(n3));
 
-        when(notificationRepository.findNotificationsByTypeAndFirstRecipientReadAtIsNullAndTargetEmail(
+        when(signatureEntenteNotificationRepository.findSignatureEntenteNotificationsByTypeAndSecondRecipientReadAtIsNullAndTargetEtudiantEmail(
                 SIGNATURE_ENTENTE_NOTIFICATION,
                 "dummy@email.com"
         )).thenReturn(List.of(n9));
@@ -160,7 +160,7 @@ class NotificationsServiceLayerTest {
                 "dummy@email.com"
         )).thenReturn(List.of(n8));
 
-        when(notificationRepository.findNotificationsByTypeAndSecondRecipientReadAtIsNullAndTargetEmail(
+        when(signatureEntenteNotificationRepository.findSignatureEntenteNotificationsByTypeAndFirstRecipientReadAtIsNullAndTargetEmployeurEmail(
                 SIGNATURE_ENTENTE_NOTIFICATION,
                 "dummy@email.com"
         )).thenReturn(List.of(n9));

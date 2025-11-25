@@ -1,14 +1,11 @@
 package com.AL565.prose.service;
 
-import com.AL565.prose.model.Employeur;
-import com.AL565.prose.model.Etudiant;
-import com.AL565.prose.model.Gestionnaire;
+import com.AL565.prose.model.*;
 import com.AL565.prose.service.dto.*;
 
 import lombok.RequiredArgsConstructor;
 
 import com.AL565.prose.security.JwtTokenProvider;
-import com.AL565.prose.model.ProseUser;
 import com.AL565.prose.repository.ProseUserRepository;
 import com.AL565.prose.security.exceptions.UserNotFoundException;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -42,6 +39,7 @@ public class AuthService {
             case EMPLOYEUR -> EmployeurDTO.toDTO((Employeur) user, token);
             case ETUDIANT -> EtudiantDTO.toDTO((Etudiant) user, token);
             case GESTIONNAIRE -> GestionnaireDTO.toDTO((Gestionnaire) user, token);
+            case PROFESSEUR -> ProfesseurDTO.toDTOTokenless((Professeur) user);
             default -> null;
         };
 

@@ -1,5 +1,6 @@
 package com.AL565.prose.repository;
 
+import com.AL565.prose.model.notifications.NotificationType;
 import com.AL565.prose.model.notifications.SignatureEntenteNotification;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -9,4 +10,12 @@ public interface SignatureEntenteNotificationRepository extends JpaRepository<Si
     List<SignatureEntenteNotification> findByThirdRecipientReadAtIsNullAndFirstRecipientReadAtIsNotNullAndSecondRecipientReadAtIsNotNull();
     java.util.Optional<SignatureEntenteNotification> findByCandidatureId(Long candidatureId);
     java.util.Optional<SignatureEntenteNotification> findByStageId(Long stageId);
+    List<SignatureEntenteNotification> findSignatureEntenteNotificationsByTypeAndSecondRecipientReadAtIsNullAndTargetEtudiantEmail(
+            NotificationType type,
+            String targetEtudiantEmail
+    );
+    List<SignatureEntenteNotification> findSignatureEntenteNotificationsByTypeAndFirstRecipientReadAtIsNullAndTargetEmployeurEmail(
+            NotificationType type,
+            String targetEtudiantEmail
+    );
 }
