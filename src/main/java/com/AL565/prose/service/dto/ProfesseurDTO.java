@@ -21,6 +21,10 @@ public class ProfesseurDTO extends ProseUserDTO{
         this.token = token;
     }
 
+    public static ProfesseurDTO toDTO(Professeur professeur, String token) {
+        return new ProfesseurDTO(professeur, token);
+    }
+
     public static ProfesseurDTO toDTOTokenless(Professeur professeur) {
         return new ProfesseurDTO(professeur, null);
     }

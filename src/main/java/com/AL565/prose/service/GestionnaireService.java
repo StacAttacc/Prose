@@ -423,7 +423,7 @@ public class GestionnaireService {
     }
 
     @Transactional
-    private void createNotificationForAssignedStage(Candidature candidature) {
+    protected void createNotificationForAssignedStage(Candidature candidature) {
         String stageTitle = candidature.getStage().getTitle();
 
         String messageFR = "Un stage vous a été attribué : " + stageTitle;

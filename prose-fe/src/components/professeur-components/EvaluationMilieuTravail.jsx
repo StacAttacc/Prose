@@ -56,6 +56,8 @@ const initialFormState = (candidatureId) => ({
     quartsVariables: false,
     debutQuarts: [],
     finQuarts: [],
+
+    candidatureId: candidatureId,
     
     // Signature
     tempsSignature: null
@@ -88,22 +90,23 @@ export default function EvaluationMilieuTravail() {
         try {
             setLoading(true);
             setError(null);
-            
+
             const candidatures = await getCandidaturesProfesseur(user.id, selectedYear, user.token);
             const currentCandidature = candidatures.find(c => c.id === parseInt(candidatureId));
-            
+
             if (!currentCandidature) {
                 setError(t('professeur.candidatureNonTrouvee') || 'Candidature non trouvée');
                 return;
             }
-            
+
             setCandidature(currentCandidature);
-            
+
             // Si une évaluation existe déjà, pré-remplir le formulaire
             if (currentCandidature.evaluationMillieu) {
                 const evalData = currentCandidature.evaluationMillieu;
                 setFormData(prev => ({
                     ...prev,
+                    candidatureId: prev.candidatureId,
                     nomEntreprise: evalData.nomEntreprise || '',
                     personneContact: evalData.personneContact || '',
                     addresse: evalData.addresse || '',
@@ -132,7 +135,7 @@ export default function EvaluationMilieuTravail() {
                     desireAutreStagiaires: evalData.desireAutreStagiaires || false,
                     quartsVariables: evalData.quartsVariables || false,
                     debutQuarts: evalData.debutQuarts || [],
-                    finQuarts: evalData.finQuarts || []
+                    finQuarts: evalData.finQuarts || [],
                 }));
             } else {
                 // Pré-remplir avec les informations de l'étudiant si disponibles
@@ -225,12 +228,10 @@ export default function EvaluationMilieuTravail() {
                 tempsSignature: new Date().toISOString()
             };
 
-            await evaluateWorkplace(evaluationData, user.token);
+            await evaluateWorkplace(candidature.id, evaluationData, user.token);
 
             setSuccess(true);
-            setTimeout(() => {
-                navigate('/professeur/candidatures');
-            }, 2000);
+            navigate("/professeur/evaluations-milieu")
         } catch (err) {
             console.error('Erreur lors de la sauvegarde:', err);
             setError(err.response?.data?.message || err.message || t('professeur.erreurSauvegarde') || 'Erreur lors de la sauvegarde');
@@ -250,7 +251,7 @@ export default function EvaluationMilieuTravail() {
                         key={option.value}
                         className={`cursor-pointer px-3 py-2 rounded border text-sm text-center transition-colors ${
                             formData[fieldName] === option.value
-                                ? 'bg-blue-600 text-white border-blue-600'
+                                ? 'text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm text-center'
                                 : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
                         }`}
                     >
@@ -289,7 +290,7 @@ export default function EvaluationMilieuTravail() {
         <div className="container mx-auto px-4 py-8 max-w-4xl">
             <div className="mb-6">
                 <button
-                    onClick={() => navigate('/professeur/candidatures')}
+                    onClick={() => navigate('/professeur/evaluations-milieu')}
                     className="flex items-center text-blue-600 hover:text-blue-800 font-medium mb-4"
                 >
                     <FaArrowLeft className="mr-2" />
@@ -297,7 +298,7 @@ export default function EvaluationMilieuTravail() {
                 </button>
 
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                    {t('professeur.evaluationMilieuTravail') || 'Évaluation du milieu de travail'}
+                    {t('professeur.evaluationMilieuStage') || 'Évaluation du milieu de travail'}
                 </h1>
                 <p className="text-gray-600">
                     {t('professeur.evaluantStage') || 'Évaluant le stage de'}: <span className="font-semibold">
@@ -585,7 +586,7 @@ export default function EvaluationMilieuTravail() {
                     </button>
                     <button
                         type="submit"
-                        className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition-colors duration-200 font-medium flex items-center justify-center disabled:bg-blue-400 disabled:cursor-not-allowed"
+                        className="flex-1 text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 flex items-center justify-center"
                         disabled={saving}
                     >
                         {saving ? (

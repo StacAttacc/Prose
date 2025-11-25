@@ -3,10 +3,7 @@ package com.AL565.prose.service.dto;
 import com.AL565.prose.model.CoteEvaluation;
 import com.AL565.prose.model.MillieuEvaluation;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -56,9 +53,10 @@ public class MillieuEvaluationDTO {
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private LocalDateTime tempsSignature;
 
+    private long candidatureId;
+
     public static MillieuEvaluation toModel(MillieuEvaluationDTO dto) {
-        return MillieuEvaluation.builder()
-                .id(dto.getId())
+        MillieuEvaluation.MillieuEvaluationBuilder builder = MillieuEvaluation.builder()
                 .accessibleTransportCommun(dto.getAccessibleTransportCommun())
                 .addresse(dto.getAddresse())
                 .climatTravailAgreable(dto.getClimatTravailAgreable())
@@ -88,8 +86,13 @@ public class MillieuEvaluationDTO {
                 .tempsEstReel(dto.getTempsEstReel())
                 .tempsSignature(dto.getTempsSignature())
                 .ville(dto.getVille())
-                .volumeTravailAcceptable(dto.getVolumeTravailAcceptable())
-                .build();
+                .volumeTravailAcceptable(dto.getVolumeTravailAcceptable());
+
+        if (dto.getId() != null) {
+            builder.id(dto.getId());
+        }
+
+        return builder.build();
     }
 
     public static MillieuEvaluationDTO toDTO(MillieuEvaluation model) {

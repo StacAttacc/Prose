@@ -28,6 +28,7 @@ export default function ListeCandidaturesProfesseur() {
                 setError(null);
                 const data = await getCandidaturesProfesseur(user.id, selectedYear, user.token);
                 setCandidatures(data || []);
+                console.log(data)
             } catch (err) {
                 console.error('Erreur lors du chargement des candidatures:', err);
                 setError(t('erreurChargementCandidatures') || 'Erreur lors du chargement des candidatures');
@@ -40,16 +41,6 @@ export default function ListeCandidaturesProfesseur() {
             loadCandidatures();
         }
     }, [user?.id, user?.token, selectedYear, t]);
-
-    const handleEvaluateWorkplace = (candidature) => {
-        navigate(`/professeur/evaluations/evaluer/${candidature.id}`);
-    };
-
-    const handleViewEvaluation = (candidature) => {
-        if (candidature.evaluationMillieu) {
-            navigate(`/professeur/evaluations/voir/${candidature.id}`);
-        }
-    };
 
     if (loading) {
         return (
@@ -102,7 +93,7 @@ export default function ListeCandidaturesProfesseur() {
                                             {candidature.etudiant?.firstName} {candidature.etudiant?.lastName}
                                         </h3>
                                         <p className="text-sm text-gray-600">
-                                            {t('professeur.stageId') || 'Stage ID'}: {candidature.stageId}
+                                            {t('professeur.stageName') || 'Stage Name'}: {candidature.stageName}
                                         </p>
                                     </div>
                                     {candidature.evaluationMillieu ? (
@@ -115,15 +106,15 @@ export default function ListeCandidaturesProfesseur() {
                                 <div className="mt-4 flex gap-2">
                                     {candidature.evaluationMillieu ? (
                                         <button
-                                            onClick={() => handleViewEvaluation(candidature)}
-                                            className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200 text-sm font-medium"
+                                            onClick={() => navigate(`/professeur/evaluations/${candidature.id}`)}
+                                            className="flex-1 text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2"
                                         >
                                             {t('professeur.voirEvaluation') || 'Voir l\'évaluation'}
                                         </button>
                                     ) : (
                                         <button
-                                            onClick={() => handleEvaluateWorkplace(candidature)}
-                                            className="flex-1 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors duration-200 text-sm font-medium"
+                                            onClick={() => navigate(`/professeur/evaluations/${candidature.id}`)}
+                                            className="flex-1 text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2"
                                         >
                                             {t('professeur.evaluerMilieu') || 'Évaluer le milieu'}
                                         </button>

@@ -6,7 +6,6 @@ import com.AL565.prose.model.auth.Role;
 import com.AL565.prose.repository.CandidatureRepository;
 import com.AL565.prose.repository.MillieuEvaluationRepository;
 import com.AL565.prose.repository.ProfesseurRepository;
-import com.AL565.prose.service.dto.CandidatureDTO;
 import com.AL565.prose.service.dto.CandidatureEvaluationDTO;
 import com.AL565.prose.service.dto.MillieuEvaluationDTO;
 import org.junit.jupiter.api.Test;
@@ -19,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -45,9 +45,11 @@ public class ProfesseurServiceTest {
         evaluation.setId(1L);
         evaluation.setNomEntreprise("Jean Employeurs");
 
-        when(millieuEvaluationRepository.save(any())).thenReturn(evaluation);
 
-        professeurService.evaluateWorkplace(MillieuEvaluationDTO.toDTO(evaluation));
+        when(millieuEvaluationRepository.save(any())).thenReturn(evaluation);
+        when(candidatureRepository.findById(any())).thenReturn(Optional.of(new Candidature()));
+
+        professeurService.evaluateWorkplace(MillieuEvaluationDTO.toDTO(evaluation), 1);
 
         verify(millieuEvaluationRepository, times(1)).save(any());
     }

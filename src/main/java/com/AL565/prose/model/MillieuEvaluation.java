@@ -1,5 +1,6 @@
 package com.AL565.prose.model;
 
+import ch.qos.logback.classic.pattern.DateConverter;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -17,7 +18,6 @@ import java.util.List;
 public class MillieuEvaluation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "millieu_evaluation_id")
     private Long id;
 
     private String nomEntreprise;

@@ -12,16 +12,17 @@ import lombok.NoArgsConstructor;
 @Builder
 public class CandidatureEvaluationDTO {
     private long id;
-    private long stageId;
+    private String stageName;
     private MillieuEvaluationDTO evaluationMillieu;
     private EtudiantDTO etudiant;
 
     public static CandidatureEvaluationDTO toDTO(Candidature model) {
         return CandidatureEvaluationDTO.builder()
+                .id(model.getId())
                 .evaluationMillieu(model.getEvaluationMillieu() != null ?
                         MillieuEvaluationDTO.toDTO(model.getEvaluationMillieu())
                         : null)
-                .stageId(model.getStageId())
+                .stageName(model.getStageName())
                 .etudiant(EtudiantDTO.toDTOTokenless(model.getEtudiant()))
                 .build();
     }

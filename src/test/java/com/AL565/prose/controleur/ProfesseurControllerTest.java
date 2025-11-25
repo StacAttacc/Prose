@@ -69,7 +69,7 @@ public class ProfesseurControllerTest {
 
         String content = objectMapper.writeValueAsString(evaluationDTO);
 
-        doNothing().when(professeurService).evaluateWorkplace(evaluationDTO);
+        doNothing().when(professeurService).evaluateWorkplace(evaluationDTO, evaluationDTO.getCandidatureId());
 
         mockMvc.perform(post("/professeur/evaluate")
                 .contentType(MediaType.APPLICATION_JSON).content(content))
@@ -92,18 +92,18 @@ public class ProfesseurControllerTest {
 
         CandidatureEvaluationDTO candidature1 = new CandidatureEvaluationDTO();
         candidature1.setId(1L);
-        candidature1.setStageId(stage.getId());
+        candidature1.setStageName("Stage1");
         candidature1.setEvaluationMillieu(new MillieuEvaluationDTO());
         candidature1.setEtudiant(EtudiantDTO.toDTOTokenless(new Etudiant("John", "Doe", new Credentials("john@doe.com", "123", Role.ETUDIANT), Discipline.INFORMATIQUE)));
 
         CandidatureEvaluationDTO candidature2 = new CandidatureEvaluationDTO();
         candidature2.setId(2L);
-        candidature2.setStageId(stage.getId());
+        candidature2.setStageName("Stage 2");
         candidature2.setEtudiant(EtudiantDTO.toDTOTokenless(new Etudiant("John", "Doe", new Credentials("john@doe.com", "123", Role.ETUDIANT), Discipline.INFORMATIQUE)));
 
         CandidatureEvaluationDTO candidature3 = new CandidatureEvaluationDTO();
         candidature3.setId(3L);
-        candidature3.setStageId(stage2.getId());
+        candidature3.setStageName("Stage 3");
         candidature3.setEvaluationMillieu(new MillieuEvaluationDTO());
         candidature3.setEtudiant(EtudiantDTO.toDTOTokenless(new Etudiant("John", "Doe", new Credentials("john@doe.com", "123", Role.ETUDIANT), Discipline.INFORMATIQUE)));
 

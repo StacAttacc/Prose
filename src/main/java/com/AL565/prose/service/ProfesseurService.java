@@ -1,20 +1,19 @@
 package com.AL565.prose.service;
 
-import com.AL565.prose.model.Etudiant;
-import com.AL565.prose.model.Professeur;
-import com.AL565.prose.model.Stage;
+import com.AL565.prose.model.*;
 import com.AL565.prose.repository.*;
-import com.AL565.prose.service.dto.CandidatureDTO;
-import com.AL565.prose.service.dto.CandidatureEvaluationDTO;
-import com.AL565.prose.service.dto.MillieuEvaluationDTO;
-import com.AL565.prose.service.dto.ProfesseurPasswordDTO;
+import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import com.AL565.prose.utils.SessionYearHelper;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 @AllArgsConstructor
@@ -25,6 +24,9 @@ public class ProfesseurService {
 
     private MillieuEvaluationRepository millieuEvaluationRepository;
     private CandidatureRepository candidatureRepository;
+    private EtudiantRepository etudiantRepository;
+    private EmployeurRepository employeurRepository;
+    private StageRepository stageRepository;
 
     public void register(ProfesseurPasswordDTO professeur) {
         if (professeurRepository.findByCredentials_Username(professeur.getEmail()).isPresent()) {
@@ -35,10 +37,33 @@ public class ProfesseurService {
         professeurRepository.save(ProfesseurPasswordDTO.toModel(professeur));
     }
 
-    public void evaluateWorkplace(MillieuEvaluationDTO evaluation) {
-        millieuEvaluationRepository.save(MillieuEvaluationDTO.toModel(evaluation));
+    @Transactional
+    public void evaluateWorkplace(MillieuEvaluationDTO evaluation, long candidatureId) {
+        Candidature candidature = candidatureRepository.findById(candidatureId)
+                .orElseThrow(() -> new NoSuchElementException("Candidature non trouvée"));
+
+        evaluation.setId(null);
+
+        // S'assurer que les listes ne sont pas null
+        if (evaluation.getHrSemaineMois() == null) {
+            evaluation.setHrSemaineMois(new ArrayList<>());
+        }
+        if (evaluation.getDebutQuarts() == null) {
+            evaluation.setDebutQuarts(new ArrayList<>());
+        }
+        if (evaluation.getFinQuarts() == null) {
+            evaluation.setFinQuarts(new ArrayList<>());
+        }
+
+        MillieuEvaluation millieuEvaluation = MillieuEvaluationDTO.toModel(evaluation);
+        millieuEvaluation = millieuEvaluationRepository.save(millieuEvaluation);
+
+        candidature.setEvaluationMillieu(millieuEvaluation);
+        candidatureRepository.save(candidature);
+
     }
 
+    @Transactional
     public List<CandidatureEvaluationDTO> getAllCandidaturesProfesseurRelated(String year, String professeurId) {
         int yearNumber = SessionYearHelper.getSessionYear(year);
 
@@ -50,5 +75,52 @@ public class ProfesseurService {
                 })
                 .map(CandidatureEvaluationDTO::toDTO)
                 .toList();
+    }
+
+    @Transactional
+    public List<EtudiantCandidaturesDTO> getAllEtudiantsCandidatures(String year, String professeurId) {
+        int yearNumber = SessionYearHelper.getSessionYear(year);
+        List<Etudiant> etudiants =  etudiantRepository.findAll();
+
+        List <EtudiantCandidaturesDTO> etudiantCandidaturesDTO = new ArrayList<>();
+
+        etudiants.forEach(etudiant -> {
+            if (etudiant.getProfesseurResponsable() == null || !etudiant.getProfesseurResponsable().getId().equals(Long.parseLong(professeurId))) {
+                return;
+            }
+            List<Candidature> candidatures = candidatureRepository.findByEtudiant_Credentials_Username(etudiant.getEmail());
+
+            List<EtudiantCandidatureDTO> etudiantCandidature = candidatures.stream().map(candidature -> {
+                Stage stage = stageRepository.findById(candidature.getStageId()).get();
+                Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(stage.getEmployeurEmail());
+                return EtudiantCandidatureDTO.builder()
+                        .id(candidature.getId())
+                        .stage(StageSimpleDTO.toDTOfromStageDTO(StageDTO.fromModel(stage, employeur)))
+                        .status(candidature.getStatus().toString())
+                        .decision(candidature.getDecision())
+                        .dateDecision(candidature.getDateDecision())
+                        .datePostulation(candidature.getDateCandidature())
+                        .evaluationMillieu(candidature.getEvaluationMillieu() != null ?
+                                MillieuEvaluationDTO.toDTO(candidature.getEvaluationMillieu()) : null)
+                        .build();
+            }).filter(candidature -> {
+                StageSimpleDTO stage = candidature.getStage();
+                LocalDate startDate = stage.getStartDate();
+                return startDate.getYear() ==  yearNumber;
+            }).toList();
+
+            if(etudiantCandidature.isEmpty()){
+                return;
+            }
+
+            etudiantCandidaturesDTO.add(
+                    EtudiantCandidaturesDTO.builder()
+                            .etudiant(EtudiantDTO.toDTOTokenless(etudiant))
+                            .candidatures(etudiantCandidature)
+                            .build()
+            );
+        });
+
+        return etudiantCandidaturesDTO;
     }
 }
