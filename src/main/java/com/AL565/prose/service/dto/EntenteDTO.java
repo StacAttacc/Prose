@@ -33,6 +33,7 @@ public class EntenteDTO {
     private Long etudiantId;
     private String etudiantNom;
     private String etudiantPrenom;
+    private String discipline;
     private Long employeurId;
     private Long stageId;
     private String stageTitle;
