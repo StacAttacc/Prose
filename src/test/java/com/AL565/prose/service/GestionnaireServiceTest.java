@@ -18,7 +18,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -100,12 +99,14 @@ class GestionnaireServiceTest {
         stage1.setId(1L);
         stage1.setTitle("Stage 1");
         stage1.setStatus(OfferStatus.SOUMISE);
+        stage1.setStartDate(LocalDate.now());
         stage1.setEmployeurEmail("employer@company.com");
 
         Stage stage2 = new Stage();
         stage2.setId(2L);
         stage2.setTitle("Stage 2");
         stage2.setStatus(OfferStatus.SOUMISE);
+        stage2.setStartDate(LocalDate.now());
         stage2.setEmployeurEmail("employer@company.com");
 
         Employeur employeur = new Employeur();
@@ -225,8 +226,6 @@ class GestionnaireServiceTest {
                 .title("Backend Java")
                 .employeurEmail("emp1@company.com")
                 .startDate(LocalDate.now())
-                .createdAt(OffsetDateTime.now())
-                .updatedAt(OffsetDateTime.now())
                 .build();
 
         Stage s2 = Stage.builder()
@@ -234,8 +233,6 @@ class GestionnaireServiceTest {
                 .title("Frontend React")
                 .employeurEmail("emp2@company.com")
                 .startDate(LocalDate.now())
-                .createdAt(OffsetDateTime.now())
-                .updatedAt(OffsetDateTime.now())
                 .build();
 
         when(stageRepository.findAll()).thenReturn(List.of(s1, s2));
@@ -303,7 +300,6 @@ class GestionnaireServiceTest {
                 .title("Backend Java++")
                 .employeurEmail("emp1@company.com")
                 .startDate(LocalDate.of(2077, 1, 18))
-                .updatedAt(OffsetDateTime.now())
                 .build();
 
         Stage s2 = Stage.builder()
@@ -311,7 +307,6 @@ class GestionnaireServiceTest {
                 .title("VR/MR/HR QoL Creator")
                 .employeurEmail("emp1@company.com")
                 .startDate(LocalDate.of(2077, 2, 1))
-                .updatedAt(null)
                 .build();
 
         Stage s3 = Stage.builder()
@@ -319,7 +314,6 @@ class GestionnaireServiceTest {
                 .title("Assembly C++++++")
                 .employeurEmail("emp1@company.com")
                 .startDate(LocalDate.of(2078, 3, 11))
-                .updatedAt(OffsetDateTime.now())
                 .build();
 
         when(stageRepository.findAll()).thenReturn(List.of(s1, s2, s3));

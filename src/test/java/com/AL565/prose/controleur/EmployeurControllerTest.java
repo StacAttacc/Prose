@@ -28,7 +28,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -152,7 +151,7 @@ class EmployeurControllerTest {
         Stage stage = new Stage(
                 1L, "Démissioner", "Partir immédiatement!", "Rien", new ArrayList<>(),
                 LocalDate.now(), LocalDate.now(), "Chez vous", null, "Remote", "0$",
-                OfferStatus.APPROUVEE, "jemployeur1@gmail.com", OffsetDateTime.now(), OffsetDateTime.now()
+                OfferStatus.APPROUVEE, "jemployeur1@gmail.com"
         );
 
         CandidatureDTO candidatureDTO = new CandidatureDTO(

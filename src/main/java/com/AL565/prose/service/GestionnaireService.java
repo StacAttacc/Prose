@@ -69,8 +69,8 @@ public class GestionnaireService {
                 .stream()
                 .map(stage -> {
                     Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(stage.getEmployeurEmail());
-                    return StageDTO.fromModel(stage, employeur);
-                }).filter(stage -> stage.getCreatedAt().getYear() ==  yearNumber)
+                    return StageDTO.toDTO(stage, employeur);
+                }).filter(stage -> stage.getStartDate().getYear() ==  yearNumber)
                 .toList();
     }
 
@@ -86,7 +86,7 @@ public class GestionnaireService {
 
         createNotificationForApprovedOrRejectedStage(updatedStage);
 
-        return StageDTO.fromModel(updatedStage, employeur);
+        return StageDTO.toDTO(updatedStage, employeur);
     }
 
     @Transactional
@@ -106,7 +106,7 @@ public class GestionnaireService {
 
         createNotificationForApprovedOrRejectedStage(updatedStage);
 
-        return StageDTO.fromModel(updatedStage, employeur);
+        return StageDTO.toDTO(updatedStage, employeur);
     }
 
     public List<GestionnaireCvDTO> getAllCvs(String year) throws Exception {
@@ -144,7 +144,7 @@ public class GestionnaireService {
         try {
             return stageRepository.findAll().stream().map(stage -> {
                 Employeur emp = employeurRepository.getEmployeurByCredentials_Username(stage.getEmployeurEmail());
-                return StageDTO.fromModel(stage, emp);
+                return StageDTO.toDTO(stage, emp);
             }).filter(stage -> stage.getStartDate().getYear() ==  yearNumber).toList();
         } catch (Exception e) {
             throw new FailedToRetrieveStagesException("Échec lors de la récupération des stages.", e);
@@ -159,11 +159,6 @@ public class GestionnaireService {
         List <EtudiantCandidaturesDTO> etudiantCandidaturesDTO = new ArrayList<>();
 
         etudiants.forEach(etudiant -> {
-            // Précondition : L'étudiant doit avoir un professeur associé
-            if (etudiant.getProfesseurResponsable() == null) {
-                return; // Ignorer les étudiants sans professeur
-            }
-            
             List<Candidature> candidatures = candidatureRepository.findByEtudiant_Credentials_Username(etudiant.getEmail());
 
             List<EtudiantCandidatureDTO> etudiantCandidature = candidatures.stream().map(candidature -> {
@@ -171,7 +166,7 @@ public class GestionnaireService {
                 Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(stage.getEmployeurEmail());
                 return EtudiantCandidatureDTO.builder()
                         .id(candidature.getId())
-                        .stage(StageSimpleDTO.toDTOfromStageDTO(StageDTO.fromModel(stage, employeur)))
+                        .stage(StageDTO.toDTO(stage, employeur))
                         .status(candidature.getStatus().toString())
                         .decision(candidature.getDecision())
                         .dateDecision(candidature.getDateDecision())
@@ -180,7 +175,7 @@ public class GestionnaireService {
                                 MillieuEvaluationDTO.toDTO(candidature.getEvaluationMillieu()) : null)
                         .build();
             }).filter(candidature -> {
-                StageSimpleDTO stage = candidature.getStage();
+                StageDTO stage = candidature.getStage();
                 LocalDate startDate = stage.getStartDate();
                 return startDate.getYear() ==  yearNumber;
             }).toList();

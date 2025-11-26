@@ -65,7 +65,7 @@ public class EntenteDTO {
                 dto.setEtudiant(EtudiantDTO.toDTOTokenless(candidature.getEtudiant()));
             }
             if (candidature.getStage() != null) {
-                dto.setStage(StageDTO.fromModel(candidature.getStage(), employeur));
+                dto.setStage(StageDTO.toDTO(candidature.getStage(), employeur));
             }
         }
 

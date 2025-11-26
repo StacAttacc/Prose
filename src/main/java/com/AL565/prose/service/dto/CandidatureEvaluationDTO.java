@@ -2,7 +2,6 @@ package com.AL565.prose.service.dto;
 
 import com.AL565.prose.model.Candidature;
 import com.AL565.prose.model.Employeur;
-import com.AL565.prose.model.Stage;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -25,7 +24,7 @@ public class CandidatureEvaluationDTO {
                         MillieuEvaluationDTO.toDTO(model.getEvaluationMillieu())
                         : null)
                 .etudiant(EtudiantDTO.toDTOTokenless(model.getEtudiant()))
-                .stage(StageDTO.fromModel(model.getStage(),  employeur))
+                .stage(StageDTO.toDTO(model.getStage(),  employeur))
                 .build();
     }
 }

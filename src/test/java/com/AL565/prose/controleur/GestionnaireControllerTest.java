@@ -369,7 +369,7 @@ class GestionnaireControllerTest {
                 .etudiant(john)
                 .candidatures(List.of(
                         EtudiantCandidatureDTO.builder()
-                                .stage(StageSimpleDTO.toDTOfromStageDTO(StageDTO.fromModel(stage, jean)))
+                                .stage(StageDTO.toDTO(stage, jean))
                                 .dateDecision(LocalDateTime.now())
                                 .datePostulation(LocalDateTime.now())
                                 .status("En Attente")
@@ -379,13 +379,13 @@ class GestionnaireControllerTest {
                 .etudiant(umberto)
                 .candidatures(List.of(
                         EtudiantCandidatureDTO.builder()
-                                .stage(StageSimpleDTO.toDTOfromStageDTO(StageDTO.fromModel(stage, jean)))
+                                .stage(StageDTO.toDTO(stage, jean))
                                 .dateDecision(LocalDateTime.now())
                                 .datePostulation(LocalDateTime.now())
                                 .status("En Attente")
                                 .build(),
                         EtudiantCandidatureDTO.builder()
-                                .stage(StageSimpleDTO.toDTOfromStageDTO(StageDTO.fromModel(stage2, jean)))
+                                .stage(StageDTO.toDTO(stage2, jean))
                                 .dateDecision(LocalDateTime.now())
                                 .datePostulation(LocalDateTime.now())
                                 .status("En Attente")
@@ -497,7 +497,7 @@ class GestionnaireControllerTest {
                 .etudiant(john)
                 .candidatures(List.of(
                         EtudiantCandidatureDTO.builder()
-                                .stage(StageSimpleDTO.toDTOfromStageDTO(StageDTO.fromModel(stage, jean)))
+                                .stage(StageDTO.toDTO(stage, jean))
                                 .dateDecision(LocalDateTime.now())
                                 .datePostulation(LocalDateTime.now())
                                 .status("ACCEPTEE")
@@ -508,13 +508,13 @@ class GestionnaireControllerTest {
                 .etudiant(umberto)
                 .candidatures(List.of(
                         EtudiantCandidatureDTO.builder()
-                                .stage(StageSimpleDTO.toDTOfromStageDTO(StageDTO.fromModel(stage, jean)))
+                                .stage(StageDTO.toDTO(stage, jean))
                                 .dateDecision(LocalDateTime.now())
                                 .datePostulation(LocalDateTime.now())
                                 .status("ACCEPTEE")
                                 .build(),
                         EtudiantCandidatureDTO.builder()
-                                .stage(StageSimpleDTO.toDTOfromStageDTO(StageDTO.fromModel(stage2, jean)))
+                                .stage(StageDTO.toDTO(stage2, jean))
                                 .dateDecision(LocalDateTime.now())
                                 .datePostulation(LocalDateTime.now())
                                 .status("REFUSEE")

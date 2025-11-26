@@ -46,7 +46,6 @@ public class ProfesseurService {
 
         evaluation.setId(null);
 
-        // S'assurer que les listes ne sont pas null
         if (evaluation.getHrSemaineMois() == null) {
             evaluation.setHrSemaineMois(new ArrayList<>());
         }
@@ -108,7 +107,7 @@ public class ProfesseurService {
                 Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(stage.getEmployeurEmail());
                 return EtudiantCandidatureDTO.builder()
                         .id(candidature.getId())
-                        .stage(StageSimpleDTO.toDTOfromStageDTO(StageDTO.fromModel(stage, employeur)))
+                        .stage(StageDTO.toDTO(stage, employeur))
                         .status(candidature.getStatus().toString())
                         .decision(candidature.getDecision())
                         .dateDecision(candidature.getDateDecision())
@@ -117,7 +116,7 @@ public class ProfesseurService {
                                 MillieuEvaluationDTO.toDTO(candidature.getEvaluationMillieu()) : null)
                         .build();
             }).filter(candidature -> {
-                StageSimpleDTO stage = candidature.getStage();
+                StageDTO stage = candidature.getStage();
                 LocalDate startDate = stage.getStartDate();
                 return startDate.getYear() ==  yearNumber;
             }).toList();

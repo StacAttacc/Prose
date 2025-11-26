@@ -93,7 +93,7 @@ public class EtudiantService {
                 .filter(stage -> !stageIdsPostules.contains(stage.getId()))
                 .map(stage -> {
                     Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(stage.getEmployeurEmail());
-                    return StageDTO.fromModel(stage, employeur);
+                    return StageDTO.toDTO(stage, employeur);
                 })
                 .collect(Collectors.toList());
     }

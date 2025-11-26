@@ -61,8 +61,4 @@ public class Candidature {
     public Long getStageId() {
         return stage.getId();
     }
-
-    public String getStageName() {
-        return stage.getTitle();
-    }
 }
