@@ -476,7 +476,7 @@ export default function GestionnaireEtuCandidature() {
                                                     {t('candidatures')}
                           </span>
                                             ) : tab === "APPROVED" ? (
-                                                <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold bg-teal-100 dark:bg-teal-900/50 text-teal-700 dark:text-teal-300">
+                                                <span className="inline-flex text-center rounded-full px-2 py-0.5 text-xs font-semibold bg-teal-100 dark:bg-teal-900/50 text-teal-700 dark:text-teal-300">
                             {t('stageTrouve')}
                           </span>
                                             ) : (
