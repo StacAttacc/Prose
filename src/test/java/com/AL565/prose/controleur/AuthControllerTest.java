@@ -35,7 +35,7 @@ class AuthControllerTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private AuthService authService;
+    private UtilisateurService utilisateurService;
 
     @MockitoBean
     private EmployeurService employeurService;
@@ -54,7 +54,7 @@ class AuthControllerTest {
         LoginRequestDTO request = createTestLoginRequest();
         ProseUserDTO expectedResponse = createTestProseUserDTO();
 
-        when(authService.login(any(LoginRequestDTO.class))).thenReturn(expectedResponse);
+        when(utilisateurService.login(any(LoginRequestDTO.class))).thenReturn(expectedResponse);
 
         String content = new ObjectMapper().writeValueAsString(request);
         MvcResult result = mockMvc.perform(post("/user/login")
@@ -72,7 +72,7 @@ class AuthControllerTest {
 
         
         doThrow(new AuthenticationException(HttpStatus.UNAUTHORIZED, "Invalid credentials"))
-                .when(authService).login(any(LoginRequestDTO.class));
+                .when(utilisateurService).login(any(LoginRequestDTO.class));
 
         String content = new ObjectMapper().writeValueAsString(request);
         MvcResult result = mockMvc.perform(post("/user/login")
@@ -88,7 +88,7 @@ class AuthControllerTest {
         LoginRequestDTO request = createTestLoginRequest();
         
         doThrow(new UserNotFoundException())
-                .when(authService).login(any(LoginRequestDTO.class));
+                .when(utilisateurService).login(any(LoginRequestDTO.class));
 
         String content = new ObjectMapper().writeValueAsString(request);
         MvcResult result = mockMvc.perform(post("/user/login")

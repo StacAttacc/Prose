@@ -4,14 +4,14 @@ import {
     logout as apiLogout,
     registerEmployeur as apiRegisterEmployeur,
     registerEtudiant as apiRegisterEtudiant
-} from "../services/AuthService";
+} from "../services/UtilisateurService";
 import { setAccessToken } from "../services/http";
 
 const AuthCtx = createContext(null);
 
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [, setLoading] = useState(true);
 
     useEffect(() => {
         try {

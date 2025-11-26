@@ -1,4 +1,4 @@
-import {logout} from "../services/AuthService.js";
+import {logout} from "../services/UtilisateurService.js";
 import {useNavigate} from "react-router-dom";
 import {Outlet} from "react-router";
 import {useAuth} from "../context/AuthContext.jsx";
