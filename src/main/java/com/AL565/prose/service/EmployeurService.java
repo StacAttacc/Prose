@@ -62,7 +62,7 @@ public class EmployeurService {
         Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(saved.getEmployeurEmail());
         createNotificationForNewStage(saved, employeur);
 
-        return StageDTO.fromModel(saved, employeur);
+        return StageDTO.toDTO(saved, employeur);
     }
 
     private void createNotificationForNewStage(Stage stage, Employeur employeur) {
@@ -86,7 +86,7 @@ public class EmployeurService {
         return stageRepository.findByEmployeurEmail(email)
                 .stream().map((stage) -> {
                     Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(stage.getEmployeurEmail());
-                    return StageDTO.fromModel(stage, employeur);
+                    return StageDTO.toDTO(stage, employeur);
                 }).filter(stage -> stage.getStartDate().getYear() == yearNumber).toList();
     }
 
@@ -105,10 +105,9 @@ public class EmployeurService {
         stage.setCompensation(stageDTO.getCompensation());
         stage.setRejectionReason(null);
         stage.setStatus(OfferStatus.SOUMISE);
-        stage.setUpdatedAt(OffsetDateTime.now());
         Stage updatedStage = stageRepository.save(stage);
         Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(updatedStage.getEmployeurEmail());
-        return StageDTO.fromModel(updatedStage, employeur);
+        return StageDTO.toDTO(updatedStage, employeur);
     }
 
     @Transactional

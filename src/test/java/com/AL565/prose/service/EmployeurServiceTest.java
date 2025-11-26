@@ -123,7 +123,7 @@ class EmployeurServiceTest {
 
     @Test
     void getPostulations() throws Exception {
-        Stage stage = new Stage(1L, "Démissioner", "Partir immédiatement!", "Rien", new ArrayList<>(), LocalDate.now(), LocalDate.now(), "Chez vous", null, "Remote", "0$", OfferStatus.APPROUVEE, "jemployeur1@gmail.com", OffsetDateTime.now(), OffsetDateTime.now());
+        Stage stage = new Stage(1L, "Démissioner", "Partir immédiatement!", "Rien", new ArrayList<>(), LocalDate.now(), LocalDate.now(), "Chez vous", null, "Remote", "0$", OfferStatus.APPROUVEE, "jemployeur1@gmail.com");
 
         when(stageRepository.findById(anyLong())).thenReturn(Optional.of(stage));
         when(candidatureRepository.findAllByStage_Id(anyLong())).thenReturn(Optional.of(List.of(
@@ -156,7 +156,7 @@ class EmployeurServiceTest {
 
     @Test
     void approveCandidature() throws CandidatureNotFoundException, InvalidCandidatureModificationException {
-        Stage stage = new Stage(1L, "Démissioner", "Partir immédiatement!", "Rien", new ArrayList<>(), LocalDate.now(), LocalDate.now(), "Chez vous", null,"Remote",  "0$", OfferStatus.APPROUVEE, "jemployeur1@gmail.com", OffsetDateTime.now(), OffsetDateTime.now());
+        Stage stage = new Stage(1L, "Démissioner", "Partir immédiatement!", "Rien", new ArrayList<>(), LocalDate.now(), LocalDate.now(), "Chez vous", null,"Remote",  "0$", OfferStatus.APPROUVEE, "jemployeur1@gmail.com");
 
         Candidature candidature = new Candidature(
                 1L,
@@ -182,7 +182,7 @@ class EmployeurServiceTest {
 
     @Test
     void approveCandidatureBeforeConvocationException() {
-        Stage stage = new Stage(1L, "Démissioner", "Partir immédiatement!", "Rien", new ArrayList<>(), LocalDate.now(), LocalDate.now(), "Chez vous", null, "Remote", "0$", OfferStatus.APPROUVEE, "jemployeur1@gmail.com", OffsetDateTime.now(), OffsetDateTime.now());
+        Stage stage = new Stage(1L, "Démissioner", "Partir immédiatement!", "Rien", new ArrayList<>(), LocalDate.now(), LocalDate.now(), "Chez vous", null, "Remote", "0$", OfferStatus.APPROUVEE, "jemployeur1@gmail.com");
 
         Candidature candidature = new Candidature(
                 1L,

@@ -4,10 +4,8 @@ package com.AL565.prose.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
-import org.hibernate.annotations.JoinFormula;
 
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,14 +52,4 @@ public class Stage {
     private OfferStatus status = OfferStatus.SOUMISE;
 
     private String employeurEmail;
-
-    @Column(nullable = false, updatable = false)
-    private OffsetDateTime createdAt = OffsetDateTime.now();
-
-    private OffsetDateTime updatedAt = OffsetDateTime.now();
-
-    @PreUpdate
-    public void onUpdate() {
-        this.updatedAt = OffsetDateTime.now();
-    }
 }

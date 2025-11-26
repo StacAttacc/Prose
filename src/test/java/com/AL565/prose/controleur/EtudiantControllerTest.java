@@ -399,7 +399,7 @@ class EtudiantControllerTest {
 
         EmployeurDTO employeur = EmployeurDTO.toDTOTokenless(new Employeur("Jean", "Dupont", "Tech Solutions Inc.", "jean@dupont.com", "1234567890"));
 
-        StageSimpleDTO stage = StageSimpleDTO.builder()
+        StageDTO stage = StageDTO.builder()
                 .title("Développeur Full Stack")
                 .description("Développement d'applications web modernes")
                 .location("Montréal, QC")

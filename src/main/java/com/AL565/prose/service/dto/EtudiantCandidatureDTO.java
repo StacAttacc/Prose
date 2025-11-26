@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @Builder
 public class EtudiantCandidatureDTO {
     private Long id;
-    private StageSimpleDTO stage;
+    private StageDTO stage;
     private String status;
     private LocalDateTime datePostulation;
     private String decision;
@@ -27,7 +27,8 @@ public class EtudiantCandidatureDTO {
 
         return EtudiantCandidatureDTO.builder()
                 .id(candidature.getId())
-                .stage(StageSimpleDTO.builder()
+                .stage(StageDTO.builder()
+                        .id(stage.getId())
                         .title(stage.getTitle())
                         .description(stage.getDescription())
                         .requirements(stage.getRequirements())
@@ -38,6 +39,8 @@ public class EtudiantCandidatureDTO {
                         .endDate(stage.getEndDate())
                         .skills(stage.getSkills())
                         .employeur(EmployeurDTO.toDTOTokenless(employeur))
+                        .rejectionReason(stage.getRejectionReason())
+                        .requirements(stage.getRequirements())
                         .build())
                 .status(candidature.getStatus().name())
                 .datePostulation(candidature.getDateCandidature())
