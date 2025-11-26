@@ -49,7 +49,6 @@ export async function getEmployeurNotifications(employeurEmail, token) {
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
     });
-    console.log(res.data);
     return res.data;
 }
 

@@ -292,8 +292,10 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
 
     useEffect(() => {
         const targetId = location?.state?.openEntenteId;
+        console.log("TARGET ID:", targetId);
         if (!targetId) return;
-        if (String(applicant?.id) !== String(targetId)) return;
+        console.log("TRYING TO LOAD")
+        if (String(applicant?.id) !== String(targetId)) console.log("FAILED TO LOAD");
         if (showEntenteModal) return;
         setShowEntenteModal(true);
         navigate(location.pathname, { replace: true, state: {} });
@@ -301,8 +303,6 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
 
     return (
         <>
-
-
             <tr className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
                 <td className="py-3 px-4 align-top">
                     <div className="font-medium text-gray-800 dark:text-gray-100">{fullName}</div>

@@ -151,7 +151,6 @@ export async function getEtudiantNotifications(token) {
                 ...(token ? { Authorization: `Bearer ${token}` } : {}),
             },
         });
-        console.log(data);
         return data;
     } catch (e) {
         console.error("Erreur lors de la récupération des notifications:", e);
