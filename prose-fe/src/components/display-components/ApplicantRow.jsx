@@ -292,10 +292,8 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
 
     useEffect(() => {
         const targetId = location?.state?.openEntenteId;
-        console.log("TARGET ID:", targetId);
         if (!targetId) return;
-        console.log("TRYING TO LOAD")
-        if (String(applicant?.id) !== String(targetId)) console.log("FAILED TO LOAD");
+        if (String(applicant?.id) !== String(targetId)) return;
         if (showEntenteModal) return;
         setShowEntenteModal(true);
         navigate(location.pathname, { replace: true, state: {} });
