@@ -320,7 +320,7 @@ const { t } = useI18n();
                         />
                         <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
                             formData[fieldName] === option
-                                ? 'bg-blue-600 border-blue-600'
+                                ? 'bg-teal-600 border-teal-600'
                                 : 'bg-white border-gray-300'
                         }`}>
                             {formData[fieldName] === option && (
@@ -338,7 +338,7 @@ const { t } = useI18n();
     if (loading) {
         return (
             <div className="flex justify-center items-center min-h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
             </div>
         );
     }
@@ -406,7 +406,7 @@ const { t } = useI18n();
                                 name="nomEleve"
                                 value={formData.nomEleve}
                                 onChange={handleInputChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                                 placeholder={t('evaluations.studentNamePlaceholder')}
                             />
                         </div>
@@ -419,7 +419,7 @@ const { t } = useI18n();
                                 name="programmeEtudes"
                                 value={formData.programmeEtudes}
                                 onChange={handleInputChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                                 placeholder={t('evaluations.programPlaceholder')}
                             />
                         </div>
@@ -432,7 +432,7 @@ const { t } = useI18n();
                                 name="nomEntreprise"
                                 value={formData.nomEntreprise}
                                 onChange={handleInputChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                                 placeholder={t('evaluations.companyPlaceholder')}
                             />
                         </div>
@@ -445,7 +445,7 @@ const { t } = useI18n();
                                 name="nomSuperviseur"
                                 value={formData.nomSuperviseur}
                                 onChange={handleInputChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                                 placeholder={t('evaluations.supervisorNamePlaceholder')}
                             />
                         </div>
@@ -458,7 +458,7 @@ const { t } = useI18n();
                                 name="fonction"
                                 value={formData.fonction}
                                 onChange={handleInputChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                                 placeholder={t('evaluations.supervisorRolePlaceholder')}
                             />
                         </div>
@@ -471,7 +471,7 @@ const { t } = useI18n();
                                 name="telephone"
                                 value={formData.telephone}
                                 onChange={handleInputChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                                 placeholder={t('evaluations.supervisorPhonePlaceholder')}
                             />
                         </div>
@@ -497,7 +497,7 @@ const { t } = useI18n();
                                 value={formData[section.commentField]}
                                 onChange={handleInputChange}
                                 rows={3}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                                 placeholder={section.commentPlaceholder}
                             />
                         </div>
@@ -543,7 +543,7 @@ const { t } = useI18n();
                                         />
                                         <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
                                             formData.appreciationGlobale === option
-                                                ? 'bg-blue-600 border-blue-600'
+                                                ? 'bg-teal-600 border-teal-600'
                                                 : 'bg-white border-gray-300'
                                         }`}>
                                             {formData.appreciationGlobale === option && (
@@ -563,7 +563,7 @@ const { t } = useI18n();
                         value={formData.appreciationPrecisions}
                         onChange={handleInputChange}
                         rows={3}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mt-4"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 mt-4"
                         placeholder={t('evaluations.appreciationPlaceholder')}
                     />
                 </section>
@@ -582,7 +582,7 @@ const { t } = useI18n();
                                     key={value ? 'yes' : 'no'}
                                     className={`cursor-pointer px-4 py-2 rounded border text-sm transition-colors ${
                                         formData.evaluationDiscutee === value
-                                            ? 'bg-blue-600 text-white border-blue-600'
+                                            ? 'bg-teal-500 text-white border-teal-500'
                                             : 'bg-white text-gray-700 border-gray-300'
                                     }`}
                                 >
@@ -627,7 +627,7 @@ const { t } = useI18n();
                                 key={option}
                                 className={`cursor-pointer px-4 py-2 rounded border text-sm transition-colors ${
                                     formData.accueillirProchainStage === option
-                                        ? 'bg-blue-600 text-white border-blue-600'
+                                        ? 'bg-teal-600 text-white border-teal-600'
                                         : 'bg-white text-gray-700 border-gray-300'
                                 }`}
                             >
@@ -654,7 +654,7 @@ const { t } = useI18n();
                         value={formData.formationSuffisante}
                         onChange={handleInputChange}
                         rows={4}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                         placeholder={t('evaluations.trainingPlaceholder')}
                     />
                 </section>
@@ -673,7 +673,7 @@ const { t } = useI18n();
                                 name="signataireNom"
                                 value={formData.signataireNom}
                                 onChange={handleInputChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                                 placeholder={t('evaluations.signerNamePlaceholder')}
                             />
                         </div>
@@ -686,7 +686,7 @@ const { t } = useI18n();
                                 name="signataireFonction"
                                 value={formData.signataireFonction}
                                 onChange={handleInputChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                                 placeholder={t('evaluations.signerRolePlaceholder')}
                             />
                         </div>
@@ -699,7 +699,7 @@ const { t } = useI18n();
                                 name="signataireDate"
                                 value={formData.signataireDate}
                                 onChange={handleInputChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                             />
                         </div>
                     </div>
@@ -716,7 +716,7 @@ const { t } = useI18n();
                     </button>
                     <button
                         type="submit"
-                        className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition-colors duration-200 font-medium flex items-center justify-center disabled:bg-blue-400 disabled:cursor-not-allowed"
+                        className="flex-1 text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium flex items-center justify-center rounded-lg text-sm px-5 py-2.5 text-center me-2"
                         disabled={saving}
                     >
                         {saving ? (

@@ -154,6 +154,13 @@ const translations = {
     'common.no': 'Non',
     'common.error': 'Erreur',
     'common.back': 'Retour',
+    'common.submit': 'Soumettre',
+    'common.save': 'Enregistrer',
+    'common.saving': 'Enregistrement...',
+    'common.update': 'Mettre à jour',
+    'common.edit': 'Modifier',
+    'common.success': 'Succès',
+    'common.cancel': 'Annuler',
 
     
     // GestionCV
@@ -397,7 +404,7 @@ const translations = {
     veuillezCocherConsentement: 'Veuillez cocher la case de consentement pour signer l\'entente',
     veuillezSaisirMotDePasse: 'Veuillez saisir votre mot de passe',
     donneesEntenteInvalides: 'Données d\'entente invalides',
-    erreurSignatureEntente: 'Erreur lors de la signature de l\'entente',
+    erreurSignatureEntente: 'Le mot de passe est invalide',
     signatureEnCours: 'Signature en cours...',
     signerEntente: 'Signer l\'entente',
     // AssociationProfesseurEtudiant
@@ -557,15 +564,6 @@ const translations = {
     'evaluations.errorSaving': 'Erreur lors de la sauvegarde de l\'évaluation',
     'evaluations.ententeNotFound': 'Entente non trouvée',
     'evaluations.notFound': 'Évaluation non trouvée',
-    'common.back': 'Retour',
-    'common.cancel': 'Annuler',
-    'common.submit': 'Soumettre',
-    'common.save': 'Enregistrer',
-    'common.saving': 'Enregistrement...',
-    'common.update': 'Mettre à jour',
-    'common.edit': 'Modifier',
-    'common.error': 'Erreur',
-    'common.success': 'Succès',
     sessionExpired: 'Session expirée, veuillez vous reconnecter.',
     
     // Professeur - Évaluation milieu de stage
@@ -783,6 +781,13 @@ const translations = {
     'common.no': 'No',
     'common.error': 'Error',
     'common.back': 'Back',
+    'common.cancel': 'Cancel',
+    'common.submit': 'Submit',
+    'common.save': 'Save',
+    'common.saving': 'Saving...',
+    'common.update': 'Update',
+    'common.edit': 'Edit',
+    'common.success': 'Success',
 
         // GestionCV
     rechercherParNom: 'Search by student name...',
@@ -1190,15 +1195,6 @@ const translations = {
     'evaluations.errorSaving': 'Error saving evaluation',
     'evaluations.ententeNotFound': 'Agreement not found',
     'evaluations.notFound': 'Evaluation not found',
-    'common.back': 'Back',
-    'common.cancel': 'Cancel',
-    'common.submit': 'Submit',
-    'common.save': 'Save',
-    'common.saving': 'Saving...',
-    'common.update': 'Update',
-    'common.edit': 'Edit',
-    'common.error': 'Error',
-    'common.success': 'Success',
     sessionExpired: 'Session expired, please log in again.',
     
     // Gestionnaire - Évaluation milieu de stage

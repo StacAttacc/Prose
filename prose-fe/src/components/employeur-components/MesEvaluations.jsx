@@ -128,7 +128,7 @@ const MesEvaluations = () => {
                                     {entente.hasEvaluation ? (
                                         <button
                                             onClick={() => handleViewEvaluation(entente)}
-                                            className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200 font-medium text-sm flex items-center justify-center"
+                                            className="flex-1 text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm flex items-center justify-center px-5 py-2.5 text-center me-2"
                                         >
                                             <FaStar className="mr-2" />
                                             {t('evaluations.viewEvaluation')}
@@ -136,7 +136,7 @@ const MesEvaluations = () => {
                                     ) : (
                                         <button
                                             onClick={() => handleEvaluate(entente)}
-                                            className="flex-1 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors duration-200 font-medium text-sm flex items-center justify-center"
+                                            className="flex-1 text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm flex items-center justify-center px-5 py-2.5 text-center me-2"
                                         >
                                             <FaStar className="mr-2" />
                                             {t('evaluations.evaluate')}

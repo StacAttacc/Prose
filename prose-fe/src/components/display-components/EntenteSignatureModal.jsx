@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { Viewer, Worker } from "@react-pdf-viewer/core";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useI18n } from "../../context/I18nContext.jsx";
+import ErrorBanner from "./ErrorBanner.jsx";
 
 function blobFromUnknownData(data, mime = "application/pdf") {
     if (!data) return null;
@@ -187,8 +188,8 @@ export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSi
         try {
             await onSign(ententeData.id, password);
             handleClose();
-        } catch (err) {
-            setError(err.message || t('erreurSignatureEntente'));
+        } catch {
+            setError(t('erreurSignatureEntente'));
         } finally {
             setIsSubmitting(false);
         }
@@ -229,12 +230,9 @@ export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSi
                         <div className="text-gray-500">{t('chargementEntente')}</div>
                     </div>
                 ) : error && !ententeData ? (
-                    <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-                        {error}
-                    </div>
+                    <ErrorBanner message={error} />
                 ) : (
                     <>
-                        {/* Message si déjà signé - affiché en premier */}
                         {userHasSigned && userSignatureDate && ententeData?.status !== "SIGNEE" && (
                             <div className="mb-6">
                                 <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
@@ -281,8 +279,6 @@ export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSi
                             )}
                         </div>
 
-                        {/* Formulaire de signature - seulement si l'utilisateur n'a pas encore signé */}
-                        {/* Pour le gestionnaire, afficher le formulaire seulement si c'est son tour (SIGNEE_ETUDIANT_ET_EMPLOYEUR) */}
                         {!userHasSigned && (!isGestionnaire || ententeData?.status === "SIGNEE_ETUDIANT_ET_EMPLOYEUR") && (
                             <form onSubmit={handleSign} className="border-t pt-6">
                                 <div className="mb-4">
@@ -311,7 +307,7 @@ export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSi
                                         onChange={(e) => setPassword(e.target.value)}
                                         placeholder={t('entrezMotDePasseConfirmer')}
                                         required
-                                        className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                                        className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
                                     />
                                     <p className="text-xs text-gray-500 mt-1">
                                         {t('motDePasseRequisConfirmer')}
@@ -329,14 +325,14 @@ export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSi
                                         type="button"
                                         onClick={handleClose}
                                         disabled={isSubmitting}
-                                        className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition disabled:opacity-50"
+                                        className="px-4 py-2 text-white bg-gray-500 hover:bg-gray-600 rounded-lg transition disabled:opacity-50"
                                     >
                                         {t('annuler')}
                                     </button>
                                     <button
                                         type="submit"
                                         disabled={isSubmitting || !consentChecked || !password}
-                                        className="px-4 py-2 text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-green-300 rounded-lg transition disabled:opacity-50"
+                                        className="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm flex items-center justify-center px-5 py-2.5 text-center me-2"
                                     >
                                         {isSubmitting ? t('signatureEnCours') : t('signerEntente')}
                                     </button>
@@ -344,14 +340,13 @@ export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSi
                             </form>
                         )}
 
-                        {/* Bouton Fermer si pas de formulaire de signature */}
                         {!(!userHasSigned && (!isGestionnaire || ententeData?.status === "SIGNEE_ETUDIANT_ET_EMPLOYEUR")) && (
                             <div className="border-t pt-6">
                                 <div className="flex gap-3 justify-end">
                                     <button
                                         type="button"
                                         onClick={handleClose}
-                                        className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition"
+                                        className="px-4 py-2 text-white bg-gray-500 hover:bg-gray-600 rounded-lg transition"
                                     >
                                         {t('fermer')}
                                     </button>

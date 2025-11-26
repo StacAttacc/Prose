@@ -1,9 +1,9 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { createPortal } from "react-dom";
-import { useAuth } from "../../context/AuthContext.jsx";
-import { useI18n } from "../../context/I18nContext.jsx";
-import { telechargerCv } from "../../services/EtudiantService.js";
-import { convoquerEntrevue, checkEntenteExists, signEntente } from "../../services/EmployeurService.js";
+import React, {useEffect, useMemo, useState} from "react";
+import {createPortal} from "react-dom";
+import {useAuth} from "../../context/AuthContext.jsx";
+import {useI18n} from "../../context/I18nContext.jsx";
+import {telechargerCv} from "../../services/EtudiantService.js";
+import {checkEntenteExists, convoquerEntrevue, signEntente} from "../../services/EmployeurService.js";
 import EntenteSignatureModal from "./EntenteSignatureModal.jsx";
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import PdfModal from "./PdfModal.jsx";
@@ -90,14 +90,12 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
 
 
     const rawStatus = useMemo(() => {
-        const s =
-            firstNonEmpty(
-                applicant?.status,
-                applicant?.candidatureStatus,
-                applicant?.statut,
-                typeof applicant?.status === "object" ? applicant?.status?.name : "" // enum sérialisé en objet
-            );
-        return s;
+        return firstNonEmpty(
+            applicant?.status,
+            applicant?.candidatureStatus,
+            applicant?.statut,
+            typeof applicant?.status === "object" ? applicant?.status?.name : "" // enum sérialisé en objet
+        );
     }, [applicant]);
 
     const status = useMemo(() => (rawStatus || "").toString().trim().toUpperCase(), [rawStatus]);
@@ -241,7 +239,7 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                     loading: false,
                 }));
             }
-        } catch (e) {
+        } catch {
             setDocState((s) => ({
                 ...s,
                 error:
@@ -270,23 +268,6 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
             console.error("Erreur lors de la convocation:", error);
             throw new Error(error.message || "Erreur lors de la convocation");
         }
-    };
-
-    const getStatusBadge = (status) => {
-        const statusMap = {
-            "EN_ATTENTE": { label: "En attente", color: "bg-yellow-100 text-yellow-800" },
-            "ACCEPTE": { label: "Accepté", color: "bg-green-100 text-green-800" },
-            "REFUSE": { label: "Refusé", color: "bg-red-100 text-red-800" },
-            "CONVOQUE": { label: "Convoqué", color: "bg-blue-100 text-blue-800" },
-        };
-
-        const statusInfo = statusMap[status] || { label: status, color: "bg-gray-100 text-gray-800" };
-
-        return (
-            <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}>
-                {statusInfo.label}
-            </span>
-        );
     };
 
     useEffect(() => {
@@ -483,7 +464,7 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                                                 <div className="flex gap-2">
                                                     <button
                                                         onClick={() => setShowEntenteModal(true)}
-                                                        className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br transition-all"
+                                                        className="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2"
                                                         type="button"
                                                     >
                                                         {t('voirEntente')}
@@ -514,7 +495,7 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                                             ) : canUserSignEntente ? (
                                                 <button
                                                     onClick={() => setShowEntenteModal(true)}
-                                                    className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br transition-all"
+                                                    className="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2"
                                                     type="button"
                                                 >
                                                     {t('voirEtSignerEntente')}
@@ -522,7 +503,7 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                                             ) : (
                                                 <button
                                                     onClick={() => setShowEntenteModal(true)}
-                                                    className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br transition-all"
+                                                    className="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2"
                                                     type="button"
                                                 >
                                                     {t('voirEntente')}

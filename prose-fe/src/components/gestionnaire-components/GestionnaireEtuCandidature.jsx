@@ -585,7 +585,7 @@ export default function GestionnaireEtuCandidature() {
                                                         return (
                                                             <button
                                                                 type="button"
-                                                                className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br transition-all disabled:opacity-50"
+                                                                className="flex-1 text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm flex items-center justify-center px-5 py-2.5 text-center me-2"
                                                                 onClick={() => handleGenerateEntente(candidatureId)}
                                                                 disabled={generatingEntente}
                                                             >
@@ -603,7 +603,7 @@ export default function GestionnaireEtuCandidature() {
                                                             <div className="flex gap-2">
                                                                 <button
                                                                     type="button"
-                                                                    className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br transition-all"
+                                                                    className="flex-1 text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm flex items-center justify-center px-5 py-2.5 text-center me-2"
                                                                     onClick={() => handleViewEntente(candidatureId)}
                                                                 >
                                                                     {t('voirEntenteStage')}
@@ -622,7 +622,7 @@ export default function GestionnaireEtuCandidature() {
                                                         return (
                                                             <button
                                                                 type="button"
-                                                                className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br transition-all"
+                                                                className="flex-1 text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm flex items-center justify-center px-5 py-2.5 text-center me-2"
                                                                 onClick={() => handleViewEntente(candidatureId)}
                                                             >
                                                                 {t('voirEtSignerEntenteStage')}
@@ -633,7 +633,7 @@ export default function GestionnaireEtuCandidature() {
                                                         return (
                                                             <button
                                                                 type="button"
-                                                                className="px-4 py-2 rounded-md font-medium text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br transition-all"
+                                                                className="flex-1 text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm flex items-center justify-center px-5 py-2.5 text-center me-2"
                                                                 onClick={() => handleViewEntente(candidatureId)}
                                                             >
                                                                 {t('voirEntenteStage')}
