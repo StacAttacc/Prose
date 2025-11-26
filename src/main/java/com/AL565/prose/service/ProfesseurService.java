@@ -1,6 +1,7 @@
 package com.AL565.prose.service;
 
 import com.AL565.prose.model.*;
+import com.AL565.prose.model.entente.EntenteStatus;
 import com.AL565.prose.repository.*;
 import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
@@ -27,6 +28,7 @@ public class ProfesseurService {
     private EtudiantRepository etudiantRepository;
     private EmployeurRepository employeurRepository;
     private StageRepository stageRepository;
+    private EntenteRepository ententeRepository;
 
     public void register(ProfesseurPasswordDTO professeur) {
         if (professeurRepository.findByCredentials_Username(professeur.getEmail()).isPresent()) {
@@ -76,6 +78,10 @@ public class ProfesseurService {
                     Stage stage = candidature.getStage();
                     return stage.getStartDate().getYear() == yearNumber;
                 })
+                .filter(candidature ->
+                        ententeRepository.findByCandidatureId(candidature.getId()).map(
+                        entente -> entente.getStatus() == EntenteStatus.SIGNEE
+                ).orElse(false))
                 .map(candidature -> {
                     Stage stage = candidature.getStage();
                     Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(stage.getEmployeurEmail());
