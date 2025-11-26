@@ -22,6 +22,9 @@ import GestionnaireEtuCandidature from "./components/gestionnaire-components/Ges
 import GenererEntente from "./components/gestionnaire-components/GenererEntente.jsx";
 import AssociationProfesseurEtudiant from "./components/gestionnaire-components/AssociationProfesseurEtudiant.jsx";
 import CreationProfesseur from "./components/gestionnaire-components/CreationProfesseur.jsx";
+import ListeCandidaturesProfesseur from "./components/professeur-components/ListeCandidaturesProfesseur.jsx";
+import EvaluationMilieuTravail from "./components/professeur-components/EvaluationMilieuTravail.jsx";
+import ListeMesEtudiantsEnStage from "./components/professeur-components/ListeMesEtudiantsEnStage.jsx";
 
 export default function AppRoutes() {
     const {user, loading} = useAuth();
@@ -43,7 +46,7 @@ export default function AppRoutes() {
             : user?.role === "EMPLOYEUR"
                 ? <Navigate to="/employeur/stages/posted-stages" replace/>
                 : user?.role === "PROFESSEUR"
-                    ? <div>Bienvenue Professeur</div>
+                    ? <Navigate to="/professeur/candidatures" replace/>
                     : user?.role === "GESTIONNAIRE"
                         ? <GestionnaireEtuCandidature/>
                         : <div>Rôle inconnu</div>;
@@ -84,6 +87,10 @@ export default function AppRoutes() {
                     <Route path="gestionnaire/entente" element={<GenererEntente/>}/>
                     <Route path="gestionnaire/association-professeur-etudiant" element={<AssociationProfesseurEtudiant/>}/>
                     <Route path="gestionnaire/creer-professeur" element={<CreationProfesseur/>}/>
+
+                    <Route path="professeur/candidatures" element={<ListeMesEtudiantsEnStage/>}/>
+                    <Route path="professeur/evaluations/:candidatureId" element={<EvaluationMilieuTravail/>}/>
+                    <Route path="professeur/evaluations-milieu" element={<ListeCandidaturesProfesseur/>}/>
                 </Route>
             </Route>
         </Routes>

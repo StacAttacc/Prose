@@ -9,6 +9,8 @@ import com.AL565.prose.security.exceptions.UserNotFoundException;
 import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.dto.notifications.NotificationGroupDTO;
 import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
+import com.AL565.prose.service.dto.MillieuEvaluationDTO;
+import com.AL565.prose.model.MillieuEvaluation;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import com.AL565.prose.service.exceptions.EtudiantAlreadyAssociatedException;
 import com.AL565.prose.service.exceptions.FailedToRetrieveStagesException;
@@ -47,6 +49,7 @@ public class GestionnaireService {
     private final NotificationRepository notificationRepository;
     private final SignatureEntenteNotificationRepository signatureEntenteNotificationRepository;
     private final NotificationsHelper notificationsHelper;
+    private final MillieuEvaluationRepository millieuEvaluationRepository;
 
     public void saveGestionnaire(GestionnairePasswordDTO dto) {
         if (gestionnaireRepository.findByCredentials_Username(dto.getEmail()).isPresent()) {
@@ -156,6 +159,11 @@ public class GestionnaireService {
         List <EtudiantCandidaturesDTO> etudiantCandidaturesDTO = new ArrayList<>();
 
         etudiants.forEach(etudiant -> {
+            // Précondition : L'étudiant doit avoir un professeur associé
+            if (etudiant.getProfesseurResponsable() == null) {
+                return; // Ignorer les étudiants sans professeur
+            }
+            
             List<Candidature> candidatures = candidatureRepository.findByEtudiant_Credentials_Username(etudiant.getEmail());
 
             List<EtudiantCandidatureDTO> etudiantCandidature = candidatures.stream().map(candidature -> {
@@ -168,6 +176,8 @@ public class GestionnaireService {
                         .decision(candidature.getDecision())
                         .dateDecision(candidature.getDateDecision())
                         .datePostulation(candidature.getDateCandidature())
+                        .evaluationMillieu(candidature.getEvaluationMillieu() != null ?
+                                MillieuEvaluationDTO.toDTO(candidature.getEvaluationMillieu()) : null)
                         .build();
             }).filter(candidature -> {
                 StageSimpleDTO stage = candidature.getStage();
@@ -413,7 +423,7 @@ public class GestionnaireService {
     }
 
     @Transactional
-    private void createNotificationForAssignedStage(Candidature candidature) {
+    protected void createNotificationForAssignedStage(Candidature candidature) {
         String stageTitle = candidature.getStage().getTitle();
 
         String messageFR = "Un stage vous a été attribué : " + stageTitle;
@@ -456,5 +466,33 @@ public class GestionnaireService {
             case REJETEE -> language.equals("FR") ? "rejetée" : "rejected";
             default -> "";
         };
+    }
+
+    @Transactional
+    public void evaluateWorkplaceForCandidature(Long candidatureId, MillieuEvaluationDTO evaluation) {
+        Candidature candidature = candidatureRepository.findById(candidatureId)
+                .orElseThrow(() -> new NoSuchElementException("Candidature non trouvée"));
+
+        // S'assurer que l'ID est null pour une nouvelle évaluation (sera généré automatiquement)
+        evaluation.setId(null);
+        
+        // S'assurer que les listes ne sont pas null
+        if (evaluation.getHrSemaineMois() == null) {
+            evaluation.setHrSemaineMois(new ArrayList<>());
+        }
+        if (evaluation.getDebutQuarts() == null) {
+            evaluation.setDebutQuarts(new ArrayList<>());
+        }
+        if (evaluation.getFinQuarts() == null) {
+            evaluation.setFinQuarts(new ArrayList<>());
+        }
+        
+        // Créer et sauvegarder l'évaluation
+        MillieuEvaluation millieuEvaluation = MillieuEvaluationDTO.toModel(evaluation);
+        millieuEvaluation = millieuEvaluationRepository.save(millieuEvaluation);
+
+        // Associer l'évaluation à la candidature
+        candidature.setEvaluationMillieu(millieuEvaluation);
+        candidatureRepository.save(candidature);
     }
 }

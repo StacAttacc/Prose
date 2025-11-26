@@ -1,5 +1,7 @@
 package com.AL565.prose.service.dto;
 
+import com.AL565.prose.model.Employeur;
+import com.AL565.prose.model.Stage;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -37,5 +39,20 @@ public class StageSimpleDTO {
                .skills(stageDTO.getSkills())
                .employeur(stageDTO.getEmployeur())
                .build();
+    }
+
+    public static StageSimpleDTO toDTO(Stage stage, Employeur employeur) {
+        return StageSimpleDTO.builder()
+                .title(stage.getTitle())
+                .description(stage.getDescription())
+                .requirements(stage.getRequirements())
+                .workMode(stage.getWorkMode())
+                .location(stage.getLocation())
+                .compensation(stage.getCompensation())
+                .startDate(stage.getStartDate())
+                .endDate(stage.getEndDate())
+                .skills(stage.getSkills())
+                .employeur(EmployeurDTO.toDTOTokenless(employeur))
+                .build();
     }
 }

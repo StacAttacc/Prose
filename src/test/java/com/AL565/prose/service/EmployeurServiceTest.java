@@ -135,6 +135,7 @@ class EmployeurServiceTest {
                         LocalDateTime.now(),
                         CandidatureStatus.SOUMISE,
                         null,
+                        null,
                         null),
                 new Candidature(2L,
                         new Etudiant("Umberto", "Larrios", Credentials.builder().username("umberto@doe.com").password("password123").build(), Discipline.INFORMATIQUE),
@@ -143,6 +144,7 @@ class EmployeurServiceTest {
                         stage,
                         LocalDateTime.now(),
                         CandidatureStatus.SOUMISE,
+                        null,
                         null,
                         null)
         )));
@@ -154,7 +156,7 @@ class EmployeurServiceTest {
 
     @Test
     void approveCandidature() throws CandidatureNotFoundException, InvalidCandidatureModificationException {
-        Stage stage = new Stage(1L, "Démissioner", "Partir immédiatement!", "Rien", new ArrayList<>(), LocalDate.now(), LocalDate.now(), "Chez vous", null, "Remote", "0$", OfferStatus.APPROUVEE, "jemployeur1@gmail.com", OffsetDateTime.now(), OffsetDateTime.now());
+        Stage stage = new Stage(1L, "Démissioner", "Partir immédiatement!", "Rien", new ArrayList<>(), LocalDate.now(), LocalDate.now(), "Chez vous", null,"Remote",  "0$", OfferStatus.APPROUVEE, "jemployeur1@gmail.com", OffsetDateTime.now(), OffsetDateTime.now());
 
         Candidature candidature = new Candidature(
                 1L,
@@ -165,7 +167,8 @@ class EmployeurServiceTest {
                 LocalDateTime.now(),
                 CandidatureStatus.CONVOQUEE,
                 null,
-                ""
+                "",
+                null
         );
 
         when(candidatureRepository.findById(anyLong())).thenReturn(Optional.of(candidature));
@@ -178,7 +181,7 @@ class EmployeurServiceTest {
     }
 
     @Test
-    void approveCandidatureBeforeConvocationException() throws CandidatureNotFoundException, InvalidCandidatureModificationException {
+    void approveCandidatureBeforeConvocationException() {
         Stage stage = new Stage(1L, "Démissioner", "Partir immédiatement!", "Rien", new ArrayList<>(), LocalDate.now(), LocalDate.now(), "Chez vous", null, "Remote", "0$", OfferStatus.APPROUVEE, "jemployeur1@gmail.com", OffsetDateTime.now(), OffsetDateTime.now());
 
         Candidature candidature = new Candidature(
@@ -190,7 +193,8 @@ class EmployeurServiceTest {
                 LocalDateTime.now(),
                 CandidatureStatus.SOUMISE,
                 null,
-                ""
+                "",
+                null
         );
 
         when(candidatureRepository.findById(anyLong())).thenReturn(Optional.of(candidature));

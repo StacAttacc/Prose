@@ -40,7 +40,6 @@ public class AuthService {
             case ETUDIANT -> EtudiantDTO.toDTO((Etudiant) user, token);
             case GESTIONNAIRE -> GestionnaireDTO.toDTO((Gestionnaire) user, token);
             case PROFESSEUR -> ProfesseurDTO.toDTOTokenless((Professeur) user);
-            default -> null;
         };
 
 

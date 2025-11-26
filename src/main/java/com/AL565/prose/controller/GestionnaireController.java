@@ -7,6 +7,7 @@ import com.AL565.prose.service.GestionnaireService;
 import com.AL565.prose.service.EntenteService;
 import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
+import com.AL565.prose.service.dto.MillieuEvaluationDTO;
 import com.AL565.prose.service.exceptions.EtudiantAlreadyAssociatedException;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import lombok.RequiredArgsConstructor;
@@ -252,6 +253,23 @@ public class GestionnaireController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ReturnEntityDTO<>("Erreur lors de la récupération des professeurs", null));
+        }
+    }
+
+    @PostMapping("/candidatures/{candidatureId}/evaluate-milieu")
+    public ResponseEntity<ReturnEntityDTO<String>> evaluateWorkplaceForCandidature(
+            @PathVariable Long candidatureId,
+            @RequestBody MillieuEvaluationDTO evaluation) {
+        try {
+            gestionnaireService.evaluateWorkplaceForCandidature(candidatureId, evaluation);
+            return ResponseEntity.ok(new ReturnEntityDTO<>("Évaluation du milieu de stage enregistrée avec succès", null));
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ReturnEntityDTO<>(e.getMessage(), null));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ReturnEntityDTO<>("Erreur lors de l'enregistrement de l'évaluation", null));
         }
     }
 }

@@ -108,7 +108,7 @@ export const handlers = [
 
   http.get(`${BASE_URL}/gestionnaire/getCandidatures`, ({ request }) => {
     const url = new URL(request.url);
-    const year = url.searchParams.get('year');
+    const year = url.searchParams.get('year') || '2025';
     
     const mockEtudiants2025 = [
       {
@@ -116,16 +116,52 @@ export const handlers = [
           id: 1,
           firstName: 'Jean',
           lastName: 'Dupont',
-          email: 'jean.dupont@example.com'
+          email: 'jean.dupont@example.com',
+          professeurResponsable: {
+            id: 1,
+            firstName: 'Prof',
+            lastName: 'Test',
+            email: 'prof.test@example.com'
+          }
         },
         candidatures: [
           {
             id: 1,
-            status: 'SOUMISE',
+            stageId: 1,
+            status: 'CONFIRMER',
+            evaluationMillieu: null,
             stage: {
               id: 1,
-              title: 'Stage Développeur 2025',
-              startDate: '2025-01-15'
+              title: 'Stage Développement Web',
+              location: '123 Rue Test, Montréal',
+              startDate: '2025-01-15',
+              endDate: '2025-04-30',
+              employeur: {
+                id: 1,
+                company: 'Tech Corp',
+                firstName: 'John',
+                lastName: 'Doe'
+              }
+            },
+            datePostulation: '2024-12-01'
+          },
+          {
+            id: 10,
+            stageId: 10,
+            status: 'SOUMISE',
+            evaluationMillieu: null,
+            stage: {
+              id: 10,
+              title: 'Stage Développement Web Soumis',
+              location: '123 Rue Test, Montréal',
+              startDate: '2025-01-15',
+              endDate: '2025-04-30',
+              employeur: {
+                id: 1,
+                company: 'Tech Corp',
+                firstName: 'John',
+                lastName: 'Doe'
+              }
             },
             datePostulation: '2024-12-01'
           }
@@ -136,16 +172,68 @@ export const handlers = [
           id: 2,
           firstName: 'Marie',
           lastName: 'Martin',
-          email: 'marie.martin@example.com'
+          email: 'marie.martin@example.com',
+          professeurResponsable: {
+            id: 1,
+            firstName: 'Prof',
+            lastName: 'Test',
+            email: 'prof.test@example.com'
+          }
         },
         candidatures: [
           {
+            id: 1,
+            stageId: 1,
+            status: 'CONFIRMER',
+            evaluationMillieu: null,
+            stage: {
+              id: 1,
+              title: 'Stage Développement Web',
+              location: '123 Rue Test, Montréal',
+              startDate: '2025-01-15',
+              endDate: '2025-04-30',
+              employeur: {
+                id: 1,
+                company: 'Tech Corp',
+                firstName: 'John',
+                lastName: 'Doe'
+              }
+            },
+            datePostulation: '2024-12-01'
+          },
+          {
             id: 2,
+            stageId: 2,
             status: 'ACCEPTEE',
+            evaluationMillieu: {
+              id: 1,
+              nomEntreprise: 'Tech Corp',
+              nomStagiaire: 'Marie Martin',
+              dateStage: '2025-01-15 au 2025-04-30',
+              tachesCoformes: 'TOTALEMENT_EN_ACCORD',
+              faciliteIntegration: 'PLUTOT_EN_ACCORD',
+              tempsEstReel: 'TOTALEMENT_EN_ACCORD',
+              hygieneRespectable: 'TOTALEMENT_EN_ACCORD',
+              climatTravailAgreable: 'PLUTOT_EN_ACCORD',
+              accessibleTransportCommun: 'TOTALEMENT_EN_ACCORD',
+              salaireIneteressant: 'PLUTOT_EN_ACCORD',
+              communicationSuperviseurFacile: 'TOTALEMENT_EN_ACCORD',
+              equipementAdequat: 'TOTALEMENT_EN_ACCORD',
+              volumeTravailAcceptable: 'PLUTOT_EN_ACCORD',
+              commentaires: 'Excellent milieu de travail'
+            },
             stage: {
               id: 2,
-              title: 'Stage Analyste 2025',
-              startDate: '2025-05-01'
+              title: 'Stage Data Science',
+              location: '456 Rue Data, Montréal',
+              startDate: '2025-02-01',
+              endDate: '2025-05-15',
+              employeur: {
+                id: 2,
+                company: 'Data Inc',
+                firstName: 'Jane',
+                lastName: 'Smith'
+              }
             },
             datePostulation: '2024-12-01'
           }
@@ -159,16 +247,32 @@ export const handlers = [
           id: 3,
           firstName: 'Pierre',
           lastName: 'Bernard',
-          email: 'pierre.bernard@example.com'
+          email: 'pierre.bernard@example.com',
+          professeurResponsable: {
+            id: 1,
+            firstName: 'Prof',
+            lastName: 'Test',
+            email: 'prof.test@example.com'
+          }
         },
         candidatures: [
           {
             id: 3,
-            status: 'SOUMISE',
+            stageId: 3,
+            status: 'CONFIRMER',
+            evaluationMillieu: null,
             stage: {
               id: 3,
               title: 'Stage Développeur 2026',
-              startDate: '2026-01-15'
+              startDate: '2026-01-15',
+              endDate: '2026-04-30',
+              location: 'Montréal',
+              employeur: {
+                id: 3,
+                company: 'Tech 2026',
+                firstName: 'Test',
+                lastName: 'User'
+              }
             },
             datePostulation: '2025-12-01'
           }
@@ -182,16 +286,32 @@ export const handlers = [
           id: 4,
           firstName: 'Sophie',
           lastName: 'Lefebvre',
-          email: 'sophie.lefebvre@example.com'
+          email: 'sophie.lefebvre@example.com',
+          professeurResponsable: {
+            id: 1,
+            firstName: 'Prof',
+            lastName: 'Test',
+            email: 'prof.test@example.com'
+          }
         },
         candidatures: [
           {
             id: 4,
+            stageId: 4,
             status: 'CONFIRMER',
+            evaluationMillieu: null,
             stage: {
               id: 4,
               title: 'Stage Designer 2027',
-              startDate: '2027-01-15'
+              startDate: '2027-01-15',
+              endDate: '2027-04-30',
+              location: 'Montréal',
+              employeur: {
+                id: 4,
+                company: 'Design 2027',
+                firstName: 'Test',
+                lastName: 'User'
+              }
             },
             datePostulation: '2026-12-01'
           }
@@ -597,6 +717,83 @@ export const handlers = [
         status: 'A_SIGNER',
         documentPdfBase64: 'JVBERi0xLjQKJeLjz9MKMSAwIG9iago8PAovVHlwZSAvQ2F0YWxvZwovUGFnZXMgMiAwIFIKPj4KZW5kb2JqCjIgMCBvYmoKPDwKL1R5cGUgL1BhZ2VzCi9LaWRzIFszIDAgUl0KL0NvdW50IDEKPD4KZW5kb2JqCjMgMCBvYmoKPDwKL1R5cGUgL1BhZ2UKL1BhcmVudCAyIDAgUgovTWVkaWFCb3ggWzAgMCA2MTIgNzkyXQovUmVzb3VyY2VzIDw8Ci9Gb250IDw8Ci9GMSA0IDAgUgo+Pgo+PgovQ29udGVudHMgNSAwIFIKPj4KZW5kb2JqCjQgMCBvYmoKPDwKL1R5cGUgL0ZvbnQKL1N1YnR5cGUgL1R5cGUxCi9CYXNlRm9udCAvSGVsdmV0aWNhCj4+CmVuZG9iago1IDAgb2JqCjw8Ci9MZW5ndGggNDQKPj4Kc3RyZWFtCkJUCi9GMSAxMiBUZgo1MCA3MDAgVGQKKEhlbGxvIFdvcmxkKSBUagpFVApzdHJlYW0KZW5kb2JqCnhyZWYKMCA2CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAwOSAwMDAwMCBuIAowMDAwMDAwMDU4IDAwMDAwIG4gCjAwMDAwMDAxMTUgMDAwMDAgbiAKMDAwMDAwMDI2OCAwMDAwMCBuIAowMDAwMDAwMzQxIDAwMDAwIG4gCnRyYWlsZXIKPDwKL1NpemUgNgovUm9vdCAxIDAgUgo+PgpzdGFydHhyZWYKNDI3CiUlRU9G',
         documentName: `entente_stage_${candidatureId}.pdf`
+      }
+    });
+  }),
+
+  // POST /professeur/evaluate - Pour évaluer le milieu de travail
+  http.post(`${BASE_URL}/professeur/evaluate`, async ({ request }) => {
+    const body = await request.json();
+    return HttpResponse.json({
+      message: 'Workplace evaluated',
+      data: body
+    });
+  }),
+
+  // GET /professeur/:professeurId/mes-etudiants-candidatures - Pour récupérer les candidatures des étudiants
+  http.get(`${BASE_URL}/professeur/:professeurId/mes-etudiants-candidatures`, ({ params, request }) => {
+    const { professeurId } = params;
+    const url = new URL(request.url);
+    const year = url.searchParams.get('year') || '2025';
+
+    const mockCandidatures = [
+      {
+        id: 1,
+        stageId: 1,
+        evaluationMillieu: null,
+        etudiant: {
+          id: 1,
+          firstName: 'Jean',
+          lastName: 'Dupont',
+          email: 'jean.dupont@example.com'
+        }
+      },
+      {
+        id: 2,
+        stageId: 2,
+        evaluationMillieu: {
+          id: 1,
+          nomEntreprise: 'Tech Corp',
+          nomStagiaire: 'Marie Martin',
+          dateStage: '2025-01-15 au 2025-04-30',
+          tachesCoformes: 'TOTALEMENT_EN_ACCORD',
+          faciliteIntegration: 'PLUTOT_EN_ACCORD',
+          tempsEstReel: 'TOTALEMENT_EN_ACCORD',
+          hygieneRespectable: 'TOTALEMENT_EN_ACCORD',
+          climatTravailAgreable: 'PLUTOT_EN_ACCORD',
+          accessibleTransportCommun: 'TOTALEMENT_EN_ACCORD',
+          salaireIneteressant: 'PLUTOT_EN_ACCORD',
+          communicationSuperviseurFacile: 'TOTALEMENT_EN_ACCORD',
+          equipementAdequat: 'TOTALEMENT_EN_ACCORD',
+          volumeTravailAcceptable: 'PLUTOT_EN_ACCORD',
+          commentaires: 'Excellent milieu de travail'
+        },
+        etudiant: {
+          id: 2,
+          firstName: 'Marie',
+          lastName: 'Martin',
+          email: 'marie.martin@example.com'
+        }
+      }
+    ];
+
+    return HttpResponse.json({
+      message: 'Candidatures trouvés',
+      data: mockCandidatures
+    });
+  }),
+
+
+  // POST /gestionnaire/candidatures/:candidatureId/evaluate-milieu - Pour évaluer le milieu de stage
+  http.post(`${BASE_URL}/gestionnaire/candidatures/:candidatureId/evaluate-milieu`, async ({ params, request }) => {
+    const { candidatureId } = params;
+    const body = await request.json();
+    return HttpResponse.json({
+      message: 'Évaluation du milieu de stage enregistrée avec succès',
+      data: {
+        id: 1,
+        candidatureId: parseInt(candidatureId),
+        ...body
       }
     });
   })
