@@ -2,7 +2,7 @@ package com.AL565.prose.controller;
 
 import com.AL565.prose.security.exceptions.UserNotFoundException;
 import com.AL565.prose.security.exceptions.AuthenticationException;
-import com.AL565.prose.service.AuthService;
+import com.AL565.prose.service.UtilisateurService;
 import com.AL565.prose.service.dto.LoginRequestDTO;
 import com.AL565.prose.service.dto.ProseUserDTO;
 import com.AL565.prose.service.dto.ReturnEntityDTO;
@@ -18,12 +18,12 @@ import jakarta.validation.Valid;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final AuthService authService;
+    private final UtilisateurService utilisateurService;
 
     @PostMapping("/login")
     public ResponseEntity<ReturnEntityDTO<ProseUserDTO>> login(@Valid @RequestBody LoginRequestDTO request) {
         try {
-            ProseUserDTO user = authService.login(request);
+            ProseUserDTO user = utilisateurService.login(request);
             return ResponseEntity.status(200).body(new ReturnEntityDTO<>("Login successful", user));
         } catch (UserNotFoundException | AuthenticationException e){
             return ResponseEntity.status(401).body(new ReturnEntityDTO<>("Informations invalide, veuillez réessayer.", null));

@@ -27,7 +27,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class AuthServiceTest {
+class UtilisateurServiceTest {
 
     @Mock
     private AuthenticationManager authenticationManager;
@@ -39,7 +39,7 @@ class AuthServiceTest {
     private ProseUserRepository userRepository;
 
     @InjectMocks
-    private AuthService authService;
+    private UtilisateurService utilisateurService;
 
     @Test
     void login_success() {
@@ -57,7 +57,7 @@ class AuthServiceTest {
                 .thenReturn(Optional.of(user));
 
         // Act
-        ProseUserDTO result = authService.login(request);
+        ProseUserDTO result = utilisateurService.login(request);
 
         // Assert
         assertThat(result).isNotNull();
@@ -81,7 +81,7 @@ class AuthServiceTest {
                 .thenThrow(new BadCredentialsException("Invalid credentials"));
 
         // Act & Assert
-        assertThatThrownBy(() -> authService.login(request))
+        assertThatThrownBy(() -> utilisateurService.login(request))
                 .isInstanceOf(BadCredentialsException.class)
                 .hasMessage("Invalid credentials");
 
@@ -105,7 +105,7 @@ class AuthServiceTest {
                 .thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThatThrownBy(() -> authService.login(request))
+        assertThatThrownBy(() -> utilisateurService.login(request))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessage("userNotFound");
 

@@ -1,6 +1,6 @@
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
-import { vi } from 'vitest';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import MesEvaluations from '../../../components/employeur-components/MesEvaluations';
 import * as EmployeurService from '../../../services/EmployeurService';
 import { I18nProvider } from '../../../context/I18nContext';
