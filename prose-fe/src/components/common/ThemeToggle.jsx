@@ -8,7 +8,7 @@ export function ThemeToggle() {
     return (
         <button
             onClick={toggleTheme}
-            className="flex items-center gap-2 bg-teal-600/50 px-3 py-1.5 rounded-lg border border-white/20 hover:bg-teal-500/70 transition-colors"
+            className="flex items-center gap-2 bg-teal-600/50 px-3 py-4 rounded-lg border border-white/20 hover:bg-teal-500/70 transition-colors"
             aria-label={isDark ? t('switchToLightMode') : t('switchToDarkMode')}
         >
             {isDark ? (

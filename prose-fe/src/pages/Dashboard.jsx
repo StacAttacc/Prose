@@ -36,13 +36,13 @@ export default function Dashboard() {
                                             className="size-11 rounded-full outline -outline-offset-1 outline-white/10 h-19 w-10"/>
                                     </button>
                                     <p className="text-white pl-4 text-2xl">Prose</p>
-                                    <div className="flex items-center gap-4 ml-6">
-                                        <div className="flex items-center gap-2 bg-teal-600/50 px-3 py-1.5 rounded-lg border border-white/20">
+                                    <div className="flex items-center gap-4 mx-6">
+                                        <div className="flex items-center gap-2 bg-teal-600/50 px-3 py-2 rounded-lg border border-white/20">
                                             <label className="text-white text-sm font-medium whitespace-nowrap">{t('language')}:</label>
                                             <select
                                                 value={locale}
                                                 onChange={(e) => setLocale(e.target.value)}
-                                                className="px-2 py-1 border border-white/30 rounded-md bg-teal-700 text-white focus:ring-2 focus:ring-white focus:border-white text-sm font-medium cursor-pointer hover:bg-teal-600 transition-colors"
+                                                className="px-3 py-2 border border-white/30 rounded-md bg-teal-700 text-white focus:ring-2 focus:ring-white focus:border-white text-sm font-medium cursor-pointer hover:bg-teal-600 transition-colors"
                                             >
                                                 <option value="fr">Français</option>
                                                 <option value="en">English</option>
@@ -50,12 +50,12 @@ export default function Dashboard() {
                                         </div>
                                         <ThemeToggle />
                                         {(user.role === "GESTIONNAIRE" || user.role === "EMPLOYEUR" || user.role === "PROFESSEUR") && (
-                                            <div className="flex items-center gap-2">
+                                            <div className="flex items-center gap-2 bg-teal-600/50 px-3 py-1.5 rounded-lg border border-white/20">
                                                 <label className="text-white text-sm font-medium">{t('year')}:</label>
                                                 <select
                                                     value={selectedYear}
                                                     onChange={(e) => setSelectedYear(e.target.value)}
-                                                    className="px-3 py-2 border border-white/30 rounded-md bg-teal-600 text-white focus:ring-2 focus:ring-white focus:border-white"
+                                                    className="px-3 py-2.5 border border-white/30 rounded-md bg-teal-700 text-white focus:ring-2 focus:ring-white focus:border-white text-sm font-medium cursor-pointer hover:bg-teal-600 transition-colors"
                                                 >
                                                     {Array.from({ length: 10 }, (_, i) => {
                                                         const year = 2023 + i;
