@@ -58,7 +58,7 @@ public class EvaluationService {
                 .employeur(employeur)
                 .etudiant(etudiant)
                 .nomEleve(evaluationDTO.getNomEleve() != null ? evaluationDTO.getNomEleve() : etudiant.getFirstName() + " " + etudiant.getLastName())
-                .programmeEtudes(evaluationDTO.getProgrammeEtudes())
+                .programmeEtudes(evaluationDTO.getProgrammeEtudes() != null ? evaluationDTO.getProgrammeEtudes() : (etudiant.getDiscipline() != null ? etudiant.getDiscipline().getDisplayName() : ""))
                 .nomEntreprise(evaluationDTO.getNomEntreprise() != null ? evaluationDTO.getNomEntreprise() : employeur.getCompany())
                 .nomSuperviseur(evaluationDTO.getNomSuperviseur())
                 .fonction(evaluationDTO.getFonction())
@@ -149,6 +149,9 @@ public class EvaluationService {
         dto.setEtudiantId(entente.getCandidature().getEtudiant().getId());
         dto.setEtudiantNom(entente.getCandidature().getEtudiant().getLastName());
         dto.setEtudiantPrenom(entente.getCandidature().getEtudiant().getFirstName());
+        dto.setDiscipline(entente.getCandidature().getEtudiant().getDiscipline() != null
+            ? entente.getCandidature().getEtudiant().getDiscipline().getDisplayName()
+            : null);
         dto.setEmployeurId(entente.getCandidature().getStage().getId()); // Using stage ID as proxy
         dto.setStageId(entente.getCandidature().getStage().getId());
         dto.setStageTitle(entente.getCandidature().getStage().getTitle());

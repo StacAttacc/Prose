@@ -210,8 +210,9 @@ public class GestionnaireService {
                         .findNotificationsByTypeAndFirstRecipientReadAtIsNull(NEW_CV_NOTIFICATION);
                 List<Notification> convocations = notificationRepository
                         .findNotificationsByTypeAndSecondRecipientReadAtIsNull(CONVOCATION_NOTIFICATION);
-                List<Notification> candidatureDecisions = notificationRepository
-                        .findNotificationsByTypeAndSecondRecipientReadAtIsNull(CANDIDATURE_DECISION_NOTIFICATION);
+                //List<Notification> candidatureDecisions = notificationRepository
+                //        .findNotificationsByTypeAndSecondRecipientReadAtIsNull(CANDIDATURE_DECISION_NOTIFICATION);
+                List<Notification> candidatureDecisions = new ArrayList<>();
                 List<Notification> etudiantOffresResponses = notificationRepository
                         .findNotificationsByTypeAndSecondRecipientReadAtIsNull(ETUDIANT_OFFRE_DECISION_NOTIFICATION);
                 List<SignatureEntenteNotification> signatureEntentes = new ArrayList<>();
@@ -411,7 +412,7 @@ public class GestionnaireService {
                 .dateCandidature(LocalDateTime.now())
                 .status(CandidatureStatus.CONFIRMER)
                 .dateDecision(LocalDateTime.now())
-                .decision(dto.getComment() != null ? dto.getComment() : "Stage attribué par le gestionnaire")
+                .decision(dto.getComment() != null && !dto.getComment().trim().isEmpty() ? dto.getComment() : null)
                 .build();
 
         Candidature savedCandidature = candidatureRepository.save(candidature);
