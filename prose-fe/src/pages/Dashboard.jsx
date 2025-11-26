@@ -49,7 +49,7 @@ export default function Dashboard() {
                                             </select>
                                         </div>
                                         <ThemeToggle />
-                                        {(user.role === "GESTIONNAIRE" || user.role === "EMPLOYEUR") && (
+                                        {(user.role === "GESTIONNAIRE" || user.role === "EMPLOYEUR" || user.role === "PROFESSEUR") && (
                                             <div className="flex items-center gap-2">
                                                 <label className="text-white text-sm font-medium">{t('year')}:</label>
                                                 <select
