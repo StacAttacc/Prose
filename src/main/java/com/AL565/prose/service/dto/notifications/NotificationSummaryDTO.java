@@ -42,6 +42,10 @@ public class NotificationSummaryDTO {
                     candidatureId = cdn.getCandidatureId();
                     etudiantId = cdn.getEtudiantId();
             }
+            case AssignationNotification as -> {
+                    candidatureId = as.getCandidatureId();
+                    etudiantId = as.getEtudiantId();
+            }
             case PostulationNotification pn -> {
                     candidatureId = pn.getCandidatureId();
                     stageId = pn.getStageId();

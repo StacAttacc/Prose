@@ -113,6 +113,16 @@ class NotificationsServiceLayerTest {
         n10.setMessageEN("Stage approval request done");
         n10.setCreatedAt(LocalDateTime.now());
 
+        AssignationNotification n11 = new AssignationNotification();
+        n11.setType(ASSIGNATION_NOTIFICATION);
+        n11.setMessageEN("New assignation");
+        n11.setCreatedAt(LocalDateTime.now());
+
+        when(notificationRepository.findNotificationsByTypeAndFirstRecipientReadAtIsNullAndTargetEmail(
+                ASSIGNATION_NOTIFICATION,
+                "dummy@email.com"
+        )).thenReturn(List.of(n11));
+
         when(notificationRepository.findNotificationsByTypeAndFirstRecipientReadAtIsNullAndTargetEmail(
                 DEMANDE_APPROBATION_STAGE_NOTIFICATION,
                 "dummy@email.com"
@@ -181,13 +191,14 @@ class NotificationsServiceLayerTest {
         assertThat(gestionnaireResult.getGroups().get(2).getItems().getFirst().getMessageEN()).isEqualTo("New CV uploaded");
 
         assertThat(etudiantResult).isNotNull();
-        assertThat(etudiantResult.getTotalCount()).isEqualTo(4);
-        assertThat(etudiantResult.getGroups()).hasSize(4);
+        assertThat(etudiantResult.getTotalCount()).isEqualTo(5);
+        assertThat(etudiantResult.getGroups()).hasSize(5);
         assertThat(etudiantResult.getGroups().getFirst().getItems()).hasSize(1);
         assertThat(etudiantResult.getGroups().getFirst().getItems().getFirst().getMessageEN()).isEqualTo("CV processed");
         assertThat(etudiantResult.getGroups().get(1).getItems().getFirst().getMessageEN()).isEqualTo("New convocation");
         assertThat(etudiantResult.getGroups().get(2).getItems().getFirst().getMessageEN()).isEqualTo("Candidature decision made");
         assertThat(etudiantResult.getGroups().get(3).getItems().getFirst().getMessageEN()).isEqualTo("Entente needs to be signed");
+        assertThat(etudiantResult.getGroups().get(4).getItems().getFirst().getMessageEN()).isEqualTo("New assgnation");
 
         assertThat(employeurResult).isNotNull();
         assertThat(employeurResult.getTotalCount()).isEqualTo(4);

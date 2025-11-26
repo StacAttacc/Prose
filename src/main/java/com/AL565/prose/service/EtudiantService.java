@@ -270,12 +270,19 @@ public class EtudiantService {
                             CANDIDATURE_DECISION_NOTIFICATION,
                             etudiantEmail
                     );
+            List<Notification> assignations = notificationRepository
+                    .findNotificationsByTypeAndFirstRecipientReadAtIsNullAndTargetEmail(
+                            ASSIGNATION_NOTIFICATION,
+                            etudiantEmail
+                    );
             List<SignatureEntenteNotification> signatures = signatureEntenteNotificationRepository
                     .findSignatureEntenteNotificationsByTypeAndSecondRecipientReadAtIsNullAndTargetEtudiantEmail(
                             SIGNATURE_ENTENTE_NOTIFICATION,
                             etudiantEmail
                     );
 
+            NotificationGroupDTO assignationGroup = NotificationGroupDTO
+                    .toDTO(ASSIGNATION_NOTIFICATION.getDisplayName(), assignations);
             NotificationGroupDTO cvGroup = NotificationGroupDTO
                     .toDTO(NEW_CV_NOTIFICATION.getDisplayName(), cvs);
             NotificationGroupDTO convocationGroup = NotificationGroupDTO
@@ -289,7 +296,8 @@ public class EtudiantService {
                     cvGroup,
                     convocationGroup,
                     candidatureDecisionGroup,
-                    signatureEntenteGroup
+                    signatureEntenteGroup,
+                    assignationGroup
             ));
         } catch (Exception e) {
             throw new NotificationExceptions.NotificationFetchException();
