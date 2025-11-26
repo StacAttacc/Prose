@@ -210,9 +210,8 @@ public class GestionnaireService {
                         .findNotificationsByTypeAndFirstRecipientReadAtIsNull(NEW_CV_NOTIFICATION);
                 List<Notification> convocations = notificationRepository
                         .findNotificationsByTypeAndSecondRecipientReadAtIsNull(CONVOCATION_NOTIFICATION);
-                //List<Notification> candidatureDecisions = notificationRepository
-                //        .findNotificationsByTypeAndSecondRecipientReadAtIsNull(CANDIDATURE_DECISION_NOTIFICATION);
-                List<Notification> candidatureDecisions = new ArrayList<>();
+                List<Notification> candidatureDecisions = notificationRepository
+                        .findNotificationsByTypeAndSecondRecipientReadAtIsNull(CANDIDATURE_DECISION_NOTIFICATION);
                 List<Notification> etudiantOffresResponses = notificationRepository
                         .findNotificationsByTypeAndSecondRecipientReadAtIsNull(ETUDIANT_OFFRE_DECISION_NOTIFICATION);
                 List<SignatureEntenteNotification> signatureEntentes = new ArrayList<>();
@@ -430,9 +429,9 @@ public class GestionnaireService {
         String messageFR = "Un stage vous a été attribué : " + stageTitle;
         String messageEN = "An internship has been assigned to you: " + stageTitle;
 
-        CandidatureDecisionNotification notification = new CandidatureDecisionNotification();
+        AssignationNotification notification = new AssignationNotification();
         notification.setCreatedAt(LocalDateTime.now());
-        notification.setType(CANDIDATURE_DECISION_NOTIFICATION);
+        notification.setType(ASSIGNATION_NOTIFICATION);
         notification.setMessageFR(messageFR);
         notification.setMessageEN(messageEN);
         notification.setCandidatureId(candidature.getId());

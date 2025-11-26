@@ -63,12 +63,7 @@ function getEtudiantPaths({role, notification = null, isGrouped, type}) {
                 path: `/etudiant/mon-cv`,
             };
         case "convocation":
-            return isGrouped ? {
-                path: `/etudiant/stages/candidatures`,
-            } : {
-                path: `/etudiant/stages/candidatures`,
-                state: { openCandidatureId: notification?.candidatureId }
-            };
+        case "assignation":
         case "candidature_decision":
             return isGrouped ? {
                 path: `/etudiant/stages/candidatures`,

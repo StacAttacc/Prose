@@ -121,6 +121,7 @@ const translations = {
     glauconAuthor: 'Glaucon',
     
     // Notifications
+    nouvelleAssignation: 'nouveau(x) stage(s) exclusifs disponible(s)',
     miseAJourDemandeApprobationStage: 'demande(s) d\'approbation de stage(s) mise(s) à jour',
     signatureEntenteNotification: 'nouveau(x) document(s) à signer',
     OffresStage: 'nouvelles offre(s) de stage à approuver',
@@ -749,6 +750,7 @@ const translations = {
     glauconAuthor: 'Glaucon',
 
     // Notifications
+    nouvelleAssignation: 'new exclusive internship(s) available',
     miseAJourDemandeApprobationStage: 'update(s) on internship approval request(s)',
     signatureEntenteNotification: 'new document(s) to sign',
     nouvellesOffresStage: 'new internship offer(s) to approve',

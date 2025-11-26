@@ -11,6 +11,7 @@ export function labelForKey(key) {
         case "candidature_decision": return useI18n().t('candidaturesUpdates');
         case "signature_entente": return useI18n().t('signatureEntenteNotification');
         case "demande_approbation_stage": return useI18n().t('miseAJourDemandeApprobationStage');
+        case "assignation": return useI18n().t('nouvelleAssignation');
         default: return `${key} notification(s)`;
     }
 }

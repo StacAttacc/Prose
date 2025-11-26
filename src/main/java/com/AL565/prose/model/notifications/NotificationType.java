@@ -12,7 +12,8 @@ public enum NotificationType {
     CANDIDATURE_DECISION_NOTIFICATION("candidature_decision"),
     CONVOCATION_NOTIFICATION("convocation"),
     ETUDIANT_OFFRE_DECISION_NOTIFICATION("etudiant_offre_decision"),
-    SIGNATURE_ENTENTE_NOTIFICATION("signature_entente");
+    SIGNATURE_ENTENTE_NOTIFICATION("signature_entente"),
+    ASSIGNATION_NOTIFICATION("assignation");
 
     private final String displayName;
 
