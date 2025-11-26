@@ -16,6 +16,7 @@ import com.AL565.prose.service.exceptions.EtudiantAlreadyAssociatedException;
 import com.AL565.prose.service.exceptions.FailedToRetrieveStagesException;
 
 import com.AL565.prose.utils.NotificationsHelper;
+import com.AL565.prose.utils.SessionYearHelper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -63,7 +64,7 @@ public class GestionnaireService {
 
 
     public List<StageDTO> getStagesByStatus(String status, String year) {
-        int yearNumber = year != null ? Integer.parseInt(year) : LocalDate.now().getYear();
+        int yearNumber = SessionYearHelper.getSessionYear(year);
 
         return stageRepository.findByStatus(OfferStatus.valueOf(status))
                 .stream()
@@ -110,7 +111,7 @@ public class GestionnaireService {
     }
 
     public List<GestionnaireCvDTO> getAllCvs(String year) throws Exception {
-        int yearNumber = year != null ? Integer.parseInt(year) : LocalDate.now().getYear();
+        int yearNumber = SessionYearHelper.getSessionYear(year);
 
         try {
             return cvRepository.findAll()
@@ -153,7 +154,7 @@ public class GestionnaireService {
 
     @Transactional
     public List<EtudiantCandidaturesDTO> getAllEtudiantsCandidatures(String year) {
-        int yearNumber = year != null && !year.isEmpty() ? Integer.parseInt(year) : LocalDate.now().getYear();
+        int yearNumber = SessionYearHelper.getSessionYear(year);
         List<Etudiant> etudiants =  etudiantRepository.findAll();
 
         List <EtudiantCandidaturesDTO> etudiantCandidaturesDTO = new ArrayList<>();
@@ -446,13 +447,13 @@ public class GestionnaireService {
 
     public List<EtudiantDTO> getAllEtudiants() {
         return etudiantRepository.findAll().stream()
-                .map(etudiant -> EtudiantDTO.toDTOTokenless(etudiant))
+                .map(EtudiantDTO::toDTOTokenless)
                 .toList();
     }
 
     public List<ProfesseurDTO> getAllProfesseurs() {
         return professeurRepository.findAll().stream()
-                .map(professeur -> ProfesseurDTO.toDTOTokenless(professeur))
+                .map(ProfesseurDTO::toDTOTokenless)
                 .toList();
     }
 

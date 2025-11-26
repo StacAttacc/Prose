@@ -13,15 +13,14 @@ import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import com.AL565.prose.service.exceptions.InvalidCandidatureModificationException;
 import com.AL565.prose.service.exceptions.StageNotFoundException;
 import com.AL565.prose.utils.NotificationsHelper;
+import com.AL565.prose.utils.SessionYearHelper;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -81,7 +80,7 @@ public class EmployeurService {
 
     @Transactional
     public List<StageDTO> listStagesFor(String email, String year) {
-        int yearNumber =  year != null ? Integer.parseInt(year) : LocalDate.now().getYear();
+        int yearNumber = SessionYearHelper.getSessionYear(year);
 
         return stageRepository.findByEmployeurEmail(email)
                 .stream().map((stage) -> {
