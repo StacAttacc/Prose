@@ -59,7 +59,10 @@ public class ProfesseurService {
         millieuEvaluation = millieuEvaluationRepository.save(millieuEvaluation);
 
         candidature.setEvaluationMillieu(millieuEvaluation);
-        candidatureRepository.save(candidature);
+        candidature = candidatureRepository.save(candidature);
+
+        millieuEvaluation.setCandidature(candidature);
+        millieuEvaluationRepository.save(millieuEvaluation);
 
     }
 
@@ -73,7 +76,11 @@ public class ProfesseurService {
                     Stage stage = candidature.getStage();
                     return stage.getStartDate().getYear() == yearNumber;
                 })
-                .map(CandidatureEvaluationDTO::toDTO)
+                .map(candidature -> {
+                    Stage stage = candidature.getStage();
+                    Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(stage.getEmployeurEmail());
+                    return CandidatureEvaluationDTO.toDTO(candidature, employeur);
+                })
                 .toList();
     }
 

@@ -93,7 +93,7 @@ export default function ListeCandidaturesProfesseur() {
                                             {candidature.etudiant?.firstName} {candidature.etudiant?.lastName}
                                         </h3>
                                         <p className="text-sm text-gray-600">
-                                            {t('professeur.stageName') || 'Stage Name'}: {candidature.stageName}
+                                            {t('professeur.stageName') || 'Stage Name'}: {candidature.stage.title}
                                         </p>
                                     </div>
                                     {candidature.evaluationMillieu ? (
@@ -106,14 +106,14 @@ export default function ListeCandidaturesProfesseur() {
                                 <div className="mt-4 flex gap-2">
                                     {candidature.evaluationMillieu ? (
                                         <button
-                                            onClick={() => navigate(`/professeur/evaluations/${candidature.id}`)}
+                                            onClick={() => navigate(`/professeur/evaluations/${candidature.id}`, { state: { stage: candidature.stage } })}
                                             className="flex-1 text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2"
                                         >
                                             {t('professeur.voirEvaluation') || 'Voir l\'évaluation'}
                                         </button>
                                     ) : (
                                         <button
-                                            onClick={() => navigate(`/professeur/evaluations/${candidature.id}`)}
+                                            onClick={() => navigate(`/professeur/evaluations/${candidature.id}`, { state: { stage: candidature.stage } })}
                                             className="flex-1 text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2"
                                         >
                                             {t('professeur.evaluerMilieu') || 'Évaluer le milieu'}

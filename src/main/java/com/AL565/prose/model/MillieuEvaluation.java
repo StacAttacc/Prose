@@ -70,4 +70,8 @@ public class MillieuEvaluation {
     private List<LocalDateTime> finQuarts = new ArrayList<>();
 
     private LocalDateTime tempsSignature;
+
+    @OneToOne
+    @JoinColumn
+    private Candidature candidature;
 }

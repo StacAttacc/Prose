@@ -92,18 +92,18 @@ public class ProfesseurControllerTest {
 
         CandidatureEvaluationDTO candidature1 = new CandidatureEvaluationDTO();
         candidature1.setId(1L);
-        candidature1.setStageName("Stage1");
+        candidature1.setStage(new StageDTO());
         candidature1.setEvaluationMillieu(new MillieuEvaluationDTO());
         candidature1.setEtudiant(EtudiantDTO.toDTOTokenless(new Etudiant("John", "Doe", new Credentials("john@doe.com", "123", Role.ETUDIANT), Discipline.INFORMATIQUE)));
 
         CandidatureEvaluationDTO candidature2 = new CandidatureEvaluationDTO();
         candidature2.setId(2L);
-        candidature2.setStageName("Stage 2");
+        candidature2.setStage(new StageDTO());
         candidature2.setEtudiant(EtudiantDTO.toDTOTokenless(new Etudiant("John", "Doe", new Credentials("john@doe.com", "123", Role.ETUDIANT), Discipline.INFORMATIQUE)));
 
         CandidatureEvaluationDTO candidature3 = new CandidatureEvaluationDTO();
         candidature3.setId(3L);
-        candidature3.setStageName("Stage 3");
+        candidature3.setStage(new StageDTO());
         candidature3.setEvaluationMillieu(new MillieuEvaluationDTO());
         candidature3.setEtudiant(EtudiantDTO.toDTOTokenless(new Etudiant("John", "Doe", new Credentials("john@doe.com", "123", Role.ETUDIANT), Discipline.INFORMATIQUE)));
 

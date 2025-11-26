@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import {useLocation, useNavigate, useParams} from 'react-router-dom';
 import { useI18n } from '../../context/I18nContext';
 import { evaluateWorkplace, getCandidaturesProfesseur } from '../../services/ProfesseurService';
 import { useAuth } from '../../context/AuthContext';
@@ -69,6 +69,9 @@ export default function EvaluationMilieuTravail() {
     const { candidatureId } = useParams();
     const { user } = useAuth();
     const { selectedYear } = useYear();
+    const location = useLocation();
+    const { stage } = location.state || {};
+    const employeur = stage.employeur;
     
     const [formData, setFormData] = useState(() => initialFormState(candidatureId));
     const [loading, setLoading] = useState(true);
@@ -142,7 +145,11 @@ export default function EvaluationMilieuTravail() {
                 if (currentCandidature.etudiant) {
                     setFormData(prev => ({
                         ...prev,
-                        nomStagiaire: `${currentCandidature.etudiant.firstName || ''} ${currentCandidature.etudiant.lastName || ''}`.trim()
+                        nomStagiaire: `${currentCandidature.etudiant.firstName || ''} ${currentCandidature.etudiant.lastName || ''}`.trim(),
+                        dateStage: `${stage.startDate}`,
+                        nomEntreprise: `${employeur.company}`,
+                        ville: `${stage.location}`,
+                        salaire: `${stage.compensation}`,
                     }));
                 }
             }
