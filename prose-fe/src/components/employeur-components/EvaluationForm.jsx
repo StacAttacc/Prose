@@ -166,9 +166,10 @@ const { t } = useI18n();
             ...prev,
             ententeId: Number(ententeId) || prev.ententeId,
             nomEleve: prev.nomEleve || `${entente.etudiantPrenom ?? ''} ${entente.etudiantNom ?? ''}`.trim(),
-            nomEntreprise: prev.nomEntreprise || entente.stageTitle || prev.nomEntreprise,
+            programmeEtudes: prev.programmeEtudes || entente.discipline || '',
+            nomEntreprise: prev.nomEntreprise || user?.company || '',
             signataireNom: prev.signataireNom || `${user?.firstName ?? ''} ${user?.lastName ?? ''}`.trim(),
-            signataireFonction: prev.signataireFonction || user?.company || prev.signataireFonction,
+            signataireFonction: prev.signataireFonction || '',
         }));
     }, [entente, ententeId, user]);
 
