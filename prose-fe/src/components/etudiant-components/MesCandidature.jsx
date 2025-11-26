@@ -420,6 +420,13 @@ export default function MesCandidature() {
                                         <h4 className="text-3xl font-bold text-green-800 text-center">
                                             {t('stageAccepte')}
                                         </h4>
+                                        {candidature.decision && candidature.decision.trim() !== "" && (
+                                            <div className="mt-4 p-3 bg-green-50 border border-green-300 rounded">
+                                                <p className="text-sm text-gray-700">
+                                                    <strong>{t('commentaire')}:</strong> {candidature.decision}
+                                                </p>
+                                            </div>
+                                        )}
                                         {checkingEntente[candidature.id] ? (
                                             <div className="text-center text-gray-500">
                                                 {t('verificationEntente')}
