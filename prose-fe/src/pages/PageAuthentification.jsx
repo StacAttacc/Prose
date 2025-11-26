@@ -26,7 +26,7 @@ export default function PageAuthentification() {
                     <select
                         value={locale}
                         onChange={(e) => setLocale(e.target.value)}
-                        className="px-2 py-1 border border-white/30 rounded-md bg-teal-800 text-white focus:ring-2 focus:ring-white focus:border-white text-sm font-medium cursor-pointer hover:bg-teal-700 transition-colors"
+                        className="px-2 py-2 border border-white/30 rounded-md bg-teal-800 text-white focus:ring-2 focus:ring-white focus:border-white text-sm font-medium cursor-pointer hover:bg-teal-700 transition-colors"
                     >
                         <option value="fr">Français</option>
                         <option value="en">English</option>
