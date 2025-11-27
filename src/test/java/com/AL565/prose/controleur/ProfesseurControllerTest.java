@@ -57,7 +57,7 @@ public class ProfesseurControllerTest {
     private UtilisateurService authService;
 
     @MockitoBean
-    private EntenteService ententeService;
+    private UtilisateurService utilisateurService;
 
     @MockitoBean
     private EvaluationService evaluationService;

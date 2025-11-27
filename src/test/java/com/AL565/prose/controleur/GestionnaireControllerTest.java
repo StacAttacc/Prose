@@ -58,7 +58,7 @@ class GestionnaireControllerTest {
     private GestionnaireService gestionnaireService;
 
     @MockitoBean
-    private EntenteService ententeService;
+    private UtilisateurService utilisateurService;
 
     @MockitoBean
     private EmployeurService employeurService;
@@ -526,7 +526,7 @@ class GestionnaireControllerTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        ReturnEntityDTO<List<EtudiantCandidaturesDTO>> candidatures = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<ReturnEntityDTO<List<EtudiantCandidaturesDTO>>>() {
+        ReturnEntityDTO<List<EtudiantCandidaturesDTO>> candidatures = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
         });
 
         List<EtudiantCandidaturesDTO> candidaturesList = candidatures.getData();
@@ -548,7 +548,7 @@ class GestionnaireControllerTest {
                 .candidatureId(candidatureId)
                 .build();
 
-        when(ententeService.genererEntente(candidatureId)).thenReturn(ententeDTO);
+        when(gestionnaireService.genererEntente(candidatureId)).thenReturn(ententeDTO);
 
         mockMvc.perform(post("/gestionnaire/candidatures/" + candidatureId + "/generer-entente")
                         .contentType(MediaType.APPLICATION_JSON))
@@ -557,7 +557,7 @@ class GestionnaireControllerTest {
                 .andExpect(jsonPath("$.message", is("Entente générée avec succès")))
                 .andExpect(jsonPath("$.data.id", is(1)));
 
-        verify(ententeService, times(1)).genererEntente(candidatureId);
+        verify(gestionnaireService, times(1)).genererEntente(candidatureId);
     }
 
     @Test
@@ -566,7 +566,7 @@ class GestionnaireControllerTest {
         Long candidatureId = 1L;
         String errorMessage = "La candidature doit être confirmée pour générer une entente";
 
-        when(ententeService.genererEntente(candidatureId))
+        when(gestionnaireService.genererEntente(candidatureId))
                 .thenThrow(new IllegalArgumentException(errorMessage));
 
         mockMvc.perform(post("/gestionnaire/candidatures/" + candidatureId + "/generer-entente")
@@ -575,7 +575,7 @@ class GestionnaireControllerTest {
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.message", is(errorMessage)));
 
-        verify(ententeService, times(1)).genererEntente(candidatureId);
+        verify(gestionnaireService, times(1)).genererEntente(candidatureId);
     }
 
     @Test
@@ -583,7 +583,7 @@ class GestionnaireControllerTest {
     void genererEntente_whenServiceThrows_returns500() throws Exception {
         Long candidatureId = 1L;
 
-        when(ententeService.genererEntente(candidatureId))
+        when(gestionnaireService.genererEntente(candidatureId))
                 .thenThrow(new RuntimeException("Erreur interne"));
 
         mockMvc.perform(post("/gestionnaire/candidatures/" + candidatureId + "/generer-entente")
@@ -592,7 +592,7 @@ class GestionnaireControllerTest {
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.message", is("Erreur interne du serveur lors de la génération de l'entente")));
 
-        verify(ententeService, times(1)).genererEntente(candidatureId);
+        verify(gestionnaireService, times(1)).genererEntente(candidatureId);
     }
 
     @Test

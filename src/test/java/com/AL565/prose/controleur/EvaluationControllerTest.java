@@ -41,7 +41,7 @@ class EvaluationControllerTest {
     @MockitoBean private EmployeurService employeurService;
     @MockitoBean private GestionnaireService gestionnaireService;
     @MockitoBean private ProfesseurService professeurService;
-    @MockitoBean private EntenteService ententeService;
+    @MockitoBean private UtilisateurService utilisateurService;
     @MockitoBean private JwtTokenProvider jwtTokenProvider;
 
     private EvaluationDTO evaluationDTO;

@@ -1,6 +1,5 @@
 package com.AL565.prose.controller;
 
-import com.AL565.prose.service.EntenteService;
 import com.AL565.prose.service.UtilisateurService;
 import com.AL565.prose.service.dto.ReturnEntityDTO;
 import lombok.AllArgsConstructor;

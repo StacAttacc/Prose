@@ -58,7 +58,7 @@ class EtudiantCvControllerTest {
     private JwtTokenProvider jwtTokenProvider;
 
     @MockitoBean
-    private EntenteService ententeService;
+    private UtilisateurService utilisateurService;
 
     @MockitoBean
     private PasswordEncoder passwordenCoder;

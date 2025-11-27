@@ -6,7 +6,6 @@ import com.AL565.prose.model.Employeur;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.Base64;
 
 @Data
 @NoArgsConstructor
@@ -29,7 +28,6 @@ public class EntenteDTO {
     private String documentPdfBase64;
     private String documentName;
 
-    // Champs additionnels pour l'évaluation
     private Long etudiantId;
     private String etudiantNom;
     private String etudiantPrenom;
@@ -52,12 +50,8 @@ public class EntenteDTO {
                 .dateSignatureEmployeur(entente.getDateSignatureEmployeur())
                 .dateSignatureGestionnaire(entente.getDateSignatureGestionnaire())
                 .dateSignatureComplete(entente.getDateSignatureComplete())
-                .documentName(entente.getDocumentName())
                 .build();
 
-        if (entente.getDocumentPdf() != null) {
-            dto.setDocumentPdfBase64(Base64.getEncoder().encodeToString(entente.getDocumentPdf()));
-        }
 
         if (entente.getCandidature() != null) {
             var candidature = entente.getCandidature();

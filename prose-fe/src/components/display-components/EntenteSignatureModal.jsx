@@ -86,7 +86,7 @@ export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSi
             if (isOpen) {
                 if (initialEntenteData) {
                     setEntenteData(initialEntenteData);
-                    
+
                     const pdfData = await getPDFEntente(initialEntenteData.id, user.token);
                     const pdfBlob = blobFromUnknownData(pdfData, "application/pdf");
 

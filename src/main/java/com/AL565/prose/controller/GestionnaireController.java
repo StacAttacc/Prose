@@ -4,10 +4,9 @@ import com.AL565.prose.repository.GestionnaireRepository;
 import com.AL565.prose.security.JwtTokenProvider;
 import com.AL565.prose.security.exceptions.UserNotFoundException;
 import com.AL565.prose.service.GestionnaireService;
-import com.AL565.prose.service.EntenteService;
+import com.AL565.prose.service.UtilisateurService;
 import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
-import com.AL565.prose.service.dto.MillieuEvaluationDTO;
 import com.AL565.prose.service.exceptions.EtudiantAlreadyAssociatedException;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +24,7 @@ import java.util.NoSuchElementException;
 public class GestionnaireController {
 
     private final GestionnaireService gestionnaireService;
-    private final EntenteService ententeService;
+    private final UtilisateurService utilisateurService;
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
     private final GestionnaireRepository gestionnaireRepository;
@@ -124,13 +123,12 @@ public class GestionnaireController {
     @PostMapping("/candidatures/{candidatureId}/generer-entente")
     public ResponseEntity<ReturnEntityDTO<EntenteDTO>> genererEntente(@PathVariable Long candidatureId) {
         try {
-            EntenteDTO entente = ententeService.genererEntente(candidatureId);
+            EntenteDTO entente = gestionnaireService.genererEntente(candidatureId);
             return ResponseEntity.ok(new ReturnEntityDTO<>("Entente générée avec succès", entente));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new ReturnEntityDTO<>(e.getMessage(), null));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ReturnEntityDTO<>("Erreur interne du serveur lors de la génération de l'entente", null));
         }
@@ -139,13 +137,12 @@ public class GestionnaireController {
     @GetMapping("/candidatures/{candidatureId}/entente")
     public ResponseEntity<ReturnEntityDTO<EntenteDTO>> getEntente(@PathVariable Long candidatureId) {
         try {
-            EntenteDTO entente = ententeService.getEntenteByCandidatureId(candidatureId);
+            EntenteDTO entente = utilisateurService.getEntenteByCandidatureId(candidatureId);
             return ResponseEntity.ok(new ReturnEntityDTO<>("Entente trouvée", entente));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ReturnEntityDTO<>(e.getMessage(), null));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ReturnEntityDTO<>("Erreur lors de la récupération de l'entente", null));
         }
@@ -171,7 +168,7 @@ public class GestionnaireController {
                         .body(new ReturnEntityDTO<>("Mot de passe incorrect", null));
             }
             
-            ententeService.signEntente(ententeId, email);
+            utilisateurService.signEntente(ententeId, email);
             return ResponseEntity.ok(new ReturnEntityDTO<>("Entente signée avec succès", null));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -209,7 +206,6 @@ public class GestionnaireController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new ReturnEntityDTO<>(e.getMessage(), null));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ReturnEntityDTO<>("Erreur lors de la création du professeur", null));
         }
@@ -228,7 +224,6 @@ public class GestionnaireController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ReturnEntityDTO<>("Stage non trouvé", null));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ReturnEntityDTO<>("Erreur lors de l'attribution du stage", null));
         }
@@ -253,23 +248,6 @@ public class GestionnaireController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ReturnEntityDTO<>("Erreur lors de la récupération des professeurs", null));
-        }
-    }
-
-    @PostMapping("/candidatures/{candidatureId}/evaluate-milieu")
-    public ResponseEntity<ReturnEntityDTO<String>> evaluateWorkplaceForCandidature(
-            @PathVariable Long candidatureId,
-            @RequestBody MillieuEvaluationDTO evaluation) {
-        try {
-            gestionnaireService.evaluateWorkplaceForCandidature(candidatureId, evaluation);
-            return ResponseEntity.ok(new ReturnEntityDTO<>("Évaluation du milieu de stage enregistrée avec succès", null));
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ReturnEntityDTO<>(e.getMessage(), null));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ReturnEntityDTO<>("Erreur lors de l'enregistrement de l'évaluation", null));
         }
     }
 }

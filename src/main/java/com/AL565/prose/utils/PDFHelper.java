@@ -27,7 +27,7 @@ import java.util.Optional;
 
 @Component
 @AllArgsConstructor
-public class PDFUtils {
+public class PDFHelper {
 
     private GestionnaireRepository gestionnaireRepository;
 

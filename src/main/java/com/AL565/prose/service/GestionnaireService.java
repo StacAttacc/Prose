@@ -1,6 +1,8 @@
 package com.AL565.prose.service;
 
 import com.AL565.prose.model.*;
+import com.AL565.prose.model.entente.Entente;
+import com.AL565.prose.model.entente.EntenteStatus;
 import com.AL565.prose.model.notifications.*;
 import com.AL565.prose.repository.*;
 import com.AL565.prose.security.exceptions.CvExceptions.*;
@@ -10,7 +12,6 @@ import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.dto.notifications.NotificationGroupDTO;
 import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
 import com.AL565.prose.service.dto.MillieuEvaluationDTO;
-import com.AL565.prose.model.MillieuEvaluation;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import com.AL565.prose.service.exceptions.EtudiantAlreadyAssociatedException;
 import com.AL565.prose.service.exceptions.FailedToRetrieveStagesException;
@@ -30,6 +31,7 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import static com.AL565.prose.model.notifications.NotificationType.*;
 
@@ -44,13 +46,14 @@ public class GestionnaireService {
     private final EmployeurRepository employeurRepository;
     private final EtudiantRepository etudiantRepository;
     private final ProfesseurRepository professeurRepository;
-    private final ProfesseurService professeurService;
     private final PasswordEncoder passwordEncoder;
     private final CandidatureRepository candidatureRepository;
     private final NotificationRepository notificationRepository;
     private final SignatureEntenteNotificationRepository signatureEntenteNotificationRepository;
     private final NotificationsHelper notificationsHelper;
-    private final MillieuEvaluationRepository millieuEvaluationRepository;
+    private final EntenteRepository ententeRepository;
+
+    private final ProfesseurService professeurService;
 
     public void saveGestionnaire(GestionnairePasswordDTO dto) {
         if (gestionnaireRepository.findByCredentials_Username(dto.getEmail()).isPresent()) {
@@ -406,7 +409,7 @@ public class GestionnaireService {
                 .etudiant(etudiant)
                 .cv(cv)
                 .stage(stage)
-                .motivationLetter(null) // Pas de lettre de motivation pour une attribution directe
+                .motivationLetter(null)
                 .dateCandidature(LocalDateTime.now())
                 .status(CandidatureStatus.CONFIRMER)
                 .dateDecision(LocalDateTime.now())
@@ -468,30 +471,79 @@ public class GestionnaireService {
     }
 
     @Transactional
-    public void evaluateWorkplaceForCandidature(Long candidatureId, MillieuEvaluationDTO evaluation) {
+    public EntenteDTO genererEntente(Long candidatureId) {
         Candidature candidature = candidatureRepository.findById(candidatureId)
-                .orElseThrow(() -> new NoSuchElementException("Candidature non trouvée"));
+                .orElseThrow(() -> new IllegalArgumentException("Candidature non trouvée"));
 
-        // S'assurer que l'ID est null pour une nouvelle évaluation (sera généré automatiquement)
-        evaluation.setId(null);
-        
-        // S'assurer que les listes ne sont pas null
-        if (evaluation.getHrSemaineMois() == null) {
-            evaluation.setHrSemaineMois(new ArrayList<>());
+        if (candidature.getStatus() != CandidatureStatus.CONFIRMER) {
+            throw new IllegalArgumentException("La candidature doit être confirmée pour générer une entente");
         }
-        if (evaluation.getDebutQuarts() == null) {
-            evaluation.setDebutQuarts(new ArrayList<>());
-        }
-        if (evaluation.getFinQuarts() == null) {
-            evaluation.setFinQuarts(new ArrayList<>());
-        }
-        
-        // Créer et sauvegarder l'évaluation
-        MillieuEvaluation millieuEvaluation = MillieuEvaluationDTO.toModel(evaluation);
-        millieuEvaluation = millieuEvaluationRepository.save(millieuEvaluation);
 
-        // Associer l'évaluation à la candidature
-        candidature.setEvaluationMillieu(millieuEvaluation);
-        candidatureRepository.save(candidature);
+        Optional<Entente> existingEntente = ententeRepository.findByCandidatureId(candidatureId);
+        if (existingEntente.isPresent()) {
+            Entente entente = existingEntente.get();
+            Stage stage = candidature.getStage();
+            Employeur employeur = null;
+            if (stage.getEmployeurEmail() != null && !stage.getEmployeurEmail().trim().isEmpty()) {
+                employeur = employeurRepository.getEmployeurByCredentials_Username(stage.getEmployeurEmail());
+            }
+            return EntenteDTO.toDTO(entente, employeur);
+        }
+
+        Stage stage = candidature.getStage();
+        Employeur employeur = null;
+        if (stage.getEmployeurEmail() != null && !stage.getEmployeurEmail().trim().isEmpty()) {
+            employeur = employeurRepository.getEmployeurByCredentials_Username(stage.getEmployeurEmail());
+        }
+
+        Entente entente = Entente.builder()
+                .candidature(candidature)
+                .status(EntenteStatus.A_SIGNER)
+                .dateCreation(LocalDateTime.now())
+                .build();
+
+        entente = ententeRepository.save(entente);
+
+        createNotificationWhenEntenteIsGenerated(entente);
+
+        return EntenteDTO.toDTO(entente, employeur);
+    }
+
+    @Transactional
+    public void createNotificationWhenEntenteIsGenerated(Entente entente) {
+        Optional<SignatureEntenteNotification> existingNotification = signatureEntenteNotificationRepository
+                .findByCandidatureId(entente.getCandidature().getId());
+
+        if (existingNotification.isEmpty()) {
+            existingNotification = signatureEntenteNotificationRepository
+                    .findByStageId(entente.getCandidature().getStageId());
+        }
+
+        SignatureEntenteNotification notification;
+        if (existingNotification.isPresent()) {
+            notification = existingNotification.get();
+            notification.setCreatedAt(LocalDateTime.now());
+            notification.setMessageFR("Une entente doit être sigée pour le stage "
+                    + entente.getCandidature().getStage().getTitle());
+            notification.setMessageEN("An agreement needs to be signed for the "
+                    + entente.getCandidature().getStage().getTitle() + " internship");
+        } else {
+            String messageFR = "Une entente doit être sigée pour le stage "
+                    + entente.getCandidature().getStage().getTitle();
+            String messageEN = "An agreement needs to be signed for the "
+                    + entente.getCandidature().getStage().getTitle() + " internship";
+            notification = new SignatureEntenteNotification();
+            notification.setCreatedAt(LocalDateTime.now());
+            notification.setMessageFR(messageFR);
+            notification.setMessageEN(messageEN);
+            notification.setType(NotificationType.SIGNATURE_ENTENTE_NOTIFICATION);
+            notification.setCandidatureId(entente.getCandidature().getId());
+            String employeurEmail = entente.getCandidature().getStage().getEmployeurEmail();
+            notification.setTargetEmployeurEmail(employeurEmail != null ? employeurEmail : "");
+            notification.setTargetEtudiantEmail(entente.getCandidature().getEtudiant().getEmail());
+            notification.setStageId(entente.getCandidature().getStageId());
+        }
+
+        notificationRepository.save(notification);
     }
 }

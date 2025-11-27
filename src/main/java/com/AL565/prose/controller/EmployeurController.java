@@ -2,9 +2,9 @@ package com.AL565.prose.controller;
 
 import com.AL565.prose.security.exceptions.UserNotFoundException;
 import com.AL565.prose.security.JwtTokenProvider;
+import com.AL565.prose.service.UtilisateurService;
 import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.EmployeurService;
-import com.AL565.prose.service.EntenteService;
 import com.AL565.prose.service.dto.ReturnEntityDTO;
 import com.AL565.prose.service.dto.StageDTO;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -30,7 +30,8 @@ import java.util.NoSuchElementException;
 public class EmployeurController {
 
     private EmployeurService employeurService;
-    private final EntenteService ententeService;
+    private final UtilisateurService utilisateurService;
+
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
     private final EmployeurRepository employeurRepository;
@@ -112,7 +113,6 @@ public class EmployeurController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(e.getMessage());
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Erreur interne lors de la mise à jour de la candidature : " + e.getMessage());
         }
@@ -156,13 +156,12 @@ public class EmployeurController {
     @GetMapping("/candidatures/{candidatureId}/entente")
     public ResponseEntity<ReturnEntityDTO<EntenteDTO>> getEntente(@PathVariable Long candidatureId) {
         try {
-            EntenteDTO entente = ententeService.getEntenteByCandidatureId(candidatureId);
+            EntenteDTO entente = utilisateurService.getEntenteByCandidatureId(candidatureId);
             return ResponseEntity.ok(new ReturnEntityDTO<>("Entente trouvée", entente));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ReturnEntityDTO<>(e.getMessage(), null));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ReturnEntityDTO<>("Erreur lors de la récupération de l'entente", null));
         }
@@ -187,7 +186,7 @@ public class EmployeurController {
                         .body(new ReturnEntityDTO<>("Mot de passe incorrect", null));
             }
             
-            ententeService.signEntente(ententeId, email);
+            utilisateurService.signEntente(ententeId, email);
             return ResponseEntity.ok(new ReturnEntityDTO<>("Entente signée avec succès", null));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)

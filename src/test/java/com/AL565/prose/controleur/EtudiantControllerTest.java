@@ -56,7 +56,7 @@ class EtudiantControllerTest {
     private ProfesseurService professeurService;
 
     @MockitoBean
-    private EntenteService ententeService;
+    private UtilisateurService utilisateurService;
 
     @MockitoBean
     private EtudiantRepository etudiantRepository;
@@ -623,7 +623,7 @@ class EtudiantControllerTest {
         String email = "etudiant@test.com";
 
         when(jwtTokenProvider.getEmailFromJWT("token123")).thenReturn(email);
-        doNothing().when(ententeService).signEntente(ententeId, email);
+        doNothing().when(utilisateurService).signEntente(ententeId, email);
 
         mockMvc.perform(put("/etudiant/ententes/" + ententeId + "/signer")
                         .header("Authorization", token)
@@ -632,7 +632,7 @@ class EtudiantControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Entente signée avec succès"));
 
-        verify(ententeService, times(1)).signEntente(ententeId, email);
+        verify(utilisateurService, times(1)).signEntente(ententeId, email);
     }
 
     @Test
@@ -643,7 +643,7 @@ class EtudiantControllerTest {
 
         when(jwtTokenProvider.getEmailFromJWT("token123")).thenReturn(email);
         doThrow(new RuntimeException("Erreur lors de la signature"))
-                .when(ententeService).signEntente(ententeId, email);
+                .when(utilisateurService).signEntente(ententeId, email);
 
         mockMvc.perform(put("/etudiant/ententes/" + ententeId + "/signer")
                         .header("Authorization", token)
@@ -652,6 +652,6 @@ class EtudiantControllerTest {
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.message").value("Erreur interne du serveur lors de la signature de l'entente"));
 
-        verify(ententeService, times(1)).signEntente(ententeId, email);
+        verify(utilisateurService, times(1)).signEntente(ententeId, email);
     }
 }
