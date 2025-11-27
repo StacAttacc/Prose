@@ -215,13 +215,6 @@ export default function StageCreation() {
                     className={`w-full py-3 mt-3 rounded-xl font-bold transition disabled:opacity-60 text-white bg-gradient-to-r from-teal-500 to-slate-500  hover:from-teal-400 hover:to-slate-400"
                     }`}>{t('creer')}</button>
             </form>
-            <button type="button"
-                    className="text-white bg-gradient-to-r
-                                    from-red-400 via-red-500 to-red-600
-                                    hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300
-                                    dark:focus:ring-red-800 font-medium rounded-lg text-sm px-3 py-2.5 text-center me-2"
-                    onClick={() => nav('/')}
-            >{t('retour')}</button>
         </>
     )
 }
