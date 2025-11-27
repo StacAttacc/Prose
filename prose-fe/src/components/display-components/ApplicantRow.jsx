@@ -9,6 +9,7 @@ import "@react-pdf-viewer/core/lib/styles/index.css";
 import PdfModal from "./PdfModal.jsx";
 import InterviewConvocationModal from "./InterviewConvocationModal.jsx";
 import {useLocation, useNavigate} from "react-router-dom";
+import {blobFromUnknownData} from "../../utils/pdfUtils.js";
 
 const firstNonEmpty = (...vals) =>
     vals
@@ -20,28 +21,6 @@ const joinNames = (a, b) =>
         .map((v) => (v == null ? "" : String(v).trim()))
         .filter(Boolean)
         .join(" ");
-
-function blobFromUnknownData(data, mime = "application/pdf") {
-    if (!data) return null;
-
-    if (Array.isArray(data)) {
-        const bytes = new Uint8Array(data);
-        return new Blob([bytes], {type: mime});
-    }
-
-    if (typeof data === "string") {
-        try {
-            const bin = atob(data);
-            const bytes = new Uint8Array(bin.length);
-            for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-            return new Blob([bytes], {type: mime});
-        } catch {
-            return null;
-        }
-    }
-
-    return null;
-}
 
 export default function ApplicantRow({ applicant, onStatusUpdate, showActions = true, onApprove, onReject }) {
     const { user } = useAuth();

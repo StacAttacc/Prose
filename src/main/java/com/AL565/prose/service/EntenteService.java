@@ -7,7 +7,6 @@ import com.AL565.prose.model.notifications.NotificationType;
 import com.AL565.prose.model.notifications.SignatureEntenteNotification;
 import com.AL565.prose.repository.*;
 import com.AL565.prose.service.dto.EntenteDTO;
-import com.AL565.prose.utils.PDFUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,10 +26,9 @@ public class EntenteService {
     private final GestionnaireRepository gestionnaireRepository;
     private final NotificationRepository notificationRepository;
     private final SignatureEntenteNotificationRepository signatureEntenteNotificationRepository;
-    private final PDFUtils pdfUtils;
 
     @Transactional
-    public EntenteDTO getEntenteByCandidatureId(Long candidatureId) throws Exception {
+    public EntenteDTO getEntenteByCandidatureId(Long candidatureId) {
         Candidature candidature = candidatureRepository.findById(candidatureId)
                 .orElseThrow(() -> new IllegalArgumentException("Candidature non trouvée"));
 
@@ -46,7 +44,7 @@ public class EntenteService {
     }
 
     @Transactional
-    public EntenteDTO genererEntente(Long candidatureId) throws Exception {
+    public EntenteDTO genererEntente(Long candidatureId) {
         Candidature candidature = candidatureRepository.findById(candidatureId)
                 .orElseThrow(() -> new IllegalArgumentException("Candidature non trouvée"));
 
@@ -65,22 +63,15 @@ public class EntenteService {
             return EntenteDTO.toDTO(entente, employeur);
         }
 
-        Etudiant etudiant = candidature.getEtudiant();
         Stage stage = candidature.getStage();
         Employeur employeur = null;
         if (stage.getEmployeurEmail() != null && !stage.getEmployeurEmail().trim().isEmpty()) {
             employeur = employeurRepository.getEmployeurByCredentials_Username(stage.getEmployeurEmail());
         }
 
-        byte[] pdfData = pdfUtils.generateContractPdfWithSignatures(etudiant, employeur, stage, null, null, null);
-
         Entente entente = Entente.builder()
                 .candidature(candidature)
                 .status(EntenteStatus.A_SIGNER)
-                .documentPdf(pdfData)
-                .documentName("entente_stage_" + candidatureId + ".pdf")
-                .documentType("application/pdf")
-                .documentSize((long) pdfData.length)
                 .dateCreation(LocalDateTime.now())
                 .build();
 
@@ -93,19 +84,16 @@ public class EntenteService {
 
     @Transactional
     public void createNotificationWhenEntenteIsGenerated(Entente entente) {
-        // Vérifier si une notification existe déjà pour cette candidature ou ce stage
         Optional<SignatureEntenteNotification> existingNotification = signatureEntenteNotificationRepository
                 .findByCandidatureId(entente.getCandidature().getId());
         
         if (existingNotification.isEmpty()) {
-            // Vérifier aussi par stageId si candidatureId ne trouve rien
             existingNotification = signatureEntenteNotificationRepository
                     .findByStageId(entente.getCandidature().getStageId());
         }
         
         SignatureEntenteNotification notification;
         if (existingNotification.isPresent()) {
-            // Mettre à jour la notification existante
             notification = existingNotification.get();
             notification.setCreatedAt(LocalDateTime.now());
             notification.setMessageFR("Une entente doit être sigée pour le stage "
@@ -113,7 +101,6 @@ public class EntenteService {
             notification.setMessageEN("An agreement needs to be signed for the "
                     + entente.getCandidature().getStage().getTitle() + " internship");
         } else {
-            // Créer une nouvelle notification
             String messageFR = "Une entente doit être sigée pour le stage "
                     + entente.getCandidature().getStage().getTitle();
             String messageEN = "An agreement needs to be signed for the "
@@ -183,9 +170,7 @@ public class EntenteService {
         if (etudiant.getEmail().equals(userEmail)) {
             entente.setDateSignatureEtudiant(now);
             if (entente.getDateSignatureEmployeur() != null) {
-                // Les deux (étudiant et employeur) ont signé, mais pas encore le gestionnaire
                 entente.setStatus(EntenteStatus.SIGNEE_ETUDIANT_ET_EMPLOYEUR);
-                // Notifier le gestionnaire que les deux parties ont signé
                 createNotificationForGestionnaireWhenBothSigned(entente);
             } else {
                 entente.setStatus(EntenteStatus.SIGNEE_ETUDIANT);
@@ -193,9 +178,7 @@ public class EntenteService {
         } else if (employeur != null && employeur.getEmail().equals(userEmail)) {
             entente.setDateSignatureEmployeur(now);
             if (entente.getDateSignatureEtudiant() != null) {
-                // Les deux (étudiant et employeur) ont signé, mais pas encore le gestionnaire
                 entente.setStatus(EntenteStatus.SIGNEE_ETUDIANT_ET_EMPLOYEUR);
-                // Notifier le gestionnaire que les deux parties ont signé
                 createNotificationForGestionnaireWhenBothSigned(entente);
             } else {
                 entente.setStatus(EntenteStatus.SIGNEE_EMPLOYEUR);
@@ -208,23 +191,14 @@ public class EntenteService {
             if (entente.getDateSignatureEtudiant() == null || entente.getDateSignatureEmployeur() == null) {
                 throw new IllegalArgumentException("Le gestionnaire ne peut signer que lorsque l'étudiant et l'employeur ont déjà signé l'entente");
             }
-            // Le gestionnaire signe en dernier
+
             entente.setDateSignatureGestionnaire(now);
             entente.setStatus(EntenteStatus.SIGNEE);
             entente.setDateSignatureComplete(now);
         }
-        
-        byte[] pdfData = pdfUtils.generateContractPdfWithSignatures(
-            etudiant, 
-            employeur, 
-            stage,
-            entente.getDateSignatureEtudiant(),
-            entente.getDateSignatureEmployeur(),
-            entente.getDateSignatureGestionnaire()
-        );
-        
-        entente.setDocumentPdf(pdfData);
-        entente.setDocumentSize((long) pdfData.length);
+
         ententeRepository.save(entente);
     }
+
+
 }

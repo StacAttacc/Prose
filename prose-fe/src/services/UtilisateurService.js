@@ -20,3 +20,12 @@ export async function registerEtudiant(payload) {
 export async function logout() {
     sessionStorage.removeItem("user");
 }
+
+export async function getPDFEntente(ententeID, token) {
+    const {data} = await axios.get(`${BASE_URL}/user/${ententeID}/pdf`, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+    return data.data;
+}

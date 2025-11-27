@@ -3,28 +3,8 @@ import { Viewer, Worker } from "@react-pdf-viewer/core";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useI18n } from "../../context/I18nContext.jsx";
 import ErrorBanner from "./ErrorBanner.jsx";
-
-function blobFromUnknownData(data, mime = "application/pdf") {
-    if (!data) return null;
-
-    if (Array.isArray(data)) {
-        const bytes = new Uint8Array(data);
-        return new Blob([bytes], { type: mime });
-    }
-
-    if (typeof data === "string") {
-        try {
-            const bin = atob(data);
-            const bytes = new Uint8Array(bin.length);
-            for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-            return new Blob([bytes], { type: mime });
-        } catch {
-            return null;
-        }
-    }
-
-    return null;
-}
+import {getPDFEntente} from "../../services/UtilisateurService.js";
+import {blobFromUnknownData} from "../../utils/pdfUtils.js";
 
 export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSign, ententeData: initialEntenteData, loadEntenteFn }) {
     const { user } = useAuth();
@@ -37,7 +17,6 @@ export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSi
     const [pdfUrl, setPdfUrl] = useState(null);
     const [consentChecked, setConsentChecked] = useState(false);
 
-    // Vérifier si l'utilisateur actuel a déjà signé
     const userHasSigned = useMemo(() => {
         const isStudent = user?.role === "ETUDIANT" || user?.role === "Etudiant";
         const isEmployeur = user?.role === "EMPLOYEUR" || user?.role === "Employeur";
@@ -51,12 +30,10 @@ export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSi
         return isStudent ? ententeData?.dateSignatureEtudiant : ententeData?.dateSignatureEmployeur;
     }, [userHasSigned, user?.role, ententeData?.dateSignatureEtudiant, ententeData?.dateSignatureEmployeur]);
 
-    // Vérifier si l'utilisateur est un gestionnaire
     const isGestionnaire = useMemo(() => {
         return user?.role === "GESTIONNAIRE" || user?.role === "Gestionnaire";
     }, [user?.role]);
 
-    // Obtenir le message de statut pour le gestionnaire
     const getStatusMessage = useMemo(() => {
         if (!isGestionnaire || !ententeData?.status) return null;
         
@@ -77,7 +54,6 @@ export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSi
         }
     }, [isGestionnaire, ententeData?.status]);
 
-    // Obtenir le message de statut pour l'employeur et l'étudiant
     const getStatusMessageForUser = useMemo(() => {
         if (isGestionnaire || !ententeData?.status) return null;
         
@@ -90,16 +66,12 @@ export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSi
         } else if (status === "SIGNEE_ETUDIANT_ET_EMPLOYEUR") {
             return t('enAttenteSignatureGestionnaire');
         } else if (status === "SIGNEE_ETUDIANT" && isStudent) {
-            // L'étudiant a signé, on attend l'employeur
             return t('enAttenteSignatureEmployeur');
         } else if (status === "SIGNEE_EMPLOYEUR" && isEmployeur) {
-            // L'employeur a signé, on attend l'étudiant
             return t('enAttenteSignatureEtudiant');
         } else if ((status === "SIGNEE_EMPLOYEUR" && isStudent) || (status === "SIGNEE_ETUDIANT" && isEmployeur)) {
-            // L'employeur a signé et l'étudiant doit signer, OU l'étudiant a signé et l'employeur doit signer
             return t('enAttenteVotreSignature');
         } else if (status === "A_SIGNER") {
-            // Cas théorique où l'utilisateur a signé mais le statut est encore A_SIGNER
             if (isStudent) {
                 return t('enAttenteVotreSignatureEtEmployeur');
             } else if (isEmployeur) {
@@ -110,32 +82,35 @@ export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSi
     }, [isGestionnaire, ententeData?.status, user?.role]);
 
     useEffect(() => {
-        if (isOpen) {
-            if (initialEntenteData) {
-                // Utiliser les données passées en prop
-                setEntenteData(initialEntenteData);
-                const pdfBlob = blobFromUnknownData(
-                    initialEntenteData.documentPdfBase64 || initialEntenteData.documentPdf,
-                    initialEntenteData.documentType || "application/pdf"
-                );
-                if (pdfBlob) {
-                    const url = URL.createObjectURL(pdfBlob);
-                    setPdfUrl(url);
+        const run = async () => {
+            if (isOpen) {
+                if (initialEntenteData) {
+                    setEntenteData(initialEntenteData);
+                    
+                    const pdfData = await getPDFEntente(initialEntenteData.id, user.token);
+                    const pdfBlob = blobFromUnknownData(pdfData, "application/pdf");
+
+                    if (pdfBlob) {
+                        const url = URL.createObjectURL(pdfBlob);
+                        setPdfUrl(url);
+                    }
+                } else if (loadEntenteFn && applicant?.id && user?.token) {
+                    // Utiliser la fonction de chargement passée en prop
+                    loadEntente();
                 }
-            } else if (loadEntenteFn && applicant?.id && user?.token) {
-                // Utiliser la fonction de chargement passée en prop
-                loadEntente();
+            } else {
+                if (pdfUrl) {
+                    URL.revokeObjectURL(pdfUrl);
+                    setPdfUrl(null);
+                }
+                setEntenteData(null);
+                setPassword("");
+                setError("");
+                setConsentChecked(false);
             }
-        } else {
-            if (pdfUrl) {
-                URL.revokeObjectURL(pdfUrl);
-                setPdfUrl(null);
-            }
-            setEntenteData(null);
-            setPassword("");
-            setError("");
-            setConsentChecked(false);
         }
+
+        run();
     }, [isOpen, applicant?.id, user?.token, initialEntenteData, loadEntenteFn]);
 
     const loadEntente = async () => {
@@ -146,10 +121,10 @@ export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSi
             const result = await loadEntenteFn(applicant.id, user.token);
             if (result.exists && result.data) {
                 setEntenteData(result.data);
-                const pdfBlob = blobFromUnknownData(
-                    result.data.documentPdfBase64 || result.data.documentPdf,
-                    result.data.documentType || "application/pdf"
-                );
+
+                const pdfData = await getPDFEntente(initialEntenteData.id, user.token);
+                const pdfBlob = blobFromUnknownData(pdfData, "application/pdf");
+
                 if (pdfBlob) {
                     const url = URL.createObjectURL(pdfBlob);
                     setPdfUrl(url);

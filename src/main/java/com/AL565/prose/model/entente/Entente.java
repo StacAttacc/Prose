@@ -26,14 +26,6 @@ public class Entente {
     @Column(nullable = false)
     private EntenteStatus status = EntenteStatus.A_SIGNER;
 
-    @Basic(fetch = FetchType.LAZY)
-    @Column(columnDefinition="bytea")
-    private byte[] documentPdf;
-
-    private String documentName;
-    private String documentType = "application/pdf";
-    private Long documentSize;
-
     @Column(name = "date_creation", nullable = false, updatable = false)
     private LocalDateTime dateCreation = LocalDateTime.now();
 

@@ -4,7 +4,7 @@ import { useI18n } from "../../context/I18nContext.jsx";
 import { PDFDownloadLink, PDFViewer } from "@react-pdf/renderer";
 import EntentePdfDoc from "../../components/display-components/EntentePdfDoc.jsx";
 import { generateEntente } from "../../services/GestionnaireService.js";
-import {base64ToPdfUrl} from "./pdfUtils.jsx";
+import {base64ToPdfUrl} from "../../utils/pdfUtils.js";
 
 export default function GenererEntente() {
     const { user } = useAuth();
