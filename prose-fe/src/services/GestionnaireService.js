@@ -19,7 +19,7 @@ export async function submitStageDecision(id, {approved, reason}, token) {
 export const fetchAllCVs = async (token, year = null) => {
     try {
         const params = {};
-        if (year && year !== null && year !== undefined && year !== "") {
+        if (year && year !== "") {
             params.year = year.toString();
         }
 
@@ -91,7 +91,7 @@ export const markNotificationsRead = (notificationIds = [], token) => {
 
 export async function getAllStages(token, year = null) {
     const params = {};
-    if (year && year !== null && year !== undefined && year !== '') {
+    if (year && year !== '') {
         params.year = year.toString();
     }
     const url = `${BASE_URL_GESTIONNAIRE}/stages`;
@@ -117,23 +117,6 @@ export async function getGestionnaireNotifications(token) {
         }
     });
     return data;
-}
-
-
-export async function getStageDetailsByApplication(applicationId, token) {
-    const res = await fetch(`${BASE_URL_GESTIONNAIRE}/applications/${applicationId}/stage`, {
-        method: "GET",
-        headers: {
-            Accept: "application/json",
-            ...(token ? {Authorization: `Bearer ${token}`} : {}),
-        },
-    });
-
-    if (!res.ok) {
-        const text = await res.text().catch(() => "");
-        throw new Error(text || `HTTP ${res.status}`);
-    }
-    return res.json();
 }
 
 export async function getStageApplicantsManager(token, year = null) {

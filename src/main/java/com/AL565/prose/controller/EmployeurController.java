@@ -13,7 +13,6 @@ import com.AL565.prose.service.exceptions.CandidatureNotFoundException;
 import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import com.AL565.prose.service.exceptions.InvalidCandidatureModificationException;
-import com.AL565.prose.service.exceptions.StageNotFoundException;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -74,18 +73,6 @@ public class EmployeurController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ReturnEntityDTO<>("Utilisateur n'est pas un employeur", null));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ReturnEntityDTO<>("Erreur lors de la récupération des stages publiés", null));
-        }
-    }
-
-    @PutMapping("/stages/{id}")
-    public ResponseEntity<ReturnEntityDTO<StageDTO>> updateStage(@PathVariable("id") Long id, @Valid @RequestBody StageDTO stageDTO) {
-        try {
-            StageDTO updatedStage = employeurService.updateStage(id, stageDTO);
-            return ResponseEntity.ok(new ReturnEntityDTO<>("Stage mis à jour avec succès", updatedStage));
-        } catch (StageNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ReturnEntityDTO<>("Stage non trouvé", null));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ReturnEntityDTO<>("Erreur lors de la mise à jour du stage", null));
         }
     }
 

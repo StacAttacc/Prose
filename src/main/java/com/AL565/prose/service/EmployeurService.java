@@ -89,26 +89,6 @@ public class EmployeurService {
                 }).filter(stage -> stage.getStartDate().getYear() == yearNumber).toList();
     }
 
-    public StageDTO updateStage(Long id, StageDTO stageDTO) throws StageNotFoundException {
-        Stage stage = stageRepository.findById(id)
-                .orElseThrow(() -> new StageNotFoundException("Stage non trouvé"));
-
-        stage.setTitle(stageDTO.getTitle());
-        stage.setDescription(stageDTO.getDescription());
-        stage.setRequirements(stageDTO.getRequirements());
-        stage.setSkills(stageDTO.getSkills());
-        stage.setStartDate(stageDTO.getStartDate());
-        stage.setEndDate(stageDTO.getEndDate());
-        stage.setLocation(stageDTO.getLocation());
-        stage.setWorkMode(stageDTO.getWorkMode());
-        stage.setCompensation(stageDTO.getCompensation());
-        stage.setRejectionReason(null);
-        stage.setStatus(OfferStatus.SOUMISE);
-        Stage updatedStage = stageRepository.save(stage);
-        Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(updatedStage.getEmployeurEmail());
-        return StageDTO.toDTO(updatedStage, employeur);
-    }
-
     @Transactional
     public List<CandidatureDTO> getStageCandidatures(long stageId) throws StageNotFoundException {
         if (stageRepository.findById(stageId).isEmpty()) {

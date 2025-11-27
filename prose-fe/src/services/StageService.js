@@ -35,14 +35,3 @@ export async function getEtudiantStages(token) {
     })
     return data;
 }
-
-export async function updateStage(stage, token) {
-    await axios.put(url + "/employeur/stages/" + stage.id, stage, {
-        headers: {
-            "Content-Type": "application/json",
-            'Authorization': `Bearer ${token}`
-        }
-    });
-
-
-}
