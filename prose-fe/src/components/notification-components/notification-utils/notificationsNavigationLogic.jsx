@@ -26,21 +26,21 @@ function getEmployeurPaths({role, notification = null, isGrouped, type}) {
                 path: getDefaultNavigationPath(role),
             } : {
                 path: `/employeur/stages/${notification?.stageId}/candidatures`,
-                state: { openCandidatureId: notification?.etudiantOffreDecisionId }
+                state: { openCandidatureId: notification?.etudiantId }
             };
         case "postulation":
             return isGrouped ? {
                 path: getDefaultNavigationPath(role),
             } : {
                 path: `/employeur/stages/${notification?.stageId}/candidatures`,
-                state: { openCandidatureId: notification?.candidaturePostulationId }
+                state: { openCandidatureId: notification?.candidatureId }
             };
         case "signature_entente":
             return isGrouped ? {
                 path: getDefaultNavigationPath(role),
             } : {
                 path: `/employeur/stages/${notification.stageId}/candidatures`,
-                state: { openEntenteId: notification?.signatureEntenteCandidatureId }
+                state: { openEntenteId: notification?.candidatureId }
             };
         case "demande_approbation_stage":
             return isGrouped ? {
