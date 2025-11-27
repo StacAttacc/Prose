@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useI18n } from '../../context/I18nContext';
+import ErrorBanner from "./ErrorBanner.jsx";
 
 export default function EvaluationSignatureModal({ evaluation, isOpen, onClose, onSign, isCreating = false }) {
     const { t } = useI18n();
@@ -24,7 +25,6 @@ export default function EvaluationSignatureModal({ evaluation, isOpen, onClose, 
         }
 
         if (isCreating) {
-            // Mode création : on passe juste le mot de passe
             setIsSubmitting(true);
             try {
                 await onSign(password);
@@ -129,14 +129,13 @@ export default function EvaluationSignatureModal({ evaluation, isOpen, onClose, 
                         </div>
 
                         <form onSubmit={handleSign}>
-                            {/* Case à cocher de consentement */}
                             <div className="mb-6">
                                 <label className="flex items-start cursor-pointer">
                                     <input
                                         type="checkbox"
                                         checked={consentChecked}
                                         onChange={(e) => setConsentChecked(e.target.checked)}
-                                        className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                        className="mt-1 h-4 w-4 accent-teal-600 focus:ring-teal-500 border-gray-300 rounded"
                                     />
                                     <span className="ml-3 text-sm text-gray-700">
                                         {isCreating
@@ -147,7 +146,6 @@ export default function EvaluationSignatureModal({ evaluation, isOpen, onClose, 
                                 </label>
                             </div>
 
-                            {/* Champ mot de passe */}
                             <div className="mb-6">
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     {t('entrezMotDePasseConfirmer')}
@@ -156,20 +154,16 @@ export default function EvaluationSignatureModal({ evaluation, isOpen, onClose, 
                                     type="password"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                                     placeholder={t('motDePasseRequisConfirmer')}
                                     disabled={isSubmitting}
                                 />
                             </div>
 
-                            {/* Message d'erreur */}
                             {error && (
-                                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-                                    {error}
-                                </div>
+                                <ErrorBanner message={error} />
                             )}
 
-                            {/* Boutons d'action */}
                             <div className="flex gap-3">
                                 <button
                                     type="button"
@@ -181,7 +175,7 @@ export default function EvaluationSignatureModal({ evaluation, isOpen, onClose, 
                                 </button>
                                 <button
                                     type="submit"
-                                    className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors disabled:bg-blue-400 disabled:cursor-not-allowed"
+                                    className="flex-1 text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2"
                                     disabled={isSubmitting || !consentChecked || !password}
                                 >
                                     {isSubmitting ? t('signatureEnCours') : t('signerEntente')}
