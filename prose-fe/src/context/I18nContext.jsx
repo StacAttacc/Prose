@@ -299,6 +299,7 @@ const translations = {
     modeTravailPlaceholder: 'Télétravail, Hybride, Présentiel',
     salairePlaceholder: '20$/h, 500$/semaine...',
     annuler: 'Annuler',
+    typeTravail: 'Type de Travail',
     
     // MonCV (Étudiant)
     votreCVCourrant: 'Votre CV courrant',

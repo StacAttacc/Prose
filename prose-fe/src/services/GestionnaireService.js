@@ -122,7 +122,7 @@ export async function getGestionnaireNotifications(token) {
 export async function getStageApplicantsManager(token, year = null) {
     try {
         const params = {};
-        if (year && year !== null && year !== undefined && year !== '') {
+        if (year && year !== '') {
             params.year = year.toString();
         }
         

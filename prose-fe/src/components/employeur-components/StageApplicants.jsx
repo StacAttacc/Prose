@@ -47,7 +47,6 @@ const StageApplicantsPage = () => {
     const {user} = useAuth();
     const {t} = useI18n();
     const {selectedYear} = useYear();
-    const ready = Boolean(user?.token);
 
     const [q, setQ] = useState("");
     const [applicants, setApplicants] = useState([]);
@@ -61,7 +60,7 @@ const StageApplicantsPage = () => {
     const reloadApplicants = async () => {
         try {
             setLoading(true);
-            const list = await getStageApplicants(id);
+            const list = await getStageApplicants(id, user.token);
             setApplicants(Array.isArray(list) ? list : []);
             setError(null);
         } catch (e) {

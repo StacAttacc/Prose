@@ -1,5 +1,6 @@
 package com.AL565.prose.model;
 
+import com.AL565.prose.model.entente.Entente;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,7 +23,7 @@ public class Evaluation {
 
     @ManyToOne
     @JoinColumn(name = "entente_id", nullable = false)
-    private com.AL565.prose.model.entente.Entente entente;
+    private Entente entente;
 
     @ManyToOne
     @JoinColumn(name = "employeur_id", nullable = false)

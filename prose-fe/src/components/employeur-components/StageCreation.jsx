@@ -2,7 +2,7 @@ import {useState} from "react";
 import {useNavigate} from "react-router-dom";
 import {useAuth} from "../../context/AuthContext.jsx";
 import {useI18n} from "../../context/I18nContext.jsx";
-import {createStage} from "../../services/StageService.js";
+import {createStage} from "../../services/EmployeurService.js";
 import ErrorBanner from "../display-components/ErrorBanner.jsx";
 
 export default function StageCreation() {

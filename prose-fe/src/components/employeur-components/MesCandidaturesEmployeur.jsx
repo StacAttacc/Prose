@@ -36,7 +36,7 @@ export default function MesCandidaturesEmployeur() {
 
                 const candidaturesPromises = stages.map(async (stage) => {
                     try {
-                        const candidatures = await getStageApplicants(stage.id);
+                        const candidatures = await getStageApplicants(stage.id, user.token);
                         return candidatures.map(candidature => ({
                             ...candidature,
                             stage: stage,

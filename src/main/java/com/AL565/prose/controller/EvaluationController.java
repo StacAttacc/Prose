@@ -13,7 +13,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/employeur/{employeurId}/evaluations")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173")
 public class EvaluationController {
 
     private final EvaluationService evaluationService;

@@ -1,25 +1,32 @@
-import {http} from "./http";
-const API = "http://localhost:8080";
+import axios from "axios";
 
-async function parseJsonOrThrow(response) {
-    if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    return await response.json();
+const URL_BASE = "http://localhost:8080";
+
+export async function createStage(stage, token) {
+    await axios.post( `${URL_BASE}/employeur/createStage`, stage, {
+        headers: {
+            "Content-Type": "application/json",
+            'Authorization': `Bearer ${token}`
+        }
+    });
 }
 
-export async function getStageApplicants(stageId) {
-    const { data } = await http.get(`/employeur/stages/${stageId}/applications`);
+export async function getStageApplicants(stageId, token) {
+    const { data } = await axios.get(`${URL_BASE}/employeur/stages/${stageId}/applications`, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
     if (Array.isArray(data)) return data;
     return data?.data || data?.candidatures || data?.content || data?.results || [];
 }
 
-export async function updateCandidatureStatus(candidatureId, status, token) {
+async function updateCandidatureStatus(candidatureId, status, token) {
     const id = Number(candidatureId);
     if (!Number.isFinite(id)) throw new Error("candidatureId invalide");
 
-    const res = await http.put(
-        `/employeur/candidatures/${id}/update`,
+    const res = await axios.put(
+        `${URL_BASE}/employeur/candidatures/${id}/update`,
         {},
         {
             params: { status },
@@ -41,12 +48,11 @@ export function approveApplicant(candidatureId, token) {
 export function rejectApplicant(candidatureId, token) {
     return updateCandidatureStatus(candidatureId, "REFUSEE", token);
 }
-export async function getEmployeurNotifications(employeurEmail, token) {
-    const res = await http.get(`${API}/employeur/notifications/all`, {
-        method: "GET",
+
+export async function getEmployeurNotifications(token) {
+    const res = await axios.get(`${URL_BASE}/employeur/notifications/all`, {
         headers: {
-            Accept: "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            Authorization: `Bearer ${token}`
         },
     });
     return res.data;
@@ -54,16 +60,12 @@ export async function getEmployeurNotifications(employeurEmail, token) {
 
 export async function markNotificationRead(notificationId, token) {
     if (!notificationId) return;
-    const res = await fetch(`${API}/employeur/notifications/read/${notificationId}`, {
-        method: "PUT",
+    const res = await axios.put(`${URL_BASE}/employeur/notifications/read/${notificationId}`, {},{
         headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({ notificationId })
     });
-    return await parseJsonOrThrow(res).catch(() => {});
+    return res.data;
 }
 
 export const markNotificationsRead = (notificationIds = [], token) => {
@@ -75,7 +77,7 @@ export const markNotificationsRead = (notificationIds = [], token) => {
 
 export async function checkEntenteExists(candidatureId, token) {
     try {
-        const res = await http.get(`/employeur/candidatures/${candidatureId}/entente`, {
+        const res = await axios.get(`${URL_BASE}/employeur/candidatures/${candidatureId}/entente`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
@@ -91,34 +93,27 @@ export async function checkEntenteExists(candidatureId, token) {
 }
 
 export async function signEntente(ententeId, password, token) {
-    const res = await fetch(`${API}/employeur/ententes/${ententeId}/signer`, {
-        method: "PUT",
+    const res = await axios.put(`${URL_BASE}/employeur/ententes/${ententeId}/signer`, password, {
         headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ password })
     });
-    return await parseJsonOrThrow(res);
+    return res.data;
 }
 
 export async function convoquerEntrevue(candidatureId, interviewData, token) {
-    const res = await fetch(`${API}/employeur/candidatures/${candidatureId}/convoquer`, {
-        method: "PUT",
+    const res = await axios.put(`${URL_BASE}/employeur/candidatures/${candidatureId}/convoquer`, interviewData, {
         headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify(interviewData)
+            Authorization: `Bearer ${token}`
+        }
     });
-    return await parseJsonOrThrow(res);
+    return res.data;
 }
 
 export async function getEntentesForEvaluation(employeurId, token, year) {
     const params = year ? { year } : {};
-    const res = await http.get(`/api/employeur/${employeurId}/evaluations/ententes`, {
+
+    const res = await axios.get(`${URL_BASE}/api/employeur/${employeurId}/evaluations/ententes`, {
         params,
         headers: {
             'Authorization': `Bearer ${token}`,
@@ -129,17 +124,17 @@ export async function getEntentesForEvaluation(employeurId, token, year) {
 }
 
 export async function createEvaluation(employeurId, evaluationData, token) {
-    const res = await http.post(`/api/employeur/${employeurId}/evaluations`, evaluationData, {
+    console.log(evaluationData);
+    const res = await axios.post(`${URL_BASE}/api/employeur/${employeurId}/evaluations`, evaluationData, {
         headers: {
             'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
         }
     });
     return res.data;
 }
 
 export async function getEvaluationByEntente(employeurId, ententeId, token) {
-    const res = await http.get(`/api/employeur/${employeurId}/evaluations/entente/${ententeId}`, {
+    const res = await axios.get(`${URL_BASE}/api/employeur/${employeurId}/evaluations/entente/${ententeId}`, {
         headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
