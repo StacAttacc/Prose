@@ -3,7 +3,6 @@ import { useAuth } from "../../context/AuthContext.jsx";
 import { useI18n } from "../../context/I18nContext.jsx";
 import { createProfesseur } from "../../services/GestionnaireService.js";
 import ErrorBanner from "../display-components/ErrorBanner.jsx";
-import ScrollToTop from "../common/ScrollToTop.jsx";
 
 export default function CreationProfesseur() {
     const { user } = useAuth();
@@ -106,7 +105,6 @@ export default function CreationProfesseur() {
 
     return (
         <div className="p-6">
-            <ScrollToTop />
             <h1 className="text-2xl font-bold mb-6 text-center text-gray-900 dark:text-gray-100">
                 {t('creationProfesseur')}
             </h1>

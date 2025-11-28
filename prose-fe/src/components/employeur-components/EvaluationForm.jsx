@@ -6,7 +6,6 @@ import { useAuth } from '../../context/AuthContext';
 import { FaArrowLeft, FaSave } from 'react-icons/fa';
 import EvaluationSignatureModal from '../display-components/EvaluationSignatureModal';
 import {useYear} from "../../context/YearContext.jsx";
-import ScrollToTop from "../common/ScrollToTop.jsx";
 
 const SCALE_OPTIONS = ['totalementAccord', 'plutotAccord', 'plutotDesaccord', 'totalementDesaccord', 'na'];
 const APPRECIATION_OPTIONS = ['depasseBeaucoup', 'depasse', 'repondPleinement', 'repondPartiellement', 'repondPas'];
@@ -736,8 +735,6 @@ const { t } = useI18n();
                 onSign={handleSignAndSubmit}
                 isCreating={true}
             />
-
-            <ScrollToTop />
         </div>
     );
 };

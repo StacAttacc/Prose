@@ -1,5 +1,4 @@
 import { NavLink, Outlet } from "react-router-dom";
-import ScrollToTop from "../common/ScrollToTop.jsx";
 import { useI18n } from "../../context/I18nContext.jsx";
 
 export default function Stages() {
@@ -38,9 +37,6 @@ export default function Stages() {
             <div className="flex-1">
                 <Outlet />
             </div>
-
-            {/* Bouton scroll to top */}
-            <ScrollToTop />
         </div>
     );
 }

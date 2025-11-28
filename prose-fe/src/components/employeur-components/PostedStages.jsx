@@ -6,7 +6,6 @@ import { useYear } from "../../context/YearContext.jsx";
 import { getEmployeurStages } from "../../services/StageService.js";
 import ErrorBanner from "../display-components/ErrorBanner.jsx";
 import StageDetailsModal from "../display-components/StageDetailsModal.jsx";
-import ScrollToTop from "../common/ScrollToTop.jsx";
 
 export default function PostedStages() {
     const { user } = useAuth();
@@ -228,8 +227,6 @@ export default function PostedStages() {
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {filteredStages.map((stage) => {
-                        const isSoumise = stage.status === "SOUMISE";
-                        const isRejetee = stage.status === "REJETEE";
                         const showButton = stage.status === "APPROUVEE" || stage.status === "PUBLIEE";
 
                         return (
@@ -297,7 +294,6 @@ export default function PostedStages() {
                 isOpen={isModalOpen}
                 onClose={closeModal}
             />
-            <ScrollToTop />
         </div>
     );
 }
