@@ -8,6 +8,7 @@ import {useYear} from "../context/YearContext.jsx";
 import {useI18n} from "../context/I18nContext.jsx";
 import ErrorBoundary from "../components/common/ErrorBoundary.jsx";
 import {ThemeToggle} from "../components/common/ThemeToggle.jsx";
+import ScrollToTop from "../components/common/ScrollToTop.jsx";
 
 export default function Dashboard() {
     const { user } = useAuth();

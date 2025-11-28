@@ -1,6 +1,9 @@
 package com.AL565.prose.service.dto;
 
+import com.AL565.prose.model.Employeur;
+import com.AL565.prose.model.Etudiant;
 import com.AL565.prose.model.Evaluation;
+import com.AL565.prose.model.entente.Entente;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -136,6 +139,59 @@ public class EvaluationDTO {
                 .dateEvaluation(evaluation.getDateEvaluation())
                 .dateCreation(evaluation.getDateCreation())
                 .dateModification(evaluation.getDateModification())
+                .build();
+    }
+
+    public static Evaluation toModel(EvaluationDTO evaluationDTO, Etudiant etudiant, Employeur employeur, Entente entente) {
+        return Evaluation.builder()
+                .entente(entente)
+                .employeur(employeur)
+                .etudiant(etudiant)
+                .nomEleve(evaluationDTO.getNomEleve())
+                .programmeEtudes(evaluationDTO.getProgrammeEtudes())
+                .nomEntreprise(evaluationDTO.getNomEntreprise())
+                .nomSuperviseur(evaluationDTO.getNomSuperviseur())
+                .fonction(evaluationDTO.getFonction())
+                .telephone(evaluationDTO.getTelephone())
+                .productivitePlanificationOrganisation(evaluationDTO.getProductivitePlanificationOrganisation())
+                .productiviteComprendDirectives(evaluationDTO.getProductiviteComprendDirectives())
+                .productiviteMaintientRythme(evaluationDTO.getProductiviteMaintientRythme())
+                .productiviteEtablitPriorites(evaluationDTO.getProductiviteEtablitPriorites())
+                .productiviteRespectEcheanciers(evaluationDTO.getProductiviteRespectEcheanciers())
+                .productiviteCommentaires(evaluationDTO.getProductiviteCommentaires())
+                .qualiteRespectMandats(evaluationDTO.getQualiteRespectMandats())
+                .qualiteAttentionDetails(evaluationDTO.getQualiteAttentionDetails())
+                .qualiteVerifieTravail(evaluationDTO.getQualiteVerifieTravail())
+                .qualitePerfectionnement(evaluationDTO.getQualitePerfectionnement())
+                .qualiteAnalyseProblemes(evaluationDTO.getQualiteAnalyseProblemes())
+                .qualiteCommentaires(evaluationDTO.getQualiteCommentaires())
+                .relationsContactFacile(evaluationDTO.getRelationsContactFacile())
+                .relationsTravailEquipe(evaluationDTO.getRelationsTravailEquipe())
+                .relationsAdaptationCulture(evaluationDTO.getRelationsAdaptationCulture())
+                .relationsAccepteCritiques(evaluationDTO.getRelationsAccepteCritiques())
+                .relationsRespectueux(evaluationDTO.getRelationsRespectueux())
+                .relationsEcouteActive(evaluationDTO.getRelationsEcouteActive())
+                .relationsCommentaires(evaluationDTO.getRelationsCommentaires())
+                .habiletesInteretMotivation(evaluationDTO.getHabiletesInteretMotivation())
+                .habiletesExprimeIdees(evaluationDTO.getHabiletesExprimeIdees())
+                .habiletesInitiative(evaluationDTO.getHabiletesInitiative())
+                .habiletesTravailSecuritaire(evaluationDTO.getHabiletesTravailSecuritaire())
+                .habiletesSensResponsabilites(evaluationDTO.getHabiletesSensResponsabilites())
+                .habiletesPonctualiteAssiduite(evaluationDTO.getHabiletesPonctualiteAssiduite())
+                .habiletesCommentaires(evaluationDTO.getHabiletesCommentaires())
+                .appreciationGlobale(evaluationDTO.getAppreciationGlobale())
+                .appreciationPrecisions(evaluationDTO.getAppreciationPrecisions())
+                .evaluationDiscutee(evaluationDTO.getEvaluationDiscutee())
+                .heuresEncadrement(evaluationDTO.getHeuresEncadrement())
+                .accueillirProchainStage(evaluationDTO.getAccueillirProchainStage())
+                .formationSuffisante(evaluationDTO.getFormationSuffisante())
+                .signataireNom(evaluationDTO.getSignataireNom())
+                .signataireFonction(evaluationDTO.getSignataireFonction())
+                .signataireDate(evaluationDTO.getSignataireDate())
+                .signatureEmployeur(employeur.getEmail())
+                .dateSignature(LocalDateTime.now())
+                .dateEvaluation(evaluationDTO.getDateEvaluation() != null ? evaluationDTO.getDateEvaluation() : LocalDateTime.now())
+                .dateCreation(LocalDateTime.now())
                 .build();
     }
 }

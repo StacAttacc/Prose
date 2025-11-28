@@ -48,9 +48,6 @@ class EtudiantCvControllerTest {
     @MockitoBean
     private ProfesseurService professeurService;
 
-    @MockitoBean
-    private NotificationRepository notificationRepository;
-
     @Autowired
     private EtudiantService etudiantService;
 

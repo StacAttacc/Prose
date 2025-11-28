@@ -4,6 +4,7 @@ import { useI18n } from '../../context/I18nContext';
 import { getEvaluationByEntente } from '../../services/EmployeurService';
 import { useAuth } from '../../context/AuthContext';
 import { FaArrowLeft } from 'react-icons/fa';
+import ScrollToTop from "../common/ScrollToTop.jsx";
 
 const SCALE_SECTIONS = (t) => ([
     {
@@ -381,6 +382,8 @@ const EvaluationView = () => {
                     </div>
                 )}
             </div>
+
+            <ScrollToTop />
         </div>
     );
 };

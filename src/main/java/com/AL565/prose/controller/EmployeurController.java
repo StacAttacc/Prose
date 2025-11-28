@@ -184,4 +184,45 @@ public class EmployeurController {
         }
     }
 
+    @PostMapping("/{employeurId}/evaluate")
+    public ResponseEntity<EvaluationDTO> createEvaluation(
+            @PathVariable Long employeurId,
+            @RequestBody EvaluationDTO evaluationDTO) {
+        try {
+            EvaluationDTO createdEvaluation = employeurService.createEvaluation(employeurId, evaluationDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdEvaluation);
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+
+    @GetMapping("/{employeurId}/evaluation/{ententeId}")
+    public ResponseEntity<EvaluationDTO> getEvaluationByEntente(
+            @PathVariable Long employeurId,
+            @PathVariable Long ententeId) {
+        try {
+            EvaluationDTO evaluation = employeurService.getEvaluationByEntente(employeurId, ententeId);
+            return ResponseEntity.ok(evaluation);
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+
+    @GetMapping("/{employeurId}/ententes")
+    public ResponseEntity<List<EntenteDTO>> getEntentesNeedingEvaluation(
+            @PathVariable Long employeurId,
+            @RequestParam(required = false) String year) {
+        try {
+            List<EntenteDTO> ententes = employeurService.getEntentesNeedingEvaluation(employeurId, year);
+            return ResponseEntity.ok(ententes);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
 }

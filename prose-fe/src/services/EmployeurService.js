@@ -113,7 +113,7 @@ export async function convoquerEntrevue(candidatureId, interviewData, token) {
 export async function getEntentesForEvaluation(employeurId, token, year) {
     const params = year ? { year } : {};
 
-    const res = await axios.get(`${URL_BASE}/api/employeur/${employeurId}/evaluations/ententes`, {
+    const res = await axios.get(`${URL_BASE}/employeur/${employeurId}/ententes`, {
         params,
         headers: {
             'Authorization': `Bearer ${token}`,
@@ -125,7 +125,7 @@ export async function getEntentesForEvaluation(employeurId, token, year) {
 
 export async function createEvaluation(employeurId, evaluationData, token) {
     console.log(evaluationData);
-    const res = await axios.post(`${URL_BASE}/api/employeur/${employeurId}/evaluations`, evaluationData, {
+    const res = await axios.post(`${URL_BASE}/employeur/${employeurId}/evaluate`, evaluationData, {
         headers: {
             'Authorization': `Bearer ${token}`,
         }
@@ -134,11 +134,12 @@ export async function createEvaluation(employeurId, evaluationData, token) {
 }
 
 export async function getEvaluationByEntente(employeurId, ententeId, token) {
-    const res = await axios.get(`${URL_BASE}/api/employeur/${employeurId}/evaluations/entente/${ententeId}`, {
+    const res = await axios.get(`${URL_BASE}/employeur/${employeurId}/evaluation/${ententeId}`, {
         headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
         }
     });
+    console.log(res.data)
     return res.data;
 }

@@ -70,12 +70,6 @@ class GestionnaireControllerTest {
     private ProfesseurService professeurService;
 
     @MockitoBean
-    private NotificationRepository notificationRepository;
-
-    @MockitoBean
-    private GestionnaireRepository gestionnaireRepository;
-
-    @MockitoBean
     private CvRepository cvRepository;
 
     @MockitoBean

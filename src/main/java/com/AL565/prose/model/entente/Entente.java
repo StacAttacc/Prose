@@ -1,9 +1,10 @@
 package com.AL565.prose.model.entente;
 
-import com.AL565.prose.model.Candidature;
+import com.AL565.prose.model.*;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "entente")
@@ -21,6 +22,9 @@ public class Entente {
     @OneToOne
     @JoinColumn(name = "candidature_id", nullable = false, unique = true)
     private Candidature candidature;
+
+    @OneToMany(mappedBy = "entente")
+    private List<Evaluation> evaluations;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -40,4 +44,12 @@ public class Entente {
 
     @Column(name = "date_signature_complete")
     private LocalDateTime dateSignatureComplete;
+
+    public Etudiant getEtudiant() {
+        return candidature.getEtudiant();
+    }
+
+    public Stage getStage() {
+        return candidature.getStage();
+    }
 }

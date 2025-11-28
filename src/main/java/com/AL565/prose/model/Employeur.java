@@ -13,6 +13,7 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@ToString
 public class Employeur extends ProseUser {
     private String company;
 

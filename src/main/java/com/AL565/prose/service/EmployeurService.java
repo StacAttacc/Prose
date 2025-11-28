@@ -1,6 +1,8 @@
 package com.AL565.prose.service;
 
 import com.AL565.prose.model.*;
+import com.AL565.prose.model.entente.Entente;
+import com.AL565.prose.model.entente.EntenteStatus;
 import com.AL565.prose.model.notifications.*;
 import com.AL565.prose.repository.*;
 import com.AL565.prose.security.exceptions.NotificationExceptions;
@@ -14,6 +16,7 @@ import com.AL565.prose.service.exceptions.InvalidCandidatureModificationExceptio
 import com.AL565.prose.service.exceptions.StageNotFoundException;
 import com.AL565.prose.utils.NotificationsHelper;
 import com.AL565.prose.utils.SessionYearHelper;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -36,6 +39,8 @@ public class EmployeurService {
     private NotificationRepository notificationRepository;
     private SignatureEntenteNotificationRepository signatureEntenteNotificationRepository;
     private CandidatureRepository candidatureRepository;
+    private EntenteRepository ententeRepository;
+    private EvaluationRepository evaluationRepository;
     private NotificationsHelper notificationsHelper;
 
     public void enregistrer(EmployeurPasswordDTO employeurDTO) throws EmailAlreadyExistsException {
@@ -246,5 +251,68 @@ public class EmployeurService {
         notification.setTargetEmail(candidature.getEtudiant().getEmail());
         notification.setEtudiantId(candidature.getEtudiant().getId());
         notificationRepository.save(notification);
+    }
+
+    @Transactional
+    public EvaluationDTO createEvaluation(Long employeurId, EvaluationDTO evaluationDTO) {
+        Employeur employeur = employeurRepository.findById(employeurId)
+                .orElseThrow(() -> new EntityNotFoundException("Employeur non trouvé avec l'ID: " + employeurId));
+
+        Entente entente = ententeRepository.findById(evaluationDTO.getEntenteId())
+                .orElseThrow(() -> new EntityNotFoundException("Entente non trouvée avec l'ID: " + evaluationDTO.getEntenteId()));
+
+        if (entente.getStatus() != EntenteStatus.SIGNEE) {
+            throw new IllegalStateException("L'entente doit être signée pour pouvoir évaluer le stagiaire");
+        }
+
+        if (evaluationRepository.existsByEntenteId(entente.getId())) {
+            throw new IllegalStateException("Une évaluation existe déjà pour ce stage");
+        }
+
+        String password = evaluationDTO.getPassword();
+        if (password == null || password.isEmpty()) {
+            throw new IllegalArgumentException("Le mot de passe est requis pour créer et signer l'évaluation");
+        }
+
+        if (!passwordEncoder.matches(password, employeur.getPassword())) {
+            throw new IllegalArgumentException("Mot de passe incorrect");
+        }
+
+        Etudiant etudiant = entente.getEtudiant();
+
+        return EvaluationDTO.toDTO(evaluationRepository.save(EvaluationDTO.toModel(evaluationDTO, etudiant,  employeur, entente)));
+    }
+
+    @Transactional
+    public EvaluationDTO getEvaluationByEntente(Long employeurId, Long ententeId) {
+        Evaluation evaluation = evaluationRepository.findByEntenteId(ententeId)
+                .orElseThrow(() -> new EntityNotFoundException("Aucune évaluation trouvée pour cette entente"));
+
+        if (!evaluation.getEmployeur().getId().equals(employeurId)) {
+            throw new IllegalStateException("Vous n'êtes pas autorisé à consulter cette évaluation");
+        }
+
+        return EvaluationDTO.toDTO(evaluation);
+    }
+
+    @Transactional
+    public List<EntenteDTO> getEntentesNeedingEvaluation(Long employeurId, String year) {
+        Employeur employeur = employeurRepository.findById(employeurId)
+                .orElseThrow(() -> new EntityNotFoundException("Employeur non trouvé avec l'ID: " + employeurId));
+
+        int yearNumber = SessionYearHelper.getSessionYear(year);
+
+
+        List<Entente> ententes = ententeRepository.findAll().stream()
+                .filter(e -> e.getStatus() == EntenteStatus.SIGNEE)
+                .filter(e -> e.getCandidature().getStage().getEmployeurEmail() != null &&
+                        e.getCandidature().getStage().getEmployeurEmail().equals(employeur.getCredentials().getUsername()))
+                .filter(e -> e.getCandidature().getStage().getStartDate() != null &&
+                        e.getCandidature().getStage().getStartDate().getYear() == yearNumber)
+                .toList();
+
+        return ententes.stream()
+                .map(entente -> EntenteDTO.toDTO(entente, employeur))
+                .toList();
     }
 }

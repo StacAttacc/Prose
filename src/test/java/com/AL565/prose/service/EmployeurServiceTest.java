@@ -4,15 +4,16 @@ import com.AL565.prose.model.Employeur;
 import com.AL565.prose.model.Stage;
 import com.AL565.prose.model.*;
 import com.AL565.prose.model.auth.Credentials;
+import com.AL565.prose.model.auth.Role;
+import com.AL565.prose.model.entente.Entente;
+import com.AL565.prose.model.entente.EntenteStatus;
 import com.AL565.prose.repository.*;
-import com.AL565.prose.service.dto.CandidatureDTO;
-import com.AL565.prose.service.dto.EmployeurDTO;
-import com.AL565.prose.service.dto.EmployeurPasswordDTO;
-import com.AL565.prose.service.dto.StageDTO;
+import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.exceptions.CandidatureNotFoundException;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import com.AL565.prose.service.exceptions.InvalidCandidatureModificationException;
 import com.AL565.prose.utils.NotificationsHelper;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -22,14 +23,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -47,6 +48,10 @@ class EmployeurServiceTest {
     private PasswordEncoder passwordEncoder; 
     @Mock
     private NotificationRepository notificationRepository;
+    @Mock
+    private EntenteRepository ententeRepository;
+    @Mock
+    private EvaluationRepository evaluationRepository;
     @Mock
     private NotificationsHelper notificationsHelper;
 
@@ -202,4 +207,87 @@ class EmployeurServiceTest {
         assertThatThrownBy(() -> employeurService.updateCandidatureStatus(candidature.getId(), "Acceptee"))
                 .isInstanceOf(InvalidCandidatureModificationException.class);
     }
+
+    @Test
+    void testCreateEvaluation_Success() {
+        EvaluationDTO evaluationDTO = new EvaluationDTO();
+        evaluationDTO.setPassword("testPassword123");
+
+        Evaluation evaluation = new Evaluation();
+
+        Employeur employeur = new Employeur();
+        employeur.setCredentials(new Credentials("john@doe.com", "testPassword123", Role.EMPLOYEUR));
+
+        Entente entente = new Entente();
+
+        when(employeurRepository.findById(anyLong())).thenReturn(Optional.of(employeur));
+        when(ententeRepository.findById(anyLong())).thenReturn(Optional.of(entente));
+        when(evaluationRepository.existsByEntenteId(anyLong())).thenReturn(false);
+        when(passwordEncoder.matches("testPassword123", employeur.getPassword())).thenReturn(true);
+        when(evaluationRepository.save(any(Evaluation.class))).thenReturn(evaluation);
+
+        EvaluationDTO result = employeurService.createEvaluation(1L, evaluationDTO);
+
+        assertNotNull(result);
+        assertEquals("totalementAccord", result.getProductivitePlanificationOrganisation());
+        assertTrue(result.getEvaluationDiscutee());
+        assertEquals("oui", result.getAccueillirProchainStage());
+        verify(evaluationRepository, times(1)).save(any(Evaluation.class));
+        verify(passwordEncoder, times(1)).matches("testPassword123", employeur.getPassword());
+    }
+
+    @Test
+    void testCreateEvaluation_EmployeurNotFound() {
+        EvaluationDTO evaluationDTO = new EvaluationDTO();
+        evaluationDTO.setPassword("testPassword123");
+
+        Employeur employeur = new Employeur();
+        employeur.setCredentials(new Credentials("john@doe.com", "testPassword123", Role.EMPLOYEUR));
+
+
+        when(employeurRepository.findById(1L)).thenReturn(Optional.empty());
+
+        assertThrows(EntityNotFoundException.class, () ->
+                employeurService.createEvaluation(1L, evaluationDTO)
+        );
+    }
+
+    @Test
+    void testCreateEvaluation_EntenteNotSigned() {
+        EvaluationDTO evaluationDTO = new EvaluationDTO();
+        evaluationDTO.setPassword("testPassword123");
+
+        Employeur employeur = new Employeur();
+        employeur.setCredentials(new Credentials("john@doe.com", "testPassword123", Role.EMPLOYEUR));
+
+        Entente entente = new Entente();
+
+        entente.setStatus(EntenteStatus.A_SIGNER);
+        when(employeurRepository.findById(1L)).thenReturn(Optional.of(employeur));
+        when(ententeRepository.findById(5L)).thenReturn(Optional.of(entente));
+
+        assertThrows(IllegalStateException.class, () ->
+                employeurService.createEvaluation(1L, evaluationDTO)
+        );
+    }
+
+    @Test
+    void testCreateEvaluation_EvaluationAlreadyExists() {
+        EvaluationDTO evaluationDTO = new EvaluationDTO();
+        evaluationDTO.setPassword("testPassword123");
+
+        Employeur employeur = new Employeur();
+        employeur.setCredentials(new Credentials("john@doe.com", "testPassword123", Role.EMPLOYEUR));
+
+        Entente entente = new Entente();
+
+        when(employeurRepository.findById(1L)).thenReturn(Optional.of(employeur));
+        when(ententeRepository.findById(5L)).thenReturn(Optional.of(entente));
+        when(evaluationRepository.existsByEntenteId(5L)).thenReturn(true);
+
+        assertThrows(IllegalStateException.class, () ->
+                employeurService.createEvaluation(1L, evaluationDTO)
+        );
+    }
+
 }

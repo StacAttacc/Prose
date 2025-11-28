@@ -7,5 +7,4 @@ import java.util.Optional;
 
 public interface EntenteRepository extends JpaRepository<Entente, Long> {
     Optional<Entente> findByCandidatureId(Long candidatureId);
-    boolean existsByCandidatureId(Long candidatureId);
 }

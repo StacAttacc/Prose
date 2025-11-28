@@ -5,6 +5,8 @@ import { createEvaluation, getEntentesForEvaluation } from '../../services/Emplo
 import { useAuth } from '../../context/AuthContext';
 import { FaArrowLeft, FaSave } from 'react-icons/fa';
 import EvaluationSignatureModal from '../display-components/EvaluationSignatureModal';
+import {useYear} from "../../context/YearContext.jsx";
+import ScrollToTop from "../common/ScrollToTop.jsx";
 
 const SCALE_OPTIONS = ['totalementAccord', 'plutotAccord', 'plutotDesaccord', 'totalementDesaccord', 'na'];
 const APPRECIATION_OPTIONS = ['depasseBeaucoup', 'depasse', 'repondPleinement', 'repondPartiellement', 'repondPas'];
@@ -85,6 +87,7 @@ const { t } = useI18n();
     const navigate = useNavigate();
     const { ententeId } = useParams();
     const { user } = useAuth();
+    const { selectedYear } = useYear();
 
     const [formData, setFormData] = useState(() => initialFormState(ententeId));
     const [loading, setLoading] = useState(true);
@@ -158,7 +161,7 @@ const { t } = useI18n();
     useEffect(() => {
         loadData();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [ententeId, user?.id, user?.token]);
+    }, [ententeId, user?.id, user?.token, selectedYear]);
 
     useEffect(() => {
         if (!entente) return;
@@ -178,7 +181,7 @@ const { t } = useI18n();
             setLoading(true);
             setError(null);
 
-            const ententes = await getEntentesForEvaluation(user.id, user.token);
+            const ententes = await getEntentesForEvaluation(user.id, user.token, selectedYear);
             const currentEntente = ententes.find(e => e.id === parseInt(ententeId));
 
             if (!currentEntente) {
@@ -190,7 +193,6 @@ const { t } = useI18n();
 
             if (currentEntente.hasEvaluation) {
                 navigate('/employeur/evaluations');
-                return;
             }
         } catch (err) {
             console.error('Erreur lors du chargement des données:', err);
@@ -225,8 +227,7 @@ const { t } = useI18n();
             'telephone',
             'heuresEncadrement',
             'signataireNom',
-            'signataireFonction',
-            'signataireDate'
+            'signataireFonction'
         ];
 
         const missingText = requiredTextFields.find(field => !formData[field]?.trim());
@@ -260,6 +261,7 @@ const { t } = useI18n();
             return;
         }
 
+
         // Ouvrir le modal de signature au lieu de soumettre directement
         setShowSignatureModal(true);
     };
@@ -272,6 +274,7 @@ const { t } = useI18n();
             // Ajouter le mot de passe au formData pour la signature
             const dataToSubmit = {
                 ...formData,
+                signataireDate: new Date(),
                 password: password
             };
 
@@ -663,8 +666,8 @@ const { t } = useI18n();
                     <h2 className="text-xl font-semibold text-gray-900 mb-6 border-b pb-2">
                         {t('evaluations.signatureSection')}
                     </h2>
-                    <div className="grid gap-6 md:grid-cols-3">
-                        <div>
+                    <div className="grid gap-6 md:grid-cols-2">
+                        <div className="w-full">
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 {t('evaluations.signerName')} <span className="text-red-500">*</span>
                             </label>
@@ -688,18 +691,6 @@ const { t } = useI18n();
                                 onChange={handleInputChange}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                                 placeholder={t('evaluations.signerRolePlaceholder')}
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                {t('evaluations.signerDate')} <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                                type="date"
-                                name="signataireDate"
-                                value={formData.signataireDate}
-                                onChange={handleInputChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                             />
                         </div>
                     </div>
@@ -733,7 +724,7 @@ const { t } = useI18n();
                     </button>
                 </div>
             </form>
-            {/* Modal de signature */}
+
             <EvaluationSignatureModal
                 evaluation={{
                     nomEleve: formData.nomEleve,
@@ -745,6 +736,8 @@ const { t } = useI18n();
                 onSign={handleSignAndSubmit}
                 isCreating={true}
             />
+
+            <ScrollToTop />
         </div>
     );
 };

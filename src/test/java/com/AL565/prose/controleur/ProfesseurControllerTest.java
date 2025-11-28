@@ -59,9 +59,6 @@ public class ProfesseurControllerTest {
     @MockitoBean
     private UtilisateurService utilisateurService;
 
-    @MockitoBean
-    private EvaluationService evaluationService;
-
     @Test
     void testEvaluateMillieu() throws Exception {
         MillieuEvaluationDTO evaluationDTO = new MillieuEvaluationDTO();
