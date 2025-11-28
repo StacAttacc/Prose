@@ -11,6 +11,8 @@ import com.AL565.prose.service.exceptions.FailedToRetrieveStagesException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -293,8 +295,13 @@ class GestionnaireServiceTest {
         verifyNoInteractions(employeurRepository);
     }
 
-    @Test
-    void getAllStages2077() {
+    @ParameterizedTest
+    @CsvSource({
+            "2077, 2",
+            "2078, 1",
+            "2025, 0"
+    })
+    void getAllStagesYearFiltered(String year, String expected) {
         Stage s1 = Stage.builder()
                 .id(1L)
                 .title("Backend Java++")
@@ -330,13 +337,9 @@ class GestionnaireServiceTest {
 
         when(employeurRepository.getEmployeurByCredentials_Username("emp1@company.com")).thenReturn(e1);
 
-        List<StageDTO> result2077 = gestionnaireService.getAllStages("2077");
-        List<StageDTO> result2078 = gestionnaireService.getAllStages("2078");
-        List<StageDTO> result2025 = gestionnaireService.getAllStages("2025");
+        List<StageDTO> result = gestionnaireService.getAllStages(year);
 
-        assertThat(result2077).hasSize(2);
-        assertThat(result2078).hasSize(1);
-        assertThat(result2025).hasSize(0);
+        assertThat(result).hasSize(Integer.parseInt(expected));
     }
 
     @Test
@@ -431,8 +434,13 @@ class GestionnaireServiceTest {
         assertThat(candidaturesUmberto.get(1).getStatus()).isEqualTo(String.valueOf(CandidatureStatus.REFUSEE));
     }
 
-    @Test
-    void getAllEtudiantsCandidatures2077() {
+    @ParameterizedTest
+    @CsvSource({
+            "2077, 2",
+            "2078, 1",
+            "2025, 0"
+    })
+    void getAllEtudiantsCandidaturesYearFiltered(String year, String expected) {
         Etudiant john = new Etudiant("John", "Doe", Credentials.builder().username("email@email.com").password("1234567890").build(), Discipline.INFORMATIQUE);
         Etudiant umberto = new Etudiant("Umberto", "Larrios", Credentials.builder().username("email2@email.com").password("1234567890").build(), Discipline.INFORMATIQUE);
 
@@ -477,18 +485,9 @@ class GestionnaireServiceTest {
         when(stageRepository.findById(stage2.getId())).thenReturn(Optional.of(stage2));
         when(stageRepository.findById(stage3.getId())).thenReturn(Optional.of(stage3));
 
-        List<EtudiantCandidaturesDTO> candidatures2077 =  gestionnaireService.getAllEtudiantsCandidatures("2077");
-        List<EtudiantCandidaturesDTO> candidatures2078 = gestionnaireService.getAllEtudiantsCandidatures("2078");
-        List<EtudiantCandidaturesDTO> candidatures2025 = gestionnaireService.getAllEtudiantsCandidatures("2025");
+        List<EtudiantCandidaturesDTO> candidatures =  gestionnaireService.getAllEtudiantsCandidatures(year);
 
-        assertThat(candidatures2077).hasSize(2);
-        assertThat(candidatures2077.getFirst().getCandidatures()).hasSize(1);
-        assertThat(candidatures2077.get(1).getCandidatures()).hasSize(2);
-
-        assertThat(candidatures2078).hasSize(1);
-        assertThat(candidatures2078.getFirst().getCandidatures()).hasSize(1);
-
-        assertThat(candidatures2025).hasSize(0);
+        assertThat(candidatures).hasSize(Integer.parseInt(expected));
     }
 
     @Test

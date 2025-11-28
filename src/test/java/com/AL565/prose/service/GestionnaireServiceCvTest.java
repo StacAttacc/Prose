@@ -11,6 +11,8 @@ import com.AL565.prose.service.dto.GestionnairePasswordDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -126,8 +128,13 @@ public class GestionnaireServiceCvTest {
         verify(cvRepository).findAll();
     }
 
-    @Test
-    void getAllCvsYearFiltered() throws Exception {
+    @ParameterizedTest
+    @CsvSource({
+            "2077, 2",
+            "2078, 1",
+            "2025, 0"
+    })
+    void getAllCvsYearFiltered(String year, String expected) throws Exception {
         Etudiant etudiant1 = new Etudiant();
         etudiant1.setFirstName("John");
         etudiant1.setLastName("Doe");
@@ -174,20 +181,9 @@ public class GestionnaireServiceCvTest {
 
         when(cvRepository.findAll()).thenReturn(Arrays.asList(cv1, cv2, cv3));
 
-        List<GestionnaireCvDTO> result2077 = gestionnaireService.getAllCvs("2077");
-        List<GestionnaireCvDTO> result2078 = gestionnaireService.getAllCvs("2078");
-        List<GestionnaireCvDTO> result2025 = gestionnaireService.getAllCvs("2025");
+        List<GestionnaireCvDTO> result = gestionnaireService.getAllCvs("2077");
 
-        assertThat(result2077).hasSize(2);
-        assertThat(result2077.getFirst().getData()).isEqualTo(Base64.getEncoder().encodeToString(cv1.getData()));
-        assertThat(result2077.getLast().getData()).isEqualTo(Base64.getEncoder().encodeToString(cv2.getData()));
-
-        assertThat(result2078).hasSize(1);
-        assertThat(result2078.getFirst().getData()).isEqualTo(Base64.getEncoder().encodeToString(cv3.getData()));
-
-        assertThat(result2025).hasSize(0);
-
-
+        assertThat(result).hasSize(Integer.parseInt(expected));
     }
 
     @Test

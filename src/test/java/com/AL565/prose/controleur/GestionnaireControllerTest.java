@@ -20,6 +20,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -204,8 +206,13 @@ class GestionnaireControllerTest {
                 .andExpect(status().isOk());
     }
 
-    @Test
-    void getAllCvsYearFiltered() throws Exception {
+    @ParameterizedTest
+    @CsvSource({
+            "2077, 2",
+            "2078, 1",
+            "2025, 0"
+    })
+    void getAllCvsYearFiltered(String year, String expected) throws Exception {
         GestionnaireCvDTO dto = new GestionnaireCvDTO();
         dto.setId(1L);
         dto.setName("CV1");
@@ -237,27 +244,13 @@ class GestionnaireControllerTest {
         when(gestionnaireService.getAllCvs("2078")).thenReturn(List.of(dto3));
         when(gestionnaireService.getAllCvs("2025")).thenReturn(new ArrayList<>());
 
-        MvcResult result = mockMvc.perform(get("/gestionnaire/cv/all").param("year", "2077").contentType(MediaType.APPLICATION_JSON))
+        MvcResult result = mockMvc.perform(get("/gestionnaire/cv/all").param("year", year).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn();
 
-        List<GestionnaireCvDTO> data2077 = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+        List<GestionnaireCvDTO> data = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
 
-        result = mockMvc.perform(get("/gestionnaire/cv/all").param("year", "2078").contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        List<GestionnaireCvDTO> data2078 = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
-
-        result = mockMvc.perform(get("/gestionnaire/cv/all").param("year", "2025").contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        List<GestionnaireCvDTO> data2025 = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
-
-        assertThat(data2077).hasSize(2);
-        assertThat(data2078).hasSize(1);
-        assertThat(data2025).hasSize(0);
+        assertThat(data).hasSize(Integer.parseInt(expected));
     }
 
     @Test
@@ -290,8 +283,13 @@ class GestionnaireControllerTest {
                 .andExpect(jsonPath("$.data", hasSize(2)));
     }
 
-    @Test
-    void getAllStagesDated() throws Exception {
+    @ParameterizedTest
+    @CsvSource({
+            "2077, 1",
+            "2078, 1",
+            "2025, 0"
+    })
+    void getAllStagesDated(String year, String expected) throws Exception {
         StageDTO dto1 = StageDTO.builder().id(1L).title("Backend Java")
                 .startDate(LocalDate.of(2077, 1, 18))
                 .build();
@@ -303,36 +301,16 @@ class GestionnaireControllerTest {
         when(gestionnaireService.getAllStages("2078")).thenReturn(List.of(dto2));
         when(gestionnaireService.getAllStages("2025")).thenReturn(new ArrayList<>());
 
-        MvcResult result = mockMvc.perform(get("/gestionnaire/stages").param("year", "2077").accept(MediaType.APPLICATION_JSON))
+        MvcResult result = mockMvc.perform(get("/gestionnaire/stages").param("year", year).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn();
 
         ReturnEntityDTO<List<StageDTO>> resultString =  objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
         });
 
-        List<StageDTO> data2077 = resultString.getData();
+        List<StageDTO> data = resultString.getData();
 
-        result = mockMvc.perform(get("/gestionnaire/stages").param("year", "2078").accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        resultString =  objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
-        });
-
-        List<StageDTO> data2078 = resultString.getData();
-
-        result = mockMvc.perform(get("/gestionnaire/stages").param("year", "2025").accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        resultString =  objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
-        });
-
-        List<StageDTO> data2025 = resultString.getData();
-
-        assertThat(data2077).hasSize(1);
-        assertThat(data2078).hasSize(1);
-        assertThat(data2025).hasSize(0);
+        assertThat(data).hasSize(Integer.parseInt(expected));
 
     }
 
