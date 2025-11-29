@@ -70,7 +70,7 @@ public class EntenteDTO {
             }
         }
 
-        if (!entente.getEvaluations().isEmpty()) {
+        if (entente.getEvaluations() != null && !entente.getEvaluations().isEmpty()) {
             entente.getEvaluations().forEach((evaluation) -> {
                 if (evaluation.getEtudiant().getId() == dto.getEtudiantId()) {
                     dto.setHasEvaluation(true);

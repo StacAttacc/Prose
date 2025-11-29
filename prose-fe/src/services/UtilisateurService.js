@@ -1,4 +1,5 @@
 import axios from "axios";
+import {setAccessToken} from "./http.js";
 
 const BASE_URL = "http://localhost:8080";
 
@@ -19,6 +20,7 @@ export async function registerEtudiant(payload) {
 
 export async function logout() {
     sessionStorage.removeItem("user");
+    setAccessToken(null);
 }
 
 export async function getPDFEntente(ententeID, token) {

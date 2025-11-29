@@ -196,7 +196,7 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
         try {
             if (kind === "cv") {
                 if (!email) throw new Error("Email manquant");
-                const dto = await telechargerCv(email, user?.token);
+                const dto = await telechargerCv(email);
                 if (!dto?.data) throw new Error("CV introuvable ou vide.");
 
                 const cvBlob = blobFromUnknownData(dto.data, dto.type || "application/pdf");

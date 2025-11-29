@@ -26,7 +26,7 @@ export const CvProvider = ({ children }) => {
 
         setLoading(true);
         try {
-            const data = await telechargerCv(user.email, user);
+            const data = await telechargerCv(user.email);
             if (data) {
                 setHasCV(true);
                 setCvData(data);

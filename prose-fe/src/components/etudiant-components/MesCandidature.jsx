@@ -680,7 +680,7 @@ export default function MesCandidature() {
                     loadEntenteFn={checkEntenteExists}
                     onSign={async (ententeId, password) => {
                         try {
-                            await signEntente(ententeId, password, user?.token);
+                            await signEntente(ententeId, password);
                             // Rafraîchir les données de l'entente après signature
                             const result = await checkEntenteExists(selectedCandidatureForEntente.id, user?.token);
                             if (result.exists) {

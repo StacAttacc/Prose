@@ -20,11 +20,6 @@ export function setAccessToken(token) {
     }
 }
 
-
-export function getAccessToken() {
-    return accessToken;
-}
-
 http.interceptors.request.use((config) => {
 
     if (accessToken) {

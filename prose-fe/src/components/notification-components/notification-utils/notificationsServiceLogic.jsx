@@ -21,7 +21,7 @@ export async function fetchNotifications(user) {
         case "EMPLOYEUR":
             return await getEmployeurNotifications(user.token);
         case "ETUDIANT":
-            return await getEtudiantNotifications(user.token);
+            return await getEtudiantNotifications();
         default:
             return null;
     }
@@ -37,7 +37,7 @@ export async function markSingleNotificationAsRead(id, user) {
             await markNotificationReadEmployeur(id, user.token);
             break;
         case "ETUDIANT":
-            await markNotificationReadEtudiant(id, user.token);
+            await markNotificationReadEtudiant(id);
             break;
         default:
             break;
@@ -54,7 +54,7 @@ export async function markManyNotifications(user, ids = []) {
             await markNotificationsReadEmployeur(ids, user.token);
             break;
         case "ETUDIANT":
-            await markNotificationsReadEtudiant(ids, user.token);
+            await markNotificationsReadEtudiant(ids);
             break;
         default:
             break;

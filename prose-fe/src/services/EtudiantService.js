@@ -2,7 +2,6 @@ import { http } from "./http.js";
 
 const CV_UPLOAD_URL = "/etudiant/televerser-cv";
 const CV_DOWNLOAD_URL = "/etudiant/telecharger-cv";
-const BASE_URL_ETUDIANT = "http://localhost:8080/etudiant";
 
 export const televerserCv = async (cv, user) => {
     try{
@@ -16,6 +15,7 @@ export const televerserCv = async (cv, user) => {
             },
         });
         return data;
+
     } catch (e) {
         if (e.response) {
             console.error('Erreur:', e.response.data);
@@ -30,16 +30,11 @@ export const televerserCv = async (cv, user) => {
     }
 };
 
-export const telechargerCv = async (email, token) => {
+export const telechargerCv = async (email) => {
     try {
-        const url = `${CV_DOWNLOAD_URL}/${encodeURIComponent(email)}`;
-
-        const config = token
-            ? { headers: { Authorization: `Bearer ${token}` } }
-            : undefined;
-
-        const { data } = await http.get(url, config);
+        const { data } = await http.get(`${CV_DOWNLOAD_URL}/${encodeURIComponent(email)}`);
         return data;
+
     } catch (e) {
         if (e.response) {
             console.error("Erreur:", e.response.data);
@@ -115,21 +110,10 @@ export async function checkEntenteExists(candidatureId, token) {
     }
 }
 
-export async function signEntente(ententeId, password, token) {
-    const res = await fetch(`${BASE_URL_ETUDIANT}/ententes/${ententeId}/signer`, {
-        method: "PUT",
-        headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({ password })
-    });
-    if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.message || `HTTP error! status: ${res.status}`);
-    }
-    return await res.json();
+export async function signEntente(ententeId, password) {
+    const res = await http.put(`/etudiant/ententes/${ententeId}/signer`, {password});
+
+    return res.data;
 }
 
 export const getMesCandidatures = async () => {
@@ -142,15 +126,10 @@ export const getMesCandidatures = async () => {
     }
 };
 
-export async function getEtudiantNotifications(token) {
+export async function getEtudiantNotifications() {
     try {
-        const { data } = await http.get("/etudiant/notifications/all", {
-            method: "GET",
-            headers: {
-                Accept: "application/json",
-                ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            },
-        });
+        const { data } = await http.get("/etudiant/notifications/all");
+
         return data;
     } catch (e) {
         console.error("Erreur lors de la récupération des notifications:", e);
@@ -158,17 +137,11 @@ export async function getEtudiantNotifications(token) {
     }
 }
 
-export async function markNotificationRead(notificationId, token) {
+export async function markNotificationRead(notificationId) {
     try {
         const { data } = await http.put(
-            `${BASE_URL_ETUDIANT}/notifications/read/${notificationId}`,
-            { notificationId },
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            }
-        );
+            `/etudiant/notifications/read/${notificationId}`,
+            { notificationId });
         return data;
     } catch (e) {
         console.error("Erreur lors du marquage de la notification comme lue:", e);
@@ -176,11 +149,11 @@ export async function markNotificationRead(notificationId, token) {
     }
 }
 
-export const markNotificationsRead = (notificationIds = [], token) => {
+export const markNotificationsRead = (notificationIds = []) => {
     if (!Array.isArray(notificationIds) || notificationIds.length === 0) {
         return Promise.resolve();
     }
-    return Promise.all(notificationIds.map(id => markNotificationRead(id, token)));
+    return Promise.all(notificationIds.map(id => markNotificationRead(id)));
 };
 
 export const respondToOffer = async (candidatureId, accepted, comment = "") => {
