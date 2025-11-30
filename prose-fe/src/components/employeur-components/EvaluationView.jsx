@@ -81,7 +81,7 @@ const EvaluationView = () => {
         try {
             setLoading(true);
             setError(null);
-            const data = await getEvaluationByEntente(user.id, ententeId, user.token);
+            const data = await getEvaluationByEntente(user.id, ententeId);
             setEvaluation(data);
         } catch (err) {
             console.error('Erreur lors du chargement de l\'évaluation:', err);

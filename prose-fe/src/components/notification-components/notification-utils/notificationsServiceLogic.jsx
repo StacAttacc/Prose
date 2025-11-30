@@ -19,7 +19,7 @@ export async function fetchNotifications(user) {
         case "GESTIONNAIRE":
             return await getGestionnaireNotifications();
         case "EMPLOYEUR":
-            return await getEmployeurNotifications(user.token);
+            return await getEmployeurNotifications();
         case "ETUDIANT":
             return await getEtudiantNotifications();
         default:
@@ -34,7 +34,7 @@ export async function markSingleNotificationAsRead(id, user) {
             await markNotificationReadGestionnaire(id);
             break;
         case "EMPLOYEUR":
-            await markNotificationReadEmployeur(id, user.token);
+            await markNotificationReadEmployeur(id);
             break;
         case "ETUDIANT":
             await markNotificationReadEtudiant(id);
@@ -51,7 +51,7 @@ export async function markManyNotifications(user, ids = []) {
             await markNotificationsReadGestionnaire(ids);
             break;
         case "EMPLOYEUR":
-            await markNotificationsReadEmployeur(ids, user.token);
+            await markNotificationsReadEmployeur(ids);
             break;
         case "ETUDIANT":
             await markNotificationsReadEtudiant(ids);

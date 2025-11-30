@@ -275,7 +275,7 @@ const { t } = useI18n();
                 password: password
             };
 
-            await createEvaluation(user.id, dataToSubmit, user.token);
+            await createEvaluation(user.id, dataToSubmit);
 
             setSuccess(true);
             setTimeout(() => {

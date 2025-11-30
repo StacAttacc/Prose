@@ -2,8 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useI18n } from "../../context/I18nContext.jsx";
 import { useYear } from "../../context/YearContext.jsx";
-import { getEmployeurStages } from "../../services/StageService.js";
-import { getStageApplicants } from "../../services/EmployeurService.js";
+import {getEmployeurStages, getStageApplicants} from "../../services/EmployeurService.js";
 import ErrorBanner from "../display-components/ErrorBanner.jsx";
 import ApplicantRow from "../display-components/ApplicantRow.jsx";
 
@@ -24,8 +23,7 @@ export default function MesCandidaturesEmployeur() {
             try {
                 setLoading(true);
                 setError(null);
-                
-                // Récupérer tous les stages de l'employeur
+
                 const stagesData = await getEmployeurStages(user.email, user.token, selectedYear);
                 const stages = Array.isArray(stagesData) 
                     ? stagesData 
@@ -35,7 +33,7 @@ export default function MesCandidaturesEmployeur() {
 
                 const candidaturesPromises = stages.map(async (stage) => {
                     try {
-                        const candidatures = await getStageApplicants(stage.id, user.token);
+                        const candidatures = await getStageApplicants(stage.id);
                         return candidatures.map(candidature => ({
                             ...candidature,
                             stage: stage,
@@ -113,7 +111,7 @@ export default function MesCandidaturesEmployeur() {
         
         try {
             const { rejectApplicant } = await import("../../services/EmployeurService.js");
-            const res = await rejectApplicant(id, user?.token);
+            const res = await rejectApplicant(id);
             if (res.ok) {
                 setAllCandidatures(prev => prev.filter(x =>
                     Number(x?.id ?? x?.candidatureId ?? x?.applicationId) !== id
@@ -130,7 +128,7 @@ export default function MesCandidaturesEmployeur() {
         
         try {
             const { approveApplicant } = await import("../../services/EmployeurService.js");
-            const res = await approveApplicant(id, user?.token);
+            const res = await approveApplicant(id);
             if (res.ok) {
                 setAllCandidatures(prev =>
                     prev.filter(x => Number(x?.id ?? x?.candidatureId ?? x?.applicationId) !== id)

@@ -4,8 +4,12 @@ import ApplicantRow from "../display-components/ApplicantRow";
 import {useAuth} from "../../context/AuthContext.jsx";
 import {useI18n} from "../../context/I18nContext.jsx";
 import {useYear} from "../../context/YearContext.jsx";
-import {approveApplicant, getStageApplicants, rejectApplicant} from "../../services/EmployeurService.js";
-import {getEmployeurStages} from "../../services/StageService.js";
+import {
+    approveApplicant,
+    getEmployeurStages,
+    getStageApplicants,
+    rejectApplicant
+} from "../../services/EmployeurService.js";
 import ErrorBanner from "../display-components/ErrorBanner.jsx";
 
 const txt = (v) => (v == null ? "" : String(v));
@@ -60,7 +64,7 @@ const StageApplicantsPage = () => {
     const reloadApplicants = async () => {
         try {
             setLoading(true);
-            const list = await getStageApplicants(id, user.token);
+            const list = await getStageApplicants(id);
             setApplicants(Array.isArray(list) ? list : []);
             setError(null);
         } catch (e) {
@@ -190,7 +194,7 @@ const StageApplicantsPage = () => {
                                         if (!Number.isFinite(id)) return;
                                         if (!user?.token) { console.debug("reject: token absent (premier rendu)"); return; }
                                         try {
-                                            const res = await rejectApplicant(id, user?.token);
+                                            const res = await rejectApplicant(id);
                                             if (res.ok) {
                                                 setApplicants(prev => prev.filter(x =>
                                                     Number(x?.id ?? x?.candidatureId ?? x?.applicationId) !== id
@@ -208,7 +212,7 @@ const StageApplicantsPage = () => {
                                         const id = Number(a?.id ?? a?.candidatureId ?? a?.applicationId);
                                         if (!Number.isFinite(id)) return;
                                         try {
-                                            const res = await approveApplicant(id, user?.token);
+                                            const res = await approveApplicant(id);
                                             if (res.ok) {
                                                 setApplicants(prev =>
                                                     prev.filter(x => Number(x?.id ?? x?.candidatureId ?? x?.applicationId) !== id)

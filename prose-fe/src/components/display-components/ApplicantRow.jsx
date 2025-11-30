@@ -84,7 +84,7 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
             if (status === "CONFIRMER" && applicant?.id && user?.token) {
                 setCheckingEntente(true);
                 try {
-                    const result = await checkEntenteExists(applicant.id, user.token);
+                    const result = await checkEntenteExists(applicant.id);
                     setEntenteExists(result.exists);
                     setEntenteData(result.exists ? result.data : null);
                 } catch (error) {
@@ -237,7 +237,7 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
 
     const handleConvoquerEntrevue = async (interviewData) => {
         try {
-            const result = await convoquerEntrevue(applicant.id, interviewData, user?.token);
+            const result = await convoquerEntrevue(applicant.id, interviewData);
             console.log("Convocation réussie:", result);
             setLocalStatus("CONVOQUEE");
             if (onStatusUpdate) {
@@ -531,8 +531,8 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
                         loadEntenteFn={checkEntenteExists}
                         onSign={async (ententeId, password) => {
                             try {
-                                await signEntente(ententeId, password, user?.token);
-                                const result = await checkEntenteExists(applicant.id, user?.token);
+                                await signEntente(ententeId, password);
+                                const result = await checkEntenteExists(applicant.id);
                                 if (result.exists) {
                                     setEntenteData(result.data);
                                 }

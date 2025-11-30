@@ -3,7 +3,7 @@ import {useLocation, useNavigate} from "react-router-dom";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useI18n } from "../../context/I18nContext.jsx";
 import { useYear } from "../../context/YearContext.jsx";
-import { getEmployeurStages } from "../../services/StageService.js";
+import { getEmployeurStages } from "../../services/EmployeurService.js";
 import ErrorBanner from "../display-components/ErrorBanner.jsx";
 import StageDetailsModal from "../display-components/StageDetailsModal.jsx";
 
