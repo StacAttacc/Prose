@@ -35,9 +35,9 @@ export default function AssociationProfesseurEtudiant() {
     const loadEtudiants = async () => {
         try {
             setLoadingEtudiants(true);
-            console.log('Chargement des étudiants...');
-            const data = await getAllEtudiants(token);
-            console.log('Étudiants chargés:', data);
+
+            const data = await getAllEtudiants();
+
             setEtudiants(Array.isArray(data) ? data : []);
         } catch (err) {
             console.error('Erreur lors du chargement des étudiants:', err);
@@ -45,7 +45,6 @@ export default function AssociationProfesseurEtudiant() {
             console.error('Status:', err?.response?.status);
             setEtudiants([]);
         } finally {
-            console.log('Fin du chargement des étudiants');
             setLoadingEtudiants(false);
         }
     };
@@ -53,9 +52,9 @@ export default function AssociationProfesseurEtudiant() {
     const loadProfesseurs = async () => {
         try {
             setLoadingProfesseurs(true);
-            console.log('Chargement des professeurs...');
-            const data = await getAllProfesseurs(token);
-            console.log('Professeurs chargés:', data);
+
+            const data = await getAllProfesseurs();
+
             setProfesseurs(Array.isArray(data) ? data : []);
         } catch (err) {
             console.error('Erreur lors du chargement des professeurs:', err);
@@ -63,7 +62,6 @@ export default function AssociationProfesseurEtudiant() {
             console.error('Status:', err?.response?.status);
             setProfesseurs([]);
         } finally {
-            console.log('Fin du chargement des professeurs');
             setLoadingProfesseurs(false);
         }
     };
@@ -71,10 +69,8 @@ export default function AssociationProfesseurEtudiant() {
     const loadAssociations = async () => {
         try {
             setLoadingAssociations(true);
-            // Utiliser getAllEtudiants pour obtenir tous les étudiants avec leur professeur responsable
-            const etudiants = await getAllEtudiants(token);
-            
-            // Extraire les associations (étudiants avec professeur responsable)
+            const etudiants = await getAllEtudiants();
+
             const associationsList = [];
             
             etudiants.forEach(etudiant => {
@@ -129,7 +125,7 @@ export default function AssociationProfesseurEtudiant() {
             setError(null);
             setSuccess(false);
             
-            await associerProfesseurEtudiant(professeurEmail, etudiantEmail, token);
+            await associerProfesseurEtudiant(professeurEmail, etudiantEmail);
             
             setSuccess(true);
             setSelectedEtudiantId("");

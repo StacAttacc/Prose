@@ -18,7 +18,7 @@ export default function GenererEntente() {
         setError("");
         setLoading(true);
         try {
-            const data = await generateEntente(Number(candidatureId), user?.token);
+            const data = await generateEntente(Number(candidatureId));
             setEntente(data || null);
         } catch (e) {
             const msg = e?.response?.data?.message || e?.message || t('erreurInconnue');

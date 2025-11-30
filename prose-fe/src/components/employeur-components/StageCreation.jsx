@@ -48,7 +48,7 @@ export default function StageCreation() {
         }
 
         try {
-            await createStage(stage, user.token)
+            await createStage(stage)
             nav('/')
         } catch (error) {
             if (!navigator.onLine) {

@@ -156,8 +156,7 @@ public class GestionnaireController {
         try {
             String token = authHeader.replace("Bearer ", "");
             String email = jwtTokenProvider.getEmailFromJWT(token);
-            
-            // Vérifier le mot de passe
+
             var gestionnaireOpt = gestionnaireRepository.findByCredentials_Username(email);
             if (gestionnaireOpt.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)

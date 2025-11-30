@@ -1,18 +1,10 @@
-import axios from "axios";
-import { http } from "./http.js";
+import {http} from "./http.js";
 
-const BASE_URL_GESTIONNAIRE = "http://localhost:8080/gestionnaire";
-
-export async function submitStageDecision(id, {approved, reason}, token) {
-    const endpoint = approved ? `${BASE_URL_GESTIONNAIRE}/stages/${id}/approuver` : `${BASE_URL_GESTIONNAIRE}/stages/${id}/rejeter`;
+export async function submitStageDecision(id, {approved, reason}) {
+    const endpoint = approved ? `/gestionnaire/stages/${id}/approuver` : `/gestionnaire/stages/${id}/rejeter`;
     const body = approved ? {} : {reason};
 
-    const res = await axios.put(endpoint, body, {
-        headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-        }
-    });
+    const res = await http.put(endpoint, body);
     return res.data;
 }
 
@@ -23,7 +15,7 @@ export const fetchAllCVs = async (token, year = null) => {
             params.year = year.toString();
         }
 
-        const response = await axios.get(`${BASE_URL_GESTIONNAIRE}/cv/all`, {
+        const response = await http.get(`/gestionnaire/cv/all`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             },
@@ -38,55 +30,31 @@ export const fetchAllCVs = async (token, year = null) => {
     }
 }
 
-export const approveCv = async (cvId, comment, token) => {
+export const approveCv = async (cvId, comment) => {
     try {
-        await axios.post(
-            `${BASE_URL_GESTIONNAIRE}/cv/change-status`,
-            {id: cvId, status: "Approved", comment: comment},
-            {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                },
-            }
-        );
+        await http.post(`/gestionnaire/cv/change-status`, {id: cvId, status: "Approved", comment: comment});
     } catch (error) {
         console.error('Error approving CV:', error.response.data);
     }
 };
 
-export const rejectCv = async (cvId, comment, token) => {
+export const rejectCv = async (cvId, comment) => {
     try {
-        await axios.post(
-            `${BASE_URL_GESTIONNAIRE}/cv/change-status`,
-            {id: cvId, status: "Rejected", comment: comment},
-            {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                },
-            }
-        );
+        await http.post(`/gestionnaire/cv/change-status`, {id: cvId, status: "Rejected", comment: comment});
     } catch (error) {
         console.error('Error rejecting CV:', error);
     }
 };
 
-export async function markNotificationRead(notificationId, token) {
-    return await axios.put(
-        `${BASE_URL_GESTIONNAIRE}/notifications/read/${notificationId}`,
-        {notificationId},
-        {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            },
-        }
-    );
+export async function markNotificationRead(notificationId) {
+    await http.put(`/gestionnaire/notifications/read/${notificationId}`, {notificationId},);
 }
 
-export const markNotificationsRead = (notificationIds = [], token) => {
+export const markNotificationsRead = (notificationIds = []) => {
     if (!Array.isArray(notificationIds) || notificationIds.length === 0) {
         return Promise.resolve();
     }
-    return Promise.all(notificationIds.map(id => markNotificationRead(id, token)));
+    return Promise.all(notificationIds.map(id => markNotificationRead(id)));
 };
 
 export async function getAllStages(token, year = null) {
@@ -94,24 +62,17 @@ export async function getAllStages(token, year = null) {
     if (year && year !== '') {
         params.year = year.toString();
     }
-    const url = `${BASE_URL_GESTIONNAIRE}/stages`;
 
-    const {data} = await axios.get(url, {
-        headers: {
-            'Authorization': `Bearer ${token}`
-        },
+
+    const {data} = await http.get("/gestionnaire/stages", {
         params: params
     });
 
     return data;
 }
 
-export async function getGestionnaireNotifications(token) {
-    const {data} = await axios.get(`${BASE_URL_GESTIONNAIRE}/notifications/all`, {
-        headers: {
-            'Authorization': `Bearer ${token}`
-        }
-    });
+export async function getGestionnaireNotifications() {
+    const {data} = await http.get(`/gestionnaire/notifications/all`);
     return data;
 }
 
@@ -122,13 +83,7 @@ export async function getStageApplicantsManager(token, year = null) {
             params.year = year.toString();
         }
         
-        const res = await axios.get(`${BASE_URL_GESTIONNAIRE}/getCandidatures`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-                Accept: "application/json",
-            },
-            params: params
-        });
+        const res = await http.get(`/gestionnaire/getCandidatures`, {params: params});
 
         const data = res.data?.data;
         return Array.isArray(data) ? data : [];
@@ -138,28 +93,15 @@ export async function getStageApplicantsManager(token, year = null) {
     }
 }
 
-export async function generateEntente(candidatureId, token) {
-    const BASE_URL_GESTIONNAIRE = "http://localhost:8080/gestionnaire";
-    const url = `${BASE_URL_GESTIONNAIRE}/candidatures/${candidatureId}/generer-entente`;
-    const res = await axios.post(url, {}, {
-        headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-        }
-    });
+export async function generateEntente(candidatureId) {
+    const res = await http.post(`/gestionnaire/candidatures/${candidatureId}/generer-entente`, {});
 
     return res?.data?.data ?? res?.data;
 }
 
-export async function checkEntenteExists(candidatureId, token) {
+export async function checkEntenteExists(candidatureId) {
     try {
-        const res = await axios.get(`${BASE_URL_GESTIONNAIRE}/candidatures/${candidatureId}/entente`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
+        const res = await http.get(`/gestionnaire/candidatures/${candidatureId}/entente`);
         return { exists: true, data: res.data?.data || res.data };
     } catch (error) {
         if (error.response?.status === 404) {
@@ -169,38 +111,22 @@ export async function checkEntenteExists(candidatureId, token) {
     }
 }
 
-export async function signEntente(ententeId, password, token) {
-    const res = await fetch(`${BASE_URL_GESTIONNAIRE}/ententes/${ententeId}/signer`, {
-        method: "PUT",
-        headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({ password })
-    });
-    if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.message || `HTTP error! status: ${res.status}`);
-    }
-    return await res.json();
+export async function signEntente(ententeId, password) {
+    const res = await http.put(`/gestionnaire/ententes/${ententeId}/signer`,{ password });
+
+    return res.data;
 }
 
-export async function associerProfesseurEtudiant(professeurEmail, etudiantEmail, token) {
+export async function associerProfesseurEtudiant(professeurEmail, etudiantEmail) {
     try {
-        const res = await axios.post(
-            `${BASE_URL_GESTIONNAIRE}/associate-professeur`,
+        const res = await http.post(
+            `/gestionnaire/associate-professeur`,
             {
                 etudiantEmail: etudiantEmail,
                 professeurEmail: professeurEmail
             },
-            {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            }
         );
+
         return res.data;
     } catch (error) {
         console.error('Erreur lors de l\'association:', error);
@@ -208,16 +134,12 @@ export async function associerProfesseurEtudiant(professeurEmail, etudiantEmail,
     }
 }
 
-export async function getAllEtudiants(token) {
+export async function getAllEtudiants() {
     try {
-        console.log('Appel getAllEtudiants avec token:', token ? 'présent' : 'absent');
-        // http gère automatiquement le token via l'intercepteur
         const res = await http.get("/gestionnaire/etudiants/all");
-        console.log('Réponse getAllEtudiants:', res.data);
-        // ReturnEntityDTO structure: { message: "...", data: [...] }
-        const data = res.data?.data;
-        console.log('Données extraites getAllEtudiants:', data);
-        return Array.isArray(data) ? data : [];
+
+
+        return res.data?.data || res.data;
     } catch (error) {
         console.error('Erreur lors de la récupération des étudiants:', error);
         console.error('Error response:', error?.response?.data);
@@ -227,16 +149,11 @@ export async function getAllEtudiants(token) {
     }
 }
 
-export async function getAllProfesseurs(token) {
+export async function getAllProfesseurs() {
     try {
-        console.log('Appel getAllProfesseurs avec token:', token ? 'présent' : 'absent');
-        // http gère automatiquement le token via l'intercepteur
         const res = await http.get("/gestionnaire/professeurs/all");
-        console.log('Réponse getAllProfesseurs:', res.data);
-        // ReturnEntityDTO structure: { message: "...", data: [...] }
-        const data = res.data?.data;
-        console.log('Données extraites getAllProfesseurs:', data);
-        return Array.isArray(data) ? data : [];
+
+        return res.data?.data || res.data;
     } catch (error) {
         console.error('Erreur lors de la récupération des professeurs:', error);
         console.error('Error response:', error?.response?.data);
@@ -248,20 +165,9 @@ export async function getAllProfesseurs(token) {
 
 export async function createProfesseur(professeurData, token) {
     try {
-        // Utiliser l'instance http qui gère automatiquement le token
-        // Si token est fourni, on l'utilise, sinon http utilise celui de l'intercepteur
-        const config = token ? {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        } : {
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        };
         
-        const res = await http.post("/gestionnaire/professeurs/create", professeurData, config);
+        const res = await http.post("/gestionnaire/professeurs/create", professeurData);
+
         return res.data;
     } catch (error) {
         console.error('Erreur lors de la création du professeur:', error);
@@ -272,13 +178,14 @@ export async function createProfesseur(professeurData, token) {
     }
 }
 
-export async function assignStageToStudent(etudiantEmail, stageId, comment, token) {
+export async function assignStageToStudent(etudiantEmail, stageId, comment) {
     try {
         const res = await http.post("/gestionnaire/stages/assign", {
             etudiantEmail,
             stageId,
             comment: comment || null
         });
+
         return res.data?.data || res.data;
     } catch (error) {
         console.error('Erreur lors de l\'attribution du stage:', error);

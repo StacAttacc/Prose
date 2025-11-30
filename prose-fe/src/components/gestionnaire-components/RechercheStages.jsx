@@ -87,7 +87,7 @@ export default function GestRechercheStages() {
   const handleApproveStage = async (stage) => {
     setIsProcessing(true);
     try {
-      await submitStageDecision(stage.id, { approved: true }, user.token);
+      await submitStageDecision(stage.id, { approved: true });
       setStages(stages.map(s => s.id === stage.id ? { ...s, status: "APPROUVEE" } : s));
       closeModal();
     } catch (error) {
@@ -104,7 +104,7 @@ export default function GestRechercheStages() {
       await submitStageDecision(stage.id, {
         approved: false,
         reason: rejectionReason
-      }, user.token);
+      });
       setStages(stages.map(s => s.id === stage.id ? { ...s, status: "REJETEE" } : s));
       closeModal();
     } catch (error) {

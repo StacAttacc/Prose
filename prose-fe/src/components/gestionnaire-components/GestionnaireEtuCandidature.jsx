@@ -132,7 +132,7 @@ export default function GestionnaireEtuCandidature() {
                     // Charger l'entente avant d'ouvrir la modal
                     (async () => {
                         try {
-                            const result = await checkEntenteExists(openCandidatureId, user.token);
+                            const result = await checkEntenteExists(openCandidatureId);
                             if (result.exists) {
                                 setEntenteDataMap(prev => ({
                                     ...prev,
@@ -241,7 +241,7 @@ export default function GestionnaireEtuCandidature() {
                 
                 setCheckingEntente(prev => ({ ...prev, [candidature.id]: true }));
                 try {
-                    const result = await checkEntenteExists(candidature.id, user.token);
+                    const result = await checkEntenteExists(candidature.id);
                     setEntenteDataMap(prev => ({
                         ...prev,
                         [candidature.id]: result.exists ? result.data : null
@@ -309,8 +309,8 @@ export default function GestionnaireEtuCandidature() {
         if (!user?.token) return;
         setGeneratingEntente(true);
         try {
-            const entente = await generateEntente(candidatureId, user.token);
-            const result = await checkEntenteExists(candidatureId, user.token);
+            const entente = await generateEntente(candidatureId);
+            const result = await checkEntenteExists(candidatureId);
             if (result.exists) {
                 setEntenteDataMap(prev => ({
                     ...prev,
@@ -684,14 +684,14 @@ export default function GestionnaireEtuCandidature() {
                     }}
                     ententeData={ententeDataMap[selectedCandidatureForEntente.id]}
                     loadEntenteFn={async (candidatureId, token) => {
-                        const result = await checkEntenteExists(candidatureId, token);
+                        const result = await checkEntenteExists(candidatureId);
                         return result.exists ? { exists: true, data: result.data } : { exists: false };
                     }}
                     onSign={async (ententeId, password) => {
                         try {
-                            await signEntente(ententeId, password, user?.token);
+                            await signEntente(ententeId, password);
                             // Rafraîchir les données de l'entente après signature
-                            const result = await checkEntenteExists(selectedCandidatureForEntente.id, user?.token);
+                            const result = await checkEntenteExists(selectedCandidatureForEntente.id);
                             if (result.exists) {
                                 setEntenteDataMap(prev => ({
                                     ...prev,

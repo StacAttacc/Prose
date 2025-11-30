@@ -1,14 +1,10 @@
 import axios from "axios";
+import {http} from "msw";
 
 const URL_BASE = "http://localhost:8080";
 
-export async function createStage(stage, token) {
-    await axios.post( `${URL_BASE}/employeur/createStage`, stage, {
-        headers: {
-            "Content-Type": "application/json",
-            'Authorization': `Bearer ${token}`
-        }
-    });
+export async function createStage(stage) {
+    await http.post( `${URL_BASE}/employeur/createStage`, stage);
 }
 
 export async function getStageApplicants(stageId, token) {

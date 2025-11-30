@@ -91,7 +91,7 @@ const GestionCV = () => {
     const handleApprove = async () => {
         if (!selectedCv) return;
         setIsProcessing(true);
-        await approveCv(selectedCv.id, comment, token);
+        await approveCv(selectedCv.id, comment);
         closeModal();
         await loadAllCvs();
         setIsProcessing(false);
@@ -102,7 +102,7 @@ const GestionCV = () => {
     const handleReject = async () => {
         if (!selectedCv) return;
         setIsProcessing(true);
-        await rejectCv(selectedCv.id, comment, token);
+        await rejectCv(selectedCv.id, comment);
         closeModal();
         await loadAllCvs();
         setIsProcessing(false);

@@ -3,7 +3,7 @@ import { useAuth } from "../../context/AuthContext.jsx";
 import { useI18n } from "../../context/I18nContext.jsx";
 import ErrorBanner from "./ErrorBanner.jsx";
 import CandidatureForm from "../etudiant-components/CandidatureForm.jsx";
-import { assignStageToStudent, getAllEtudiants, generateEntente, checkEntenteExists } from "../../services/GestionnaireService.js";
+import { assignStageToStudent, getAllEtudiants, generateEntente } from "../../services/GestionnaireService.js";
 
 export default function StageDetailsModal({
                                               stage,
@@ -14,7 +14,6 @@ export default function StageDetailsModal({
                                               showManagementButtons = false,
                                               showPostulerButton = false,
                                               onCandidatureSuccess,
-                                              candidatureId,
                                           }) {
     const { user } = useAuth();
     const { t } = useI18n();
@@ -60,7 +59,7 @@ export default function StageDetailsModal({
         setLoadingEtudiants(true);
         setError("");
         try {
-            const data = await getAllEtudiants(user.token);
+            const data = await getAllEtudiants();
             console.log('Étudiants chargés:', data);
             setEtudiants(Array.isArray(data) ? data : []);
         } catch (err) {
@@ -87,13 +86,12 @@ export default function StageDetailsModal({
             const candidature = await assignStageToStudent(
                 selectedEtudiantEmail,
                 stage.id,
-                assignComment,
-                user.token
+                assignComment
             );
 
             // 2. Générer l'entente
             const candidatureId = candidature.id;
-            await generateEntente(candidatureId, user.token);
+            await generateEntente(candidatureId);
 
      
             // Réinitialiser le formulaire
