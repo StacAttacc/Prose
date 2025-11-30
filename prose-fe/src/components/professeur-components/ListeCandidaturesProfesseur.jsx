@@ -26,7 +26,7 @@ export default function ListeCandidaturesProfesseur() {
             try {
                 setLoading(true);
                 setError(null);
-                const data = await getCandidaturesProfesseur(user.id, selectedYear, user.token);
+                const data = await getCandidaturesProfesseur(user.id, selectedYear);
                 setCandidatures(data || []);
                 console.log(data)
             } catch (err) {

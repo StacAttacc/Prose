@@ -45,7 +45,7 @@ export default function ListeMesEtudiantsEnStage() {
             try {
                 setLoading(true);
                 setNote("");
-                const data = await getEtudiantsProfesseur(user.id, selectedYear, user.token);
+                const data = await getEtudiantsProfesseur(user.id, selectedYear);
 
                 const arr = (Array.isArray(data) ? data : []).map((dto) => {
                     const stu = dto?.etudiant || {};

@@ -16,7 +16,6 @@ const COTE_OPTIONS = [
 ];
 
 const initialFormState = (candidatureId) => ({
-    // Informations sur l'entreprise
     nomEntreprise: '',
     personneContact: '',
     addresse: '',
@@ -24,21 +23,17 @@ const initialFormState = (candidatureId) => ({
     ville: '',
     telecopieur: '',
     codePostal: '',
-    
-    // Informations sur le stage
+
     nomStagiaire: '',
     dateStage: '',
     numeroStage: 1,
-    
-    // Évaluations (CoteEvaluation)
+
     tachesCoformes: '',
     faciliteIntegration: '',
     tempsEstReel: '',
-    
-    // Horaires
+
     hrSemaineMois: [],
-    
-    // Autres évaluations
+
     hygieneRespectable: '',
     climatTravailAgreable: '',
     accessibleTransportCommun: '',
@@ -48,8 +43,7 @@ const initialFormState = (candidatureId) => ({
     equipementAdequat: '',
     volumeTravailAcceptable: '',
     commentaires: '',
-    
-    // Autres informations
+
     privilegieStage: 0,
     nbStagiaires: 0,
     desireAutreStagiaires: false,
@@ -58,8 +52,7 @@ const initialFormState = (candidatureId) => ({
     finQuarts: [],
 
     candidatureId: candidatureId,
-    
-    // Signature
+
     tempsSignature: null
 });
 
@@ -72,6 +65,7 @@ export default function EvaluationMilieuTravail() {
     const location = useLocation();
     const { stage } = location.state || {};
     const employeur = stage.employeur;
+    let viewing = false;
     
     const [formData, setFormData] = useState(() => initialFormState(candidatureId));
     const [loading, setLoading] = useState(true);
@@ -94,7 +88,7 @@ export default function EvaluationMilieuTravail() {
             setLoading(true);
             setError(null);
 
-            const candidatures = await getCandidaturesProfesseur(user.id, selectedYear, user.token);
+            const candidatures = await getCandidaturesProfesseur(user.id, selectedYear);
             const currentCandidature = candidatures.find(c => c.id === parseInt(candidatureId));
 
             if (!currentCandidature) {
@@ -104,8 +98,8 @@ export default function EvaluationMilieuTravail() {
 
             setCandidature(currentCandidature);
 
-            // Si une évaluation existe déjà, pré-remplir le formulaire
             if (currentCandidature.evaluationMillieu) {
+                viewing = true;
                 const evalData = currentCandidature.evaluationMillieu;
                 setFormData(prev => ({
                     ...prev,
@@ -141,7 +135,6 @@ export default function EvaluationMilieuTravail() {
                     finQuarts: evalData.finQuarts || [],
                 }));
             } else {
-                // Pré-remplir avec les informations de l'étudiant si disponibles
                 if (currentCandidature.etudiant) {
                     setFormData(prev => ({
                         ...prev,
@@ -177,7 +170,6 @@ export default function EvaluationMilieuTravail() {
     };
 
     const validateForm = () => {
-        // Validation des champs requis
         const requiredFields = [
             'nomEntreprise',
             'personneContact',
@@ -195,7 +187,6 @@ export default function EvaluationMilieuTravail() {
             return false;
         }
 
-        // Validation des évaluations (CoteEvaluation)
         const evaluationFields = [
             'tachesCoformes',
             'faciliteIntegration',
@@ -229,13 +220,12 @@ export default function EvaluationMilieuTravail() {
             setSaving(true);
             setError(null);
 
-            // Préparer les données pour l'envoi
             const evaluationData = {
                 ...formData,
                 tempsSignature: new Date().toISOString()
             };
 
-            await evaluateWorkplace(candidature.id, evaluationData, user.token);
+            await evaluateWorkplace(candidature.id, evaluationData);
 
             setSuccess(true);
             navigate("/professeur/evaluations-milieu")
@@ -280,7 +270,7 @@ export default function EvaluationMilieuTravail() {
     if (loading) {
         return (
             <div className="flex justify-center items-center min-h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-500"></div>
             </div>
         );
     }
@@ -323,7 +313,6 @@ export default function EvaluationMilieuTravail() {
             )}
 
             <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-8 space-y-8">
-                {/* Informations sur l'entreprise */}
                 <section>
                     <h2 className="text-xl font-semibold text-gray-900 mb-6 border-b pb-2">
                         {t('professeur.informationsEntreprise') || 'Informations sur l\'entreprise'}
@@ -339,7 +328,7 @@ export default function EvaluationMilieuTravail() {
                                 name="nomEntreprise"
                                 value={formData.nomEntreprise}
                                 onChange={handleInputChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                                 required
                             />
                         </div>
@@ -352,7 +341,7 @@ export default function EvaluationMilieuTravail() {
                                 name="personneContact"
                                 value={formData.personneContact}
                                 onChange={handleInputChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                                 required
                             />
                         </div>
@@ -365,7 +354,7 @@ export default function EvaluationMilieuTravail() {
                                 name="addresse"
                                 value={formData.addresse}
                                 onChange={handleInputChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                                 required
                             />
                         </div>
@@ -378,7 +367,7 @@ export default function EvaluationMilieuTravail() {
                                 name="ville"
                                 value={formData.ville}
                                 onChange={handleInputChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                                 required
                             />
                         </div>
@@ -391,7 +380,7 @@ export default function EvaluationMilieuTravail() {
                                 name="codePostal"
                                 value={formData.codePostal}
                                 onChange={handleInputChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                                 required
                             />
                         </div>
@@ -404,7 +393,7 @@ export default function EvaluationMilieuTravail() {
                                 name="numeroTelephone"
                                 value={formData.numeroTelephone}
                                 onChange={handleInputChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                                 required
                             />
                         </div>
@@ -417,13 +406,12 @@ export default function EvaluationMilieuTravail() {
                                 name="telecopieur"
                                 value={formData.telecopieur}
                                 onChange={handleInputChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                             />
                         </div>
                     </div>
                 </section>
 
-                {/* Informations sur le stage */}
                 <section>
                     <h2 className="text-xl font-semibold text-gray-900 mb-6 border-b pb-2">
                         {t('professeur.informationsStage') || 'Informations sur le stage'}
@@ -438,7 +426,7 @@ export default function EvaluationMilieuTravail() {
                                 name="nomStagiaire"
                                 value={formData.nomStagiaire}
                                 onChange={handleInputChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                                 required
                             />
                         </div>
@@ -452,7 +440,7 @@ export default function EvaluationMilieuTravail() {
                                 value={formData.dateStage}
                                 onChange={handleInputChange}
                                 placeholder="Ex: 2025-01-15 au 2025-04-30"
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                                 required
                             />
                         </div>
@@ -465,14 +453,13 @@ export default function EvaluationMilieuTravail() {
                                 name="numeroStage"
                                 value={formData.numeroStage}
                                 onChange={handleInputChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                                 min="1"
                             />
                         </div>
                     </div>
                 </section>
 
-                {/* Évaluations */}
                 <section>
                     <h2 className="text-xl font-semibold text-gray-900 mb-6 border-b pb-2">
                         {t('professeur.evaluations') || 'Évaluations'}
@@ -500,7 +487,7 @@ export default function EvaluationMilieuTravail() {
                             value={formData.salaire}
                             onChange={handleInputChange}
                             placeholder="Ex: 25$/h"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                         />
                     </div>
                     
@@ -513,13 +500,12 @@ export default function EvaluationMilieuTravail() {
                             value={formData.commentaires}
                             onChange={handleInputChange}
                             rows={4}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                             placeholder={t('professeur.commentairesPlaceholder') || 'Ajoutez vos commentaires...'}
                         />
                     </div>
                 </section>
 
-                {/* Informations supplémentaires */}
                 <section>
                     <h2 className="text-xl font-semibold text-gray-900 mb-6 border-b pb-2">
                         {t('professeur.informationsSupplementaires') || 'Informations supplémentaires'}
@@ -534,7 +520,7 @@ export default function EvaluationMilieuTravail() {
                                 name="privilegieStage"
                                 value={formData.privilegieStage}
                                 onChange={handleInputChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                                 min="0"
                             />
                         </div>
@@ -547,7 +533,7 @@ export default function EvaluationMilieuTravail() {
                                 name="nbStagiaires"
                                 value={formData.nbStagiaires}
                                 onChange={handleInputChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                                 min="0"
                             />
                         </div>
@@ -558,7 +544,7 @@ export default function EvaluationMilieuTravail() {
                                     name="desireAutreStagiaires"
                                     checked={formData.desireAutreStagiaires}
                                     onChange={handleInputChange}
-                                    className="mr-2"
+                                    className="mr-2 accent-teal-500"
                                 />
                                 <span className="text-sm font-medium text-gray-700">
                                     {t('professeur.desireAutreStagiaires') || 'Désire d\'autres stagiaires'}
@@ -566,13 +552,13 @@ export default function EvaluationMilieuTravail() {
                             </label>
                         </div>
                         <div>
-                            <label className="flex items-center">
+                            <label className="flex items-center ">
                                 <input
                                     type="checkbox"
                                     name="quartsVariables"
                                     checked={formData.quartsVariables}
                                     onChange={handleInputChange}
-                                    className="mr-2"
+                                    className="mr-2 accent-teal-500"
                                 />
                                 <span className="text-sm font-medium text-gray-700">
                                     {t('professeur.quartsVariables') || 'Quarts variables'}
@@ -582,33 +568,36 @@ export default function EvaluationMilieuTravail() {
                     </div>
                 </section>
 
-                <div className="flex gap-4 pt-6 border-t">
-                    <button
-                        type="button"
-                        onClick={() => navigate('/professeur/candidatures')}
-                        className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors duration-200 font-medium"
-                        disabled={saving}
-                    >
-                        {t('common.cancel') || 'Annuler'}
-                    </button>
-                    <button
-                        type="submit"
-                        className="flex-1 text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 flex items-center justify-center"
-                        disabled={saving}
-                    >
-                        {saving ? (
-                            <>
-                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                                {t('common.saving') || 'Sauvegarde...'}
-                            </>
-                        ) : (
-                            <>
-                                <FaSave className="mr-2" />
-                                {t('professeur.sauvegarder') || 'Sauvegarder'}
-                            </>
+
+                    <div className="flex gap-4 pt-6 border-t">
+                        <button
+                            type="button"
+                            onClick={() => navigate('/professeur/evaluations-milieu')}
+                            className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors duration-200 font-medium"
+                            disabled={saving}
+                        >
+                            {t('common.cancel') || 'Annuler'}
+                        </button>
+                        {viewing && (
+                            <button
+                                type="submit"
+                                className="flex-1 text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 flex items-center justify-center"
+                                disabled={saving}
+                            >
+                                {saving ? (
+                                    <>
+                                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                                        {t('common.saving') || 'Sauvegarde...'}
+                                    </>
+                                ) : (
+                                    <>
+                                        <FaSave className="mr-2" />
+                                        {t('professeur.sauvegarder') || 'Sauvegarder'}
+                                    </>
+                                )}
+                            </button>
                         )}
-                    </button>
-                </div>
+                    </div>
             </form>
         </div>
     );

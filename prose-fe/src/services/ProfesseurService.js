@@ -1,20 +1,15 @@
-import axios from "axios";
+import {http} from "./http.js";
 
 const BASE_URL_PROFESSEUR = "http://localhost:8080/professeur";
 
-export async function evaluateWorkplace(candidatureId, evaluation, token) {
+export async function evaluateWorkplace(candidatureId, evaluation) {
     try {
         evaluation = {
             ...evaluation,
             'candidatureId': candidatureId,
         }
 
-        const res = await axios.post(`${BASE_URL_PROFESSEUR}/evaluate`, evaluation, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
+        const res = await http.post(`/professeur/evaluate`, evaluation);
         return res.data;
     } catch (error) {
         console.error('Erreur lors de l\'évaluation du milieu de travail:', error);
@@ -22,20 +17,14 @@ export async function evaluateWorkplace(candidatureId, evaluation, token) {
     }
 }
 
-export async function getCandidaturesProfesseur(professeurId, year, token) {
+export async function getCandidaturesProfesseur(professeurId, year) {
     try {
         const params = {};
         if (year) {
             params.year = year;
         }
         
-        const res = await axios.get(`${BASE_URL_PROFESSEUR}/${professeurId}/mes-etudiants-candidatures`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            params
-        });
+        const res = await http.get(`/professeur/${professeurId}/mes-etudiants-candidatures`, {params: params});
         const data = res.data?.data;
         return Array.isArray(data) ? data : [];
     } catch (error) {
@@ -44,22 +33,14 @@ export async function getCandidaturesProfesseur(professeurId, year, token) {
     }
 }
 
-export async function getEtudiantsProfesseur(professeurId, year, token) {
+export async function getEtudiantsProfesseur(professeurId, year) {
     try {
         const params = {};
         if (year && year !== '') {
             params.year = year.toString();
         }
 
-        console.log(token)
-
-        const res = await axios.get(`${BASE_URL_PROFESSEUR}/${professeurId}/getCandidatures`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            params
-        });
+        const res = await http.get(`/professeur/${professeurId}/getCandidatures`, {params: params});
         const data = res.data?.data;
         return Array.isArray(data) ? data : [];
     } catch (error) {

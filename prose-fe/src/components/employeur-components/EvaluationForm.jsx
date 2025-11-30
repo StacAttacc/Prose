@@ -261,7 +261,6 @@ const { t } = useI18n();
         }
 
 
-        // Ouvrir le modal de signature au lieu de soumettre directement
         setShowSignatureModal(true);
     };
 
@@ -270,7 +269,6 @@ const { t } = useI18n();
             setSaving(true);
             setError(null);
 
-            // Ajouter le mot de passe au formData pour la signature
             const dataToSubmit = {
                 ...formData,
                 signataireDate: new Date(),
@@ -515,7 +513,6 @@ const { t } = useI18n();
                     </p>
 
                     <div className="bg-white border border-gray-200 rounded-lg p-4">
-                        {/* Légende */}
                         <div className="grid grid-cols-[2fr,1fr,1fr,1fr,1fr,1fr] gap-2 mb-4 pb-2 border-b-2 border-gray-300">
                             <div className="text-sm font-semibold text-gray-700">
                                 {t('evaluations.appreciationSection')}
@@ -527,7 +524,6 @@ const { t } = useI18n();
                             ))}
                         </div>
 
-                        {/* Ligne d'évaluation */}
                         <div className="grid grid-cols-[2fr,1fr,1fr,1fr,1fr,1fr] gap-2 items-center py-3">
                             <div className="text-sm text-gray-700">
                                 {t('evaluations.appreciationSection')} <span className="text-red-500">*</span>
@@ -610,7 +606,7 @@ const { t } = useI18n();
                             name="heuresEncadrement"
                             value={formData.heuresEncadrement}
                             onChange={handleInputChange}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                             placeholder={t('evaluations.supervisionHoursPlaceholder')}
                         />
                     </div>

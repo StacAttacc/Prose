@@ -15,12 +15,7 @@ export const fetchAllCVs = async (token, year = null) => {
             params.year = year.toString();
         }
 
-        const response = await http.get(`/gestionnaire/cv/all`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            },
-            params
-        });
+        const response = await http.get(`/gestionnaire/cv/all`, {params: params});
         return Array.isArray(response.data) ? response.data : response.data.content;
     } catch (error) {
         if (error.response) {
@@ -47,7 +42,7 @@ export const rejectCv = async (cvId, comment) => {
 };
 
 export async function markNotificationRead(notificationId) {
-    await http.put(`/gestionnaire/notifications/read/${notificationId}`, {notificationId},);
+    await http.put(`/gestionnaire/notifications/read/${notificationId}`, {notificationId});
 }
 
 export const markNotificationsRead = (notificationIds = []) => {
