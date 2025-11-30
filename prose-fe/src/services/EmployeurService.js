@@ -1,7 +1,5 @@
 import {http} from "./http.js";
 
-const URL_BASE = "http://localhost:8080";
-
 export async function createStage(stage) {
     await http.post( `/employeur/createStage`, stage);
 }
@@ -55,7 +53,7 @@ export async function getEmployeurNotifications() {
 
 export async function markNotificationRead(notificationId) {
     if (!notificationId) return;
-    const res = await http.put(`${URL_BASE}/employeur/notifications/read/${notificationId}`, {});
+    const res = await http.put(`/employeur/notifications/read/${notificationId}`, {});
     return res.data;
 }
 

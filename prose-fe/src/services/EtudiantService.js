@@ -69,6 +69,11 @@ export const getCvInfo = async () => {
     }
 };
 
+export async function getEtudiantStages() {
+    const {data} = await http.get(`/etudiant/stages/approuves`);
+    return data;
+}
+
 export const checkIfAlreadyApplied = async (stageId) => {
     try {
         const { data } = await http.get(`/etudiant/candidature/check/${stageId}`);

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useI18n } from "../../context/I18nContext";
-import { getEtudiantStages } from "../../services/StageService";
+import { getEtudiantStages } from "../../services/EtudiantService";
 import StageDetailsModal from "../display-components/StageDetailsModal.jsx";
 import ErrorBanner from "../display-components/ErrorBanner.jsx";
 
@@ -13,8 +13,7 @@ export default function StageListings() {
   const [error, setError] = useState(null);
   const [selectedStage, setSelectedStage] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
-  // États pour la recherche et les filtres
+
   const [searchTerm, setSearchTerm] = useState("");
   const [locationFilter, setLocationFilter] = useState("");
   const [compensationFilter, setCompensationFilter] = useState("");
@@ -22,7 +21,7 @@ export default function StageListings() {
   useEffect(() => {
     async function fetchApprovedStages() {
       try {
-        const data = await getEtudiantStages(user.token);
+        const data = await getEtudiantStages();
         setStages(data.data);
       } catch (err) {
         setError(err.message);
@@ -129,8 +128,7 @@ export default function StageListings() {
           {t('stagesTrouves', { count: filteredStages.length, total: stages.length })}
         </div>
       </div>
-      
-      {/* Affichage du contenu selon l'état */}
+
       {loading ? (
         <div className="text-center py-12">
           <p className="text-gray-600 text-lg">{t('chargementStages')}</p>
