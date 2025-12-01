@@ -38,7 +38,6 @@ http.interceptors.response.use(
 
         if (error.response.status === 401 && !original._retry && !original.url.includes('/login')) {
             original._retry = true;
-            console.debug("[http] Authorization =>", original.headers?.Authorization);
             if (isRefreshing) {
                 return new Promise((resolve, reject) => {
                     pending.push({ resolve, reject });

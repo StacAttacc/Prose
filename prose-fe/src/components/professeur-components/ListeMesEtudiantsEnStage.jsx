@@ -36,8 +36,8 @@ export default function ListeMesEtudiantsEnStage() {
     const [isStageModalOpen, setIsStageModalOpen] = useState(false);
     const [selectedCandidatureId, setSelectedCandidatureId] = useState(null);
     const [modalFilterStatuses, setModalFilterStatuses] = useState(null);
-    const [ententeDataMap, setEntenteDataMap] = useState({});
-    const [checkingEntente, setCheckingEntente] = useState({});
+    //const [ententeDataMap, setEntenteDataMap] = useState({});
+    //const [checkingEntente, setCheckingEntente] = useState({});
 
     useEffect(() => {
         let mounted = true;
@@ -166,8 +166,8 @@ export default function ListeMesEtudiantsEnStage() {
     useEffect(() => {
         if (loading || modalStudent) return;
 
-        const raw =
-            location?.state?.openEtudiantId ?? location?.state?.openStudentId;
+        const raw = location?.state?.openEtudiantId;
+
         if (!raw) return;
 
         const id = String(raw);
@@ -184,10 +184,45 @@ export default function ListeMesEtudiantsEnStage() {
         modalStudent,
         tab,
         location?.state?.openEtudiantId,
-        location?.state?.openStudentId,
         navigate,
         location.pathname,
     ]);
+
+    /*useEffect(() => {
+        const checkEntentes = async () => {
+            const confirmedApps = list
+                .map(s => (s.applications || []).find(a =>
+                    String(a.status).toUpperCase() === CONFIRMED_STATUS
+                ) || (s.applications || [])[0])
+                .filter(Boolean);
+
+            for (const candidature of confirmedApps) {
+                if (!candidature.id) continue;
+
+                setCheckingEntente(prev => ({ ...prev, [candidature.id]: true }));
+
+                try {
+                    const result = await checkEntenteExists(candidature.id);
+                    setEntenteDataMap(prev => ({
+                        ...prev,
+                        [candidature.id]: result.exists ? result.data : null
+                    }));
+                } catch (error) {
+                    console.error(`Erreur lors de la vérification de l'entente pour candidature ${candidature.id}:`, error);
+                    setEntenteDataMap(prev => ({
+                        ...prev,
+                        [candidature.id]: null
+                    }));
+                } finally {
+                    setCheckingEntente(prev => ({ ...prev, [candidature.id]: false }));
+                }
+            }
+        };
+
+        if (list.length > 0 && user?.token && tab === "APPROVED") {
+            checkEntentes();
+        }
+    }, [list, user?.token, tab]);*/
 
     const openStageModal = (application) => {
         setSelectedStage(application?.stage ?? null);
@@ -284,7 +319,7 @@ export default function ListeMesEtudiantsEnStage() {
                                             </th>
                                         )}
 
-                                        {tab === "APPROVED" && (
+                                        {/*tab === "APPROVED" && (
                                             <th className="text-left text-gray-800 dark:text-gray-200 font-semibold py-3 px-4">
                                                 {t('statusEntente')}
                                             </th>
@@ -300,7 +335,7 @@ export default function ListeMesEtudiantsEnStage() {
                                             <th className="text-left text-gray-800 dark:text-gray-200 font-semibold py-3 px-4">
                                                 {t('action')}
                                             </th>
-                                        )}
+                                        )*/}
                                     </tr>
                                 </thead>
 
@@ -371,7 +406,7 @@ export default function ListeMesEtudiantsEnStage() {
                                                 </td>
                                             )}
 
-                                            {tab === "APPROVED" && (
+                                            {/*tab === "APPROVED" && (
                                                 <td className="py-3 px-4 align-top">
                                                     {(() => {
                                                         const confirmed = (s.applications || []).find(
@@ -417,9 +452,9 @@ export default function ListeMesEtudiantsEnStage() {
                                                         );
                                                     })()}
                                                 </td>
-                                            )}
+                                            )*/}
 
-                                            {tab === "APPLIED" && (
+                                            {/*tab === "APPLIED" && (
                                                 <td className="py-3 px-4 align-top">
                                                     <button
                                                         type="button"
@@ -432,15 +467,15 @@ export default function ListeMesEtudiantsEnStage() {
                                                         {t('voirCandidatures')}
                                                     </button>
                                                 </td>
-                                            )}
+                                            )*/}
 
-                                            {tab === "APPROVED" && (
+                                            {/*tab === "APPROVED" && (
                                                 <td className="py-3 px-4 align-top">
                                                 <span className="text-sm text-gray-400 dark:text-gray-500 italic">
                                                     {t('aucuneActionDisponible') || "Aucune Action Disponible"}
                                                 </span>
                                                 </td>
-                                            )}
+                                            )*/}
                                         </tr>
                                     ))}
                                 </tbody>
