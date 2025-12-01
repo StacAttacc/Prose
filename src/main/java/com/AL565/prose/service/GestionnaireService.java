@@ -209,10 +209,8 @@ public class GestionnaireService {
                         .findNotificationsByTypeAndFirstRecipientReadAtIsNull(NEW_CV_NOTIFICATION);
                 List<Notification> convocations = notificationRepository
                         .findNotificationsByTypeAndSecondRecipientReadAtIsNull(CONVOCATION_NOTIFICATION);
-
                 List<Notification> candidatureDecisions = notificationRepository
                         .findNotificationsByTypeAndSecondRecipientReadAtIsNull(CANDIDATURE_DECISION_NOTIFICATION);
-                
                 List<Notification> etudiantOffresResponses = notificationRepository
                         .findNotificationsByTypeAndSecondRecipientReadAtIsNull(ETUDIANT_OFFRE_DECISION_NOTIFICATION);
 

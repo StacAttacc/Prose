@@ -22,7 +22,7 @@ export default function GestRechercheStages() {
   const [error, setError] = useState(null);
   const [selectedStage, setSelectedStage] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const[isProcessing, setIsProcessing] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [locationFilter, setLocationFilter] = useState("");
@@ -47,16 +47,50 @@ export default function GestRechercheStages() {
   }, [user?.token, selectedYear]);
 
     useEffect(() => {
-        const openStageId = location?.state?.openStageId;
-        if (!openStageId || stages.length === 0) return;
+        if (!stages.length) return;
 
-        const found = stages.find(s => String(s.id) === String(openStageId));
-        if (found) {
-            setSelectedStage(found);
-            setIsModalOpen(true);
-            navigate(location.pathname, { replace: true, state: {} });
+        const openStageFromNotif = location?.state?.openStageId;
+        if (!openStageFromNotif) return;
+
+        const stageToScrollTo = stages.find(
+            s => String(s.id) === String(openStageFromNotif)
+        );
+
+        if (!stageToScrollTo) {
+            return;
         }
-    }, [location?.state?.openStageId, stages, navigate, location?.pathname]);
+
+        setSearchTerm("");
+        setLocationFilter("");
+        setCompensationFilter("");
+        setStatusFilter("");
+
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                const el = document.getElementById(`stage-${stageToScrollTo.id}`);
+                console.log('Element found:', el);
+
+                if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    el.classList.add('ring-2', 'ring-teal-500');
+
+                    setTimeout(() => {
+                        handleStageClick(stageToScrollTo);
+                    }, 1000);
+
+                    setTimeout(() => {
+                        el.classList.remove('ring-2', 'ring-teal-500');
+                    }, 6000);
+
+                    setTimeout(() => {
+                        navigate(location?.pathname, { replace: true, state: {} });
+                    }, 100);
+                } else {
+                    console.error('Element not found in DOM');
+                }
+            });
+        });
+    }, [stages, location?.state?.openStageId]);
     
     const filteredStages = useMemo(() => {
     return stages.filter(stage => {
@@ -252,7 +286,8 @@ export default function GestRechercheStages() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredStages.map((stage, index) => (
             <div 
-              key={index} 
+              key={index}
+              id={`stage-${stage.id}`}
               className="bg-white rounded-lg shadow-md border border-gray-200 p-6 hover:shadow-lg transition-shadow cursor-pointer"
               onClick={() => handleStageClick(stage)}
             >
