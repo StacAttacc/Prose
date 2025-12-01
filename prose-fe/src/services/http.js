@@ -25,7 +25,6 @@ http.interceptors.request.use((config) => {
     if (accessToken) {
         config.headers.Authorization = `Bearer ${accessToken}`;
     }
-    console.debug("[http] Authorization ->", config.headers?.Authorization);
 
     return config;
 });

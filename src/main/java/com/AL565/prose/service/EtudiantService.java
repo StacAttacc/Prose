@@ -284,7 +284,7 @@ public class EtudiantService {
             NotificationGroupDTO assignationGroup = NotificationGroupDTO
                     .toDTO(ASSIGNATION_NOTIFICATION.getDisplayName(), assignations);
             NotificationGroupDTO cvGroup = NotificationGroupDTO
-                    .toDTO(NEW_CV_NOTIFICATION.getDisplayName(), cvs);
+                    .toDTO(CV_DECISION_NOTIFICATION.getDisplayName(), cvs);
             NotificationGroupDTO convocationGroup = NotificationGroupDTO
                     .toDTO(CONVOCATION_NOTIFICATION.getDisplayName(), convocations);
             NotificationGroupDTO candidatureDecisionGroup = NotificationGroupDTO

@@ -26,7 +26,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
@@ -279,12 +278,12 @@ public class GestionnaireService {
         if (cv.getStatus() == CvStatus.PENDING) {
             return;
         }
-        notification.setFirstRecipientReadAt(LocalDateTime.now());
-        notification.setCreatedAt(OffsetDateTime.now().toLocalDateTime());
+        notification.setCreatedAt(LocalDateTime.now());
         notification.setType(CV_DECISION_NOTIFICATION);
         notification.setTargetEmail(cv.getEtudiant().getEmail());
         notification.setMessageFR("Votre CV a été " + translateStatusMessage(cv.getStatus(), "FR"));
         notification.setMessageEN("Your CV has been " + translateStatusMessage(cv.getStatus(), "EN"));
+        notification.setCvId(cv.getId());
         notificationRepository.save(notification);
     }
 
