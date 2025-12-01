@@ -68,7 +68,6 @@ export default function GestRechercheStages() {
         requestAnimationFrame(() => {
             requestAnimationFrame(() => {
                 const el = document.getElementById(`stage-${stageToScrollTo.id}`);
-                console.log('Element found:', el);
 
                 if (el) {
                     el.scrollIntoView({ behavior: 'smooth', block: 'center' });
