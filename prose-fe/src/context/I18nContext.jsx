@@ -865,7 +865,7 @@ const translations = {
     chargementCandidatures: 'Loading your applications...',
     pasEncorePostule: 'You have not yet applied to any internships.',
     consultezStagesDisponibles: 'Browse available internships to start applying.',
-    enAttenteApprobationEmployeur: 'Awaitig employer\'s response',
+    enAttenteApprobationEmployeur: 'Awaiting employer\'s response',
     accepteeParEmployeur: 'Accepted By Employer',
     refuseeParEmployeur: 'Rejected By Employer',
     convoqueeEntrevue: 'Invited to interview',
