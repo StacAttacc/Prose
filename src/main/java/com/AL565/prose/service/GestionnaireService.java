@@ -183,14 +183,12 @@ public class GestionnaireService {
                 return startDate.getYear() ==  yearNumber;
             }).toList();
 
-            if(etudiantCandidature.isEmpty()){
-                return;
-            }
-
             etudiantCandidaturesDTO.add(
                     EtudiantCandidaturesDTO.builder()
                             .etudiant(EtudiantDTO.toDTOTokenless(etudiant))
-                            .candidatures(etudiantCandidature)
+                            .candidatures(
+                                    etudiantCandidature.isEmpty() ?
+                                    null : etudiantCandidature)
                             .build()
             );
         });
