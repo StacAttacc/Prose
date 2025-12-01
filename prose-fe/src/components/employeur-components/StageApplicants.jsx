@@ -196,9 +196,7 @@ const StageApplicantsPage = () => {
                                         try {
                                             const res = await rejectApplicant(id);
                                             if (res.ok) {
-                                                setApplicants(prev => prev.filter(x =>
-                                                    Number(x?.id ?? x?.candidatureId ?? x?.applicationId) !== id
-                                                ));
+                                                await reloadApplicants();
                                             } else {
                                                 console.debug("reject:", res.status, res.data);
                                             }
@@ -214,9 +212,7 @@ const StageApplicantsPage = () => {
                                         try {
                                             const res = await approveApplicant(id);
                                             if (res.ok) {
-                                                setApplicants(prev =>
-                                                    prev.filter(x => Number(x?.id ?? x?.candidatureId ?? x?.applicationId) !== id)
-                                                );
+                                                await reloadApplicants();
                                             } else if (res.status === 403) {
                                                 setError(t('doitConvoquerAvantAccepter'));
                                             } else {
