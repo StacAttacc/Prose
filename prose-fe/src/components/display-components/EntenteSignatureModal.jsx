@@ -289,11 +289,11 @@ export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSi
                                     </p>
                                 </div>
 
-                                {error && (
+                                {/*error && (
                                     <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
                                         {error}
                                     </div>
-                                )}
+                                )*/}
 
                                 <div className="flex gap-3 justify-end">
                                     <button
