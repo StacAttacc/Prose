@@ -129,7 +129,7 @@ function getGestionnairePaths({role, notification = null, isGrouped, type}) {
                 path: getDefaultNavigationPath(role),
                 state: { openEtudiantId: notification?.etudiantId }
             };
-        case "signature_entente":
+        case "gestionnaire_entente":
             return isGrouped ? {
                 path: getDefaultNavigationPath(role),
             } : {

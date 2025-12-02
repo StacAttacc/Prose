@@ -2,7 +2,6 @@ package com.AL565.prose.service;
 
 import com.AL565.prose.model.notifications.*;
 import com.AL565.prose.repository.*;
-import com.AL565.prose.security.JwtTokenProvider;
 import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
 import com.AL565.prose.security.exceptions.NotificationExceptions;
 import com.AL565.prose.utils.NotificationsHelper;
@@ -13,7 +12,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
@@ -29,8 +27,6 @@ class NotificationsServiceLayerTest {
     private NotificationRepository notificationRepository;
     @Mock
     private SignatureEntenteNotificationRepository signatureEntenteNotificationRepository;
-    @Mock
-    private NotificationsHelper notificationsHelper;
 
     @InjectMocks
     private GestionnaireService gestionnaireService;
@@ -102,6 +98,15 @@ class NotificationsServiceLayerTest {
         n11.setMessageEN("New assignation");
         n11.setCreatedAt(LocalDateTime.now());
 
+        GestionnaireEntenteNotification n12 = new GestionnaireEntenteNotification();
+        n12.setType(GESTIONNAIRE_ENTENTE_NOTIFICATION);
+        n12.setMessageEN("Both parties signed entente");
+        n12.setCreatedAt(LocalDateTime.now());
+
+        when(notificationRepository.findNotificationsByTypeAndFirstRecipientReadAtIsNull(
+                GESTIONNAIRE_ENTENTE_NOTIFICATION
+        )).thenReturn(List.of(n12));
+
         when(notificationRepository.findNotificationsByTypeAndFirstRecipientReadAtIsNullAndTargetEmail(
                 ASSIGNATION_NOTIFICATION,
                 "dummy@email.com"
@@ -158,9 +163,6 @@ class NotificationsServiceLayerTest {
                 SIGNATURE_ENTENTE_NOTIFICATION,
                 "dummy@email.com"
         )).thenReturn(List.of(n9));
-
-        when(signatureEntenteNotificationRepository.findByThirdRecipientReadAtIsNullAndFirstRecipientReadAtIsNotNullAndSecondRecipientReadAtIsNotNull())
-                .thenReturn(List.of(n9));
 
         NotificationsResponseDTO gestionnaireResult = gestionnaireService.getGestionnaireNotifications();
         NotificationsResponseDTO etudiantResult = etudiantService.getStudentsNotifications("dummy@email.com");

@@ -123,7 +123,7 @@ const translations = {
     // Notifications
     nouvelleAssignation: 'nouveau(x) stage(s) exclusifs disponible(s)',
     miseAJourDemandeApprobationStage: 'demande(s) d\'approbation de stage(s) mise(s) à jour',
-    signatureEntenteNotification: 'nouveau(x) document(s) à signer',
+    documentsASigner: 'nouveau(x) document(s) à signer',
     OffresStage: 'nouvelles offre(s) de stage à approuver',
     nouvellesCandidatures: 'nouvelles candidature(s) reçue(s)',
     candidaturesUpdates: 'nouvelle(s) sur votre/vos candidature(s)',
@@ -751,7 +751,7 @@ const translations = {
     // Notifications
     nouvelleAssignation: 'new exclusive internship(s) available',
     miseAJourDemandeApprobationStage: 'update(s) on internship approval request(s)',
-    signatureEntenteNotification: 'new document(s) to sign',
+    documentsASigner: 'new document(s) to sign',
     nouvellesOffresStage: 'new internship offer(s) to approve',
     nouvellesCandidatures: 'new application(s) received',
     candidaturesUpdates: 'update(s) on your application(s)',

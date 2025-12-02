@@ -48,7 +48,6 @@ public class GestionnaireService {
     private final PasswordEncoder passwordEncoder;
     private final CandidatureRepository candidatureRepository;
     private final NotificationRepository notificationRepository;
-    private final SignatureEntenteNotificationRepository signatureEntenteNotificationRepository;
     private final NotificationsHelper notificationsHelper;
     private final EntenteRepository ententeRepository;
 
@@ -212,16 +211,8 @@ public class GestionnaireService {
                         .findNotificationsByTypeAndSecondRecipientReadAtIsNull(CANDIDATURE_DECISION_NOTIFICATION);
                 List<Notification> etudiantOffresResponses = notificationRepository
                         .findNotificationsByTypeAndSecondRecipientReadAtIsNull(ETUDIANT_OFFRE_DECISION_NOTIFICATION);
-
-                List<SignatureEntenteNotification> signatureEntentes = new ArrayList<>();
-                try {
-                    signatureEntentes = signatureEntenteNotificationRepository
-                        .findByThirdRecipientReadAtIsNullAndFirstRecipientReadAtIsNotNullAndSecondRecipientReadAtIsNotNull();
-                } catch (Exception e) {
-                    System.err.println("Erreur lors de la récupération des notifications d'entente: " + e.getMessage());
-                    e.printStackTrace();
-                    // Continuer avec une liste vide plutôt que de faire échouer toute la requête
-                }
+                List<Notification> gestionnaireEntentes = notificationRepository
+                        .findNotificationsByTypeAndFirstRecipientReadAtIsNull(GESTIONNAIRE_ENTENTE_NOTIFICATION);
 
                 NotificationGroupDTO stagesGroup = NotificationGroupDTO
                         .toDTO(CREATION_STAGE_NOTIFICATION.getDisplayName(), stages);
@@ -235,8 +226,8 @@ public class GestionnaireService {
                         .toDTO(CANDIDATURE_DECISION_NOTIFICATION.getDisplayName(), candidatureDecisions);
                 NotificationGroupDTO etudiantOffresResponsesGroup = NotificationGroupDTO
                         .toDTO(ETUDIANT_OFFRE_DECISION_NOTIFICATION.getDisplayName(), etudiantOffresResponses);
-                NotificationGroupDTO signatureEntentesGroup = NotificationGroupDTO
-                        .toDTO(SIGNATURE_ENTENTE_NOTIFICATION.getDisplayName(), signatureEntentes);
+                NotificationGroupDTO gestionnaireEntentesGroup = NotificationGroupDTO
+                        .toDTO(GESTIONNAIRE_ENTENTE_NOTIFICATION.getDisplayName(), gestionnaireEntentes);
 
             return NotificationsResponseDTO
                     .toDTO(List.of(stagesGroup,
@@ -245,7 +236,7 @@ public class GestionnaireService {
                             convocationsGroup,
                             candidatureDecisionsGroup,
                             etudiantOffresResponsesGroup,
-                            signatureEntentesGroup));
+                            gestionnaireEntentesGroup));
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("Erreur lors de la récupération des notifications: " + e.getMessage());
@@ -262,12 +253,6 @@ public class GestionnaireService {
                  CONVOCATION_NOTIFICATION,
                  CANDIDATURE_DECISION_NOTIFICATION,
                  ETUDIANT_OFFRE_DECISION_NOTIFICATION -> markPostulationAsReadBySecondRecipient(notificationId);
-            case SIGNATURE_ENTENTE_NOTIFICATION -> {
-                if (notification instanceof SignatureEntenteNotification signatureNotification) {
-                    signatureNotification.setThirdRecipientReadAt(LocalDateTime.now());
-                    signatureEntenteNotificationRepository.save(signatureNotification);
-                }
-            }
             default-> notificationsHelper.markNotificationAsReadByFirstRecipient(notificationId);
         }
     }
@@ -468,7 +453,7 @@ public class GestionnaireService {
     }
 
     @Transactional
-    public EntenteDTO genererEntente(Long candidatureId) {
+    public EntenteDTO genererEntente(Long candidatureId) throws Exception {
         Candidature candidature = candidatureRepository.findById(candidatureId)
                 .orElseThrow(() -> new IllegalArgumentException("Candidature non trouvée"));
 
@@ -507,39 +492,30 @@ public class GestionnaireService {
     }
 
     @Transactional
-    public void createNotificationWhenEntenteIsGenerated(Entente entente) {
-        Optional<SignatureEntenteNotification> existingNotification = signatureEntenteNotificationRepository
-                .findByCandidatureId(entente.getCandidature().getId());
-
-        if (existingNotification.isEmpty()) {
-            existingNotification = signatureEntenteNotificationRepository
-                    .findByStageId(entente.getCandidature().getStageId());
+    public void createNotificationWhenEntenteIsGenerated(Entente entente) throws Exception {
+        if (entente == null || entente.getCandidature() == null) {
+            throw new NotificationExceptions.NotificationCreationException();
         }
+        SignatureEntenteNotification notification = new SignatureEntenteNotification();
+        String employeurEmail = entente.getCandidature().getStage().getEmployeurEmail();
+        String etudiantEmail = entente.getCandidature().getEtudiant().getEmail();
 
-        SignatureEntenteNotification notification;
-        if (existingNotification.isPresent()) {
-            notification = existingNotification.get();
-            notification.setCreatedAt(LocalDateTime.now());
-            notification.setMessageFR("Une entente doit être sigée pour le stage "
-                    + entente.getCandidature().getStage().getTitle());
-            notification.setMessageEN("An agreement needs to be signed for the "
-                    + entente.getCandidature().getStage().getTitle() + " internship");
-        } else {
-            String messageFR = "Une entente doit être sigée pour le stage "
-                    + entente.getCandidature().getStage().getTitle();
-            String messageEN = "An agreement needs to be signed for the "
-                    + entente.getCandidature().getStage().getTitle() + " internship";
-            notification = new SignatureEntenteNotification();
-            notification.setCreatedAt(LocalDateTime.now());
-            notification.setMessageFR(messageFR);
-            notification.setMessageEN(messageEN);
-            notification.setType(NotificationType.SIGNATURE_ENTENTE_NOTIFICATION);
-            notification.setCandidatureId(entente.getCandidature().getId());
-            String employeurEmail = entente.getCandidature().getStage().getEmployeurEmail();
-            notification.setTargetEmployeurEmail(employeurEmail != null ? employeurEmail : "");
-            notification.setTargetEtudiantEmail(entente.getCandidature().getEtudiant().getEmail());
-            notification.setStageId(entente.getCandidature().getStageId());
-        }
+        String messageFR = "Une entente doit être sigée pour le stage "
+                + entente.getCandidature().getStage().getTitle();
+        String messageEN = "An agreement needs to be signed for the "
+                + entente.getCandidature().getStage().getTitle() + " internship";
+
+        notification.setCreatedAt(LocalDateTime.now());
+        notification.setMessageFR(messageFR);
+        notification.setMessageEN(messageEN);
+        notification.setType(NotificationType.SIGNATURE_ENTENTE_NOTIFICATION);
+        notification.setFirstRecipientReadAt(null);
+        notification.setSecondRecipientReadAt(null);
+
+        notification.setCandidatureId(entente.getCandidature().getId());
+        notification.setTargetEmployeurEmail(employeurEmail);
+        notification.setTargetEtudiantEmail(etudiantEmail);
+        notification.setStageId(entente.getCandidature().getStageId());
 
         notificationRepository.save(notification);
     }

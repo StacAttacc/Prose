@@ -38,6 +38,8 @@ public class NotificationSummaryDTO {
             case CreationStageNotification sn -> stageId = sn.getStageId();
             case NouveauCvNotification gcn -> cvId = gcn.getCvId();
             case DemandeApprobationStageNotification dasn -> stageId = dasn.getStageId();
+            case ConvocationNotification cn -> candidatureId = cn.getCandidatureId();
+            case GestionnaireEntenteNotification gen -> candidatureId = gen.getCandidatureId();
             case CandidatureDecisionNotification cdn -> {
                     candidatureId = cdn.getCandidatureId();
                     etudiantId = cdn.getEtudiantId();
@@ -55,10 +57,6 @@ public class NotificationSummaryDTO {
                     candidatureId = ern.getCandidatureId();
                     stageId = ern.getStageId();
                     etudiantId = ern.getEtudiantId();
-            }
-            case ConvocationNotification cn -> {
-                    candidatureId = cn.getCandidatureId();
-                    etudiantId = cn.getEtudiantId();
             }
             case SignatureEntenteNotification sen -> {
                     candidatureId = sen.getCandidatureId();

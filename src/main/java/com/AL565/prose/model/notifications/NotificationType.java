@@ -13,6 +13,7 @@ public enum NotificationType {
     CONVOCATION_NOTIFICATION("convocation"),
     ETUDIANT_OFFRE_DECISION_NOTIFICATION("etudiant_offre_decision"),
     SIGNATURE_ENTENTE_NOTIFICATION("signature_entente"),
+    GESTIONNAIRE_ENTENTE_NOTIFICATION("gestionnaire_entente"),
     ASSIGNATION_NOTIFICATION("assignation");
 
     private final String displayName;

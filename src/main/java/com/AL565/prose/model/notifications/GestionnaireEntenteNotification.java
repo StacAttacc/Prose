@@ -13,9 +13,6 @@ import lombok.Setter;
 @DiscriminatorValue("signature_entente")
 @NoArgsConstructor
 @AllArgsConstructor
-public class SignatureEntenteNotification extends Notification {
+public class GestionnaireEntenteNotification extends Notification {
     private Long candidatureId;
-    private String targetEmployeurEmail;
-    private String targetEtudiantEmail;
-    private Long stageId;
 }
