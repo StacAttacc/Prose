@@ -10,7 +10,7 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-@DiscriminatorValue("signature_entente")
+@DiscriminatorValue("gestionnaire_entente")
 @NoArgsConstructor
 @AllArgsConstructor
 public class GestionnaireEntenteNotification extends Notification {
