@@ -206,7 +206,9 @@ export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSi
                     <div className="text-center py-8">
                         <div className="text-gray-500">{t('chargementEntente')}</div>
                     </div>
-                ) : (
+                ) : error && !ententeData ? (
+                    <ErrorBanner message={error} />
+                ): (
                     <>
                         {userHasSigned && userSignatureDate && ententeData?.status !== "SIGNEE" && (
                             <div className="mb-6">
