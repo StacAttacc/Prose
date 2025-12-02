@@ -43,7 +43,6 @@ class UtilisateurServiceTest {
 
     @Test
     void login_success() {
-        // Arrange
         LoginRequestDTO request = createTestLoginRequest();
         ProseUser user = createTestProseUser();
         Authentication authentication = mock(Authentication.class);
@@ -56,10 +55,8 @@ class UtilisateurServiceTest {
         when(userRepository.findByCredentials_Username(request.getEmail()))
                 .thenReturn(Optional.of(user));
 
-        // Act
         ProseUserDTO result = utilisateurService.login(request);
 
-        // Assert
         assertThat(result).isNotNull();
         assertThat(result.getEmail()).isEqualTo(request.getEmail());
         assertThat(result.getFirstName()).isEqualTo("Alice");
@@ -74,13 +71,11 @@ class UtilisateurServiceTest {
 
     @Test
     void login_badCredentials() {
-        // Arrange
         LoginRequestDTO request = createTestLoginRequest();
 
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenThrow(new BadCredentialsException("Invalid credentials"));
 
-        // Act & Assert
         assertThatThrownBy(() -> utilisateurService.login(request))
                 .isInstanceOf(BadCredentialsException.class)
                 .hasMessage("Invalid credentials");
@@ -92,7 +87,6 @@ class UtilisateurServiceTest {
 
     @Test
     void login_userNotFound() {
-        // Arrange
         LoginRequestDTO request = createTestLoginRequest();
         Authentication authentication = mock(Authentication.class);
         String expectedToken = "jwt-token-123";
@@ -104,7 +98,6 @@ class UtilisateurServiceTest {
         when(userRepository.findByCredentials_Username(request.getEmail()))
                 .thenReturn(Optional.empty());
 
-        // Act & Assert
         assertThatThrownBy(() -> utilisateurService.login(request))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessage("userNotFound");

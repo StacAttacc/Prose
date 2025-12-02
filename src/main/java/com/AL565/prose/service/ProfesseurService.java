@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -121,16 +122,17 @@ public class ProfesseurService {
                 return startDate.getYear() ==  yearNumber;
             }).toList();
 
-            if(etudiantCandidature.isEmpty()){
-                return;
-            }
 
-            etudiantCandidaturesDTO.add(
-                    EtudiantCandidaturesDTO.builder()
-                            .etudiant(EtudiantDTO.toDTOTokenless(etudiant))
-                            .candidatures(etudiantCandidature)
-                            .build()
-            );
+            if ((candidatures.isEmpty() && yearNumber == LocalDateTime.now().getYear()) || !etudiantCandidature.isEmpty()) {
+                etudiantCandidaturesDTO.add(
+                        EtudiantCandidaturesDTO.builder()
+                                .etudiant(EtudiantDTO.toDTOTokenless(etudiant))
+                                .candidatures(
+                                        etudiantCandidature.isEmpty() ?
+                                                null : etudiantCandidature)
+                                .build()
+                );
+            }
         });
 
         return etudiantCandidaturesDTO;

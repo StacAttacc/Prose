@@ -125,7 +125,7 @@ class GestionnaireServiceTest {
         when(stageRepository.findByStatus(OfferStatus.SOUMISE)).thenReturn(List.of(stage1, stage2));
         when(employeurRepository.getEmployeurByCredentials_Username(anyString())).thenReturn(employeur);
 
-        List<StageDTO> result = gestionnaireService.getStagesByStatus("SOUMISE", null);
+        List<StageDTO> result = gestionnaireService.getStagesByStatus("SOUMISE", String.valueOf(LocalDate.now().getYear()));
 
         assertThat(result).hasSize(2);
         assertThat(result.getFirst().getId()).isEqualTo(1L);
@@ -380,7 +380,7 @@ class GestionnaireServiceTest {
         when(stageRepository.findById(stage.getId())).thenReturn(Optional.of(stage));
         when(stageRepository.findById(stage2.getId())).thenReturn(Optional.of(stage2));
 
-        List<EtudiantCandidaturesDTO> candidatures =  gestionnaireService.getAllEtudiantsCandidatures(null);
+        List<EtudiantCandidaturesDTO> candidatures =  gestionnaireService.getAllEtudiantsCandidatures(String.valueOf(LocalDate.now().getYear()));
 
         assertThat(candidatures).hasSize(2);
         assertThat(candidatures.get(0).getCandidatures()).hasSize(1);
@@ -424,7 +424,7 @@ class GestionnaireServiceTest {
         when(stageRepository.findById(stage.getId())).thenReturn(Optional.of(stage));
         when(stageRepository.findById(stage2.getId())).thenReturn(Optional.of(stage2));
 
-        List<EtudiantCandidaturesDTO> candidatures =  gestionnaireService.getAllEtudiantsCandidatures(null);
+        List<EtudiantCandidaturesDTO> candidatures =  gestionnaireService.getAllEtudiantsCandidatures(String.valueOf(LocalDate.now().getYear()));
 
         List<EtudiantCandidatureDTO> candidaturesJohn = candidatures.getFirst().getCandidatures();
         List<EtudiantCandidatureDTO> candidaturesUmberto = candidatures.get(1).getCandidatures();

@@ -180,17 +180,21 @@ public class GestionnaireService {
             }).filter(candidature -> {
                 StageDTO stage = candidature.getStage();
                 LocalDate startDate = stage.getStartDate();
+                System.out.println(stage.getStartDate());
+                System.out.println(yearNumber);
                 return startDate.getYear() ==  yearNumber;
             }).toList();
 
-            etudiantCandidaturesDTO.add(
-                    EtudiantCandidaturesDTO.builder()
-                            .etudiant(EtudiantDTO.toDTOTokenless(etudiant))
-                            .candidatures(
-                                    etudiantCandidature.isEmpty() ?
-                                    null : etudiantCandidature)
-                            .build()
-            );
+            if ((candidatures.isEmpty() && yearNumber == LocalDateTime.now().getYear()) || !etudiantCandidature.isEmpty()) {
+                etudiantCandidaturesDTO.add(
+                        EtudiantCandidaturesDTO.builder()
+                                .etudiant(EtudiantDTO.toDTOTokenless(etudiant))
+                                .candidatures(
+                                        etudiantCandidature.isEmpty() ?
+                                                null : etudiantCandidature)
+                                .build()
+                );
+            }
         });
 
         return etudiantCandidaturesDTO;

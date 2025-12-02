@@ -28,22 +28,6 @@ class NotificationsServiceLayerTest {
     @Mock
     private NotificationRepository notificationRepository;
     @Mock
-    private EtudiantRepository etudiantRepository;
-    @Mock
-    private ProseUserRepository proseUserRepository;
-    @Mock
-    private JwtTokenProvider jwtTokenProvider;
-    @Mock
-    private CvRepository cvRepository;
-    @Mock
-    private PasswordEncoder passwordEncoder;
-    @Mock
-    private StageRepository stageRepository;
-    @Mock
-    private EmployeurRepository employeurRepository;
-    @Mock
-    private CandidatureRepository candidatureRepository;
-    @Mock
     private SignatureEntenteNotificationRepository signatureEntenteNotificationRepository;
     @Mock
     private NotificationsHelper notificationsHelper;
@@ -198,7 +182,7 @@ class NotificationsServiceLayerTest {
         assertThat(etudiantResult.getGroups().get(1).getItems().getFirst().getMessageEN()).isEqualTo("New convocation");
         assertThat(etudiantResult.getGroups().get(2).getItems().getFirst().getMessageEN()).isEqualTo("Candidature decision made");
         assertThat(etudiantResult.getGroups().get(3).getItems().getFirst().getMessageEN()).isEqualTo("Entente needs to be signed");
-        assertThat(etudiantResult.getGroups().get(4).getItems().getFirst().getMessageEN()).isEqualTo("New assgnation");
+        assertThat(etudiantResult.getGroups().get(4).getItems().getFirst().getMessageEN()).isEqualTo("New assignation");
 
         assertThat(employeurResult).isNotNull();
         assertThat(employeurResult.getTotalCount()).isEqualTo(4);
