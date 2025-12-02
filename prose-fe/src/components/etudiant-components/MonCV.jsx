@@ -30,9 +30,10 @@ export default function MonCV() {
             try {
                 const cvData = await telechargerCv(user.email);
                 setCv(cvData);
+                console.log(cvData.comment)
                 if (cvData.status) setStatus(cvData.status);
                 else setStatus("NONE");
-            } catch (e) {
+            } catch {
                 setError(t('erreurChargementStatutCV'));
                 setStatus("NONE");
             }
@@ -64,7 +65,7 @@ export default function MonCV() {
             const blob = new Blob([byteArray], { type: cv.type || "application/pdf" });
             const url = URL.createObjectURL(blob);
             setPdfUrl(url);
-        } catch (e) {
+        } catch {
             setPdfUrl(null);
         }
         setShowModal(true);
@@ -116,7 +117,6 @@ export default function MonCV() {
                 </div>
             </div>
 
-            {/* Légende des statuts */}
             <div className="bg-white rounded-xl border shadow p-4">
                 <div className="flex flex-col gap-2 text-xs">
                     <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">

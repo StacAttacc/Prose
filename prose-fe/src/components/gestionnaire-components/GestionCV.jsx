@@ -102,7 +102,7 @@ const GestionCV = () => {
     const handleReject = async () => {
         if (!selectedCv) return;
         setIsProcessing(true);
-        await rejectCv(selectedCv.id, comment);
+        await rejectCv(selectedCv.id, rejectionReason);
         closeModal();
         await loadAllCvs();
         setIsProcessing(false);
@@ -160,7 +160,6 @@ const GestionCV = () => {
                 </div>
             </div>
 
-            {/* Sub-tabs */}
             <div className="flex gap-2 mb-6 justify-center">
                 <button
                     className={`px-4 py-2 rounded-t font-semibold border-b-2 ${tab === 'pending' ? 'border-blue-600 text-blue-700 dark:!text-blue-700 bg-blue-50 dark:!bg-blue-50' : 'border-transparent text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'}`}
@@ -305,7 +304,7 @@ const GestionCV = () => {
                                                 value={rejectionReason}
                                                 onChange={(e) => setRejectionReason(e.target.value)}
                                                 placeholder={t('expliquerRejet')}
-                                                className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                                                className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                                                 rows="3"
                                                 disabled={isProcessing}
                                             />

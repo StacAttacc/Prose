@@ -21,7 +21,7 @@ public class EtudiantCvDTO {
     private Instant lastModifiedDate;
     private String status;
     private String data;
-    private  String comment;
+    private String comment;
 
     public static EtudiantCvDTO toDto(CV cv) {
         EtudiantCvDTO dto = new EtudiantCvDTO();
