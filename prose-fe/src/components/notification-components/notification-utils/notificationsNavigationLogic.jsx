@@ -22,12 +22,6 @@ export function getNotificationNavigationPath({role, notification = null, isGrou
 function getEmployeurPaths({role, notification = null, isGrouped, type}) {
     switch (type) {
         case "etudiant_offre_decision":
-            return isGrouped ? {
-                path: getDefaultNavigationPath(role),
-            } : {
-                path: `/employeur/stages/${notification?.stageId}/candidatures`,
-                state: { openCandidatureId: notification?.etudiantId }
-            };
         case "postulation":
             return isGrouped ? {
                 path: getDefaultNavigationPath(role),
@@ -129,7 +123,7 @@ function getGestionnairePaths({role, notification = null, isGrouped, type}) {
                 path: getDefaultNavigationPath(role),
                 state: { openEtudiantId: notification?.etudiantId }
             };
-        case "signature_entente":
+        case "gestionnaire_entente":
             return isGrouped ? {
                 path: getDefaultNavigationPath(role),
             } : {

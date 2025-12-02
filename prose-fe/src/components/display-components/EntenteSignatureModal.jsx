@@ -121,7 +121,7 @@ export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSi
             if (result.exists && result.data) {
                 setEntenteData(result.data);
 
-                const pdfData = await getPDFEntente(initialEntenteData.id, user.token);
+                const pdfData = await getPDFEntente(result.data.id, user.token);
                 const pdfBlob = blobFromUnknownData(pdfData, "application/pdf");
 
                 if (pdfBlob) {
@@ -208,7 +208,7 @@ export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSi
                     </div>
                 ) : error && !ententeData ? (
                     <ErrorBanner message={error} />
-                ) : (
+                ): (
                     <>
                         {userHasSigned && userSignatureDate && ententeData?.status !== "SIGNEE" && (
                             <div className="mb-6">

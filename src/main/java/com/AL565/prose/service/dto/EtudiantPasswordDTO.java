@@ -22,6 +22,6 @@ public class EtudiantPasswordDTO extends ProseUserDTO{
                 .role(Role.ETUDIANT)
                 .build();
 
-        return new Etudiant(dto.getFirstName(), dto.getFirstName(), credentials, Discipline.valueOf(dto.getDiscipline()));
+        return new Etudiant(dto.getFirstName(), dto.getLastName(), credentials, Discipline.valueOf(dto.getDiscipline()));
     }
 }

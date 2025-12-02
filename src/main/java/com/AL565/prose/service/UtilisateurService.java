@@ -3,8 +3,8 @@ package com.AL565.prose.service;
 import com.AL565.prose.model.*;
 import com.AL565.prose.model.entente.Entente;
 import com.AL565.prose.model.entente.EntenteStatus;
+import com.AL565.prose.model.notifications.GestionnaireEntenteNotification;
 import com.AL565.prose.model.notifications.NotificationType;
-import com.AL565.prose.model.notifications.SignatureEntenteNotification;
 import com.AL565.prose.repository.*;
 import com.AL565.prose.security.JwtTokenProvider;
 import com.AL565.prose.security.exceptions.AuthenticationException;
@@ -22,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Base64;
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -39,7 +38,6 @@ public class UtilisateurService {
     private final GestionnaireRepository  gestionnaireRepository;
     private final CandidatureRepository candidatureRepository;
     private final NotificationRepository notificationRepository;
-    private final SignatureEntenteNotificationRepository signatureEntenteNotificationRepository;
 
     private final PDFHelper pdfHelper;
 
@@ -154,35 +152,21 @@ public class UtilisateurService {
 
     @Transactional
     protected void createNotificationForGestionnaireWhenBothSigned(Entente entente) {
-        List<SignatureEntenteNotification> existingNotifications = signatureEntenteNotificationRepository
-                .findByThirdRecipientReadAtIsNullAndFirstRecipientReadAtIsNotNullAndSecondRecipientReadAtIsNotNull()
-                .stream()
-                .filter(n -> n.getCandidatureId() != null
-                        && n.getCandidatureId().equals(entente.getCandidature().getId()))
-                .toList();
-
-        if (!existingNotifications.isEmpty()) {
-            return;
-        }
-
         String etudiantNom = entente.getCandidature().getEtudiant().getFirstName() + " "
                 + entente.getCandidature().getEtudiant().getLastName();
         String stageTitre = entente.getCandidature().getStage().getTitle();
 
-        String messageFR = "L'étudiant " + etudiantNom + " et l'employeur ont tous deux signé l'entente de stage pour " + stageTitre;
-        String messageEN = "Student " + etudiantNom + " and employer have both signed the internship agreement for " + stageTitre;
+        String messageFR = etudiantNom + " et l'employeur ont tous deux signé l'entente de stage pour " + stageTitre;
+        String messageEN = etudiantNom + " and the employer both have signed the internship agreement for " + stageTitre;
 
-        SignatureEntenteNotification notification = new SignatureEntenteNotification();
+        GestionnaireEntenteNotification notification = new GestionnaireEntenteNotification();
         notification.setCreatedAt(LocalDateTime.now());
         notification.setMessageFR(messageFR);
         notification.setMessageEN(messageEN);
-        notification.setType(NotificationType.SIGNATURE_ENTENTE_NOTIFICATION);
+        notification.setFirstRecipientReadAt(null);
+        notification.setType(NotificationType.GESTIONNAIRE_ENTENTE_NOTIFICATION);
+
         notification.setCandidatureId(entente.getCandidature().getId());
-        notification.setTargetEmployeurEmail(entente.getCandidature().getStage().getEmployeurEmail());
-        notification.setTargetEtudiantEmail(entente.getCandidature().getEtudiant().getEmail());
-        notification.setFirstRecipientReadAt(LocalDateTime.now());
-        notification.setSecondRecipientReadAt(LocalDateTime.now());
-        notification.setStageId(entente.getCandidature().getStageId());
 
         notificationRepository.save(notification);
     }
