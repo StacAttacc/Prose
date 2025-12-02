@@ -95,7 +95,6 @@ export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSi
                         setPdfUrl(url);
                     }
                 } else if (loadEntenteFn && applicant?.id && user?.token) {
-                    // Utiliser la fonction de chargement passée en prop
                     loadEntente();
                 }
             } else {
@@ -136,6 +135,7 @@ export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSi
             console.error("Erreur lors du chargement de l'entente:", err);
             setError(t('erreurChargementEntente'));
         } finally {
+            console.log("finally")
             setLoading(false);
         }
     };
@@ -165,7 +165,9 @@ export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSi
             handleClose();
         } catch {
             setError(t('erreurSignatureEntente'));
+            setPassword("");
         } finally {
+            console.log(error)
             setIsSubmitting(false);
         }
     };
@@ -222,7 +224,6 @@ export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSi
                             </div>
                         )}
 
-                        {/* Statut de l'entente - affiché après le message de signature */}
                         {(isGestionnaire && getStatusMessage) || (!isGestionnaire && getStatusMessageForUser) ? (
                             <div className="mb-6">
                                 <div className={`p-3 border rounded-lg ${
@@ -256,13 +257,16 @@ export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSi
 
                         {!userHasSigned && (!isGestionnaire || ententeData?.status === "SIGNEE_ETUDIANT_ET_EMPLOYEUR") && (
                             <form onSubmit={handleSign} className="border-t pt-6">
+                                { error && (
+                                    <ErrorBanner message={error} />
+                                )}
                                 <div className="mb-4">
                                     <label className="flex items-start">
                                         <input
                                             type="checkbox"
                                             checked={consentChecked}
                                             onChange={(e) => setConsentChecked(e.target.checked)}
-                                            className="mt-1 mr-2"
+                                            className="mt-1 mr-2 accent-teal-500"
                                             required
                                         />
                                         <span className="text-sm text-gray-700">

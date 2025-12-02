@@ -2,6 +2,7 @@ package com.AL565.prose.controller;
 
 import com.AL565.prose.repository.GestionnaireRepository;
 import com.AL565.prose.security.JwtTokenProvider;
+import com.AL565.prose.security.exceptions.AuthenticationException;
 import com.AL565.prose.security.exceptions.UserNotFoundException;
 import com.AL565.prose.service.GestionnaireService;
 import com.AL565.prose.service.UtilisateurService;
@@ -156,19 +157,13 @@ public class GestionnaireController {
         try {
             String token = authHeader.replace("Bearer ", "");
             String email = jwtTokenProvider.getEmailFromJWT(token);
-
-            var gestionnaireOpt = gestionnaireRepository.findByCredentials_Username(email);
-            if (gestionnaireOpt.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(new ReturnEntityDTO<>("Gestionnaire non trouvé", null));
-            }
-            if (!passwordEncoder.matches(request.getPassword(), gestionnaireOpt.get().getCredentials().getPassword())) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(new ReturnEntityDTO<>("Mot de passe incorrect", null));
-            }
             
-            utilisateurService.signEntente(ententeId, email);
+            utilisateurService.signEntente(request, ententeId, email);
             return ResponseEntity.ok(new ReturnEntityDTO<>("Entente signée avec succès", null));
+        } catch (AuthenticationException e) {
+            return  ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ReturnEntityDTO<>("Le mot de pass est invalide.", null));
+        } catch (UserNotFoundException e) {
+            return  ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ReturnEntityDTO<>("L'utilisateur n'existe pas", null));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new ReturnEntityDTO<>(e.getMessage(), null));

@@ -142,7 +142,7 @@ public class GestionnaireService {
     }
 
     public List<StageDTO> getAllStages(String year) throws FailedToRetrieveStagesException {
-        int yearNumber = year != null ? Integer.parseInt(year) : LocalDate.now().getYear();
+        int yearNumber = SessionYearHelper.getSessionYear(year);
 
         try {
             return stageRepository.findAll().stream().map(stage -> {
@@ -180,8 +180,6 @@ public class GestionnaireService {
             }).filter(candidature -> {
                 StageDTO stage = candidature.getStage();
                 LocalDate startDate = stage.getStartDate();
-                System.out.println(stage.getStartDate());
-                System.out.println(yearNumber);
                 return startDate.getYear() ==  yearNumber;
             }).toList();
 

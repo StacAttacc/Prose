@@ -21,6 +21,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.http.HttpStatus;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
@@ -62,8 +63,8 @@ class AuthControllerTest {
                 .content(content))
                 .andReturn();
 
-        Assertions.assertThat(result.getResponse().getStatus()).isEqualTo(200);
-        Assertions.assertThat(result.getResponse().getContentType()).contains("application/json");
+        assertThat(result.getResponse().getStatus()).isEqualTo(200);
+        assertThat(result.getResponse().getContentType()).contains("application/json");
     }
 
     @Test
@@ -80,7 +81,7 @@ class AuthControllerTest {
                 .content(content))
                 .andReturn();
 
-        Assertions.assertThat(result.getResponse().getStatus()).isEqualTo(401);
+        assertThat(result.getResponse().getStatus()).isEqualTo(401);
     }
 
     @Test
@@ -96,8 +97,8 @@ class AuthControllerTest {
                 .content(content))
                 .andReturn();
 
-        Assertions.assertThat(result.getResponse().getStatus()).isEqualTo(401);
-        Assertions.assertThat(result.getResponse().getContentAsString()).contains("User not found");
+        assertThat(result.getResponse().getStatus()).isEqualTo(401);
+        assertThat(result.getResponse().getContentAsString()).contains("Informations invalide");
     }
 
     private LoginRequestDTO createTestLoginRequest() {

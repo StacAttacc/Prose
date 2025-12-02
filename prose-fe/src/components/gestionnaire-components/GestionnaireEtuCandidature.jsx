@@ -139,12 +139,10 @@ export default function GestionnaireEtuCandidature() {
                                     [openCandidatureId]: result.data
                                 }));
                             }
-                            // Ouvrir la modal de l'entente directement
                             setSelectedCandidatureForEntente({ id: openCandidatureId });
                             setShowEntenteModal(true);
                         } catch (error) {
                             console.error("Erreur lors du chargement de l'entente:", error);
-                            // Ouvrir quand même la modal, elle chargera l'entente elle-même
                             setSelectedCandidatureForEntente({ id: openCandidatureId });
                             setShowEntenteModal(true);
                         }
@@ -218,7 +216,6 @@ export default function GestionnaireEtuCandidature() {
                 ? partition.applied
                 : partition.approved;
 
-    // Vérifier l'existence de l'entente pour les candidatures confirmées dans l'onglet APPROVED
     useEffect(() => {
         const checkEntentes = async () => {
             if (tab !== "APPROVED" || !user?.token) return;
@@ -234,7 +231,6 @@ export default function GestionnaireEtuCandidature() {
             }
             
             for (const candidature of confirmedCandidatures) {
-                // Vérifier si on a déjà vérifié cette entente
                 if (ententeDataMap[candidature.id] !== undefined || checkingEntente[candidature.id]) {
                     continue;
                 }
@@ -309,7 +305,7 @@ export default function GestionnaireEtuCandidature() {
         if (!user?.token) return;
         setGeneratingEntente(true);
         try {
-            const entente = await generateEntente(candidatureId);
+            await generateEntente(candidatureId);
             const result = await checkEntenteExists(candidatureId);
             if (result.exists) {
                 setEntenteDataMap(prev => ({
@@ -537,8 +533,7 @@ export default function GestionnaireEtuCandidature() {
                                                             </span>
                                                         );
                                                     }
-                                                    
-                                                    // Autres statuts
+
                                                     return <span className="text-sm text-gray-500 dark:text-gray-400">{t('enAttenteDeSignature')}</span>;
                                                 })()}
                                             </td>
@@ -581,7 +576,6 @@ export default function GestionnaireEtuCandidature() {
                                                     }
                                                     
                                                     if (!ententeData) {
-                                                        // Pas d'entente, afficher "Générer entente"
                                                         return (
                                                             <button
                                                                 type="button"
@@ -593,12 +587,10 @@ export default function GestionnaireEtuCandidature() {
                                                             </button>
                                                         );
                                                     }
-                                                    
-                                                    // Vérifier le statut de l'entente
+
                                                     const ententeStatus = ententeData.status;
                                                     
                                                     if (ententeStatus === "SIGNEE") {
-                                                        // Toutes les parties ont signé
                                                         return (
                                                             <div className="flex gap-2">
                                                                 <button
@@ -618,7 +610,6 @@ export default function GestionnaireEtuCandidature() {
                                                             </div>
                                                         );
                                                     } else if (ententeStatus === "SIGNEE_ETUDIANT_ET_EMPLOYEUR") {
-                                                        // Les deux ont signé, mais pas le gestionnaire
                                                         return (
                                                             <button
                                                                 type="button"
@@ -683,23 +674,23 @@ export default function GestionnaireEtuCandidature() {
                         setSelectedCandidatureForEntente(null);
                     }}
                     ententeData={ententeDataMap[selectedCandidatureForEntente.id]}
-                    loadEntenteFn={async (candidatureId, token) => {
+                    loadEntenteFn={async (candidatureId) => {
                         const result = await checkEntenteExists(candidatureId);
                         return result.exists ? { exists: true, data: result.data } : { exists: false };
                     }}
                     onSign={async (ententeId, password) => {
                         try {
                             await signEntente(ententeId, password);
-                            // Rafraîchir les données de l'entente après signature
-                            const result = await checkEntenteExists(selectedCandidatureForEntente.id);
-                            if (result.exists) {
-                                setEntenteDataMap(prev => ({
-                                    ...prev,
-                                    [selectedCandidatureForEntente.id]: result.data
-                                }));
-                            }
-                        } catch (error) {
-                            throw new Error(error.message || t('erreurLorsSignature'));
+                        } catch {
+                            throw new Error(t('erreurSignatureEntente'));
+                        }
+
+                        const result = await checkEntenteExists(selectedCandidatureForEntente.id);
+                        if (result.exists) {
+                            setEntenteDataMap(prev => ({
+                                ...prev,
+                                [selectedCandidatureForEntente.id]: result.data
+                            }));
                         }
                     }}
                 />

@@ -7,13 +7,16 @@ import com.AL565.prose.model.notifications.NotificationType;
 import com.AL565.prose.model.notifications.SignatureEntenteNotification;
 import com.AL565.prose.repository.*;
 import com.AL565.prose.security.JwtTokenProvider;
+import com.AL565.prose.security.exceptions.AuthenticationException;
 import com.AL565.prose.security.exceptions.UserNotFoundException;
 import com.AL565.prose.service.dto.*;
 import com.AL565.prose.utils.PDFHelper;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +30,8 @@ import java.util.Optional;
 public class UtilisateurService {
 
     private final AuthenticationManager authenticationManager;
+    private final PasswordEncoder passwordEncoder;
+
     private final JwtTokenProvider jwtTokenProvider;
     private final ProseUserRepository userRepository;
     private final EntenteRepository ententeRepository;
@@ -97,7 +102,13 @@ public class UtilisateurService {
     }
 
     @Transactional
-    public void signEntente(Long ententeId, String userEmail) throws Exception {
+    public void signEntente(SignEntenteRequestDTO request, Long ententeId, String userEmail) throws Exception {
+        ProseUser user = userRepository.findByCredentials_Username(userEmail).orElseThrow(UserNotFoundException::new);
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new AuthenticationException(HttpStatus.UNAUTHORIZED, "Le passsord est incorrect");
+        }
+
         Entente entente = ententeRepository.findById(ententeId)
                 .orElseThrow(() -> new IllegalArgumentException("Entente non trouvée"));
 

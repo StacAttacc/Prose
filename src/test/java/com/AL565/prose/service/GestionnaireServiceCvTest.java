@@ -22,7 +22,6 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 
@@ -118,7 +117,7 @@ public class GestionnaireServiceCvTest {
 
         when(cvRepository.findAll()).thenReturn(Arrays.asList(cv1, cv2));
 
-        List<GestionnaireCvDTO> result = gestionnaireService.getAllCvs(null);
+        List<GestionnaireCvDTO> result = gestionnaireService.getAllCvs(String.valueOf(LocalDateTime.now().getYear()));
 
         assertThat(result).hasSize(2);
         assertThat(result.get(0).getStatus()).isEqualTo(CvStatus.PENDING.name());
@@ -181,7 +180,7 @@ public class GestionnaireServiceCvTest {
 
         when(cvRepository.findAll()).thenReturn(Arrays.asList(cv1, cv2, cv3));
 
-        List<GestionnaireCvDTO> result = gestionnaireService.getAllCvs("2077");
+        List<GestionnaireCvDTO> result = gestionnaireService.getAllCvs(year);
 
         assertThat(result).hasSize(Integer.parseInt(expected));
     }

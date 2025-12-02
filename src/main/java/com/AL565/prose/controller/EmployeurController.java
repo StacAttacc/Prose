@@ -1,5 +1,6 @@
 package com.AL565.prose.controller;
 
+import com.AL565.prose.security.exceptions.AuthenticationException;
 import com.AL565.prose.security.exceptions.UserNotFoundException;
 import com.AL565.prose.security.JwtTokenProvider;
 import com.AL565.prose.service.UtilisateurService;
@@ -7,8 +8,6 @@ import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.EmployeurService;
 import com.AL565.prose.service.dto.ReturnEntityDTO;
 import com.AL565.prose.service.dto.StageDTO;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import com.AL565.prose.repository.EmployeurRepository;
 import com.AL565.prose.service.exceptions.CandidatureNotFoundException;
 import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
@@ -32,8 +31,6 @@ public class EmployeurController {
     private final UtilisateurService utilisateurService;
 
     private final JwtTokenProvider jwtTokenProvider;
-    private final PasswordEncoder passwordEncoder;
-    private final EmployeurRepository employeurRepository;
 
 
     @PostMapping("/register")
@@ -163,18 +160,12 @@ public class EmployeurController {
             String token = authHeader.replace("Bearer ", "");
             String email = jwtTokenProvider.getEmailFromJWT(token);
             
-            var employeurEntity = employeurRepository.getEmployeurByCredentials_Username(email);
-            if (employeurEntity == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(new ReturnEntityDTO<>("Employeur non trouvé", null));
-            }
-            if (!passwordEncoder.matches(request.getPassword(), employeurEntity.getCredentials().getPassword())) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(new ReturnEntityDTO<>("Mot de passe incorrect", null));
-            }
-            
-            utilisateurService.signEntente(ententeId, email);
+            utilisateurService.signEntente(request, ententeId, email);
             return ResponseEntity.ok(new ReturnEntityDTO<>("Entente signée avec succès", null));
+        } catch (AuthenticationException e) {
+            return  ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ReturnEntityDTO<>("Le mot de passe est invalide", null));
+        } catch (UserNotFoundException e) {
+            return  ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ReturnEntityDTO<>("L'utilisateur n'existe pas", null));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new ReturnEntityDTO<>(e.getMessage(), null));

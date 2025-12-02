@@ -1,6 +1,8 @@
 package com.AL565.prose.controller;
 
 import com.AL565.prose.security.JwtTokenProvider;
+import com.AL565.prose.security.exceptions.AuthenticationException;
+import com.AL565.prose.security.exceptions.UserNotFoundException;
 import com.AL565.prose.service.EtudiantService;
 import com.AL565.prose.service.UtilisateurService;
 import com.AL565.prose.service.dto.*;
@@ -38,8 +40,6 @@ public class EtudiantController {
     private final UtilisateurService utilisateurService;
 
     private final JwtTokenProvider jwtTokenProvider;
-    private final PasswordEncoder passwordEncoder;
-    private final EtudiantRepository etudiantRepository;
 
 
     @PostMapping("/register")
@@ -256,19 +256,12 @@ public class EtudiantController {
             String token = authHeader.replace("Bearer ", "");
             String email = jwtTokenProvider.getEmailFromJWT(token);
             
-            // Vérifier le mot de passe
-            var etudiant = etudiantRepository.findEtudiantByCredentials_Username(email);
-            if (etudiant.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(new ReturnEntityDTO<>("Étudiant non trouvé", null));
-            }
-            if (!passwordEncoder.matches(request.getPassword(), etudiant.get().getCredentials().getPassword())) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(new ReturnEntityDTO<>("Mot de passe incorrect", null));
-            }
-            
-            utilisateurService.signEntente(ententeId, email);
+            utilisateurService.signEntente(request, ententeId, email);
             return ResponseEntity.ok(new ReturnEntityDTO<>("Entente signée avec succès", null));
+        } catch(AuthenticationException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ReturnEntityDTO<>("Le mot de passe est invalide", null));
+        } catch(UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ReturnEntityDTO<>("Étudiant non trouvé", null));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new ReturnEntityDTO<>(e.getMessage(), null));

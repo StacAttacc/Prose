@@ -16,6 +16,7 @@ import com.AL565.prose.service.dto.notifications.NotificationGroupDTO;
 import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
 import com.AL565.prose.service.exceptions.EtudiantAlreadyAssociatedException;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
+import com.AL565.prose.utils.SessionYearHelper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
@@ -79,6 +80,9 @@ class GestionnaireControllerTest {
 
     @MockitoBean
     private PasswordEncoder passwordEncoder;
+
+    @MockitoBean
+    private GestionnaireRepository  gestionnaireRepository;
 
     @Autowired
     ObjectMapper objectMapper;
@@ -271,12 +275,13 @@ class GestionnaireControllerTest {
     @Test
     @DisplayName("GET /gestionnaire/stages -> 200 + ReturnEntityDTO(message, data[])")
     void getAllStages_returns200WithReturnEntity() throws Exception {
-        StageDTO dto1 = StageDTO.builder().id(1L).title("Backend Java").build();
-        StageDTO dto2 = StageDTO.builder().id(2L).title("Frontend React").build();
+        StageDTO dto1 = StageDTO.builder().id(1L).title("Backend Java").startDate(LocalDate.now()).build();
+        StageDTO dto2 = StageDTO.builder().id(2L).title("Frontend React").startDate(LocalDate.now()).build();
 
-        when(gestionnaireService.getAllStages(null)).thenReturn(List.of(dto1, dto2));
+        when(gestionnaireService.getAllStages(anyString())).thenReturn(List.of(dto1, dto2));
 
-        mockMvc.perform(get("/gestionnaire/stages").accept(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/gestionnaire/stages").accept(MediaType.APPLICATION_JSON)
+                        .param("year", String.valueOf(LocalDate.now().getYear())))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.message", is("Liste des stages")))
@@ -568,6 +573,57 @@ class GestionnaireControllerTest {
     }
 
     @Test
+    void signEntente_success() throws Exception {
+        Long ententeId = 1L;
+        String token = "Bearer token123";
+        String email = "employeur@test.com";
+
+        SignEntenteRequestDTO signEntenteRequestDTO = new SignEntenteRequestDTO("password123");
+
+        when(jwtTokenProvider.getEmailFromJWT("token123")).thenReturn(email);
+
+        doNothing().when(utilisateurService).signEntente(signEntenteRequestDTO, ententeId, email);
+
+        String body = objectMapper.writeValueAsString(signEntenteRequestDTO);
+
+        mockMvc.perform(put("/gestionnaire/ententes/" + ententeId + "/signer")
+                        .header("Authorization", token)
+                        .content(body)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Entente signée avec succès"));
+
+        verify(utilisateurService, times(1)).signEntente(signEntenteRequestDTO, ententeId, email);
+    }
+
+    @Test
+    void signEntente_whenServiceThrows_returns500() throws Exception {
+        Long ententeId = 1L;
+        String token = "Bearer token123";
+        String email = "employeur@test.com";
+
+        SignEntenteRequestDTO signEntenteRequestDTO = new SignEntenteRequestDTO("password123");
+
+        when(jwtTokenProvider.getEmailFromJWT("token123")).thenReturn(email);
+        doThrow(new RuntimeException("Erreur lors de la signature"))
+                .when(utilisateurService).signEntente(signEntenteRequestDTO, ententeId, email);
+
+
+        String body = objectMapper.writeValueAsString(signEntenteRequestDTO);
+
+        mockMvc.perform(put("/gestionnaire/ententes/" + ententeId + "/signer")
+                        .header("Authorization", token)
+                        .content(body)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf()))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.message").value("Erreur interne du serveur lors de la signature de l'entente"));
+
+        verify(utilisateurService, times(1)).signEntente(signEntenteRequestDTO, ententeId, email);
+    }
+
+    @Test
     void associationProfesseurEtudiant() throws Exception {
         ProfesseurDTO professeurDTO = new ProfesseurDTO();
         professeurDTO.setEmail("robert@brassard.com");
@@ -730,7 +786,6 @@ class GestionnaireControllerTest {
         dto.setStageId(1L);
         dto.setComment("Stage attribué par le gestionnaire");
 
-        // Créer un CandidatureDTO complet avec toutes les propriétés nécessaires
         Etudiant etudiant = new Etudiant("John", "Doe", 
                 new Credentials("etudiant@example.com", "password123", Role.ETUDIANT), 
                 Discipline.INFORMATIQUE);

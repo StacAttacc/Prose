@@ -43,6 +43,9 @@ class EtudiantControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     @MockitoBean
     private EtudiantService etudiantService;
 
@@ -622,17 +625,23 @@ class EtudiantControllerTest {
         String token = "Bearer token123";
         String email = "etudiant@test.com";
 
+        SignEntenteRequestDTO signEntenteRequestDTO = new SignEntenteRequestDTO("password123");
+
         when(jwtTokenProvider.getEmailFromJWT("token123")).thenReturn(email);
-        doNothing().when(utilisateurService).signEntente(ententeId, email);
+
+        doNothing().when(utilisateurService).signEntente(signEntenteRequestDTO, ententeId, email);
+
+        String body = objectMapper.writeValueAsString(signEntenteRequestDTO);
 
         mockMvc.perform(put("/etudiant/ententes/" + ententeId + "/signer")
                         .header("Authorization", token)
+                        .content(body)
                         .contentType(MediaType.APPLICATION_JSON)
                         .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Entente signée avec succès"));
 
-        verify(utilisateurService, times(1)).signEntente(ententeId, email);
+        verify(utilisateurService, times(1)).signEntente(signEntenteRequestDTO, ententeId, email);
     }
 
     @Test
@@ -641,17 +650,23 @@ class EtudiantControllerTest {
         String token = "Bearer token123";
         String email = "etudiant@test.com";
 
+        SignEntenteRequestDTO signEntenteRequestDTO = new SignEntenteRequestDTO("password123");
+
         when(jwtTokenProvider.getEmailFromJWT("token123")).thenReturn(email);
         doThrow(new RuntimeException("Erreur lors de la signature"))
-                .when(utilisateurService).signEntente(ententeId, email);
+                .when(utilisateurService).signEntente(signEntenteRequestDTO, ententeId, email);
+
+
+        String body = objectMapper.writeValueAsString(signEntenteRequestDTO);
 
         mockMvc.perform(put("/etudiant/ententes/" + ententeId + "/signer")
                         .header("Authorization", token)
+                        .content(body)
                         .contentType(MediaType.APPLICATION_JSON)
                         .with(csrf()))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.message").value("Erreur interne du serveur lors de la signature de l'entente"));
 
-        verify(utilisateurService, times(1)).signEntente(ententeId, email);
+        verify(utilisateurService, times(1)).signEntente(signEntenteRequestDTO, ententeId, email);
     }
 }
