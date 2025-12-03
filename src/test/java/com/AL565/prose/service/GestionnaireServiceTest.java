@@ -262,7 +262,7 @@ class GestionnaireServiceTest {
         when(employeurRepository.getEmployeurByCredentials_Username("emp1@company.com")).thenReturn(e1);
         when(employeurRepository.getEmployeurByCredentials_Username("emp2@company.com")).thenReturn(e2);
 
-        List<StageDTO> result = gestionnaireService.getAllStages(null);
+        List<StageDTO> result = gestionnaireService.getAllStages(String.valueOf(LocalDate.now().getYear()));
 
         assertThat(result).hasSize(2);
         verify(stageRepository, times(1)).findAll();

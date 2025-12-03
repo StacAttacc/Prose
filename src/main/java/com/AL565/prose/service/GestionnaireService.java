@@ -119,7 +119,8 @@ public class GestionnaireService {
                     .stream()
                     .filter(cv -> {
                         LocalDate cvDate = LocalDate.ofInstant(cv.getLastModifiedDate(), ZoneId.systemDefault());
-                        return cvDate.getYear() == yearNumber;
+                        int cvYear = SessionYearHelper.getSessionYearFromCvDate(cvDate);
+                        return cvYear == yearNumber;
                     })
                     .map(GestionnaireCvDTO::toDto)
                     .toList();
@@ -182,7 +183,7 @@ public class GestionnaireService {
                 return startDate.getYear() ==  yearNumber;
             }).toList();
 
-            if ((candidatures.isEmpty() && yearNumber == LocalDateTime.now().getYear()) || !etudiantCandidature.isEmpty()) {
+            if ((candidatures.isEmpty() && SessionYearHelper.isInSessionRange(yearNumber)) || !etudiantCandidature.isEmpty()) {
                 etudiantCandidaturesDTO.add(
                         EtudiantCandidaturesDTO.builder()
                                 .etudiant(EtudiantDTO.toDTOTokenless(etudiant))
@@ -238,7 +239,6 @@ public class GestionnaireService {
                             etudiantOffresResponsesGroup,
                             gestionnaireEntentesGroup));
         } catch (Exception e) {
-            e.printStackTrace();
             System.err.println("Erreur lors de la récupération des notifications: " + e.getMessage());
             throw new NotificationExceptions.NotificationFetchException();
         }

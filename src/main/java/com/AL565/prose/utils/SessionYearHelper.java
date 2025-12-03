@@ -17,4 +17,26 @@ public class SessionYearHelper {
             return LocalDate.now().getYear();
         }
     }
+
+    public static boolean isInSessionRange(int yearNumber) {
+        int year = LocalDate.now().getYear();
+        int month = LocalDate.now().getMonth().getValue();
+
+        if (month <= 8) {
+            return yearNumber == year || yearNumber == year + 1;
+        } else {
+            return yearNumber == year + 1;
+        }
+    }
+
+    public static int getSessionYearFromCvDate(LocalDate cvDate) {
+        int year = cvDate.getYear();
+        int month = cvDate.getMonthValue();
+
+        if (month >= 9) {
+            return year + 1;
+        }
+
+        return year;
+    }
 }
