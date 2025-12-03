@@ -65,7 +65,6 @@ export default function EvaluationMilieuTravail() {
     const location = useLocation();
     const { stage } = location.state || {};
     const employeur = stage.employeur;
-    let viewing = false;
     
     const [formData, setFormData] = useState(() => initialFormState(candidatureId));
     const [loading, setLoading] = useState(true);
@@ -73,6 +72,7 @@ export default function EvaluationMilieuTravail() {
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(false);
     const [candidature, setCandidature] = useState(null);
+    const [viewing, setViewing] = useState(false);
 
     useEffect(() => {
         loadCandidature();
@@ -99,7 +99,7 @@ export default function EvaluationMilieuTravail() {
             setCandidature(currentCandidature);
 
             if (currentCandidature.evaluationMillieu) {
-                viewing = true;
+                setViewing(true)
                 const evalData = currentCandidature.evaluationMillieu;
                 setFormData(prev => ({
                     ...prev,

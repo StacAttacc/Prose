@@ -1,7 +1,5 @@
 import {http} from "./http.js";
 
-const BASE_URL_PROFESSEUR = "http://localhost:8080/professeur";
-
 export async function evaluateWorkplace(candidatureId, evaluation) {
     try {
         evaluation = {

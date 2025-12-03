@@ -28,7 +28,6 @@ export default function ListeCandidaturesProfesseur() {
                 setError(null);
                 const data = await getCandidaturesProfesseur(user.id, selectedYear);
                 setCandidatures(data || []);
-                console.log(data)
             } catch (err) {
                 console.error('Erreur lors du chargement des candidatures:', err);
                 setError(t('erreurChargementCandidatures') || 'Erreur lors du chargement des candidatures');
