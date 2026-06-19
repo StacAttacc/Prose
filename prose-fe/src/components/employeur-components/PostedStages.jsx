@@ -70,8 +70,7 @@ export default function PostedStages() {
         requestAnimationFrame(() => {
             requestAnimationFrame(() => {
                 const el = document.getElementById(`stage-${stageToScrollTo.id}`);
-                console.log('Element found:', el);
-                
+
                 if (el) {
                     el.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     el.classList.add('ring-2', 'ring-teal-500');

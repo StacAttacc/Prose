@@ -135,7 +135,6 @@ export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSi
             console.error("Erreur lors du chargement de l'entente:", err);
             setError(t('erreurChargementEntente'));
         } finally {
-            console.log("finally")
             setLoading(false);
         }
     };
@@ -167,7 +166,6 @@ export default function EntenteSignatureModal({ applicant, isOpen, onClose, onSi
             setError(t('erreurSignatureEntente'));
             setPassword("");
         } finally {
-            console.log(error)
             setIsSubmitting(false);
         }
     };

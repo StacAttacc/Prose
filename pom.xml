@@ -12,22 +12,45 @@
 	<artifactId>prose</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>prose</name>
-	<description>Demo project for Spring Boot</description>
-	<url/>
+	<description>Internship management platform for students, employers, professors, and program coordinators.</description>
+	<url>https://github.com/StacAttacc/Prose</url>
 	<licenses>
-		<license/>
+		<license>
+			<name>MIT License</name>
+			<url>https://opensource.org/licenses/MIT</url>
+			<distribution>repo</distribution>
+		</license>
 	</licenses>
 	<developers>
-		<developer/>
+		<developer>
+			<id>StacAttacc</id>
+			<name>Anastasia</name>
+		</developer>
+		<developer>
+			<id>LuisFonmarty</id>
+			<name>Luis Fonmarty</name>
+		</developer>
+		<developer>
+			<id>MokhttaAr</id>
+			<name>Mokhtar Rachdad</name>
+		</developer>
+		<developer>
+			<id>RobyCeo</id>
+			<name>Roberto Berrios-Larios</name>
+		</developer>
+		<developer>
+			<id>ZacharieBouchard16</id>
+			<name>Zacharie Bouchard</name>
+		</developer>
 	</developers>
 	<scm>
-		<connection/>
-		<developerConnection/>
-		<tag/>
-		<url/>
+		<connection>scm:git:https://github.com/StacAttacc/Prose.git</connection>
+		<developerConnection>scm:git:git@github.com:StacAttacc/Prose.git</developerConnection>
+		<url>https://github.com/StacAttacc/Prose</url>
+		<tag>HEAD</tag>
 	</scm>
 	<properties>
-		<java.version>24</java.version>
+		<java.version>21</java.version>
 	</properties>
 	<dependencies>
 		<dependency>

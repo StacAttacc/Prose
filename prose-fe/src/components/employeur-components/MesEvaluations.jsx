@@ -22,7 +22,6 @@ const MesEvaluations = () => {
                 setError(null);
                 const data = await getEntentesForEvaluation(user.id, user.token, selectedYear);
                 setEntentes(data || []);
-                console.log(data)
             } catch (err) {
                 console.error('Erreur lors du chargement des ententes:', err);
                 setError(t('evaluations.errorLoading'));

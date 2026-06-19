@@ -11,7 +11,7 @@ export const useYear = () => {
 };
 
 export const YearProvider = ({ children }) => {
-  const [selectedYear, setSelectedYear] = useState((new Date()).getMonth() > 8 ? new Date().getFullYear() + 1 : new Date().getFullYear);
+  const [selectedYear, setSelectedYear] = useState((new Date()).getMonth() > 8 ? new Date().getFullYear() + 1 : new Date().getFullYear());
 
   return (
     <YearContext.Provider value={{ selectedYear, setSelectedYear }}>

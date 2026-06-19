@@ -35,7 +35,6 @@ export const approveCv = async (cvId, comment) => {
 
 export const rejectCv = async (cvId, comment) => {
     try {
-        console.log(comment)
         await http.post(`/gestionnaire/cv/change-status`, {id: cvId, status: "Rejected", comment: comment});
     } catch (error) {
         console.error('Error rejecting CV:', error);

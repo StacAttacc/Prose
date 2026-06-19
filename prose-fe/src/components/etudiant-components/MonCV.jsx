@@ -30,7 +30,6 @@ export default function MonCV() {
             try {
                 const cvData = await telechargerCv(user.email);
                 setCv(cvData);
-                console.log(cvData.comment)
                 if (cvData.status) setStatus(cvData.status);
                 else setStatus("NONE");
             } catch {

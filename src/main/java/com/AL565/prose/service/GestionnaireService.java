@@ -19,6 +19,7 @@ import com.AL565.prose.service.exceptions.FailedToRetrieveStagesException;
 import com.AL565.prose.utils.NotificationsHelper;
 import com.AL565.prose.utils.SessionYearHelper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,6 +36,7 @@ import java.util.Optional;
 import static com.AL565.prose.model.notifications.NotificationType.*;
 
 @Service
+@Slf4j
 @Transactional
 @RequiredArgsConstructor
 public class GestionnaireService {
@@ -239,7 +241,7 @@ public class GestionnaireService {
                             etudiantOffresResponsesGroup,
                             gestionnaireEntentesGroup));
         } catch (Exception e) {
-            System.err.println("Erreur lors de la récupération des notifications: " + e.getMessage());
+            log.error("Erreur lors de la récupération des notifications", e);
             throw new NotificationExceptions.NotificationFetchException();
         }
     }

@@ -237,8 +237,7 @@ export default function ApplicantRow({ applicant, onStatusUpdate, showActions = 
 
     const handleConvoquerEntrevue = async (interviewData) => {
         try {
-            const result = await convoquerEntrevue(applicant.id, interviewData);
-            console.log("Convocation réussie:", result);
+            await convoquerEntrevue(applicant.id, interviewData);
             setLocalStatus("CONVOQUEE");
             if (onStatusUpdate) {
                 onStatusUpdate(applicant.id, "CONVOQUEE", interviewData.dateTime);

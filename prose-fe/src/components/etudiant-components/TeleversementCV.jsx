@@ -60,8 +60,7 @@ const TeleversementCV = ({ onUploadSuccess }) => {
         setError('');
         setSuccess('')
         try {
-            const data = await televerserCv(selectedFile, user);
-            console.log('Fichier téléversé:', data);
+            await televerserCv(selectedFile, user);
             setSelectedFile(null);
             if (fileInputRef.current) fileInputRef.current.value = '';
             setError('');

@@ -11,6 +11,7 @@ import com.AL565.prose.service.dto.ProfesseurPasswordDTO;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import jakarta.validation.ConstraintViolationException;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -18,8 +19,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
 
 @AllArgsConstructor
+@Slf4j
 @SpringBootApplication
-
 public class ProseApplication {
 
     private final EtudiantService etudiantService;
@@ -30,9 +31,9 @@ public class ProseApplication {
     }
 
     @Bean
-    //@Profile({"dev", "local", "test"})
+    @Profile({"dev", "local", "test"})
     public CommandLineRunner seedEmployeur(EmployeurService employeurService, GestionnaireService gestionnaireService) {
-        return _ -> {
+        return args -> {
             EmployeurPasswordDTO employeurRandy = new EmployeurPasswordDTO();
             employeurRandy.setFirstName("Randy");
             employeurRandy.setLastName("Lahey");
@@ -43,8 +44,7 @@ public class ProseApplication {
             try {
                 employeurService.enregistrer(employeurRandy);
             } catch (EmailAlreadyExistsException e) {
-                System.err.println(e.getMessage());
-                System.err.println("employeur pas créé");
+                log.debug("Seed employeur already exists: {}", e.getMessage());
             }
 
             EtudiantPasswordDTO etudiantJohn = new EtudiantPasswordDTO();
@@ -57,7 +57,7 @@ public class ProseApplication {
             try {
                 etudiantService.inscrireEtudiant(etudiantJohn);
             } catch (EmailAlreadyExistsException e) {
-                System.out.println();
+                log.debug("Seed etudiant already exists: {}", e.getMessage());
             }
             
             GestionnairePasswordDTO gestionnaireJane = new GestionnairePasswordDTO();
@@ -69,7 +69,7 @@ public class ProseApplication {
             try {
                 gestionnaireService.saveGestionnaire(gestionnaireJane);
             } catch (EmailAlreadyExistsException e) {
-                System.out.println();
+                log.debug("Seed gestionnaire already exists: {}", e.getMessage());
             }
 
             ProfesseurPasswordDTO professeurRobert = new ProfesseurPasswordDTO();
@@ -82,10 +82,10 @@ public class ProseApplication {
             try {
                 professeurService.register(professeurRobert);
             } catch (EmailAlreadyExistsException e) {
-                System.out.println();
+                log.debug("Seed professeur already exists: {}", e.getMessage());
             } catch (ConstraintViolationException e) {
                 e.getConstraintViolations().forEach(v ->
-                        System.out.println(v.getPropertyPath()));
+                        log.warn("Seed professeur constraint violation on {}", v.getPropertyPath()));
             }
         };
     }

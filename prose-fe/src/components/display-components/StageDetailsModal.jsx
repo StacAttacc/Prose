@@ -60,7 +60,6 @@ export default function StageDetailsModal({
         setError("");
         try {
             const data = await getAllEtudiants();
-            console.log('Étudiants chargés:', data);
             setEtudiants(Array.isArray(data) ? data : []);
         } catch (err) {
             console.error('Erreur lors du chargement des étudiants:', err);
