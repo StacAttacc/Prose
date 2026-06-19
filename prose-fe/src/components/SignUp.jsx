@@ -60,7 +60,6 @@ export default function SignUp({ onSwitchToLogin }) {
             } else {
                 await registerEtudiant(payload);
             }
-            //await login(email,pwd); au cas si le backend renvoie pas de token
             navigate("/");
         } catch (err) {
             console.error(err);

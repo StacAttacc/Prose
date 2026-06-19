@@ -84,64 +84,90 @@ all of them is `password123`.
 
 ## Deployment
 
-The production setup is a split-stack architecture, fully on free tiers:
+The production setup is split across a self-hosted Kubernetes cluster and
+two managed free tiers:
 
 | Layer | Host | Notes |
 |---|---|---|
-| Frontend | **Vercel** (Hobby) | React build, auto-deployed on push via GitHub integration |
-| Backend | **Oracle Cloud Infrastructure** (Always Free) | Spring Boot jar on an Ampere A1 ARM VM |
-| Database | **Neon** (free tier) | Managed Postgres, branch-per-PR ready |
-| Ingress | **Cloudflare Tunnel** | Public HTTPS for the backend without port forwarding or static IP |
+| Frontend | **Vercel** (Hobby) | React build, auto-deployed from `main` via the GitHub integration |
+| Backend | **Self-hosted k3s cluster** (Flux GitOps) | Multi-arch container, GHCR-hosted, image bumps auto-committed by Flux |
+| Database | **Neon** (free tier) | Managed Postgres over TLS, ready for branch-per-PR |
+| Public ingress | **Tailscale Operator + Funnel** | Public HTTPS at `prose-api.<tailnet>.ts.net`, no domain, no port forwarding |
+| Secrets | **HashiCorp Vault** via **External Secrets Operator** | `secret/prose/*` injected as env vars |
+| CI | **GitHub Actions** + **Buildx** | `mvn verify`, multi-arch image (amd64 + arm64), pushed to GHCR |
 
-### Backend on Oracle (Ampere A1 ARM)
+### Backend on k3s via Flux
 
-1. Provision a `VM.Standard.A1.Flex` instance (1 OCPU, 6 GB RAM is enough for
-   one Prose backend; the Always Free pool gives you 4 OCPU / 24 GB total).
-2. Install a JDK 21 ARM build (Temurin or Corretto) plus `docker` and
-   `docker compose`.
-3. Set the runtime environment on the host (or in a systemd `EnvironmentFile`):
-   ```bash
-   PROSE_JWT_SECRET=...                # 256-bit hex string
-   PROSE_DB_URL=jdbc:postgresql://...neon.tech/prose?sslmode=require
-   PROSE_DB_USERNAME=...
-   PROSE_DB_PASSWORD=...
-   SPRING_PROFILES_ACTIVE=prod         # disables the demo-user seeder
-   ```
-4. Build and run:
-   ```bash
-   ./mvnw -DskipTests clean package
-   java -jar target/prose-0.0.1-SNAPSHOT.jar
-   ```
-   Wrap in a systemd unit so it auto-restarts on crash and on boot.
+The backend ships as an OCI image. CI builds `linux/amd64` and `linux/arm64`
+and pushes to `ghcr.io/<owner>/prose:<UTC-timestamp>-<sha>`. Flux's image
+automation (`ImageRepository` + `ImagePolicy` + `ImageUpdateAutomation`)
+watches the tag pattern and auto-commits the new tag back to the cluster
+manifests repo, which Flux then reconciles, rolling the Deployment.
+
+Manifests under `apps/prose/` declare a `Namespace`, `Deployment`,
+internal `Service`, public Tailscale Funnel `Service`, `ExternalSecret`,
+and image automation. The Pod is stateless: CV uploads land in Postgres
+as `bytea`, no PVC required.
+
+Resource requests are `384Mi` / `200m`, limits `1Gi` / `1000m`, with
+`JAVA_TOOL_OPTIONS=-XX:MaxRAMPercentage=75 -XX:InitialRAMPercentage=50`
+so the JVM respects the cgroup limit. Readiness and liveness probes hit
+Spring Boot Actuator at `/actuator/health/readiness` and
+`/actuator/health/liveness`.
 
 ### Database on Neon
 
-1. Create a Neon project, copy the JDBC connection string (with `?sslmode=require`).
-2. Apply any patches from [`db/patches/`](db/patches/README.md) once against the
-   fresh database. Schema is then maintained by `spring.jpa.hibernate.ddl-auto=update`.
+1. Create a Neon project, copy the JDBC connection string with
+   `?sslmode=require` and `?currentSchema=public` if needed.
+2. On first Pod start, `spring.jpa.hibernate.ddl-auto=update` creates the
+   schema. Apply patches from [`db/patches/`](db/patches/README.md) only
+   if you hit the edge cases listed there.
 
-### Ingress via Cloudflare Tunnel
+### Public HTTPS via Tailscale Funnel
 
-1. Install `cloudflared` on the Oracle VM, authenticate against your
-   Cloudflare account, create a tunnel pointing at `http://localhost:8080`.
-2. Bind it to a hostname like `api.yourdomain.com`. Cloudflare issues the
-   TLS cert automatically.
-3. No inbound ports need to be opened on the OCI security list.
+A second `Service` in the `prose` namespace is annotated for the
+Tailscale Operator:
+
+```yaml
+annotations:
+  tailscale.com/expose: "true"
+  tailscale.com/funnel: "true"
+  tailscale.com/hostname: "prose-api"
+spec:
+  type: LoadBalancer
+  loadBalancerClass: tailscale
+  ports:
+    - port: 443
+      targetPort: 8080
+```
+
+The operator spins up a `tsnet` proxy Pod that terminates HTTPS at
+`prose-api.<your-tailnet>.ts.net:443` and forwards plaintext to the
+backend Service. No custom domain, no Cloudflare account, no port
+forwarding. The Funnel attribute must be granted to the operator's
+proxy tag (typically `tag:k8s`) in the tailnet ACL.
+
+### Secrets via Vault + External Secrets Operator
+
+`PROSE_DB_URL`, `PROSE_DB_USERNAME`, `PROSE_DB_PASSWORD`, and
+`PROSE_JWT_SECRET` live at `secret/prose` in Vault. An
+`ExternalSecret` syncs them into a Kubernetes `Secret`, which the
+Deployment loads via `envFrom: { secretRef }`. Nothing sensitive ever
+sits in the manifests repo.
 
 ### Frontend on Vercel
 
 1. Import the repo on Vercel with `prose-fe/` as the project root.
-2. Set `VITE_API_BASE_URL=https://api.yourdomain.com` in the project's
-   environment variables.
-3. Vercel rebuilds on every push to `main`. No GitHub Actions required for
-   the frontend.
+2. Set `VITE_API_BASE_URL=https://prose-api.<your-tailnet>.ts.net` in
+   Production and Preview environments.
+3. Vercel rebuilds on every push to `main`. Preview URLs
+   (`prose-fe-<hash>.vercel.app`) are covered by the CORS wildcard.
 
 ### Local / LAN-only deploy
 
-If you'd rather skip the cloud entirely, the same jar runs on any LAN host:
-build with `./mvnw clean package`, set the env vars above pointing at a local
-Postgres, run the jar, and point the frontend build at
-`http://<lan-host>:8080`.
+The same jar runs on any host without Kubernetes: `./mvnw clean package`,
+set the env vars above pointing at a local Postgres, run the jar, and
+point the frontend build at `http://<lan-host>:8080`.
 
 ## Tests
 
@@ -280,72 +306,95 @@ Le mot de passe est `password123` pour tous.
 
 ## Déploiement
 
-L'architecture de production est répartie sur plusieurs services, entièrement
-sur des paliers gratuits :
+Le déploiement de production est réparti entre un cluster Kubernetes
+auto-hébergé et deux services infogérés gratuits :
 
 | Couche | Hébergement | Notes |
 |---|---|---|
-| Frontend | **Vercel** (Hobby) | Build React, redéployé automatiquement à chaque push via l'intégration GitHub |
-| Backend | **Oracle Cloud Infrastructure** (Always Free) | jar Spring Boot sur une VM ARM Ampere A1 |
-| Base de données | **Neon** (palier gratuit) | Postgres infogéré, prêt pour le branchement par PR |
-| Ingress | **Cloudflare Tunnel** | HTTPS public vers le backend, sans redirection de ports ni IP statique |
+| Frontend | **Vercel** (Hobby) | Build React, redéployé automatiquement depuis `main` via l'intégration GitHub |
+| Backend | **Cluster k3s auto-hébergé** (GitOps Flux) | Conteneur multi-arch, hébergé sur GHCR, mises à jour d'image auto-commitées par Flux |
+| Base de données | **Neon** (palier gratuit) | Postgres infogéré sur TLS, prêt pour le branchement par PR |
+| Ingress public | **Opérateur Tailscale + Funnel** | HTTPS public à `prose-api.<tailnet>.ts.net`, sans domaine ni redirection de ports |
+| Secrets | **HashiCorp Vault** via **External Secrets Operator** | `secret/prose/*` injectés comme variables d'environnement |
+| CI | **GitHub Actions** + **Buildx** | `mvn verify`, image multi-arch (amd64 + arm64), poussée sur GHCR |
 
-### Backend sur Oracle (Ampere A1 ARM)
+### Backend sur k3s via Flux
 
-1. Provisionnez une instance `VM.Standard.A1.Flex` (1 OCPU, 6 Go de RAM
-   suffisent pour un backend Prose ; le palier Always Free offre au total
-   4 OCPU / 24 Go).
-2. Installez un JDK 21 ARM (Temurin ou Corretto), ainsi que `docker` et
-   `docker compose`.
-3. Définissez l'environnement d'exécution sur l'hôte (ou dans un
-   `EnvironmentFile` systemd) :
-   ```bash
-   PROSE_JWT_SECRET=...                # chaîne hexadécimale 256 bits
-   PROSE_DB_URL=jdbc:postgresql://...neon.tech/prose?sslmode=require
-   PROSE_DB_USERNAME=...
-   PROSE_DB_PASSWORD=...
-   SPRING_PROFILES_ACTIVE=prod         # désactive le seeder de comptes de démo
-   ```
-4. Compilez et lancez :
-   ```bash
-   ./mvnw -DskipTests clean package
-   java -jar target/prose-0.0.1-SNAPSHOT.jar
-   ```
-   Encapsulez le tout dans une unité systemd pour le redémarrage automatique
-   en cas de plantage ou de reboot.
+Le backend est livré sous forme d'image OCI. La CI construit
+`linux/amd64` et `linux/arm64`, puis pousse vers
+`ghcr.io/<owner>/prose:<horodatage-UTC>-<sha>`. L'automatisation d'images
+de Flux (`ImageRepository` + `ImagePolicy` + `ImageUpdateAutomation`)
+surveille le motif de tag et auto-commit le nouveau tag dans le dépôt de
+manifestes du cluster, que Flux réconcilie ensuite, faisant rouler le
+Deployment.
+
+Les manifestes sous `apps/prose/` déclarent un `Namespace`, un
+`Deployment`, un `Service` interne, un `Service` public via Tailscale
+Funnel, un `ExternalSecret`, et l'automatisation d'image. Le Pod est
+sans état : les téléversements de CV vont dans Postgres sous forme de
+`bytea`, aucun PVC requis.
+
+Ressources : requests `384Mi` / `200m`, limits `1Gi` / `1000m`, avec
+`JAVA_TOOL_OPTIONS=-XX:MaxRAMPercentage=75 -XX:InitialRAMPercentage=50`
+pour que la JVM respecte la limite cgroup. Les sondes readiness et
+liveness frappent Spring Boot Actuator à `/actuator/health/readiness` et
+`/actuator/health/liveness`.
 
 ### Base de données sur Neon
 
-1. Créez un projet Neon, copiez la chaîne de connexion JDBC (avec
-   `?sslmode=require`).
-2. Appliquez une fois les correctifs de [`db/patches/`](db/patches/README.md)
-   sur la base neuve. Le schéma est ensuite maintenu par
-   `spring.jpa.hibernate.ddl-auto=update`.
+1. Créez un projet Neon, copiez la chaîne de connexion JDBC avec
+   `?sslmode=require`.
+2. Au premier démarrage du Pod, `spring.jpa.hibernate.ddl-auto=update`
+   crée le schéma. Appliquez les correctifs de
+   [`db/patches/`](db/patches/README.md) uniquement si vous rencontrez
+   les cas limites qui y sont listés.
 
-### Ingress via Cloudflare Tunnel
+### HTTPS public via Tailscale Funnel
 
-1. Installez `cloudflared` sur la VM Oracle, authentifiez-vous auprès de
-   votre compte Cloudflare, créez un tunnel pointant vers
-   `http://localhost:8080`.
-2. Liez-le à un nom d'hôte du type `api.votredomaine.com`. Cloudflare émet
-   le certificat TLS automatiquement.
-3. Aucun port entrant n'est à ouvrir dans la security list OCI.
+Un second `Service` dans le namespace `prose` est annoté pour l'opérateur
+Tailscale :
+
+```yaml
+annotations:
+  tailscale.com/expose: "true"
+  tailscale.com/funnel: "true"
+  tailscale.com/hostname: "prose-api"
+spec:
+  type: LoadBalancer
+  loadBalancerClass: tailscale
+  ports:
+    - port: 443
+      targetPort: 8080
+```
+
+L'opérateur crée un Pod proxy `tsnet` qui termine HTTPS à
+`prose-api.<votre-tailnet>.ts.net:443` et le transfère en clair vers le
+Service backend. Pas de domaine personnalisé, pas de compte Cloudflare,
+aucune redirection de ports. L'attribut Funnel doit être accordé au tag
+de proxy de l'opérateur (typiquement `tag:k8s`) dans l'ACL du tailnet.
+
+### Secrets via Vault + External Secrets Operator
+
+`PROSE_DB_URL`, `PROSE_DB_USERNAME`, `PROSE_DB_PASSWORD`, et
+`PROSE_JWT_SECRET` vivent dans Vault à `secret/prose`. Un
+`ExternalSecret` les synchronise dans un `Secret` Kubernetes, que le
+Deployment charge via `envFrom: { secretRef }`. Rien de sensible ne se
+trouve dans le dépôt de manifestes.
 
 ### Frontend sur Vercel
 
 1. Importez le dépôt dans Vercel avec `prose-fe/` comme racine du projet.
-2. Définissez `VITE_API_BASE_URL=https://api.votredomaine.com` dans les
-   variables d'environnement du projet Vercel.
-3. Vercel reconstruit à chaque push sur `main`. Aucun workflow GitHub
-   Actions n'est nécessaire pour le frontend.
+2. Définissez `VITE_API_BASE_URL=https://prose-api.<votre-tailnet>.ts.net`
+   dans les environnements Production et Preview.
+3. Vercel reconstruit à chaque push sur `main`. Les URL de preview
+   (`prose-fe-<hash>.vercel.app`) sont couvertes par le wildcard CORS.
 
 ### Déploiement local / réseau local
 
-Si vous préférez éviter le cloud, le même jar fonctionne sur n'importe quel
-hôte du réseau local : compilez avec `./mvnw clean package`, définissez les
-variables d'environnement ci-dessus en pointant vers un Postgres local,
-exécutez le jar, et compilez le frontend en pointant sur
-`http://<hôte-lan>:8080`.
+Le même jar fonctionne sur n'importe quel hôte sans Kubernetes :
+`./mvnw clean package`, définissez les variables d'environnement
+ci-dessus pointant vers un Postgres local, exécutez le jar, et compilez
+le frontend en pointant sur `http://<hôte-lan>:8080`.
 
 ## Tests
 

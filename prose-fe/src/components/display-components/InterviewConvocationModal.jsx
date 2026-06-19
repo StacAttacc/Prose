@@ -30,8 +30,6 @@ export default function InterviewConvocationModal({ applicant, isOpen, onClose, 
         try {
             await onConfirm({
                 applicantId: applicant.id,
-                //interviewDate,
-                //interviewTime,
                 dateTime: selectedDateTime.toISOString()
             });
             handleClose();

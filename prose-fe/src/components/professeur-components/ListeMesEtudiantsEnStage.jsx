@@ -274,23 +274,6 @@ export default function ListeMesEtudiantsEnStage() {
                                             </th>
                                         )}
 
-                                        {/*tab === "APPROVED" && (
-                                            <th className="text-left text-gray-800 dark:text-gray-200 font-semibold py-3 px-4">
-                                                {t('statusEntente')}
-                                            </th>
-                                        )}
-
-                                        {tab === "APPLIED" && (
-                                            <th className="text-left text-gray-800 dark:text-gray-200 font-semibold py-3 px-4">
-                                                {t('action')}
-                                            </th>
-                                        )}
-
-                                        {tab === "APPROVED" && (
-                                            <th className="text-left text-gray-800 dark:text-gray-200 font-semibold py-3 px-4">
-                                                {t('action')}
-                                            </th>
-                                        )*/}
                                     </tr>
                                 </thead>
 
@@ -361,76 +344,6 @@ export default function ListeMesEtudiantsEnStage() {
                                                 </td>
                                             )}
 
-                                            {/*tab === "APPROVED" && (
-                                                <td className="py-3 px-4 align-top">
-                                                    {(() => {
-                                                        const confirmed = (s.applications || []).find(
-                                                            (a) =>
-                                                                String(a.status).toUpperCase() ===
-                                                                CONFIRMED_STATUS
-                                                        );
-                                                        if (!confirmed?.id)
-                                                            return (
-                                                                <span className="text-sm text-gray-400 dark:text-gray-500">
-                                                                —
-                                                            </span>
-                                                            );
-
-                                                        const entente = ententeDataMap[confirmed.id];
-                                                        const checking = checkingEntente[confirmed.id];
-
-                                                        if (checking)
-                                                            return (
-                                                                <span className="text-sm text-gray-500 dark:text-gray-400 italic">
-                                                                {t('verification')}
-                                                            </span>
-                                                            );
-
-                                                        if (!entente)
-                                                            return (
-                                                                <span className="text-sm text-gray-400 dark:text-gray-500">
-                                                                {t('ententeNonGeneree')}
-                                                            </span>
-                                                            );
-
-                                                        if (entente.status === "SIGNEE")
-                                                            return (
-                                                                <span className="text-sm text-green-600 dark:text-green-400 font-medium">
-                                                                {t('ententeSigneeParToutesLesParties')}
-                                                            </span>
-                                                            );
-
-                                                        return (
-                                                            <span className="text-sm text-gray-600 dark:text-gray-300">
-                                                            {t('enAttenteDeSignature')}
-                                                        </span>
-                                                        );
-                                                    })()}
-                                                </td>
-                                            )*/}
-
-                                            {/*tab === "APPLIED" && (
-                                                <td className="py-3 px-4 align-top">
-                                                    <button
-                                                        type="button"
-                                                        className="text-blue-600 dark:text-blue-400 hover:underline"
-                                                        onClick={() => {
-                                                            setModalFilterStatuses(null);
-                                                            setModalStudent(s);
-                                                        }}
-                                                    >
-                                                        {t('voirCandidatures')}
-                                                    </button>
-                                                </td>
-                                            )*/}
-
-                                            {/*tab === "APPROVED" && (
-                                                <td className="py-3 px-4 align-top">
-                                                <span className="text-sm text-gray-400 dark:text-gray-500 italic">
-                                                    {t('aucuneActionDisponible') || "Aucune Action Disponible"}
-                                                </span>
-                                                </td>
-                                            )*/}
                                         </tr>
                                     ))}
                                 </tbody>

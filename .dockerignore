@@ -1,0 +1,12 @@
+target/
+.git/
+.idea/
+*.iml
+prose-fe/
+db/
+compose.yaml
+flake.nix
+flake.lock
+README.md
+[Help/
+.github/
