@@ -3,11 +3,10 @@ import { http } from "./http.js";
 const CV_UPLOAD_URL = "/etudiant/televerser-cv";
 const CV_DOWNLOAD_URL = "/etudiant/telecharger-cv";
 
-export const televerserCv = async (cv, user) => {
+export const televerserCv = async (cv) => {
     try{
         const dataToSend = new FormData();
         dataToSend.append('cv', cv);
-        dataToSend.append("email", user.email);
 
         const { data } = await http.post(CV_UPLOAD_URL, dataToSend, {
             headers: {

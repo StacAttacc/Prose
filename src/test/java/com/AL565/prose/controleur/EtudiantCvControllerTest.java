@@ -66,9 +66,12 @@ class EtudiantCvControllerTest {
     @Test
     @WithMockUser(username = "testuser", roles = {"ETUDIANT"})
     void televerserCv_shouldReturnCreatedForAuthenticatedUser() throws Exception {
+        when(jwtTokenProvider.getEmailFromJWT(org.mockito.ArgumentMatchers.anyString()))
+                .thenReturn("email@email.email");
+
         mockMvc.perform(multipart("/etudiant/televerser-cv")
                         .file("cv", "PDF content".getBytes())
-                        .param("email", "email@email.email")
+                        .header("Authorization", "Bearer token123")
                         .param("lastModified", "2024-10-01T12:00:00Z")
                         .contentType(MediaType.MULTIPART_FORM_DATA)
                         .with(csrf()))
@@ -85,9 +88,12 @@ class EtudiantCvControllerTest {
                 "%PDF-1.4\n%Mock PDF content\n".getBytes()
         );
 
+        when(jwtTokenProvider.getEmailFromJWT(org.mockito.ArgumentMatchers.anyString()))
+                .thenReturn("email@email.email");
+
         mockMvc.perform(multipart("/etudiant/televerser-cv")
                         .file(pdfFile)
-                        .param("email", "email@email.email")
+                        .header("Authorization", "Bearer token123")
                         .param("lastModified", "2024-10-01T12:00:00Z")
                         .contentType(MediaType.MULTIPART_FORM_DATA)
                         .with(csrf()))
@@ -103,9 +109,11 @@ class EtudiantCvControllerTest {
                 .status(CvStatus.PENDING)
                 .build();
 
-        when(etudiantService.getCvByEmail("email@email.email")).thenReturn(EtudiantCvDTO.toDto(cv));
+        when(etudiantService.getCvForCaller("email@email.email", "email@email.email"))
+                .thenReturn(EtudiantCvDTO.toDto(cv));
 
         mockMvc.perform(get("/etudiant/telecharger-cv/email@email.email")
+                        .header("Authorization", "Bearer token123")
                         .with(csrf()))
                 .andExpect(status().isOk());
     }

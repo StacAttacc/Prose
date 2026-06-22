@@ -10,6 +10,7 @@ import java.util.Optional;
 
 public interface CandidatureRepository extends JpaRepository<Candidature, Long> {
     boolean existsByEtudiant_Credentials_UsernameAndStage_Id(String username, Long stageId);
+    boolean existsByEtudiant_Credentials_UsernameAndStage_EmployeurEmail(String username, String employeurEmail);
     Optional<List<Candidature>> findAllByStage_Id(long id);
 
     List<Candidature> findByEtudiant_Credentials_Username(String username);

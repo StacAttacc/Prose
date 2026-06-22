@@ -58,16 +58,21 @@ public class EtudiantController {
 
     @PostMapping("/televerser-cv")
     public ResponseEntity<String> televerser(@RequestParam("cv") MultipartFile cv,
-                                             @RequestParam("email") String email,
+                                             @RequestHeader("Authorization") String authHeader,
                                              @RequestParam(value = "lastModified", required = false) String lastModified)
             throws Exception {
+        String token = authHeader.replace("Bearer ", "");
+        String email = jwtTokenProvider.getEmailFromJWT(token);
         etudiantService.saveCv(cv, email, lastModified);
         return ResponseEntity.status(HttpStatus.CREATED).body("CV téléversé avec succès");
     }
 
     @GetMapping("/telecharger-cv/{email}")
-    public ResponseEntity<EtudiantCvDTO> telecharger(@PathVariable String email) {
-        EtudiantCvDTO cv = etudiantService.getCvByEmail(email);
+    public ResponseEntity<EtudiantCvDTO> telecharger(@PathVariable String email,
+                                                     @RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.replace("Bearer ", "");
+        String callerEmail = jwtTokenProvider.getEmailFromJWT(token);
+        EtudiantCvDTO cv = etudiantService.getCvForCaller(callerEmail, email);
         return ResponseEntity.ok(cv);
     }
 
@@ -234,10 +239,16 @@ public class EtudiantController {
     }
 
     @GetMapping("/candidatures/{candidatureId}/entente")
-    public ResponseEntity<ReturnEntityDTO<EntenteDTO>> getEntente(@PathVariable Long candidatureId) {
+    public ResponseEntity<ReturnEntityDTO<EntenteDTO>> getEntente(@PathVariable Long candidatureId,
+                                                                  @RequestHeader("Authorization") String authHeader) {
         try {
-            EntenteDTO entente = utilisateurService.getEntenteByCandidatureId(candidatureId);
+            String token = authHeader.replace("Bearer ", "");
+            String callerEmail = jwtTokenProvider.getEmailFromJWT(token);
+            EntenteDTO entente = utilisateurService.getEntenteByCandidatureId(candidatureId, callerEmail);
             return ResponseEntity.ok(new ReturnEntityDTO<>("Entente trouvée", entente));
+        } catch (org.springframework.security.access.AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new ReturnEntityDTO<>(e.getMessage(), null));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ReturnEntityDTO<>(e.getMessage(), null));

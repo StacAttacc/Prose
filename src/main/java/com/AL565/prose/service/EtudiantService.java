@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.AL565.prose.model.auth.Role;
 import com.AL565.prose.security.exceptions.CvExceptions;
 import com.AL565.prose.service.dto.notifications.NotificationGroupDTO;
 import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
@@ -33,6 +34,8 @@ import com.AL565.prose.service.exceptions.CandidatureNotFoundException;
 import com.AL565.prose.utils.NotificationsHelper;
 import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -165,6 +168,27 @@ public class EtudiantService {
         return cvRepository.findByEtudiant_Credentials_Username(username)
                 .map(EtudiantCvDTO::toDto)
                 .orElse(null);
+    }
+
+    public EtudiantCvDTO getCvForCaller(String callerEmail, String targetEmail) {
+        if (callerEmail == null || targetEmail == null) {
+            throw new AccessDeniedException("Accès refusé");
+        }
+        if (callerEmail.equals(targetEmail)) {
+            return getCvByEmail(targetEmail);
+        }
+        boolean isEmployeur = SecurityContextHolder.getContext().getAuthentication()
+                .getAuthorities().stream()
+                .anyMatch(a -> Role.EMPLOYEUR.name().equals(a.getAuthority()));
+        if (!isEmployeur) {
+            throw new AccessDeniedException("Accès refusé");
+        }
+        boolean appliedToCallerStage = candidatureRepository
+                .existsByEtudiant_Credentials_UsernameAndStage_EmployeurEmail(targetEmail, callerEmail);
+        if (!appliedToCallerStage) {
+            throw new AccessDeniedException("Accès refusé");
+        }
+        return getCvByEmail(targetEmail);
     }
 
 

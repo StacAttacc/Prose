@@ -13,6 +13,7 @@ import com.AL565.prose.service.dto.*;
 import com.AL565.prose.utils.PDFHelper;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -64,14 +65,16 @@ public class UtilisateurService {
     }
 
     @Transactional
-    public EntenteDTO getEntenteByCandidatureId(Long candidatureId) {
+    public EntenteDTO getEntenteByCandidatureId(Long candidatureId, String callerEmail) {
         Candidature candidature = candidatureRepository.findById(candidatureId)
                 .orElseThrow(() -> new IllegalArgumentException("Candidature non trouvée"));
+
+        Stage stage = candidature.getStage();
+        assertCallerIsParticipantOrGestionnaire(callerEmail, candidature.getEtudiant().getEmail(), stage.getEmployeurEmail());
 
         Optional<Entente> existingEntente = ententeRepository.findByCandidatureId(candidatureId);
         if (existingEntente.isPresent()) {
             Entente entente = existingEntente.get();
-            Stage stage = candidature.getStage();
             Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(stage.getEmployeurEmail());
             return EntenteDTO.toDTO(entente, employeur);
         }
@@ -79,12 +82,15 @@ public class UtilisateurService {
         throw new IllegalArgumentException("Aucune entente trouvée pour cette candidature");
     }
 
-    public String getPDFEntente(String id) throws Exception {
+    public String getPDFEntente(String id, String callerEmail) throws Exception {
         Entente entente = ententeRepository.findById(Long.parseLong(id)).orElseThrow(IllegalArgumentException::new);
 
         Candidature candidature = entente.getCandidature();
         Etudiant etudiant = candidature.getEtudiant();
         Stage stage = candidature.getStage();
+
+        assertCallerIsParticipantOrGestionnaire(callerEmail, etudiant.getEmail(), stage.getEmployeurEmail());
+
         Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(stage.getEmployeurEmail());
 
         byte[] pdf = pdfHelper.generateContractPdfWithSignatures(
@@ -97,6 +103,21 @@ public class UtilisateurService {
         );
 
         return Base64.getEncoder().encodeToString(pdf);
+    }
+
+    private void assertCallerIsParticipantOrGestionnaire(String callerEmail, String etudiantEmail, String employeurEmail) {
+        if (callerEmail == null) {
+            throw new AccessDeniedException("Accès refusé");
+        }
+        boolean isEtudiant = etudiantEmail != null && etudiantEmail.equals(callerEmail);
+        boolean isEmployeur = employeurEmail != null && employeurEmail.equals(callerEmail);
+        if (isEtudiant || isEmployeur) {
+            return;
+        }
+        if (gestionnaireRepository.findByCredentials_Username(callerEmail).isPresent()) {
+            return;
+        }
+        throw new AccessDeniedException("Accès refusé à cette entente");
     }
 
     @Transactional

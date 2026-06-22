@@ -1,6 +1,5 @@
 import React, {useRef, useState} from 'react';
 import {televerserCv} from "../../services/EtudiantService.js";
-import {useAuth} from "../../context/AuthContext.jsx";
 import {useI18n} from "../../context/I18nContext.jsx";
 import ErrorBanner from "../display-components/ErrorBanner.jsx";
 
@@ -11,7 +10,6 @@ const TeleversementCV = ({ onUploadSuccess }) => {
     const [success, setSuccess] = useState('');
     const [uploading, setUploading] = useState(false);
     const fileInputRef = useRef(null);
-    const {user} = useAuth();
 
     const validerFichier = (file) => {
         if (!file) return false;
@@ -60,7 +58,7 @@ const TeleversementCV = ({ onUploadSuccess }) => {
         setError('');
         setSuccess('')
         try {
-            await televerserCv(selectedFile, user);
+            await televerserCv(selectedFile);
             setSelectedFile(null);
             if (fileInputRef.current) fileInputRef.current.value = '';
             setError('');

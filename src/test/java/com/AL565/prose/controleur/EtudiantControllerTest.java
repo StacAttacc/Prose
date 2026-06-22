@@ -133,11 +133,12 @@ class EtudiantControllerTest {
                 "CV content".getBytes()
         );
 
+        when(jwtTokenProvider.getEmailFromJWT(anyString())).thenReturn("test@test.com");
         doNothing().when(etudiantService).saveCv(any(), anyString(), anyString());
 
         mockMvc.perform(multipart("/etudiant/televerser-cv")
                 .file(cvFile)
-                .param("email", "test@test.com")
+                .header("Authorization", "Bearer token123")
                 .param("lastModified", "2024-01-01")
                 .with(csrf()))
                 .andExpect(status().isCreated())
@@ -152,13 +153,15 @@ class EtudiantControllerTest {
         cvDTO.setName("cv.pdf");
         cvDTO.setType("application/pdf");
 
-        when(etudiantService.getCvByEmail("test@test.com")).thenReturn(null);
+        when(jwtTokenProvider.getEmailFromJWT(anyString())).thenReturn("test@test.com");
+        when(etudiantService.getCvForCaller("test@test.com", "test@test.com")).thenReturn(null);
 
         mockMvc.perform(get("/etudiant/telecharger-cv/test@test.com")
+                .header("Authorization", "Bearer token123")
                 .with(csrf()))
                 .andExpect(status().isOk());
 
-        verify(etudiantService, times(1)).getCvByEmail("test@test.com");
+        verify(etudiantService, times(1)).getCvForCaller("test@test.com", "test@test.com");
     }
 
     @Test
