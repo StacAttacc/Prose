@@ -7,6 +7,7 @@ import com.AL565.prose.service.dto.*;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import com.AL565.prose.utils.SessionYearHelper;
 import lombok.AllArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,9 +41,16 @@ public class ProfesseurService {
     }
 
     @Transactional
-    public void evaluateWorkplace(MillieuEvaluationDTO evaluation, long candidatureId) {
+    public void evaluateWorkplace(MillieuEvaluationDTO evaluation, long candidatureId, String callerEmail) {
         Candidature candidature = candidatureRepository.findById(candidatureId)
                 .orElseThrow(() -> new NoSuchElementException("Candidature non trouvée"));
+
+        Professeur caller = professeurRepository.findByCredentials_Username(callerEmail)
+                .orElseThrow(() -> new AccessDeniedException("Accès refusé"));
+        Professeur responsable = candidature.getEtudiant().getProfesseurResponsable();
+        if (responsable == null || !responsable.getId().equals(caller.getId())) {
+            throw new AccessDeniedException("Vous n'êtes pas le professeur responsable de cet étudiant");
+        }
 
         evaluation.setId(null);
 
@@ -68,7 +76,8 @@ public class ProfesseurService {
     }
 
     @Transactional
-    public List<CandidatureEvaluationDTO> getAllCandidaturesProfesseurRelated(String year, String professeurId) {
+    public List<CandidatureEvaluationDTO> getAllCandidaturesProfesseurRelated(String year, String professeurId, String callerEmail) {
+        assertCallerIsProfesseur(callerEmail, professeurId);
         int yearNumber = SessionYearHelper.getSessionYear(year);
 
         return candidatureRepository.findAllByEtudiant_ProfesseurResponsable_Id(Long.parseLong(professeurId))
@@ -90,7 +99,8 @@ public class ProfesseurService {
     }
 
     @Transactional
-    public List<EtudiantCandidaturesDTO> getAllEtudiantsCandidatures(String year, String professeurId) {
+    public List<EtudiantCandidaturesDTO> getAllEtudiantsCandidatures(String year, String professeurId, String callerEmail) {
+        assertCallerIsProfesseur(callerEmail, professeurId);
         int yearNumber = SessionYearHelper.getSessionYear(year);
         List<Etudiant> etudiants =  etudiantRepository.findAll();
 
@@ -135,5 +145,22 @@ public class ProfesseurService {
         });
 
         return etudiantCandidaturesDTO;
+    }
+
+    private void assertCallerIsProfesseur(String callerEmail, String professeurId) {
+        if (callerEmail == null || professeurId == null) {
+            throw new AccessDeniedException("Accès refusé");
+        }
+        Professeur caller = professeurRepository.findByCredentials_Username(callerEmail)
+                .orElseThrow(() -> new AccessDeniedException("Accès refusé"));
+        long parsedId;
+        try {
+            parsedId = Long.parseLong(professeurId);
+        } catch (NumberFormatException e) {
+            throw new AccessDeniedException("Accès refusé");
+        }
+        if (!caller.getId().equals(parsedId)) {
+            throw new AccessDeniedException("Accès refusé");
+        }
     }
 }

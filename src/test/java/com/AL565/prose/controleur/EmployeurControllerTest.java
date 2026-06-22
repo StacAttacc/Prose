@@ -118,7 +118,8 @@ class EmployeurControllerTest {
                 .compensation("22$/h")
                 .build();
 
-        when(employeurService.createStage(any(StageDTO.class)))
+        when(jwtTokenProvider.getEmailFromJWT(anyString())).thenReturn("employeur@test.com");
+        when(employeurService.createStage(any(StageDTO.class), eq("employeur@test.com")))
                 .thenReturn(StageDTO.builder().id(42L).build());
 
         var employeur = new Employeur();
@@ -131,6 +132,7 @@ class EmployeurControllerTest {
 
         var result = mockMvc.perform(
                 post("/employeur/createStage")
+                        .header("Authorization", "Bearer token123")
                         .with(csrf())
                         .with(authentication(auth))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -144,7 +146,7 @@ class EmployeurControllerTest {
         var body = result.getResponse().getContentAsString();
         assertThat(body).isEqualTo("Stage créé avec succès");
 
-        verify(employeurService).createStage(any(StageDTO.class));
+        verify(employeurService).createStage(any(StageDTO.class), eq("employeur@test.com"));
     }
 
     @Test
@@ -159,11 +161,14 @@ class EmployeurControllerTest {
                 1L, stage.getId(), CandidatureStatus.SOUMISE, null, null, null, null, 0L, new EtudiantDTO()
         );
 
-        when(employeurService.getStageCandidatures(any(Long.class)))
+        when(jwtTokenProvider.getEmailFromJWT(anyString())).thenReturn("employeur@test.com");
+        when(employeurService.getStageCandidatures(any(Long.class), eq("employeur@test.com")))
                 .thenReturn(List.of(candidatureDTO));
 
         MvcResult result = mockMvc.perform(
-                        get("/employeur/stages/1/applications").with(csrf())
+                        get("/employeur/stages/1/applications")
+                                .header("Authorization", "Bearer token123")
+                                .with(csrf())
                 )
                 .andExpect(status().isOk())
                 .andReturn();
@@ -217,14 +222,17 @@ class EmployeurControllerTest {
         InterviewDTO interviewDTO = new InterviewDTO();
         interviewDTO.setDateTime("2025-11-15T10:30:00");
 
+        when(jwtTokenProvider.getEmailFromJWT(anyString())).thenReturn("employeur@test.com");
+
         String requestBody = objectMapper.writeValueAsString(interviewDTO);
         mockMvc.perform(put("/employeur/candidatures/" + candidatureId + "/convoquer")
+                        .header("Authorization", "Bearer token123")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message", is("Convocation réussie")));
 
-        verify(employeurService, times(1)).convoquerEntrevue(eq(candidatureId), any(InterviewDTO.class));
+        verify(employeurService, times(1)).convoquerEntrevue(eq(candidatureId), any(InterviewDTO.class), eq("employeur@test.com"));
     }
 
     @Test
@@ -233,17 +241,20 @@ class EmployeurControllerTest {
         InterviewDTO interviewDTO = new InterviewDTO();
         interviewDTO.setDateTime("2025-11-15T10:30:00");
 
+        when(jwtTokenProvider.getEmailFromJWT(anyString())).thenReturn("employeur@test.com");
+
         String requestBody = objectMapper.writeValueAsString(interviewDTO);
 
-        doThrow(new RuntimeException("boom")).when(employeurService).convoquerEntrevue(anyLong(), any(InterviewDTO.class));
+        doThrow(new RuntimeException("boom")).when(employeurService).convoquerEntrevue(anyLong(), any(InterviewDTO.class), anyString());
 
         mockMvc.perform(put("/employeur/candidatures/" + candidatureId + "/convoquer")
+                        .header("Authorization", "Bearer token123")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.message", is("Erreur lors de la convocation de l'entrevue")));
 
-        verify(employeurService, times(1)).convoquerEntrevue(anyLong(), any(InterviewDTO.class));
+        verify(employeurService, times(1)).convoquerEntrevue(anyLong(), any(InterviewDTO.class), anyString());
     }
 
     @Test
@@ -259,9 +270,11 @@ class EmployeurControllerTest {
                 1L, stage.getId(), CandidatureStatus.SOUMISE, null, null, null, null, 0L, new EtudiantDTO()
         );
 
-        doNothing().when(employeurService).updateCandidatureStatus(anyLong(), anyString());
+        when(jwtTokenProvider.getEmailFromJWT(anyString())).thenReturn("employeur@test.com");
+        doNothing().when(employeurService).updateCandidatureStatus(anyLong(), anyString(), anyString());
 
         mockMvc.perform(put("/employeur/candidatures/" + candidatureDTO.getId() + "/update")
+                        .header("Authorization", "Bearer token123")
                         .param("status", "Acceptee"))
                 .andExpect(status().isOk());
     }
@@ -279,9 +292,11 @@ class EmployeurControllerTest {
                 1L, stage.getId(), CandidatureStatus.SOUMISE, null, null, null, null, 0L, new EtudiantDTO()
         );
 
-        doThrow(new InvalidCandidatureModificationException("")).when(employeurService).updateCandidatureStatus(anyLong(), anyString());
+        when(jwtTokenProvider.getEmailFromJWT(anyString())).thenReturn("employeur@test.com");
+        doThrow(new InvalidCandidatureModificationException("")).when(employeurService).updateCandidatureStatus(anyLong(), anyString(), anyString());
 
         mockMvc.perform(put("/employeur/candidatures/" + candidatureDTO.getId() + "/update")
+                        .header("Authorization", "Bearer token123")
                         .param("status", "Acceptee"))
                 .andExpect(status().isForbidden());
     }

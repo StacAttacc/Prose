@@ -108,7 +108,7 @@ class EmployeurServiceTest {
 
         when(employeurRepository.getEmployeurByCredentials_Username(any(String.class))).thenReturn(employeur);
 
-        StageDTO out = employeurService.createStage(dto);
+        StageDTO out = employeurService.createStage(dto, "caller@test.com");
 
         assertThat(out.getId()).isEqualTo(42L);
         assertThat(out.getStatus().name()).isEqualTo("SOUMISE");
@@ -120,7 +120,7 @@ class EmployeurServiceTest {
         var employeur = new Employeur();
         employeur.setId(7L);
 
-        assertThatThrownBy(() -> employeurService.createStage(null))
+        assertThatThrownBy(() -> employeurService.createStage(null, "caller@test.com"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("stage must not be null");
 
@@ -155,7 +155,7 @@ class EmployeurServiceTest {
                         null)
         )));
 
-        List<CandidatureDTO> candidatures = employeurService.getStageCandidatures(stage.getId());
+        List<CandidatureDTO> candidatures = employeurService.getStageCandidatures(stage.getId(), "jemployeur1@gmail.com");
 
         assertThat(candidatures.size()).isEqualTo(2);
     }
@@ -181,7 +181,7 @@ class EmployeurServiceTest {
         when(candidatureRepository.save(any())).thenReturn(candidature);
         when(employeurRepository.getEmployeurByCredentials_Username(anyString())).thenReturn(new Employeur());
 
-        employeurService.updateCandidatureStatus(candidature.getId(), "Acceptee");
+        employeurService.updateCandidatureStatus(candidature.getId(), "Acceptee", "jemployeur1@gmail.com");
 
         verify(candidatureRepository, times(1)).save(candidature);
     }
@@ -205,7 +205,7 @@ class EmployeurServiceTest {
 
         when(candidatureRepository.findById(anyLong())).thenReturn(Optional.of(candidature));
 
-        assertThatThrownBy(() -> employeurService.updateCandidatureStatus(candidature.getId(), "Acceptee"))
+        assertThatThrownBy(() -> employeurService.updateCandidatureStatus(candidature.getId(), "Acceptee", "jemployeur1@gmail.com"))
                 .isInstanceOf(InvalidCandidatureModificationException.class);
     }
 
@@ -228,7 +228,7 @@ class EmployeurServiceTest {
         when(passwordEncoder.matches("testPassword123", employeur.getPassword())).thenReturn(true);
         when(evaluationRepository.save(any(Evaluation.class))).thenReturn(evaluation);
 
-        EvaluationDTO result = employeurService.createEvaluation(1L, evaluationDTO);
+        EvaluationDTO result = employeurService.createEvaluation(1L, evaluationDTO, "john@doe.com");
 
         assertNotNull(result);
         assertEquals("totalementAccord", result.getProductivitePlanificationOrganisation());
@@ -250,7 +250,7 @@ class EmployeurServiceTest {
         when(employeurRepository.findById(1L)).thenReturn(Optional.empty());
 
         assertThrows(EntityNotFoundException.class, () ->
-                employeurService.createEvaluation(1L, evaluationDTO)
+                employeurService.createEvaluation(1L, evaluationDTO, "john@doe.com")
         );
     }
 
@@ -270,7 +270,7 @@ class EmployeurServiceTest {
         when(ententeRepository.findById(5L)).thenReturn(Optional.of(entente));
 
         assertThrows(IllegalStateException.class, () ->
-                employeurService.createEvaluation(1L, evaluationDTO)
+                employeurService.createEvaluation(1L, evaluationDTO, "john@doe.com")
         );
     }
 
@@ -290,7 +290,7 @@ class EmployeurServiceTest {
         when(evaluationRepository.existsByEntenteId(5L)).thenReturn(true);
 
         assertThrows(IllegalStateException.class, () ->
-                employeurService.createEvaluation(1L, evaluationDTO)
+                employeurService.createEvaluation(1L, evaluationDTO, "john@doe.com")
         );
     }
 

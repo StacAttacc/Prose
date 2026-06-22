@@ -4,6 +4,7 @@ import com.AL565.prose.controller.ProfesseurController;
 import com.AL565.prose.model.*;
 import com.AL565.prose.model.auth.Credentials;
 import com.AL565.prose.model.auth.Role;
+import com.AL565.prose.security.JwtTokenProvider;
 import com.AL565.prose.service.*;
 import com.AL565.prose.service.dto.*;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -59,6 +60,9 @@ public class ProfesseurControllerTest {
     @MockitoBean
     private UtilisateurService utilisateurService;
 
+    @MockitoBean
+    private JwtTokenProvider jwtTokenProvider;
+
     @Test
     void testEvaluateMillieu() throws Exception {
         MillieuEvaluationDTO evaluationDTO = new MillieuEvaluationDTO();
@@ -66,9 +70,11 @@ public class ProfesseurControllerTest {
 
         String content = objectMapper.writeValueAsString(evaluationDTO);
 
-        doNothing().when(professeurService).evaluateWorkplace(evaluationDTO, evaluationDTO.getCandidatureId());
+        when(jwtTokenProvider.getEmailFromJWT(anyString())).thenReturn("prof@test.com");
+        doNothing().when(professeurService).evaluateWorkplace(eq(evaluationDTO), eq(evaluationDTO.getCandidatureId()), eq("prof@test.com"));
 
         mockMvc.perform(post("/professeur/evaluate")
+                .header("Authorization", "Bearer token123")
                 .contentType(MediaType.APPLICATION_JSON).content(content))
                 .andExpect(status().isOk());
     }
@@ -104,15 +110,18 @@ public class ProfesseurControllerTest {
         candidature3.setEvaluationMillieu(new MillieuEvaluationDTO());
         candidature3.setEtudiant(EtudiantDTO.toDTOTokenless(new Etudiant("John", "Doe", new Credentials("john@doe.com", "123", Role.ETUDIANT), Discipline.INFORMATIQUE)));
 
-        when(professeurService.getAllCandidaturesProfesseurRelated(eq("2025"), anyString())).thenReturn(
+        when(jwtTokenProvider.getEmailFromJWT(anyString())).thenReturn("prof@test.com");
+
+        when(professeurService.getAllCandidaturesProfesseurRelated(eq("2025"), anyString(), anyString())).thenReturn(
                 List.of(candidature1, candidature2)
         );
 
-        when(professeurService.getAllCandidaturesProfesseurRelated(eq("2026"), anyString())).thenReturn(
+        when(professeurService.getAllCandidaturesProfesseurRelated(eq("2026"), anyString(), anyString())).thenReturn(
                 List.of(candidature3)
         );
 
         MvcResult result = mockMvc.perform(get("/professeur/" + professeurId + "/mes-etudiants-candidatures")
+                        .header("Authorization", "Bearer token123")
                         .param("year", year))
                 .andExpect(status().isOk())
                 .andReturn();

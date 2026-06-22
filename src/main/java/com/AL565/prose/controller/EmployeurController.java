@@ -16,6 +16,7 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -46,10 +47,14 @@ public class EmployeurController {
     }
 
     @PostMapping("/createStage")
-    public ResponseEntity<String> createOffer(@Valid @RequestBody StageDTO request) {
+    public ResponseEntity<String> createOffer(@Valid @RequestBody StageDTO request,
+                                              @RequestHeader("Authorization") String authHeader) {
         try {
-            employeurService.createStage(request);
+            String callerEmail = jwtTokenProvider.getEmailFromJWT(authHeader.replace("Bearer ", ""));
+            employeurService.createStage(request, callerEmail);
             return new ResponseEntity<>("Stage créé avec succès", HttpStatus.CREATED);
+        } catch (AccessDeniedException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>("Stage invalide",  HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
@@ -58,14 +63,19 @@ public class EmployeurController {
     }
 
     @GetMapping("/{email:.+}/stages")
-    public ResponseEntity<ReturnEntityDTO<List<StageDTO>>> listPublishedByEmployerEmail(@PathVariable("email") String email, @RequestParam(required = false) String year) {
+    public ResponseEntity<ReturnEntityDTO<List<StageDTO>>> listPublishedByEmployerEmail(@PathVariable("email") String email,
+                                                                                       @RequestParam(required = false) String year,
+                                                                                       @RequestHeader("Authorization") String authHeader) {
         try {
-            List<StageDTO> stages = employeurService.listStagesFor(email, year);
+            String callerEmail = jwtTokenProvider.getEmailFromJWT(authHeader.replace("Bearer ", ""));
+            List<StageDTO> stages = employeurService.listStagesFor(email, year, callerEmail);
             if (stages.isEmpty()) {
                 return ResponseEntity.ok().body(new ReturnEntityDTO<>("Aucun stage publié trouvé pour cet employeur", new ArrayList<>() {
                 }));
             }
             return ResponseEntity.ok(new ReturnEntityDTO<>("Trouvés", stages));
+        } catch (AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ReturnEntityDTO<>(e.getMessage(), null));
         } catch (UserNotFoundException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ReturnEntityDTO<>("Utilisateur n'est pas un employeur", null));
         } catch (Exception e) {
@@ -74,10 +84,14 @@ public class EmployeurController {
     }
 
     @GetMapping("/stages/{id}/applications")
-    public ResponseEntity<ReturnEntityDTO<List<CandidatureDTO>>> getStageCandidatures(@PathVariable long id) {
+    public ResponseEntity<ReturnEntityDTO<List<CandidatureDTO>>> getStageCandidatures(@PathVariable long id,
+                                                                                     @RequestHeader("Authorization") String authHeader) {
         try {
-            List<CandidatureDTO> candidatures = employeurService.getStageCandidatures(id);
+            String callerEmail = jwtTokenProvider.getEmailFromJWT(authHeader.replace("Bearer ", ""));
+            List<CandidatureDTO> candidatures = employeurService.getStageCandidatures(id, callerEmail);
             return ResponseEntity.ok(new ReturnEntityDTO<>("Candidatures trouvées", candidatures));
+        } catch (AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ReturnEntityDTO<>(e.getMessage(), null));
         } catch (NoSuchElementException e) {
             return ResponseEntity.ok(new ReturnEntityDTO<>("Aucune candidature trouvee", new ArrayList<>()));
         } catch (Exception e) {
@@ -86,10 +100,14 @@ public class EmployeurController {
     }
 
     @PutMapping("/candidatures/{id}/update")
-    public ResponseEntity<String> changeStatus(@PathVariable long id, @RequestParam String status) {
+    public ResponseEntity<String> changeStatus(@PathVariable long id, @RequestParam String status,
+                                               @RequestHeader("Authorization") String authHeader) {
         try {
-            employeurService.updateCandidatureStatus(id, status);
+            String callerEmail = jwtTokenProvider.getEmailFromJWT(authHeader.replace("Bearer ", ""));
+            employeurService.updateCandidatureStatus(id, status, callerEmail);
             return ResponseEntity.ok("Candidature mise à jour avec succès");
+        } catch (AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
         } catch (CandidatureNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("La candidature n'existe pas");
@@ -127,10 +145,14 @@ public class EmployeurController {
     }
 
     @PutMapping("/candidatures/{id}/convoquer")
-    public ResponseEntity<ReturnEntityDTO<Void>> convoquerEntrevue(@PathVariable long id, @RequestBody InterviewDTO interviewDTO) {
+    public ResponseEntity<ReturnEntityDTO<Void>> convoquerEntrevue(@PathVariable long id, @RequestBody InterviewDTO interviewDTO,
+                                                                   @RequestHeader("Authorization") String authHeader) {
         try {
-            employeurService.convoquerEntrevue(id, interviewDTO);
+            String callerEmail = jwtTokenProvider.getEmailFromJWT(authHeader.replace("Bearer ", ""));
+            employeurService.convoquerEntrevue(id, interviewDTO, callerEmail);
             return ResponseEntity.ok(new ReturnEntityDTO<>("Convocation réussie", null));
+        } catch (AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ReturnEntityDTO<>(e.getMessage(), null));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ReturnEntityDTO<>("Erreur lors de la convocation de l'entrevue", null));
@@ -184,10 +206,14 @@ public class EmployeurController {
     @PostMapping("/{employeurId}/evaluate")
     public ResponseEntity<EvaluationDTO> createEvaluation(
             @PathVariable Long employeurId,
-            @RequestBody EvaluationDTO evaluationDTO) {
+            @RequestBody EvaluationDTO evaluationDTO,
+            @RequestHeader("Authorization") String authHeader) {
         try {
-            EvaluationDTO createdEvaluation = employeurService.createEvaluation(employeurId, evaluationDTO);
+            String callerEmail = jwtTokenProvider.getEmailFromJWT(authHeader.replace("Bearer ", ""));
+            EvaluationDTO createdEvaluation = employeurService.createEvaluation(employeurId, evaluationDTO, callerEmail);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdEvaluation);
+        } catch (AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         } catch (Exception e) {
@@ -199,10 +225,14 @@ public class EmployeurController {
     @GetMapping("/{employeurId}/evaluation/{ententeId}")
     public ResponseEntity<EvaluationDTO> getEvaluationByEntente(
             @PathVariable Long employeurId,
-            @PathVariable Long ententeId) {
+            @PathVariable Long ententeId,
+            @RequestHeader("Authorization") String authHeader) {
         try {
-            EvaluationDTO evaluation = employeurService.getEvaluationByEntente(employeurId, ententeId);
+            String callerEmail = jwtTokenProvider.getEmailFromJWT(authHeader.replace("Bearer ", ""));
+            EvaluationDTO evaluation = employeurService.getEvaluationByEntente(employeurId, ententeId, callerEmail);
             return ResponseEntity.ok(evaluation);
+        } catch (AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         } catch (Exception e) {
@@ -213,10 +243,14 @@ public class EmployeurController {
     @GetMapping("/{employeurId}/ententes")
     public ResponseEntity<List<EntenteDTO>> getEntentesNeedingEvaluation(
             @PathVariable Long employeurId,
-            @RequestParam(required = false) String year) {
+            @RequestParam(required = false) String year,
+            @RequestHeader("Authorization") String authHeader) {
         try {
-            List<EntenteDTO> ententes = employeurService.getEntentesNeedingEvaluation(employeurId, year);
+            String callerEmail = jwtTokenProvider.getEmailFromJWT(authHeader.replace("Bearer ", ""));
+            List<EntenteDTO> ententes = employeurService.getEntentesNeedingEvaluation(employeurId, year, callerEmail);
             return ResponseEntity.ok(ententes);
+        } catch (AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }

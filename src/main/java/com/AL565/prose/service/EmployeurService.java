@@ -19,6 +19,7 @@ import com.AL565.prose.utils.SessionYearHelper;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -57,12 +58,17 @@ public class EmployeurService {
     }
 
     @Transactional
-    public StageDTO createStage(StageDTO dto) {
+    public StageDTO createStage(StageDTO dto, String callerEmail) {
         if (dto == null) {
             throw new IllegalArgumentException("stage must not be null");
         }
+        if (callerEmail == null) {
+            throw new AccessDeniedException("Accès refusé");
+        }
 
-        Stage saved = stageRepository.save(StageDTO.toModel(dto));
+        Stage model = StageDTO.toModel(dto);
+        model.setEmployeurEmail(callerEmail);
+        Stage saved = stageRepository.save(model);
         Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(saved.getEmployeurEmail());
         createNotificationForNewStage(saved, employeur);
 
@@ -84,7 +90,8 @@ public class EmployeurService {
     }
 
     @Transactional
-    public List<StageDTO> listStagesFor(String email, String year) {
+    public List<StageDTO> listStagesFor(String email, String year, String callerEmail) {
+        assertCallerEqualsEmail(callerEmail, email);
         int yearNumber = SessionYearHelper.getSessionYear(year);
 
         return stageRepository.findByEmployeurEmail(email)
@@ -95,18 +102,19 @@ public class EmployeurService {
     }
 
     @Transactional
-    public List<CandidatureDTO> getStageCandidatures(long stageId) throws StageNotFoundException {
-        if (stageRepository.findById(stageId).isEmpty()) {
-            throw new StageNotFoundException("Le stage n'existe pas");
-        }
+    public List<CandidatureDTO> getStageCandidatures(long stageId, String callerEmail) throws StageNotFoundException {
+        Stage stage = stageRepository.findById(stageId)
+                .orElseThrow(() -> new StageNotFoundException("Le stage n'existe pas"));
+        assertCallerEqualsEmail(callerEmail, stage.getEmployeurEmail());
         List<Candidature> candidatures = candidatureRepository.findAllByStage_Id(stageId).orElse(new ArrayList<>());
 
         return candidatures.stream().map((CandidatureDTO::toDTO)).toList();
     }
 
-    public void updateCandidatureStatus(long candidatureId, String status) throws CandidatureNotFoundException, InvalidCandidatureModificationException {
+    public void updateCandidatureStatus(long candidatureId, String status, String callerEmail) throws CandidatureNotFoundException, InvalidCandidatureModificationException {
         CandidatureStatus candidatureStatus = CandidatureStatus.getByDescription(status);
         Candidature candidature = candidatureRepository.findById(candidatureId).orElseThrow(() -> new CandidatureNotFoundException("La candidature n'existe pas"));
+        assertCallerEqualsEmail(callerEmail, candidature.getStage().getEmployeurEmail());
 
         if (candidatureStatus == CandidatureStatus.ACCEPTEE && candidature.getStatus() != CandidatureStatus.CONVOQUEE) {
             throw new InvalidCandidatureModificationException("Il est impossible d'accepter un étudiant avant de le convoquer en entrevue.");
@@ -116,6 +124,12 @@ public class EmployeurService {
         Candidature savedCanidature = candidatureRepository.save(candidature);
         Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(savedCanidature.getStage().getEmployeurEmail());
         createNotificationForCandidatureDecision(savedCanidature, employeur);
+    }
+
+    private void assertCallerEqualsEmail(String callerEmail, String resourceEmail) {
+        if (callerEmail == null || resourceEmail == null || !callerEmail.equals(resourceEmail)) {
+            throw new AccessDeniedException("Accès refusé");
+        }
     }
 
     private void createNotificationForCandidatureDecision(Candidature candidature, Employeur employeur) {
@@ -216,8 +230,9 @@ public class EmployeurService {
     }
 
     @Transactional
-    public void convoquerEntrevue(long candidatureId, InterviewDTO interviewDTO) throws CandidatureNotFoundException {
+    public void convoquerEntrevue(long candidatureId, InterviewDTO interviewDTO, String callerEmail) throws CandidatureNotFoundException {
         Candidature candidature = candidatureRepository.findById(candidatureId).orElseThrow(() -> new CandidatureNotFoundException("La candidature n'existe pas"));
+        assertCallerEqualsEmail(callerEmail, candidature.getStage().getEmployeurEmail());
 
         LocalDateTime dateDecision = interviewDTO.getDateTimeAsLocalDateTime();
 
@@ -254,12 +269,18 @@ public class EmployeurService {
     }
 
     @Transactional
-    public EvaluationDTO createEvaluation(Long employeurId, EvaluationDTO evaluationDTO) {
+    public EvaluationDTO createEvaluation(Long employeurId, EvaluationDTO evaluationDTO, String callerEmail) {
         Employeur employeur = employeurRepository.findById(employeurId)
                 .orElseThrow(() -> new EntityNotFoundException("Employeur non trouvé avec l'ID: " + employeurId));
+        assertCallerEqualsEmail(callerEmail, employeur.getEmail());
 
         Entente entente = ententeRepository.findById(evaluationDTO.getEntenteId())
                 .orElseThrow(() -> new EntityNotFoundException("Entente non trouvée avec l'ID: " + evaluationDTO.getEntenteId()));
+
+        String stageEmployeurEmail = entente.getCandidature().getStage().getEmployeurEmail();
+        if (stageEmployeurEmail == null || !stageEmployeurEmail.equals(callerEmail)) {
+            throw new AccessDeniedException("Cette entente ne vous appartient pas");
+        }
 
         if (entente.getStatus() != EntenteStatus.SIGNEE) {
             throw new IllegalStateException("L'entente doit être signée pour pouvoir évaluer le stagiaire");
@@ -284,7 +305,11 @@ public class EmployeurService {
     }
 
     @Transactional
-    public EvaluationDTO getEvaluationByEntente(Long employeurId, Long ententeId) {
+    public EvaluationDTO getEvaluationByEntente(Long employeurId, Long ententeId, String callerEmail) {
+        Employeur employeur = employeurRepository.findById(employeurId)
+                .orElseThrow(() -> new EntityNotFoundException("Employeur non trouvé avec l'ID: " + employeurId));
+        assertCallerEqualsEmail(callerEmail, employeur.getEmail());
+
         Evaluation evaluation = evaluationRepository.findByEntenteId(ententeId)
                 .orElseThrow(() -> new EntityNotFoundException("Aucune évaluation trouvée pour cette entente"));
 
@@ -296,9 +321,10 @@ public class EmployeurService {
     }
 
     @Transactional
-    public List<EntenteDTO> getEntentesNeedingEvaluation(Long employeurId, String year) {
+    public List<EntenteDTO> getEntentesNeedingEvaluation(Long employeurId, String year, String callerEmail) {
         Employeur employeur = employeurRepository.findById(employeurId)
                 .orElseThrow(() -> new EntityNotFoundException("Employeur non trouvé avec l'ID: " + employeurId));
+        assertCallerEqualsEmail(callerEmail, employeur.getEmail());
 
         int yearNumber = SessionYearHelper.getSessionYear(year);
 

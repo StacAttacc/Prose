@@ -72,11 +72,20 @@ public class ProfesseurServiceTest {
         evaluation.setId(1L);
         evaluation.setNomEntreprise("Jean Employeurs");
 
+        Professeur professeur = new Professeur();
+        professeur.setId(42L);
+
+        Etudiant etudiant = new Etudiant();
+        etudiant.setProfesseurResponsable(professeur);
+
+        Candidature candidature = new Candidature();
+        candidature.setEtudiant(etudiant);
 
         when(millieuEvaluationRepository.save(any())).thenReturn(evaluation);
-        when(candidatureRepository.findById(any())).thenReturn(Optional.of(new Candidature()));
+        when(candidatureRepository.findById(any())).thenReturn(Optional.of(candidature));
+        when(professeurRepository.findByCredentials_Username("prof@test.com")).thenReturn(Optional.of(professeur));
 
-        professeurService.evaluateWorkplace(MillieuEvaluationDTO.toDTO(evaluation), 1);
+        professeurService.evaluateWorkplace(MillieuEvaluationDTO.toDTO(evaluation), 1, "prof@test.com");
 
         verify(millieuEvaluationRepository, times(2)).save(any());
     }
@@ -122,7 +131,7 @@ public class ProfesseurServiceTest {
         when(candidatureRepository.findAllByEtudiant_ProfesseurResponsable_Id(anyLong())).thenReturn(List.of(candidature1, candidature2,  candidature3));
         when(employeurRepository.getEmployeurByCredentials_Username(anyString())).thenReturn(new Employeur("test", "test", "test@gmail.com", "test", "test"));
 
-        List<CandidatureEvaluationDTO> candidatures = professeurService.getAllCandidaturesProfesseurRelated(year, professeurId);
+        List<CandidatureEvaluationDTO> candidatures = professeurService.getAllCandidaturesProfesseurRelated(year, professeurId, "prof@test.com");
 
         assertThat(candidatures.size()).isEqualTo(Integer.parseInt(expected));
     }

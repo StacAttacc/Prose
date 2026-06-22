@@ -3,26 +3,40 @@ package com.AL565.prose.security;
 import com.AL565.prose.model.ProseUser;
 import com.AL565.prose.repository.ProseUserRepository;
 import com.AL565.prose.security.exceptions.AuthenticationException;
-import com.AL565.prose.security.exceptions.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
 public class AuthProvider implements AuthenticationProvider {
+    private static final String DUMMY_BCRYPT_HASH = "$2a$10$7EqJtq98hPqEX7fNZaFWoOhi5xKqvKkOdPJlfwL0XlMVYUO0Hvy/u";
+
     private final PasswordEncoder passwordEncoder;
     private final ProseUserRepository proseUserRepository;
 
     @Override
     public Authentication authenticate(Authentication authentication) {
-        ProseUser user = loadUserByEmail(authentication.getPrincipal().toString());
-        validateAuthentication(authentication, user);
+        String email = authentication.getPrincipal().toString();
+        String submittedPassword = authentication.getCredentials().toString();
+        Optional<ProseUser> userOpt = proseUserRepository.findByCredentials_Username(email);
+
+        if (userOpt.isEmpty()) {
+            passwordEncoder.matches(submittedPassword, DUMMY_BCRYPT_HASH);
+            throw new AuthenticationException(HttpStatus.FORBIDDEN, "Incorrect username or password");
+        }
+
+        ProseUser user = userOpt.get();
+        if (!passwordEncoder.matches(submittedPassword, user.getPassword())) {
+            throw new AuthenticationException(HttpStatus.FORBIDDEN, "Incorrect username or password");
+        }
+
         return new UsernamePasswordAuthenticationToken(
                 user.getEmail(),
                 user.getPassword(),
@@ -33,16 +47,5 @@ public class AuthProvider implements AuthenticationProvider {
     @Override
     public boolean supports(Class<?> authentication) {
         return UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication);
-    }
-
-
-    private ProseUser loadUserByEmail(String email) throws UsernameNotFoundException {
-        return proseUserRepository.findByCredentials_Username(email)
-                .orElseThrow(UserNotFoundException::new);
-    }
-
-    private void validateAuthentication(Authentication authentication, ProseUser user) {
-        if (!passwordEncoder.matches(authentication.getCredentials().toString(), user.getPassword()))
-            throw new AuthenticationException(HttpStatus.FORBIDDEN, "Incorrect username or password");
     }
 }
