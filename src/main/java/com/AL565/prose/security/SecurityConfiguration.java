@@ -43,7 +43,6 @@ public class SecurityConfiguration {
     private static final String USER_LOGIN_PATH = "/user/login";
     private static final String ETUDIANT_REGISTER_PATH = "/etudiant/register";
     private static final String EMPLOYEUR_REGISTER_PATH = "/employeur/register";
-    private static final String PROFESSEUR_REGISTER_PATH = "/professeur/register";
     private static final String USER_PATH = "/user/**";
     private static final String ETUDIANT_PATH = "/etudiant/**";
     private static final String EMPLOYEUR_PATH = "/employeur/**";
@@ -61,7 +60,6 @@ public class SecurityConfiguration {
                         .requestMatchers(POST, USER_LOGIN_PATH).permitAll()
                         .requestMatchers(POST, ETUDIANT_REGISTER_PATH).permitAll()
                         .requestMatchers(POST, EMPLOYEUR_REGISTER_PATH).permitAll()
-                        .requestMatchers(POST, PROFESSEUR_REGISTER_PATH).permitAll()
 
 
                         .requestMatchers(HttpMethod.GET, "/etudiant/telecharger-cv/**")
