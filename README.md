@@ -1,5 +1,3 @@
-https://prose-8xsls5df6-stac-s-apps.vercel.app
-
 # Prose
 
 An internship management platform for higher-education programs. Students
@@ -8,8 +6,10 @@ workplace evaluations, and program managers oversee the full agreement
 lifecycle, from CV approval through signed internship agreements to
 end-of-term evaluations.
 
-Built as a team class project (Sprints 1 to 3) by five contributors. UI is
-primarily in French with i18next wiring for English.
+**Live demo:** https://prose-8xsls5df6-stac-s-apps.vercel.app
+
+Built as a team class project across six one-week sprints by five
+contributors. UI is primarily in French with i18next wiring for English.
 
 ## Tech stack
 
@@ -27,13 +27,13 @@ Four user roles drive the workflow:
 
 | Role | Capabilities |
 |---|---|
-| **Étudiant** (student) | Upload CV, browse stages, apply to offers, sign ententes |
-| **Employeur** (employer) | Post stages, review applicants, schedule interviews, sign ententes, evaluate students |
-| **Professeur** (professor) | Approve workplace evaluations for their students |
-| **Gestionnaire** (program manager) | Approve CVs, oversee ententes, manage the global state of the program |
+| **Student** (`Etudiant`) | Upload CV, browse internship offers, apply to offers, sign agreements |
+| **Employer** (`Employeur`) | Post internship offers, review applicants, schedule interviews, sign agreements, evaluate students |
+| **Professor** (`Professeur`) | Approve workplace evaluations for their students |
+| **Program manager** (`Gestionnaire`) | Approve CVs, oversee agreements, manage the global state of the program |
 
 The lifecycle a single internship travels through:
-`CV → Stage offer → Candidature → Convocation (interview) → Entente (agreement) → Evaluation`.
+`CV → Internship offer (Stage) → Application (Candidature) → Interview (Convocation) → Agreement (Entente) → Evaluation`.
 
 ## Quick start
 
@@ -75,10 +75,10 @@ all of them is `password123`.
 
 | Role | Email |
 |---|---|
-| Étudiant | `etudiant@etudiant.com` |
-| Employeur | `employeur@employeur.com` |
-| Gestionnaire | `gestionnaire@gestionnaire.com` |
-| Professeur | `professeur@professeur.com` |
+| Student | `etudiant@etudiant.com` |
+| Employer | `employeur@employeur.com` |
+| Program manager | `gestionnaire@gestionnaire.com` |
+| Professor | `professeur@professeur.com` |
 
 > The seeding runner is gated on `@Profile({"dev", "local", "test"})` and
 > `spring.profiles.active` defaults to `dev`. For LAN or production, set
@@ -227,9 +227,11 @@ milieu de travail, et les gestionnaires de programme supervisent tout le
 cycle de vie des ententes, de l'approbation du CV jusqu'aux évaluations
 de fin de session, en passant par la signature des ententes de stage.
 
-Réalisé en équipe dans le cadre d'un projet de classe (sprints 1 à 3) par
-cinq personnes. L'interface est principalement en français, avec une
-infrastructure i18next pour l'anglais.
+**Démo en ligne :** https://prose-8xsls5df6-stac-s-apps.vercel.app
+
+Réalisé en équipe dans le cadre d'un projet de classe sur six sprints
+hebdomadaires par cinq personnes. L'interface est principalement en
+français, avec une infrastructure i18next pour l'anglais.
 
 ## Pile technique
 
