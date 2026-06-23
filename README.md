@@ -6,7 +6,7 @@ workplace evaluations, and program managers oversee the full agreement
 lifecycle, from CV approval through signed internship agreements to
 end-of-term evaluations.
 
-**Live demo:** https://prose-jet.vercel.app/login
+**Live demo:** https://prose-jet.vercel.app/
 
 Built as a team class project across six one-week sprints by five
 contributors. UI is primarily in French with i18next wiring for English.
