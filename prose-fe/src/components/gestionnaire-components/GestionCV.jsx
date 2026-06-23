@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useI18n, translateDiscipline } from "../../context/I18nContext.jsx";
-import { approveCv, fetchAllCVs, rejectCv } from "../../services/GestionnaireService.js";
+import { approveCv, fetchAllCVs, fetchCvData, rejectCv } from "../../services/GestionnaireService.js";
 import { Worker, Viewer } from '@react-pdf-viewer/core';
 import {useLocation, useNavigate} from "react-router-dom";
 import { useYear } from "../../context/YearContext";
@@ -53,15 +53,15 @@ const GestionCV = () => {
     const approvedCvs = filterByName(allCvs.filter(cv => cv.status === "APPROVED"));
     const rejectedCvs = filterByName(allCvs.filter(cv => cv.status === "REJECTED"));
 
-    function openModal(cv) {
+    async function openModal(cv) {
         setSelectedCv(cv);
-        if (!cv?.data) {
-            setPdfUrl(null);
-            setModalOpen(true);
-            return;
-        }
+        setPdfUrl(null);
+        setModalOpen(true);
+        if (!cv?.id) return;
         try {
-            const byteCharacters = atob(cv.data);
+            const base64 = await fetchCvData(cv.id);
+            if (!base64) return;
+            const byteCharacters = atob(base64);
             const byteNumbers = new Array(byteCharacters.length);
             for (let i = 0; i < byteCharacters.length; i++) {
                 byteNumbers[i] = byteCharacters.charCodeAt(i);
@@ -73,7 +73,6 @@ const GestionCV = () => {
         } catch {
             setPdfUrl(null);
         }
-        setModalOpen(true);
     }
 
     const closeModal = () => {

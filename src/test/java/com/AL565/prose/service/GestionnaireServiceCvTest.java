@@ -115,16 +115,15 @@ public class GestionnaireServiceCvTest {
                 .build();
 
 
-        when(cvRepository.findAll()).thenReturn(Arrays.asList(cv1, cv2));
+        when(cvRepository.findAllByLastModifiedDateGreaterThanEqualAndLastModifiedDateLessThan(any(), any()))
+                .thenReturn(Arrays.asList(cv1, cv2));
 
         List<GestionnaireCvDTO> result = gestionnaireService.getAllCvs(String.valueOf(LocalDateTime.now().getYear()));
 
         assertThat(result).hasSize(2);
         assertThat(result.get(0).getStatus()).isEqualTo(CvStatus.PENDING.name());
-        assertThat(result.get(0).getStatus()).isEqualTo(CvStatus.PENDING.name());
         assertThat(result.get(1).getStatus()).isEqualTo(CvStatus.PENDING.name());
-        assertThat(result.get(1).getStatus()).isEqualTo(CvStatus.PENDING.name());
-        verify(cvRepository).findAll();
+        verify(cvRepository).findAllByLastModifiedDateGreaterThanEqualAndLastModifiedDateLessThan(any(), any());
     }
 
     @ParameterizedTest
@@ -178,7 +177,15 @@ public class GestionnaireServiceCvTest {
                 .build();
 
 
-        when(cvRepository.findAll()).thenReturn(Arrays.asList(cv1, cv2, cv3));
+        List<CV> allCvs = Arrays.asList(cv1, cv2, cv3);
+        when(cvRepository.findAllByLastModifiedDateGreaterThanEqualAndLastModifiedDateLessThan(any(), any()))
+                .thenAnswer(invocation -> {
+                    java.time.Instant from = invocation.getArgument(0);
+                    java.time.Instant to = invocation.getArgument(1);
+                    return allCvs.stream()
+                            .filter(c -> !c.getLastModifiedDate().isBefore(from) && c.getLastModifiedDate().isBefore(to))
+                            .toList();
+                });
 
         List<GestionnaireCvDTO> result = gestionnaireService.getAllCvs(year);
 

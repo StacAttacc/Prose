@@ -39,6 +39,7 @@ public class SecurityConfiguration {
     private final JwtTokenProvider jwtTokenProvider;
     private final ProseUserRepository userRepository;
     private final JwtAuthenticationEntryPoint authenticationEntryPoint;
+    private final RateLimitFilter rateLimitFilter;
 
     private static final String USER_LOGIN_PATH = "/user/login";
     private static final String ETUDIANT_REGISTER_PATH = "/etudiant/register";
@@ -78,6 +79,7 @@ public class SecurityConfiguration {
                 .sessionManagement((secuManagement) -> {
                     secuManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
                 })
+                .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(configurer -> configurer.authenticationEntryPoint(authenticationEntryPoint));
 

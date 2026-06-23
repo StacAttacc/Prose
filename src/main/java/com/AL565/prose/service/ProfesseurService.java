@@ -102,14 +102,11 @@ public class ProfesseurService {
     public List<EtudiantCandidaturesDTO> getAllEtudiantsCandidatures(String year, String professeurId, String callerEmail) {
         assertCallerIsProfesseur(callerEmail, professeurId);
         int yearNumber = SessionYearHelper.getSessionYear(year);
-        List<Etudiant> etudiants =  etudiantRepository.findAll();
+        List<Etudiant> etudiants = etudiantRepository.findAllByProfesseurResponsable_Id(Long.parseLong(professeurId));
 
         List <EtudiantCandidaturesDTO> etudiantCandidaturesDTO = new ArrayList<>();
 
         etudiants.forEach(etudiant -> {
-            if (etudiant.getProfesseurResponsable() == null || !etudiant.getProfesseurResponsable().getId().equals(Long.parseLong(professeurId))) {
-                return;
-            }
             List<Candidature> candidatures = candidatureRepository.findByEtudiant_Credentials_Username(etudiant.getEmail());
 
             List<EtudiantCandidatureDTO> etudiantCandidature = candidatures.stream().map(candidature -> {

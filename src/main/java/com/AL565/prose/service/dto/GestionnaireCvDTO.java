@@ -12,6 +12,7 @@ import java.util.Base64;
 public class GestionnaireCvDTO {
     private Long id;
     private String name;
+    private String type;
     private String etudiantPrenom;
     private String etudiantNom;
     private String etudiantEmail;
@@ -20,16 +21,23 @@ public class GestionnaireCvDTO {
     private String data;
     private String comment;
 
-    public static GestionnaireCvDTO toDto(CV cv) {
+    public static GestionnaireCvDTO toMetadataDto(CV cv) {
         return new GestionnaireCvDTO(
                 cv.getId(),
                 cv.getName(),
+                cv.getType(),
                 cv.getEtudiant().getFirstName(),
                 cv.getEtudiant().getLastName(),
                 cv.getEtudiant().getEmail(),
                 cv.getEtudiant().getDiscipline().name(),
                 cv.getStatus().name(),
-                Base64.getEncoder().encodeToString(cv.getData()),
+                null,
                 cv.getComment());
+    }
+
+    public static GestionnaireCvDTO toDto(CV cv) {
+        GestionnaireCvDTO dto = toMetadataDto(cv);
+        dto.setData(Base64.getEncoder().encodeToString(cv.getData()));
+        return dto;
     }
 }

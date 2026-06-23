@@ -11,6 +11,9 @@ import com.AL565.prose.service.dto.notifications.NotificationsResponseDTO;
 import com.AL565.prose.service.exceptions.EtudiantAlreadyAssociatedException;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -89,10 +92,23 @@ public class GestionnaireController {
         return ResponseEntity.ok(cvs);
     }
 
-    @GetMapping("/getCandidatures")
-    public ResponseEntity<ReturnEntityDTO<List<EtudiantCandidaturesDTO>>> getAllEtudiantsCandidatures(@RequestParam(required = false) String year) {
+    @GetMapping("/cv/{id}/data")
+    public ResponseEntity<ReturnEntityDTO<String>> getCvData(@PathVariable Long id) {
         try {
-            List<EtudiantCandidaturesDTO> etudiants = gestionnaireService.getAllEtudiantsCandidatures(year);
+            String data = gestionnaireService.getCvDataById(id);
+            return ResponseEntity.ok(new ReturnEntityDTO<>("CV trouvé", data));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ReturnEntityDTO<>("CV non trouvé", null));
+        }
+    }
+
+    @GetMapping("/getCandidatures")
+    public ResponseEntity<ReturnEntityDTO<Page<EtudiantCandidaturesDTO>>> getAllEtudiantsCandidatures(
+            @RequestParam(required = false) String year,
+            @PageableDefault(size = 100) Pageable pageable) {
+        try {
+            Page<EtudiantCandidaturesDTO> etudiants = gestionnaireService.getAllEtudiantsCandidatures(year, pageable);
             return ResponseEntity.ok(new ReturnEntityDTO<>("Trouvés", etudiants));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ReturnEntityDTO<>("Erreur interne du serveur", null));
@@ -230,9 +246,10 @@ public class GestionnaireController {
     }
 
     @GetMapping("/etudiants/all")
-    public ResponseEntity<ReturnEntityDTO<List<EtudiantDTO>>> getAllEtudiants() {
+    public ResponseEntity<ReturnEntityDTO<Page<EtudiantDTO>>> getAllEtudiants(
+            @PageableDefault(size = 100) Pageable pageable) {
         try {
-            List<EtudiantDTO> etudiants = gestionnaireService.getAllEtudiants();
+            Page<EtudiantDTO> etudiants = gestionnaireService.getAllEtudiants(pageable);
             return ResponseEntity.ok(new ReturnEntityDTO<>("Liste des étudiants", etudiants));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -241,9 +258,10 @@ public class GestionnaireController {
     }
 
     @GetMapping("/professeurs/all")
-    public ResponseEntity<ReturnEntityDTO<List<ProfesseurDTO>>> getAllProfesseurs() {
+    public ResponseEntity<ReturnEntityDTO<Page<ProfesseurDTO>>> getAllProfesseurs(
+            @PageableDefault(size = 100) Pageable pageable) {
         try {
-            List<ProfesseurDTO> professeurs = gestionnaireService.getAllProfesseurs();
+            Page<ProfesseurDTO> professeurs = gestionnaireService.getAllProfesseurs(pageable);
             return ResponseEntity.ok(new ReturnEntityDTO<>("Liste des professeurs", professeurs));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

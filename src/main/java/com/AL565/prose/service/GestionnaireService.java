@@ -20,11 +20,14 @@ import com.AL565.prose.utils.NotificationsHelper;
 import com.AL565.prose.utils.SessionYearHelper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -69,12 +72,13 @@ public class GestionnaireService {
     public List<StageDTO> getStagesByStatus(String status, String year) {
         int yearNumber = SessionYearHelper.getSessionYear(year);
 
-        return stageRepository.findByStatus(OfferStatus.valueOf(status))
+        return stageRepository
+                .findByStatusAndStartDateBetween(OfferStatus.valueOf(status), LocalDate.of(yearNumber, 1, 1), LocalDate.of(yearNumber, 12, 31))
                 .stream()
                 .map(stage -> {
                     Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(stage.getEmployeurEmail());
                     return StageDTO.toDTO(stage, employeur);
-                }).filter(stage -> stage.getStartDate().getYear() ==  yearNumber)
+                })
                 .toList();
     }
 
@@ -115,20 +119,22 @@ public class GestionnaireService {
 
     public List<GestionnaireCvDTO> getAllCvs(String year) throws Exception {
         int yearNumber = SessionYearHelper.getSessionYear(year);
+        Instant rangeStart = LocalDate.of(yearNumber - 1, 9, 1).atStartOfDay(ZoneId.systemDefault()).toInstant();
+        Instant rangeEnd = LocalDate.of(yearNumber, 9, 1).atStartOfDay(ZoneId.systemDefault()).toInstant();
 
         try {
-            return cvRepository.findAll()
+            return cvRepository.findAllByLastModifiedDateGreaterThanEqualAndLastModifiedDateLessThan(rangeStart, rangeEnd)
                     .stream()
-                    .filter(cv -> {
-                        LocalDate cvDate = LocalDate.ofInstant(cv.getLastModifiedDate(), ZoneId.systemDefault());
-                        int cvYear = SessionYearHelper.getSessionYearFromCvDate(cvDate);
-                        return cvYear == yearNumber;
-                    })
-                    .map(GestionnaireCvDTO::toDto)
+                    .map(GestionnaireCvDTO::toMetadataDto)
                     .toList();
         } catch (Exception e) {
             throw new FailedToFetchCvsException();
         }
+    }
+
+    public String getCvDataById(Long cvId) {
+        CV cv = cvRepository.findById(cvId).orElseThrow(CvNotFoundException::new);
+        return java.util.Base64.getEncoder().encodeToString(cv.getData());
     }
 
     public void changeCvStatus(Long cvId, String status, String comment) throws Exception {
@@ -147,19 +153,24 @@ public class GestionnaireService {
         int yearNumber = SessionYearHelper.getSessionYear(year);
 
         try {
-            return stageRepository.findAll().stream().map(stage -> {
-                Employeur emp = employeurRepository.getEmployeurByCredentials_Username(stage.getEmployeurEmail());
-                return StageDTO.toDTO(stage, emp);
-            }).filter(stage -> stage.getStartDate().getYear() ==  yearNumber).toList();
+            return stageRepository
+                    .findAllByStartDateBetween(LocalDate.of(yearNumber, 1, 1), LocalDate.of(yearNumber, 12, 31))
+                    .stream()
+                    .map(stage -> {
+                        Employeur emp = employeurRepository.getEmployeurByCredentials_Username(stage.getEmployeurEmail());
+                        return StageDTO.toDTO(stage, emp);
+                    })
+                    .toList();
         } catch (Exception e) {
             throw new FailedToRetrieveStagesException("Échec lors de la récupération des stages.", e);
         }
     }
 
     @Transactional
-    public List<EtudiantCandidaturesDTO> getAllEtudiantsCandidatures(String year) {
+    public Page<EtudiantCandidaturesDTO> getAllEtudiantsCandidatures(String year, Pageable pageable) {
         int yearNumber = SessionYearHelper.getSessionYear(year);
-        List<Etudiant> etudiants =  etudiantRepository.findAll();
+        Page<Etudiant> etudiantPage = etudiantRepository.findAll(pageable);
+        List<Etudiant> etudiants = etudiantPage.getContent();
 
         List <EtudiantCandidaturesDTO> etudiantCandidaturesDTO = new ArrayList<>();
 
@@ -197,7 +208,7 @@ public class GestionnaireService {
             }
         });
 
-        return etudiantCandidaturesDTO;
+        return new org.springframework.data.domain.PageImpl<>(etudiantCandidaturesDTO, pageable, etudiantPage.getTotalElements());
     }
 
     public NotificationsResponseDTO getGestionnaireNotifications() throws Exception {
@@ -434,16 +445,12 @@ public class GestionnaireService {
         };
     }
 
-    public List<EtudiantDTO> getAllEtudiants() {
-        return etudiantRepository.findAll().stream()
-                .map(EtudiantDTO::toDTOTokenless)
-                .toList();
+    public Page<EtudiantDTO> getAllEtudiants(Pageable pageable) {
+        return etudiantRepository.findAll(pageable).map(EtudiantDTO::toDTOTokenless);
     }
 
-    public List<ProfesseurDTO> getAllProfesseurs() {
-        return professeurRepository.findAll().stream()
-                .map(ProfesseurDTO::toDTOTokenless)
-                .toList();
+    public Page<ProfesseurDTO> getAllProfesseurs(Pageable pageable) {
+        return professeurRepository.findAll(pageable).map(ProfesseurDTO::toDTOTokenless);
     }
 
     private String translateStatusMessage(OfferStatus status, String language) {

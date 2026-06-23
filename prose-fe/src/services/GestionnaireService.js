@@ -25,6 +25,11 @@ export const fetchAllCVs = async (token, year = null) => {
     }
 }
 
+export const fetchCvData = async (cvId) => {
+    const response = await http.get(`/gestionnaire/cv/${cvId}/data`);
+    return response.data?.data ?? null;
+}
+
 export const approveCv = async (cvId, comment) => {
     try {
         await http.post(`/gestionnaire/cv/change-status`, {id: cvId, status: "Approved", comment: comment});
@@ -77,11 +82,13 @@ export async function getStageApplicantsManager(token, year = null) {
         if (year && year !== '') {
             params.year = year.toString();
         }
-        
+
         const res = await http.get(`/gestionnaire/getCandidatures`, {params: params});
 
         const data = res.data?.data;
-        return Array.isArray(data) ? data : [];
+        if (Array.isArray(data)) return data;
+        if (Array.isArray(data?.content)) return data.content;
+        return [];
     } catch (e) {
         console.error("Erreur getStageApplicantsManager:", e);
         return [];
@@ -129,12 +136,17 @@ export async function associerProfesseurEtudiant(professeurEmail, etudiantEmail)
     }
 }
 
+function unwrapPage(res) {
+    const data = res.data?.data ?? res.data;
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data?.content)) return data.content;
+    return [];
+}
+
 export async function getAllEtudiants() {
     try {
         const res = await http.get("/gestionnaire/etudiants/all");
-
-
-        return res.data?.data || res.data;
+        return unwrapPage(res);
     } catch (error) {
         console.error('Erreur lors de la récupération des étudiants:', error);
         console.error('Error response:', error?.response?.data);
@@ -147,8 +159,7 @@ export async function getAllEtudiants() {
 export async function getAllProfesseurs() {
     try {
         const res = await http.get("/gestionnaire/professeurs/all");
-
-        return res.data?.data || res.data;
+        return unwrapPage(res);
     } catch (error) {
         console.error('Erreur lors de la récupération des professeurs:', error);
         console.error('Error response:', error?.response?.data);

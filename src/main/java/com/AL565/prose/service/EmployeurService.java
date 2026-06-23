@@ -94,11 +94,14 @@ public class EmployeurService {
         assertCallerEqualsEmail(callerEmail, email);
         int yearNumber = SessionYearHelper.getSessionYear(year);
 
-        return stageRepository.findByEmployeurEmail(email)
-                .stream().map((stage) -> {
+        return stageRepository
+                .findByEmployeurEmailAndStartDateBetween(email, java.time.LocalDate.of(yearNumber, 1, 1), java.time.LocalDate.of(yearNumber, 12, 31))
+                .stream()
+                .map((stage) -> {
                     Employeur employeur = employeurRepository.getEmployeurByCredentials_Username(stage.getEmployeurEmail());
                     return StageDTO.toDTO(stage, employeur);
-                }).filter(stage -> stage.getStartDate().getYear() == yearNumber).toList();
+                })
+                .toList();
     }
 
     @Transactional
@@ -328,11 +331,9 @@ public class EmployeurService {
 
         int yearNumber = SessionYearHelper.getSessionYear(year);
 
-
-        List<Entente> ententes = ententeRepository.findAll().stream()
-                .filter(e -> e.getStatus() == EntenteStatus.SIGNEE)
-                .filter(e -> e.getCandidature().getStage().getEmployeurEmail() != null &&
-                        e.getCandidature().getStage().getEmployeurEmail().equals(employeur.getCredentials().getUsername()))
+        List<Entente> ententes = ententeRepository
+                .findAllByStatusAndCandidature_Stage_EmployeurEmail(EntenteStatus.SIGNEE, employeur.getCredentials().getUsername())
+                .stream()
                 .filter(e -> e.getCandidature().getStage().getStartDate() != null &&
                         e.getCandidature().getStage().getStartDate().getYear() == yearNumber)
                 .toList();

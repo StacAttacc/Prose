@@ -18,7 +18,11 @@ import com.AL565.prose.service.exceptions.EtudiantAlreadyAssociatedException;
 import com.AL565.prose.service.exceptions.EmailAlreadyExistsException;
 import com.AL565.prose.utils.SessionYearHelper;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -368,15 +372,17 @@ class GestionnaireControllerTest {
                                 .status("En Attente")
                                 .build()
                 )).build();
-        when(gestionnaireService.getAllEtudiantsCandidatures(nullable(String.class))).thenReturn(List.of(candidatureJohn, candidaturesUmberto));
+        when(gestionnaireService.getAllEtudiantsCandidatures(nullable(String.class), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(candidatureJohn, candidaturesUmberto)));
 
         MvcResult result = mockMvc.perform(get("/gestionnaire/getCandidatures"))
                 .andExpect(status().isOk())
                 .andReturn();
 
-        ReturnEntityDTO<List<EtudiantCandidaturesDTO>> candidatures = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+        JsonNode root = objectMapper.readTree(result.getResponse().getContentAsString());
+        JsonNode content = root.path("data").path("content");
 
-        assertThat(candidatures.getData().size()).isEqualTo(2);
+        assertThat(content.size()).isEqualTo(2);
     }
 
     @Test
@@ -497,23 +503,19 @@ class GestionnaireControllerTest {
                                 .status("REFUSEE")
                                 .build()
                 )).build();
-        when(gestionnaireService.getAllEtudiantsCandidatures(nullable(String.class))).thenReturn(List.of(candidatureJohn, candidaturesUmberto));
+        when(gestionnaireService.getAllEtudiantsCandidatures(nullable(String.class), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(candidatureJohn, candidaturesUmberto)));
 
         MvcResult result = mockMvc.perform(get("/gestionnaire/getCandidatures"))
                 .andExpect(status().isOk())
                 .andReturn();
 
-        ReturnEntityDTO<List<EtudiantCandidaturesDTO>> candidatures = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
-        });
+        JsonNode root = objectMapper.readTree(result.getResponse().getContentAsString());
+        JsonNode content = root.path("data").path("content");
 
-        List<EtudiantCandidaturesDTO> candidaturesList = candidatures.getData();
-
-        List<EtudiantCandidatureDTO> candidaturesJohnDTO = candidaturesList.getFirst().getCandidatures();
-        List<EtudiantCandidatureDTO> candidaturesUmbertoDTO = candidaturesList.get(1).getCandidatures();
-
-        assertThat(candidaturesJohnDTO.getFirst().getStatus()).isEqualTo(String.valueOf(CandidatureStatus.ACCEPTEE));
-        assertThat(candidaturesUmbertoDTO.getFirst().getStatus()).isEqualTo(String.valueOf(CandidatureStatus.ACCEPTEE));
-        assertThat(candidaturesUmbertoDTO.get(1).getStatus()).isEqualTo(String.valueOf(CandidatureStatus.REFUSEE));
+        assertThat(content.get(0).path("candidatures").get(0).path("status").asText()).isEqualTo(String.valueOf(CandidatureStatus.ACCEPTEE));
+        assertThat(content.get(1).path("candidatures").get(0).path("status").asText()).isEqualTo(String.valueOf(CandidatureStatus.ACCEPTEE));
+        assertThat(content.get(1).path("candidatures").get(1).path("status").asText()).isEqualTo(String.valueOf(CandidatureStatus.REFUSEE));
     }
 
     @Test

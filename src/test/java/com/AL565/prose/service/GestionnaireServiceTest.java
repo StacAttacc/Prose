@@ -16,6 +16,9 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
@@ -122,7 +125,8 @@ class GestionnaireServiceTest {
                 .build();
         employeur.setCredentials(credentials);
 
-        when(stageRepository.findByStatus(OfferStatus.SOUMISE)).thenReturn(List.of(stage1, stage2));
+        when(stageRepository.findByStatusAndStartDateBetween(eq(OfferStatus.SOUMISE), any(LocalDate.class), any(LocalDate.class)))
+                .thenReturn(List.of(stage1, stage2));
         when(employeurRepository.getEmployeurByCredentials_Username(anyString())).thenReturn(employeur);
 
         List<StageDTO> result = gestionnaireService.getStagesByStatus("SOUMISE", String.valueOf(LocalDate.now().getYear()));
@@ -237,7 +241,8 @@ class GestionnaireServiceTest {
                 .startDate(LocalDate.now())
                 .build();
 
-        when(stageRepository.findAll()).thenReturn(List.of(s1, s2));
+        when(stageRepository.findAllByStartDateBetween(any(LocalDate.class), any(LocalDate.class)))
+                .thenReturn(List.of(s1, s2));
 
         Employeur e1 = new Employeur();
         e1.setCompany("Company 1");
@@ -265,7 +270,7 @@ class GestionnaireServiceTest {
         List<StageDTO> result = gestionnaireService.getAllStages(String.valueOf(LocalDate.now().getYear()));
 
         assertThat(result).hasSize(2);
-        verify(stageRepository, times(1)).findAll();
+        verify(stageRepository, times(1)).findAllByStartDateBetween(any(LocalDate.class), any(LocalDate.class));
         verify(employeurRepository, times(1)).getEmployeurByCredentials_Username("emp1@company.com");
         verify(employeurRepository, times(1)).getEmployeurByCredentials_Username("emp2@company.com");
     }
@@ -274,24 +279,26 @@ class GestionnaireServiceTest {
     @Test
     @DisplayName("getAllStages() -> retourne une liste vide quand aucun stage n'existe")
     void getAllStages_returnsEmptyList_whenNoStages() {
-        when(stageRepository.findAll()).thenReturn(Collections.emptyList());
+        when(stageRepository.findAllByStartDateBetween(any(LocalDate.class), any(LocalDate.class)))
+                .thenReturn(Collections.emptyList());
 
         List<StageDTO> result = gestionnaireService.getAllStages(null);
 
         assertThat(result).isEmpty();
-        verify(stageRepository, times(1)).findAll();
+        verify(stageRepository, times(1)).findAllByStartDateBetween(any(LocalDate.class), any(LocalDate.class));
         verifyNoInteractions(employeurRepository);
     }
 
     @Test
     @DisplayName("getAllStages() -> wrap en FailedToRetrieveStagesException si le repo lève une exception")
     void getAllStages_whenRepoFails_wrapsToCustomException() {
-        when(stageRepository.findAll()).thenThrow(new RuntimeException("DB down"));
+        when(stageRepository.findAllByStartDateBetween(any(LocalDate.class), any(LocalDate.class)))
+                .thenThrow(new RuntimeException("DB down"));
 
         assertThatThrownBy(() -> gestionnaireService.getAllStages(null))
                 .isInstanceOf(FailedToRetrieveStagesException.class);
 
-        verify(stageRepository, times(1)).findAll();
+        verify(stageRepository, times(1)).findAllByStartDateBetween(any(LocalDate.class), any(LocalDate.class));
         verifyNoInteractions(employeurRepository);
     }
 
@@ -323,7 +330,15 @@ class GestionnaireServiceTest {
                 .startDate(LocalDate.of(2078, 3, 11))
                 .build();
 
-        when(stageRepository.findAll()).thenReturn(List.of(s1, s2, s3));
+        List<Stage> allStages = List.of(s1, s2, s3);
+        when(stageRepository.findAllByStartDateBetween(any(LocalDate.class), any(LocalDate.class)))
+                .thenAnswer(invocation -> {
+                    LocalDate from = invocation.getArgument(0);
+                    LocalDate to = invocation.getArgument(1);
+                    return allStages.stream()
+                            .filter(s -> !s.getStartDate().isBefore(from) && !s.getStartDate().isAfter(to))
+                            .toList();
+                });
 
         Employeur e1 = new Employeur();
         e1.setCompany("Company 1");
@@ -362,7 +377,7 @@ class GestionnaireServiceTest {
         stage2.setStatus(OfferStatus.SOUMISE);
 
         stage.setEmployeurEmail("employer@company.com");
-        when(etudiantRepository.findAll()).thenReturn(List.of(john, umberto));
+        when(etudiantRepository.findAll(any(Pageable.class))).thenReturn(new PageImpl<>(List.of(john, umberto)));
 
         when(candidatureRepository.findByEtudiant_Credentials_Username(john.getEmail())).thenReturn(List.of(
                 new Candidature(1L, john, null, null, stage, LocalDateTime.now(), CandidatureStatus.SOUMISE, null, "Pending", null)
@@ -380,7 +395,8 @@ class GestionnaireServiceTest {
         when(stageRepository.findById(stage.getId())).thenReturn(Optional.of(stage));
         when(stageRepository.findById(stage2.getId())).thenReturn(Optional.of(stage2));
 
-        List<EtudiantCandidaturesDTO> candidatures =  gestionnaireService.getAllEtudiantsCandidatures(String.valueOf(LocalDate.now().getYear()));
+        Page<EtudiantCandidaturesDTO> candidaturesPage = gestionnaireService.getAllEtudiantsCandidatures(String.valueOf(LocalDate.now().getYear()), Pageable.unpaged());
+        List<EtudiantCandidaturesDTO> candidatures = candidaturesPage.getContent();
 
         assertThat(candidatures).hasSize(2);
         assertThat(candidatures.get(0).getCandidatures()).hasSize(1);
@@ -406,7 +422,7 @@ class GestionnaireServiceTest {
         stage2.setStartDate(LocalDate.now());
         stage2.setStatus(OfferStatus.SOUMISE);
 
-        when(etudiantRepository.findAll()).thenReturn(List.of(john, umberto));
+        when(etudiantRepository.findAll(any(Pageable.class))).thenReturn(new PageImpl<>(List.of(john, umberto)));
 
         when(candidatureRepository.findByEtudiant_Credentials_Username(john.getEmail())).thenReturn(List.of(
                 new Candidature(1L, john, null, null, stage, LocalDateTime.now(), CandidatureStatus.ACCEPTEE, null, "Pending", null)
@@ -424,7 +440,7 @@ class GestionnaireServiceTest {
         when(stageRepository.findById(stage.getId())).thenReturn(Optional.of(stage));
         when(stageRepository.findById(stage2.getId())).thenReturn(Optional.of(stage2));
 
-        List<EtudiantCandidaturesDTO> candidatures =  gestionnaireService.getAllEtudiantsCandidatures(String.valueOf(LocalDate.now().getYear()));
+        List<EtudiantCandidaturesDTO> candidatures = gestionnaireService.getAllEtudiantsCandidatures(String.valueOf(LocalDate.now().getYear()), Pageable.unpaged()).getContent();
 
         List<EtudiantCandidatureDTO> candidaturesJohn = candidatures.getFirst().getCandidatures();
         List<EtudiantCandidatureDTO> candidaturesUmberto = candidatures.get(1).getCandidatures();
@@ -465,7 +481,7 @@ class GestionnaireServiceTest {
         stage3.setStartDate(LocalDate.of(2078, 3, 12));
         stage3.setStatus(OfferStatus.SOUMISE);
 
-        when(etudiantRepository.findAll()).thenReturn(List.of(john, umberto));
+        when(etudiantRepository.findAll(any(Pageable.class))).thenReturn(new PageImpl<>(List.of(john, umberto)));
 
         when(candidatureRepository.findByEtudiant_Credentials_Username(john.getEmail())).thenReturn(List.of(
                 new Candidature(1L, john, null, null, stage, LocalDateTime.now(), CandidatureStatus.SOUMISE, null, "Pending", null),
@@ -485,7 +501,7 @@ class GestionnaireServiceTest {
         when(stageRepository.findById(stage2.getId())).thenReturn(Optional.of(stage2));
         when(stageRepository.findById(stage3.getId())).thenReturn(Optional.of(stage3));
 
-        List<EtudiantCandidaturesDTO> candidatures =  gestionnaireService.getAllEtudiantsCandidatures(year);
+        List<EtudiantCandidaturesDTO> candidatures = gestionnaireService.getAllEtudiantsCandidatures(year, Pageable.unpaged()).getContent();
 
         assertThat(candidatures).hasSize(Integer.parseInt(expected));
     }
