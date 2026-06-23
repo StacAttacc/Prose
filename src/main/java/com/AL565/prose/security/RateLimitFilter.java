@@ -8,7 +8,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -43,7 +42,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
             return;
         }
 
-        String key = rule.path() + "|" + clientIp(request);
+        String key = rule.path() + "|" + request.getRemoteAddr();
         Instant now = Instant.now();
         Instant cutoff = now.minus(rule.window());
 
@@ -80,16 +79,4 @@ public class RateLimitFilter extends OncePerRequestFilter {
         return null;
     }
 
-    private String clientIp(HttpServletRequest request) {
-        String forwarded = request.getHeader("X-Forwarded-For");
-        if (StringUtils.hasText(forwarded)) {
-            int comma = forwarded.indexOf(',');
-            return (comma >= 0 ? forwarded.substring(0, comma) : forwarded).trim();
-        }
-        String realIp = request.getHeader("X-Real-IP");
-        if (StringUtils.hasText(realIp)) {
-            return realIp.trim();
-        }
-        return request.getRemoteAddr();
-    }
 }
