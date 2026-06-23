@@ -227,7 +227,7 @@ milieu de travail, et les gestionnaires de programme supervisent tout le
 cycle de vie des ententes, de l'approbation du CV jusqu'aux évaluations
 de fin de session, en passant par la signature des ententes de stage.
 
-**Démo en ligne :** https://prose-8xsls5df6-stac-s-apps.vercel.app
+**Démo en ligne :** https://prose-jet.vercel.app/
 
 Réalisé en équipe dans le cadre d'un projet de classe sur six sprints
 hebdomadaires par cinq personnes. L'interface est principalement en
